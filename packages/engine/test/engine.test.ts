@@ -1,0 +1,276 @@
+import { describe, expect, it } from 'vitest';
+import {
+  applyAction,
+  buildDeck,
+  createGame,
+  getEffectiveAttack,
+  getMaxHealth,
+  loadGameData
+} from '../src/index.js';
+import { recalcBoard } from '../src/internal.js';
+import type {
+  Creature,
+  CreatureCard,
+  GameData,
+  GameState,
+  PlayerIndex,
+  PlayerState
+} from '../src/types.js';
+
+const data: GameData = loadGameData();
+
+function player(faction: string): PlayerState {
+  return {
+    faction,
+    deck: [],
+    hand: [],
+    base: data.config.baseHealth,
+    energy: 10,
+    flyDone: false
+  };
+}
+
+/** Leerer Testzustand: Runde 1, Ausspielphase, Spieler 0 am Zug. */
+function emptyState(): GameState {
+  return {
+    config: data.config,
+    round: 1,
+    phase: 'play',
+    startingPlayer: 0,
+    active: 0,
+    consecutivePasses: 0,
+    players: [player('humans'), player('animals')],
+    board: [
+      Array.from({ length: data.config.lanes }, () => null),
+      Array.from({ length: data.config.lanes }, () => null)
+    ],
+    log: [],
+    winner: null,
+    uidCounter: 0
+  };
+}
+
+/** Stellt eine Kreatur direkt aufs Feld (Standard: kampfbereit). */
+function put(
+  state: GameState,
+  owner: PlayerIndex,
+  lane: number,
+  cardId: string,
+  opts: { exhausted?: boolean } = {}
+): Creature {
+  const card = data.cardsById[cardId] as CreatureCard;
+  state.uidCounter += 1;
+  const c: Creature = {
+    uid: state.uidCounter,
+    cardId,
+    name: card.name,
+    faction: card.faction,
+    keywords: card.keywords,
+    baseAttack: card.attack,
+    baseMaxHealth: card.health,
+    permHealthBonus: 0,
+    tempAttackBonus: 0,
+    currentHealth: card.health,
+    lastMaxHealth: card.health,
+    exhausted: opts.exhausted ?? false,
+    movedThisFlyPhase: false,
+    isToken: false
+  };
+  state.board[owner][lane] = c;
+  recalcBoard(state);
+  return c;
+}
+
+/** Beide Spieler passen → Kampfphase läuft, danach Rundenende/Flugphase. */
+function passBoth(state: GameState): GameState {
+  const afterFirst = applyAction(state, state.active, { type: 'pass' }, data);
+  return applyAction(afterFirst, afterFirst.active, { type: 'pass' }, data);
+}
+
+describe('Kampflogik', () => {
+  it('kampfbereite Kreaturen schaden sich gleichzeitig', () => {
+    const s = emptyState();
+    put(s, 0, 0, 'ritter'); // 4/4
+    put(s, 1, 0, 'wolf'); // 3/2 (rudel inaktiv: allein)
+    const after = passBoth(s);
+    // Wolf (3 ATK) trifft Ritter → 4-3=1 Leben; Ritter (4 ATK) tötet Wolf.
+    expect(after.board[1][0]).toBeNull();
+    expect(after.board[0][0]?.currentHealth).toBe(1);
+  });
+
+  it('erschöpfte Kreaturen greifen nicht an, verteidigen aber', () => {
+    const s = emptyState();
+    put(s, 0, 0, 'rekrut'); // 2/1, kampfbereit
+    put(s, 1, 0, 'baer', { exhausted: true }); // 4/5, erschöpft
+    const after = passBoth(s);
+    expect(after.board[1][0]?.currentHealth).toBe(3); // Bär nimmt 2
+    expect(after.board[0][0]?.currentHealth).toBe(1); // Rekrut unversehrt
+    expect(after.players[1].base).toBe(data.config.baseHealth); // kein Basis-Schaden
+  });
+
+  it('leere gegnerische Lane → Angriff trifft die Basis', () => {
+    const s = emptyState();
+    put(s, 0, 1, 'rekrut'); // 2 ATK
+    const after = passBoth(s);
+    expect(after.players[1].base).toBe(data.config.baseHealth - 2);
+    expect(after.players[0].base).toBe(data.config.baseHealth);
+  });
+
+  it('Basis auf 0 → Spiel endet mit Sieger', () => {
+    const s = emptyState();
+    s.players[1].base = 2;
+    put(s, 0, 0, 'ritter'); // 4 ATK auf leere Lane
+    const after = passBoth(s);
+    expect(after.phase).toBe('ended');
+    expect(after.winner).toBe(0);
+  });
+});
+
+describe('Keyword gift', () => {
+  it('tötet das Ziel sofort, auch wenn es mehr Leben hat', () => {
+    const s = emptyState();
+    put(s, 1, 0, 'schlange'); // 1/1, gift
+    put(s, 0, 0, 'baer'); // 4/5
+    const after = passBoth(s);
+    // Schlange macht 1 Schaden → Gift tötet den Bären; Bär tötet die Schlange gleichzeitig.
+    expect(after.board[0][0]).toBeNull();
+    expect(after.board[1][0]).toBeNull();
+  });
+
+  it('wirkt nicht, wenn die Schlange erschöpft ist (kein Angriff)', () => {
+    const s = emptyState();
+    put(s, 1, 0, 'schlange', { exhausted: true });
+    put(s, 0, 0, 'baer');
+    const after = passBoth(s);
+    expect(after.board[0][0]?.currentHealth).toBe(5); // Bär unversehrt? Nein –
+    // Bär greift die erschöpfte Schlange an (sie verteidigt) und tötet sie:
+    expect(after.board[1][0]).toBeNull();
+  });
+});
+
+describe('Keyword rudel', () => {
+  it('+1 Angriff nur mit anderem verbündeten Animal', () => {
+    const s = emptyState();
+    put(s, 1, 0, 'wolf');
+    expect(getEffectiveAttack(s, 1, 0)).toBe(3); // allein: kein Bonus
+    put(s, 1, 2, 'ratte');
+    expect(getEffectiveAttack(s, 1, 0)).toBe(4); // Rudel aktiv
+    s.board[1][2] = null;
+    expect(getEffectiveAttack(s, 1, 0)).toBe(3); // Bonus dynamisch weg
+  });
+});
+
+describe('Auren', () => {
+  it('schild_nachbarn: +0/+1 für Nachbarn, dynamisch beim Wegfall gedeckelt', () => {
+    const s = emptyState();
+    put(s, 0, 0, 'rekrut'); // 2/1
+    put(s, 0, 1, 'schildwache'); // Aura: Nachbarn +0/+1
+    expect(getMaxHealth(s, 0, 0)).toBe(2);
+    expect(s.board[0][0]?.currentHealth).toBe(2); // Aura hebt aktuelles Leben mit an
+    // Aura-Quelle stirbt → Maximum sinkt, aktuelles Leben höchstens auf neues Maximum
+    s.board[0][1] = null;
+    recalcBoard(s);
+    expect(getMaxHealth(s, 0, 0)).toBe(1);
+    expect(s.board[0][0]?.currentHealth).toBe(1);
+  });
+
+  it('schild_nachbarn: bereits erlittener Schaden wird nicht doppelt bestraft', () => {
+    const s = emptyState();
+    const wache = put(s, 0, 0, 'schildwache'); // 1/3
+    put(s, 0, 1, 'kommandantin'); // aura_alle: +1/+1 → Wache 2/4
+    wache.currentHealth -= 1; // Wache auf 3/4
+    s.board[0][1] = null; // Aura fällt weg → Maximum wieder 3
+    recalcBoard(s);
+    // aktuelles Leben (3) liegt nicht über dem neuen Maximum (3) → bleibt 3
+    expect(s.board[0][0]?.currentHealth).toBe(3);
+  });
+
+  it('aura_alle (Kommandantin): +1/+1 für alle anderen Verbündeten', () => {
+    const s = emptyState();
+    put(s, 0, 0, 'rekrut'); // 2/1
+    put(s, 0, 2, 'kommandantin'); // 3/5
+    expect(getEffectiveAttack(s, 0, 0)).toBe(3);
+    expect(getMaxHealth(s, 0, 0)).toBe(2);
+    // Die Kommandantin bufft sich nicht selbst:
+    expect(getEffectiveAttack(s, 0, 2)).toBe(3);
+    expect(getMaxHealth(s, 0, 2)).toBe(5);
+  });
+
+  it('alpha_aura bufft nur andere Animals', () => {
+    const s = emptyState();
+    put(s, 1, 0, 'alphawolf'); // 4/4
+    put(s, 1, 1, 'ratte'); // 2/1 → 3/1
+    expect(getEffectiveAttack(s, 1, 1)).toBe(3);
+    expect(getEffectiveAttack(s, 1, 0)).toBe(4); // nicht sich selbst
+  });
+
+  it('banner_nachbarn wirkt nur auf direkte Nachbarn', () => {
+    const s = emptyState();
+    put(s, 0, 0, 'bannertraeger'); // Nachbarn +1/+0
+    put(s, 0, 1, 'rekrut');
+    put(s, 0, 2, 'ritter');
+    expect(getEffectiveAttack(s, 0, 1)).toBe(3); // Nachbar: 2+1
+    expect(getEffectiveAttack(s, 0, 2)).toBe(4); // Lane 3 ist KEIN Nachbar von Lane 1
+  });
+});
+
+describe('Rundenende', () => {
+  it('heilt_nachbarn heilt am Rundenende um 1, nie über das Maximum', () => {
+    const s = emptyState();
+    const ritter = put(s, 0, 0, 'ritter', { exhausted: true }); // 4/4
+    put(s, 0, 1, 'feldscherin', { exhausted: true });
+    put(s, 0, 2, 'rekrut', { exhausted: true }); // unverletzt → keine Heilung
+    ritter.currentHealth = 2;
+    const after = passBoth(s); // Kampf (nichts passiert) → Rundenende
+    expect(after.round).toBe(2);
+    expect(after.board[0][0]?.currentHealth).toBe(3); // 2 + 1
+    expect(after.board[0][2]?.currentHealth).toBe(1); // blieb beim Maximum
+  });
+
+  it('temporäre Buffs verfallen, Erschöpfung wird aufgehoben', () => {
+    const s = emptyState();
+    const baer = put(s, 1, 0, 'baer', { exhausted: true });
+    baer.tempAttackBonus = 2;
+    expect(getEffectiveAttack(s, 1, 0)).toBe(6);
+    const after = passBoth(s);
+    expect(getEffectiveAttack(after, 1, 0)).toBe(4);
+    expect(after.board[1][0]?.exhausted).toBe(false);
+  });
+});
+
+describe('Ausspielen & Energie', () => {
+  it('flink ist sofort kampfbereit, andere Kreaturen erschöpft', () => {
+    let s = emptyState();
+    s.players[0].hand = ['rekrut'];
+    s.players[1].hand = ['ratte'];
+    s = applyAction(s, 0, { type: 'playCreature', handIndex: 0, lane: 0 }, data);
+    expect(s.board[0][0]?.exhausted).toBe(true);
+    s = applyAction(s, 1, { type: 'playCreature', handIndex: 0, lane: 0 }, data);
+    expect(s.board[1][0]?.exhausted).toBe(false); // flink
+  });
+
+  it('ohne Energie kann keine Karte gespielt werden', () => {
+    const s = emptyState();
+    s.players[0].hand = ['ritter'];
+    s.players[0].energy = 3; // Ritter kostet 4
+    expect(() =>
+      applyAction(s, 0, { type: 'playCreature', handIndex: 0, lane: 0 }, data)
+    ).toThrow(/Energie/);
+  });
+
+  it('Deckbau: 15 Karten, Signaturkarte nur einmal', () => {
+    const deck = buildDeck(data, 'humans', Math.random);
+    expect(deck).toHaveLength(data.config.deckSize);
+    expect(deck.filter((id) => id === 'kommandantin')).toHaveLength(1);
+    expect(deck.filter((id) => id === 'rekrut')).toHaveLength(data.config.maxCopiesPerCard);
+  });
+
+  it('createGame: Starthand, Basisleben und Runde 1 mit 1 Energie', () => {
+    const g = createGame(data, ['humans', 'animals'], () => 0.42);
+    expect(g.round).toBe(1);
+    expect(g.players[0].hand).toHaveLength(data.config.startingHand);
+    expect(g.players[0].base).toBe(data.config.baseHealth);
+    expect(g.players[0].energy).toBe(1);
+    expect(g.players[0].deck).toHaveLength(data.config.deckSize - data.config.startingHand);
+  });
+});
