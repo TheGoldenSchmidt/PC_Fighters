@@ -1,0 +1,15 @@
+{
+  "name": "political-correct-fighters",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Digitales 1-gegen-1-Kartenduell: Humans vs. Animals",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "server": "npm run dev --workspace @pcf/server",
+    "client": "npm run dev --workspace @pcf/client",
+    "test": "npm run test --workspace @pcf/engine && npm run test --workspace @pcf/server",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  }
+}
