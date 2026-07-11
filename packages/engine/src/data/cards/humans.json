@@ -1,0 +1,91 @@
+[
+  {
+    "id": "rekrut",
+    "name": "Rekrut",
+    "faction": "humans",
+    "type": "creature",
+    "cost": 1,
+    "attack": 2,
+    "health": 1,
+    "keywords": [],
+    "text": "Ein einfacher Soldat."
+  },
+  {
+    "id": "schildwache",
+    "name": "Schildwache",
+    "faction": "humans",
+    "type": "creature",
+    "cost": 1,
+    "attack": 1,
+    "health": 3,
+    "keywords": ["schild_nachbarn"],
+    "text": "Verbündete Kreaturen in benachbarten Lanes erhalten +0/+1."
+  },
+  {
+    "id": "feldscherin",
+    "name": "Feldscherin",
+    "faction": "humans",
+    "type": "creature",
+    "cost": 2,
+    "attack": 1,
+    "health": 2,
+    "keywords": ["heilt_nachbarn"],
+    "text": "Am Rundenende: Heilt verbündete Kreaturen in benachbarten Lanes um 1."
+  },
+  {
+    "id": "bannertraeger",
+    "name": "Bannerträger",
+    "faction": "humans",
+    "type": "creature",
+    "cost": 3,
+    "attack": 2,
+    "health": 3,
+    "keywords": ["banner_nachbarn"],
+    "text": "Verbündete Kreaturen in benachbarten Lanes erhalten +1/+0."
+  },
+  {
+    "id": "ritter",
+    "name": "Ritter",
+    "faction": "humans",
+    "type": "creature",
+    "cost": 4,
+    "attack": 4,
+    "health": 4,
+    "keywords": [],
+    "text": "Stahl auf zwei Beinen."
+  },
+  {
+    "id": "kommandantin",
+    "name": "Kommandantin",
+    "faction": "humans",
+    "type": "creature",
+    "cost": 5,
+    "attack": 3,
+    "health": 5,
+    "keywords": ["aura_alle"],
+    "signature": true,
+    "text": "★ Alle anderen verbündeten Kreaturen erhalten +1/+1."
+  },
+  {
+    "id": "schildwall",
+    "name": "Schildwall",
+    "faction": "humans",
+    "type": "action",
+    "cost": 1,
+    "effect": { "kind": "buffHealth", "amount": 3, "target": "friendlyCreature" },
+    "text": "Eine verbündete Kreatur erhält dauerhaft +3 Leben."
+  },
+  {
+    "id": "mobilmachung",
+    "name": "Mobilmachung",
+    "faction": "humans",
+    "type": "action",
+    "cost": 2,
+    "effect": {
+      "kind": "summon",
+      "count": 2,
+      "token": { "name": "Rekrut-Token", "attack": 1, "health": 1, "keywords": [] }
+    },
+    "text": "Beschwört zwei 1/1-Rekrut-Token in freie eigene Lanes."
+  }
+]

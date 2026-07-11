@@ -1,0 +1,87 @@
+[
+  {
+    "id": "ratte",
+    "name": "Ratte",
+    "faction": "animals",
+    "type": "creature",
+    "cost": 1,
+    "attack": 2,
+    "health": 1,
+    "keywords": ["flink"],
+    "text": "Flink: Ist beim Ausspielen nicht erschöpft."
+  },
+  {
+    "id": "wolf",
+    "name": "Wolf",
+    "faction": "animals",
+    "type": "creature",
+    "cost": 2,
+    "attack": 3,
+    "health": 2,
+    "keywords": ["rudel"],
+    "text": "Rudel: +1 Angriff, solange ein anderes verbündetes Animal auf dem Feld ist."
+  },
+  {
+    "id": "schlange",
+    "name": "Schlange",
+    "faction": "animals",
+    "type": "creature",
+    "cost": 2,
+    "attack": 1,
+    "health": 1,
+    "keywords": ["gift"],
+    "text": "Gift: Fügt diese Kreatur einer anderen Kreatur Schaden zu, stirbt diese sofort."
+  },
+  {
+    "id": "adler",
+    "name": "Adler",
+    "faction": "animals",
+    "type": "creature",
+    "cost": 3,
+    "attack": 2,
+    "health": 2,
+    "keywords": ["fliegend"],
+    "text": "Fliegend: Darf nach der Kampfphase in eine freie eigene Lane fliegen."
+  },
+  {
+    "id": "baer",
+    "name": "Bär",
+    "faction": "animals",
+    "type": "creature",
+    "cost": 4,
+    "attack": 4,
+    "health": 5,
+    "keywords": [],
+    "text": "Brummig, aber effektiv."
+  },
+  {
+    "id": "alphawolf",
+    "name": "Alphawolf",
+    "faction": "animals",
+    "type": "creature",
+    "cost": 5,
+    "attack": 4,
+    "health": 4,
+    "keywords": ["alpha_aura"],
+    "signature": true,
+    "text": "★ Andere verbündete Animals erhalten +1/+0."
+  },
+  {
+    "id": "hetzjagd",
+    "name": "Hetzjagd",
+    "faction": "animals",
+    "type": "action",
+    "cost": 1,
+    "effect": { "kind": "moveCreature", "target": "friendlyCreature" },
+    "text": "Bewege eine eigene Kreatur in eine freie eigene Lane."
+  },
+  {
+    "id": "wilder_instinkt",
+    "name": "Wilder Instinkt",
+    "faction": "animals",
+    "type": "action",
+    "cost": 2,
+    "effect": { "kind": "buffAttackTemp", "amount": 2, "target": "friendlyCreature" },
+    "text": "Eine verbündete Kreatur erhält +2 Angriff bis zum Rundenende."
+  }
+]
