@@ -5,6 +5,8 @@
 import { createServer, type Server } from 'node:http';
 import { randomBytes } from 'node:crypto';
 import { WebSocketServer, WebSocket } from 'ws';
+import { writeFileSync, readFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
 import {
   applyAction,
   buildClientView,
@@ -49,6 +51,57 @@ function send(socket: WebSocket, message: unknown): void {
   }
 }
 
+const persistFilePath = join(process.cwd(), 'rooms_persist.json');
+
+function saveRooms(rooms: Map<string, Room>) {
+  try {
+    const dataToSave = Array.from(rooms.entries()).map(([code, room]) => {
+      return {
+        code: room.code,
+        topic: room.topic,
+        state: room.state,
+        players: room.players.map(p => ({
+          token: p.token,
+          faction: p.faction
+        }))
+      };
+    });
+    writeFileSync(persistFilePath, JSON.stringify(dataToSave, null, 2), 'utf-8');
+  } catch (err) {
+    console.error('Failed to persist rooms:', err);
+  }
+}
+
+function loadRooms(): Map<string, Room> {
+  const map = new Map<string, Room>();
+  try {
+    if (existsSync(persistFilePath)) {
+      const content = readFileSync(persistFilePath, 'utf-8');
+      const parsed = JSON.parse(content) as Array<{
+        code: string;
+        topic: Topic;
+        state: GameState | null;
+        players: Array<{ token: string; faction: string }>;
+      }>;
+      for (const item of parsed) {
+        map.set(item.code, {
+          code: item.code,
+          topic: item.topic,
+          state: item.state,
+          players: item.players.map(p => ({
+            token: p.token,
+            faction: p.faction,
+            socket: null
+          }))
+        });
+      }
+    }
+  } catch (err) {
+    console.error('Failed to load persisted rooms:', err);
+  }
+  return map;
+}
+
 export function startServer(port: number): Promise<RunningServer> {
   let data: GameData | null = null;
   let dataError: string | null = null;
@@ -61,7 +114,7 @@ export function startServer(port: number): Promise<RunningServer> {
     console.error('\n⚠ Datendateien fehlerhaft:\n' + dataError + '\n');
   }
 
-  const rooms = new Map<string, Room>();
+  const rooms = loadRooms();
 
   const newRoomCode = (): string => {
     for (let i = 0; i < 1000; i++) {
@@ -160,6 +213,7 @@ export function startServer(port: number): Promise<RunningServer> {
           ctx.room.players.every((p) => p.socket === null)
         ) {
           rooms.delete(ctx.room.code);
+          saveRooms(rooms);
         }
       }
     });
@@ -216,6 +270,7 @@ export function startServer(port: number): Promise<RunningServer> {
             topic
           };
           rooms.set(room.code, room);
+          saveRooms(rooms);
           attach(room, 0);
           send(socket, {
             type: 'created',
@@ -252,6 +307,7 @@ export function startServer(port: number): Promise<RunningServer> {
           });
           // Beide Spieler da → Partie starten
           room.state = createGame(requireData(), [room.players[0].faction, faction]);
+          saveRooms(rooms);
           broadcastState(room);
           break;
         }
@@ -294,6 +350,7 @@ export function startServer(port: number): Promise<RunningServer> {
             msg.action as PlayerAction,
             requireData()
           );
+          saveRooms(rooms);
           broadcastState(ctx.room);
           break;
         }

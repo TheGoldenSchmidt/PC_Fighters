@@ -376,6 +376,14 @@ export function GameScreen({ view, topic, status, opponentConnected, onAction, o
   );
 }
 
+function getCardArtworkUrl(cardId: string): string {
+  const withArt = ['rekrut', 'schildwache', 'feldscherin'];
+  if (withArt.includes(cardId)) {
+    return `/assets/cards/${cardId}.png`;
+  }
+  return '';
+}
+
 function CreatureTile({
   creature,
   own,
@@ -390,6 +398,8 @@ function CreatureTile({
   const attackReduced = creature.attack < creature.baseAttack;
   const healthBuffed = creature.maxHealth > creature.baseMaxHealth;
   const damaged = creature.health < creature.maxHealth;
+  const artUrl = getCardArtworkUrl(creature.cardId);
+
   return (
     <div
       className={
@@ -400,9 +410,17 @@ function CreatureTile({
         (attacking ? ' attacking' : '')
       }
     >
-      <div className="creature-name">
-        {creature.canFly && '🕊 '}
-        {creature.name}
+      <div className="creature-header">
+        {artUrl ? (
+          <img src={artUrl} className="creature-portrait" alt={creature.name} />
+        ) : (
+          <div className="creature-portrait-fallback">
+            {creature.canFly ? '🕊️' : '⚔️'}
+          </div>
+        )}
+        <div className="creature-name" title={creature.name}>
+          {creature.name}
+        </div>
       </div>
       <div className="creature-stats">
         <span className={attackBuffed ? 'stat buffed' : attackReduced ? 'stat reduced' : 'stat'}>
@@ -413,7 +431,9 @@ function CreatureTile({
         </span>
       </div>
       {creature.keywords.length > 0 && (
-        <div className="creature-keywords">{creature.keywords.join(' · ')}</div>
+        <div className="creature-keywords" title={creature.keywords.join(' · ')}>
+          {creature.keywords.join(' · ')}
+        </div>
       )}
       {creature.exhausted && <div className="exhausted-label">erschöpft</div>}
     </div>
@@ -431,10 +451,16 @@ function HandCard({
   playable: boolean;
   onTap: () => void;
 }) {
+  const artUrl = getCardArtworkUrl(card.id);
+
   return (
     <button
       className={
-        'hand-card' + (selected ? ' selected' : '') + (playable ? '' : ' unplayable')
+        'hand-card' +
+        (selected ? ' selected' : '') +
+        (playable ? ' playable' : ' unplayable') +
+        (card.signature ? ' signature-card' : '') +
+        ` faction-${card.faction}`
       }
       onClick={onTap}
     >
@@ -445,6 +471,17 @@ function HandCard({
           {card.name}
         </span>
       </div>
+
+      <div className="hand-card-art-container">
+        {artUrl ? (
+          <img src={artUrl} className="hand-card-art" alt={card.name} />
+        ) : (
+          <div className={`hand-card-art-fallback theme-${card.faction}`}>
+            <span className="fallback-symbol">{card.type === 'creature' ? '🛡️' : '⚡'}</span>
+          </div>
+        )}
+      </div>
+
       {card.type === 'creature' ? (
         <div className="hand-card-stats">
           ⚔ {card.attack} &nbsp; ♥ {card.health}

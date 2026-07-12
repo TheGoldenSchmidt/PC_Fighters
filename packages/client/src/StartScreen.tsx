@@ -65,8 +65,10 @@ export function StartScreen({ status, onCreate, onJoin }: Props) {
   return (
     <div className="screen start-screen">
       <header className="start-header">
-        <h1>Political Correct Fighters</h1>
-        <p className="subtitle">Humans vs. Animals – das Karten-Duell</p>
+        <div className="logo-container">
+          <img src="/assets/logo.png" className="main-logo" alt="Political Correct Fighters Logo" />
+        </div>
+        <p className="subtitle">Das ultimative Duell: Humans vs. Animals</p>
       </header>
 
       <section className="panel">
@@ -100,8 +102,11 @@ export function StartScreen({ status, onCreate, onJoin }: Props) {
               style={{ '--faction-color': f.color } as CSSProperties}
               onClick={() => setFaction(f.id)}
             >
-              <strong>{f.name}</strong>
-              <span>{f.description}</span>
+              <div className="faction-emblem-wrapper">
+                <img src={`/assets/emblems/${f.id}.png`} className="faction-emblem" alt={`${f.name} Emblem`} />
+              </div>
+              <strong className="faction-name">{f.name}</strong>
+              <span className="faction-desc">{f.description}</span>
             </button>
           ))}
         </div>
