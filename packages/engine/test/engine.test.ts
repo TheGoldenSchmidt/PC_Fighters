@@ -124,6 +124,25 @@ describe('Kampflogik', () => {
     expect(after.phase).toBe('ended');
     expect(after.winner).toBe(0);
   });
+
+  it('Kampf-Log enthält strukturierte Angriffs-Events (für UI-Animationen)', () => {
+    const s = emptyState();
+    put(s, 0, 1, 'rekrut'); // 2 ATK, gegnerische Lane leer → Basis
+    const after = passBoth(s);
+    const event = after.log.find((l) => l.event?.kind === 'attack')?.event;
+    expect(event).toMatchObject({ lane: 1, attacker: 0, damage: 2, toBase: true });
+  });
+});
+
+describe('Themen (Topics)', () => {
+  it('topics.json wird geladen und validiert', () => {
+    expect(data.topics.length).toBeGreaterThanOrEqual(1);
+    for (const topic of data.topics) {
+      expect(topic.id).toBeTruthy();
+      expect(topic.colors.background).toBeTruthy();
+      expect(topic.colors.lane).toBeTruthy();
+    }
+  });
 });
 
 describe('Keyword gift', () => {

@@ -21,6 +21,23 @@ export interface Faction {
   description: string;
 }
 
+/** Schauplatz einer Partie – rein optisch, wird vom Raum-Ersteller gewählt. */
+export interface Topic {
+  id: string;
+  name: string;
+  emoji: string;
+  colors: {
+    /** CSS-Hintergrund der ganzen Seite (Farbe oder Gradient). */
+    background: string;
+    /** Füllfarbe der Lane-Slots. */
+    lane: string;
+    /** Rahmenfarbe der Lane-Slots. */
+    laneBorder: string;
+    /** Akzentfarbe (Lane-Beschriftung, Hervorhebungen). */
+    accent: string;
+  };
+}
+
 export interface TokenDef {
   name: string;
   attack: number;
@@ -63,6 +80,7 @@ export type CardDef = CreatureCard | ActionCard;
 export interface GameData {
   config: GameConfig;
   factions: Faction[];
+  topics: Topic[];
   cards: CardDef[];
   cardsById: Record<string, CardDef>;
 }
@@ -101,9 +119,25 @@ export interface PlayerState {
 
 export type Phase = 'play' | 'fly' | 'ended';
 
+/**
+ * Strukturiertes Kampf-Ereignis am Log-Eintrag – die UI nutzt es, um
+ * Angriffe zu animieren (wer schlägt zu, in welcher Lane, wie viel Schaden).
+ */
+export interface AttackEvent {
+  kind: 'attack';
+  lane: number;
+  attacker: PlayerIndex;
+  damage: number;
+  /** true = der Angriff ging auf die Basis statt auf eine Kreatur. */
+  toBase: boolean;
+}
+
 export interface LogEntry {
+  /** Fortlaufende Nummer über die ganze Partie (stabil trotz gekürzter Sicht). */
+  id: number;
   round: number;
   text: string;
+  event?: AttackEvent;
 }
 
 export interface GameState {

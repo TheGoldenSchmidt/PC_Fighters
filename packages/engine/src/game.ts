@@ -198,7 +198,13 @@ function resolveCombat(state: GameState): void {
 
       if (atkA > 0) {
         b.currentHealth -= atkA;
-        log(state, `Lane ${lane + 1}: ${a.name} trifft ${b.name} für ${atkA}.`);
+        log(state, `Lane ${lane + 1}: ${a.name} trifft ${b.name} für ${atkA}.`, {
+          kind: 'attack',
+          lane,
+          attacker: 0,
+          damage: atkA,
+          toBase: false
+        });
         if (hasKeyword(a, 'poison') && b.currentHealth > 0) {
           b.currentHealth = 0;
           log(state, `Lane ${lane + 1}: Gift! ${b.name} stirbt sofort.`);
@@ -206,7 +212,13 @@ function resolveCombat(state: GameState): void {
       }
       if (atkB > 0) {
         a.currentHealth -= atkB;
-        log(state, `Lane ${lane + 1}: ${b.name} trifft ${a.name} für ${atkB}.`);
+        log(state, `Lane ${lane + 1}: ${b.name} trifft ${a.name} für ${atkB}.`, {
+          kind: 'attack',
+          lane,
+          attacker: 1,
+          damage: atkB,
+          toBase: false
+        });
         if (hasKeyword(b, 'poison') && a.currentHealth > 0) {
           a.currentHealth = 0;
           log(state, `Lane ${lane + 1}: Gift! ${a.name} stirbt sofort.`);
@@ -216,12 +228,24 @@ function resolveCombat(state: GameState): void {
     } else if (a && !b && !a.exhausted) {
       const dmg = getEffectiveAttack(state, 0, lane);
       state.players[1].base -= dmg;
-      log(state, `Lane ${lane + 1}: ${a.name} trifft die gegnerische Basis für ${dmg}.`);
+      log(state, `Lane ${lane + 1}: ${a.name} trifft die gegnerische Basis für ${dmg}.`, {
+        kind: 'attack',
+        lane,
+        attacker: 0,
+        damage: dmg,
+        toBase: true
+      });
       if (checkBaseDestroyed(state)) return;
     } else if (b && !a && !b.exhausted) {
       const dmg = getEffectiveAttack(state, 1, lane);
       state.players[0].base -= dmg;
-      log(state, `Lane ${lane + 1}: ${b.name} trifft die gegnerische Basis für ${dmg}.`);
+      log(state, `Lane ${lane + 1}: ${b.name} trifft die gegnerische Basis für ${dmg}.`, {
+        kind: 'attack',
+        lane,
+        attacker: 1,
+        damage: dmg,
+        toBase: true
+      });
       if (checkBaseDestroyed(state)) return;
     }
   }

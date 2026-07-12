@@ -2,7 +2,7 @@
 // Wiederverbinden mit Raum-Code + Token, und der komplette UI-Zustand.
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { ClientView, PlayerAction } from '@pcf/engine';
+import type { ClientView, PlayerAction, Topic } from '@pcf/engine';
 
 export type ConnectionStatus = 'idle' | 'connecting' | 'connected' | 'reconnecting';
 export type Screen = 'start' | 'lobby' | 'game';
@@ -13,6 +13,8 @@ export interface GameClientState {
   view: ClientView | null;
   roomCode: string | null;
   serverAddress: string | null;
+  /** Vom Raum-Ersteller gewählter Schauplatz (kommt vom Server). */
+  topic: Topic | null;
   error: string | null;
   dataError: string | null;
   opponentConnected: boolean;
@@ -24,6 +26,7 @@ const initial: GameClientState = {
   view: null,
   roomCode: null,
   serverAddress: null,
+  topic: null,
   error: null,
   dataError: null,
   opponentConnected: true
@@ -62,17 +65,21 @@ export function useGame() {
             token: msg.token as string
           };
           saveSession();
-          patch({ screen: 'lobby', roomCode: msg.code as string });
+          patch({ screen: 'lobby', roomCode: msg.code as string, topic: msg.topic as Topic });
           break;
         case 'joined':
         case 'rejoined':
           if (msg.token) session.current!.token = msg.token as string;
           session.current!.code = msg.code as string;
           saveSession();
-          patch({ roomCode: msg.code as string });
+          patch({ roomCode: msg.code as string, topic: (msg.topic as Topic) ?? null });
           break;
         case 'state':
-          patch({ screen: 'game', view: msg.view as ClientView });
+          patch({
+            screen: 'game',
+            view: msg.view as ClientView,
+            ...(msg.topic ? { topic: msg.topic as Topic } : {})
+          });
           break;
         case 'opponent':
           patch({ opponentConnected: Boolean(msg.connected) });
@@ -132,11 +139,13 @@ export function useGame() {
   );
 
   const createGame = useCallback(
-    (serverInput: string, faction: string) => {
+    (serverInput: string, faction: string, topicId: string) => {
       const url = toWsUrl(serverInput);
       session.current = { url, code: '', token: '' };
       patch({ serverAddress: serverInput.trim() });
-      open(url, (socket) => socket.send(JSON.stringify({ type: 'create', faction })));
+      open(url, (socket) =>
+        socket.send(JSON.stringify({ type: 'create', faction, topic: topicId }))
+      );
     },
     [open]
   );

@@ -15,7 +15,8 @@ import {
   type GameData,
   type GameState,
   type PlayerAction,
-  type PlayerIndex
+  type PlayerIndex,
+  type Topic
 } from '@pcf/engine';
 
 interface RoomPlayer {
@@ -28,6 +29,8 @@ interface Room {
   code: string;
   players: RoomPlayer[];
   state: GameState | null;
+  /** Vom Raum-Ersteller gewählter Schauplatz (rein optisch). */
+  topic: Topic;
 }
 
 interface SocketContext {
@@ -74,6 +77,7 @@ export function startServer(port: number): Promise<RunningServer> {
       if (player.socket) {
         send(player.socket, {
           type: 'state',
+          topic: room.topic,
           view: buildClientView(room.state!, idx as PlayerIndex, data!)
         });
       }
@@ -101,7 +105,13 @@ export function startServer(port: number): Promise<RunningServer> {
         return;
       }
       res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', ...cors });
-      res.end(JSON.stringify({ name: 'Political Correct Fighters', factions: data!.factions }));
+      res.end(
+        JSON.stringify({
+          name: 'Political Correct Fighters',
+          factions: data!.factions,
+          topics: data!.topics
+        })
+      );
       return;
     }
     res.writeHead(200, { 'content-type': 'text/plain; charset=utf-8', ...cors });
@@ -173,6 +183,21 @@ export function startServer(port: number): Promise<RunningServer> {
       return faction;
     }
 
+    /** Thema auflösen; ohne Angabe gilt das erste Thema aus topics.json. */
+    function validTopic(topicId: unknown): Topic {
+      const d = requireData();
+      if (topicId === undefined || topicId === null || topicId === '') {
+        return d.topics[0];
+      }
+      const topic = d.topics.find((t) => t.id === topicId);
+      if (!topic) {
+        throw new GameRuleError(
+          `Unbekanntes Thema. Verfügbar: ${d.topics.map((t) => t.id).join(', ')}`
+        );
+      }
+      return topic;
+    }
+
     function attach(room: Room, idx: PlayerIndex): void {
       ctx.room = room;
       ctx.playerIndex = idx;
@@ -183,10 +208,12 @@ export function startServer(port: number): Promise<RunningServer> {
       switch (msg.type) {
         case 'create': {
           const faction = validFaction(msg.faction);
+          const topic = validTopic(msg.topic);
           const room: Room = {
             code: newRoomCode(),
             players: [{ token: randomBytes(12).toString('hex'), faction, socket: null }],
-            state: null
+            state: null,
+            topic
           };
           rooms.set(room.code, room);
           attach(room, 0);
@@ -195,6 +222,7 @@ export function startServer(port: number): Promise<RunningServer> {
             code: room.code,
             token: room.players[0].token,
             playerIndex: 0,
+            topic,
             factions: requireData().factions
           });
           break;
@@ -219,7 +247,8 @@ export function startServer(port: number): Promise<RunningServer> {
             type: 'joined',
             code: room.code,
             token: room.players[1].token,
-            playerIndex: 1
+            playerIndex: 1,
+            topic: room.topic
           });
           // Beide Spieler da → Partie starten
           room.state = createGame(requireData(), [room.players[0].faction, faction]);
@@ -236,11 +265,12 @@ export function startServer(port: number): Promise<RunningServer> {
           // Alte Verbindung (falls noch offen) ersetzen
           room.players[idx].socket?.close();
           attach(room, idx as PlayerIndex);
-          send(socket, { type: 'rejoined', code: room.code, playerIndex: idx });
+          send(socket, { type: 'rejoined', code: room.code, playerIndex: idx, topic: room.topic });
           notifyOpponentConnection(room, idx as PlayerIndex);
           if (room.state) {
             send(socket, {
               type: 'state',
+              topic: room.topic,
               view: buildClientView(room.state, idx as PlayerIndex, requireData())
             });
             send(socket, {

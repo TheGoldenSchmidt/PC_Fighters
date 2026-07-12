@@ -1,7 +1,7 @@
-// Lädt config.json, factions.json und ALLE Kartendateien aus /data/cards
-// automatisch (eine neue Fraktion braucht nur eine neue Datei + Eintrag in
-// factions.json). Wird nur in Node (Server, Tests) benutzt – der Client
-// bekommt alles über das Netzwerk.
+// Lädt config.json, factions.json, topics.json und ALLE Kartendateien aus
+// /data/cards automatisch (eine neue Fraktion braucht nur eine neue Datei +
+// Eintrag in factions.json). Wird nur in Node (Server, Tests) benutzt –
+// der Client bekommt alles über das Netzwerk.
 
 import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -31,6 +31,7 @@ function readJson(file: string, path: string): unknown {
 export function loadGameData(dataDir: string = DATA_DIR): GameData {
   const config = readJson('config.json', join(dataDir, 'config.json'));
   const factions = readJson('factions.json', join(dataDir, 'factions.json'));
+  const topics = readJson('topics.json', join(dataDir, 'topics.json'));
 
   const cardsDir = join(dataDir, 'cards');
   const files = readdirSync(cardsDir).filter((f) => f.endsWith('.json'));
@@ -39,7 +40,7 @@ export function loadGameData(dataDir: string = DATA_DIR): GameData {
     content: readJson(`cards/${file}`, join(cardsDir, file))
   }));
 
-  const validated = validateGameData({ config, factions, cardFiles });
+  const validated = validateGameData({ config, factions, topics, cardFiles });
   return {
     ...validated,
     cardsById: Object.fromEntries(validated.cards.map((c) => [c.id, c]))

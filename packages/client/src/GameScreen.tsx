@@ -1,13 +1,26 @@
 // Spielfeld: gegnerische Basis oben, eigene unten, Lanes dazwischen
 // (dynamisch aus der Config – auch 4+ Lanes funktionieren), Handkarten
 // als scrollbare Leiste. Bedienung über große Tap-Flächen statt Drag & Drop.
+//
+// Optik: Der vom Raum-Ersteller gewählte Schauplatz (Topic) färbt Hintergrund
+// und Lanes über CSS-Variablen ein. Animationen: Kreaturen "ploppen" beim
+// Ausspielen aufs Feld (Mount-Animation über den uid-Key) und machen beim
+// Angriff einen Ausfallschritt – gesteuert über die Kampf-Events im Log.
 
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
-import type { CardDef, ClientView, CreatureView, PlayerAction } from '@pcf/engine';
+import type {
+  CardDef,
+  ClientView,
+  CreatureView,
+  PlayerAction,
+  PlayerIndex,
+  Topic
+} from '@pcf/engine';
 import type { ConnectionStatus } from './useGame';
 
 interface Props {
   view: ClientView;
+  topic: Topic | null;
   status: ConnectionStatus;
   opponentConnected: boolean;
   onAction: (action: PlayerAction) => void;
@@ -20,9 +33,24 @@ type Selection =
   | { kind: 'fly'; fromLane: number }
   | null;
 
-export function GameScreen({ view, status, opponentConnected, onAction, onLeave }: Props) {
+/** Ein gerade laufender Angriffs-Effekt (Ausfallschritt + Schadenszahl). */
+interface HitFx {
+  key: string;
+  lane: number;
+  attacker: PlayerIndex;
+  damage: number;
+  toBase: boolean;
+}
+
+const FX_STAGGER_MS = 500; // Abstand zwischen zwei Angriffs-Animationen
+const FX_DURATION_MS = 650; // Dauer eines einzelnen Effekts
+
+export function GameScreen({ view, topic, status, opponentConnected, onAction, onLeave }: Props) {
   const [selection, setSelection] = useState<Selection>(null);
+  const [fx, setFx] = useState<HitFx[]>([]);
   const logRef = useRef<HTMLDivElement>(null);
+  const lastLogId = useRef<number | null>(null);
+  const fxTimers = useRef<number[]>([]);
 
   const me = view.you;
   const opp = me === 0 ? 1 : 0;
@@ -36,6 +64,40 @@ export function GameScreen({ view, status, opponentConnected, onAction, onLeave 
   useEffect(() => {
     logRef.current?.scrollTo({ top: logRef.current.scrollHeight });
   }, [view.log.length]);
+
+  // Neue Kampf-Events aus dem Log ziehen und nacheinander abspielen.
+  useEffect(() => {
+    const maxId = view.log.length > 0 ? view.log[view.log.length - 1].id : -1;
+    if (lastLogId.current === null) {
+      // Erster Zustand (auch nach Reconnect): alte Einträge nicht nachspielen.
+      lastLogId.current = maxId;
+      return;
+    }
+    const fresh = view.log.filter((e) => e.id > lastLogId.current! && e.event?.kind === 'attack');
+    lastLogId.current = maxId;
+
+    fresh.forEach((entry, i) => {
+      const ev = entry.event!;
+      const item: HitFx = {
+        key: `fx-${entry.id}`,
+        lane: ev.lane,
+        attacker: ev.attacker,
+        damage: ev.damage,
+        toBase: ev.toBase
+      };
+      const start = window.setTimeout(() => {
+        setFx((f) => [...f, item]);
+        const stop = window.setTimeout(
+          () => setFx((f) => f.filter((x) => x.key !== item.key)),
+          FX_DURATION_MS
+        );
+        fxTimers.current.push(stop);
+      }, i * FX_STAGGER_MS);
+      fxTimers.current.push(start);
+    });
+  }, [view.log]);
+
+  useEffect(() => () => fxTimers.current.forEach((t) => window.clearTimeout(t)), []);
 
   const selectedCard: CardDef | null =
     selection && (selection.kind === 'hand' || selection.kind === 'move')
@@ -134,11 +196,33 @@ export function GameScreen({ view, status, opponentConnected, onAction, onLeave 
             : 'Du bist am Zug'
           : 'Gegner ist am Zug …';
 
+  // ---- Animations-Helfer ----
+  const isAttacking = (side: PlayerIndex, lane: number) =>
+    fx.some((f) => f.attacker === side && f.lane === lane);
+  /** Schadenszahl, die gerade über der Kreatur von `side` in `lane` schwebt. */
+  const incomingDamage = (side: PlayerIndex, lane: number) =>
+    fx.find((f) => !f.toBase && f.lane === lane && f.attacker !== side);
+  /** Basis von `side` wird gerade getroffen? */
+  const baseHit = (side: PlayerIndex) => fx.find((f) => f.toBase && f.attacker !== side);
+
+  const themeVars = (
+    topic
+      ? {
+          '--lane-bg': topic.colors.lane,
+          '--lane-border': topic.colors.laneBorder,
+          '--theme-accent': topic.colors.accent
+        }
+      : {}
+  ) as CSSProperties;
+
   return (
-    <div className="screen game-screen">
+    <div className="screen game-screen" style={themeVars}>
       {/* ---- Kopfzeile: Gegner ---- */}
       <header className="player-bar opponent-bar">
-        <div className="base-chip">🏰 {Math.max(0, view.players[opp].base)}</div>
+        <div className={`base-chip ${baseHit(opp) ? 'hit' : ''}`}>
+          🏰 {Math.max(0, view.players[opp].base)}
+          {baseHit(opp) && <span className="dmg-float">-{baseHit(opp)!.damage}</span>}
+        </div>
         <div className="hand-backs" aria-label={`Gegner hat ${view.players[opp].handCount} Handkarten`}>
           {Array.from({ length: Math.min(view.players[opp].handCount, 10) }, (_, i) => (
             <span key={i} className="card-back" />
@@ -154,6 +238,11 @@ export function GameScreen({ view, status, opponentConnected, onAction, onLeave 
 
       <div className="round-bar">
         <span>
+          {topic && (
+            <span className="topic-badge" title={`Schauplatz: ${topic.name}`}>
+              {topic.emoji}{' '}
+            </span>
+          )}
           Runde {view.round}/{view.roundLimit}
         </span>
         <span className={`turn-indicator ${myTurn ? 'my-turn' : ''}`}>{statusText}</span>
@@ -168,10 +257,19 @@ export function GameScreen({ view, status, opponentConnected, onAction, onLeave 
           const targetable = myTurn && targets.lanes.has(lane);
           const flySource = selection?.kind === 'fly' && selection.fromLane === lane;
           const moveSource = selection?.kind === 'move' && selection.fromLane === lane;
+          const enemyCreature = view.board[opp][lane];
+          const ownCreature = myBoard[lane];
+          const enemyDmg = incomingDamage(opp, lane);
+          const ownDmg = incomingDamage(me, lane);
           return (
             <div className="lane" key={lane}>
               <div className="slot enemy-slot">
-                <CreatureTile creature={view.board[opp][lane]} />
+                <CreatureTile
+                  key={enemyCreature?.uid ?? 'leer'}
+                  creature={enemyCreature}
+                  attacking={isAttacking(opp, lane)}
+                />
+                {enemyDmg && <span className="dmg-float">-{enemyDmg.damage}</span>}
               </div>
               <div className="lane-label">Lane {lane + 1}</div>
               <button
@@ -182,7 +280,13 @@ export function GameScreen({ view, status, opponentConnected, onAction, onLeave 
                 }
                 onClick={() => tapOwnLane(lane)}
               >
-                <CreatureTile creature={myBoard[lane]} own />
+                <CreatureTile
+                  key={ownCreature?.uid ?? 'leer'}
+                  creature={ownCreature}
+                  own
+                  attacking={isAttacking(me, lane)}
+                />
+                {ownDmg && <span className="dmg-float">-{ownDmg.damage}</span>}
               </button>
             </div>
           );
@@ -191,8 +295,8 @@ export function GameScreen({ view, status, opponentConnected, onAction, onLeave 
 
       {/* ---- Kampf-Log ---- */}
       <div className="log" ref={logRef}>
-        {view.log.map((entry, i) => (
-          <div key={i} className="log-entry">
+        {view.log.map((entry) => (
+          <div key={entry.id} className="log-entry">
             {entry.text}
           </div>
         ))}
@@ -201,7 +305,10 @@ export function GameScreen({ view, status, opponentConnected, onAction, onLeave 
       {/* ---- Fußzeile: eigene Werte, Buttons, Hand ---- */}
       <footer className="own-area">
         <div className="player-bar own-bar">
-          <div className="base-chip">🏰 {Math.max(0, view.players[me].base)}</div>
+          <div className={`base-chip ${baseHit(me) ? 'hit' : ''}`}>
+            🏰 {Math.max(0, view.players[me].base)}
+            {baseHit(me) && <span className="dmg-float">-{baseHit(me)!.damage}</span>}
+          </div>
           <div className="energy-chip">
             ⚡ {energy}/{view.energyCap}
           </div>
@@ -269,7 +376,15 @@ export function GameScreen({ view, status, opponentConnected, onAction, onLeave 
   );
 }
 
-function CreatureTile({ creature, own }: { creature: CreatureView | null; own?: boolean }) {
+function CreatureTile({
+  creature,
+  own,
+  attacking
+}: {
+  creature: CreatureView | null;
+  own?: boolean;
+  attacking?: boolean;
+}) {
   if (!creature) return <span className="empty-slot">frei</span>;
   const attackBuffed = creature.attack > creature.baseAttack;
   const attackReduced = creature.attack < creature.baseAttack;
@@ -281,7 +396,8 @@ function CreatureTile({ creature, own }: { creature: CreatureView | null; own?: 
         'creature' +
         (creature.exhausted ? ' exhausted' : '') +
         (own ? ' own' : ' enemy') +
-        (creature.canFly ? ' can-fly' : '')
+        (creature.canFly ? ' can-fly' : '') +
+        (attacking ? ' attacking' : '')
       }
     >
       <div className="creature-name">

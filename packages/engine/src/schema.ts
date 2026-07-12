@@ -4,7 +4,7 @@
 
 import { z } from 'zod';
 import { KEYWORDS } from './keywords.js';
-import type { CardDef, Faction, GameConfig } from './types.js';
+import type { CardDef, Faction, GameConfig, Topic } from './types.js';
 
 export const configSchema = z.object({
   lanes: z.number().int().min(1).max(6),
@@ -25,6 +25,20 @@ export const factionSchema = z.object({
 });
 
 export const factionsSchema = z.array(factionSchema);
+
+export const topicSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  emoji: z.string().min(1),
+  colors: z.object({
+    background: z.string().min(1),
+    lane: z.string().min(1),
+    laneBorder: z.string().min(1),
+    accent: z.string().min(1)
+  })
+});
+
+export const topicsSchema = z.array(topicSchema).min(1, 'mindestens ein Thema wird benötigt');
 
 const keywordSchema = z.string().refine((k) => k in KEYWORDS, {
   message: `unbekanntes Keyword – erlaubt sind: ${Object.keys(KEYWORDS).join(', ')}`
@@ -152,8 +166,9 @@ function translateType(t: string): string {
 export function validateGameData(raw: {
   config: unknown;
   factions: unknown;
+  topics: unknown;
   cardFiles: { file: string; content: unknown }[];
-}): { config: GameConfig; factions: Faction[]; cards: CardDef[] } {
+}): { config: GameConfig; factions: Faction[]; topics: Topic[]; cards: CardDef[] } {
   const configResult = configSchema.safeParse(raw.config);
   if (!configResult.success) {
     throw new DataError('config.json', describeZodError(configResult.error));
@@ -164,6 +179,11 @@ export function validateGameData(raw: {
     throw new DataError('factions.json', describeZodError(factionsResult.error));
   }
   const factionIds = new Set(factionsResult.data.map((f) => f.id));
+
+  const topicsResult = topicsSchema.safeParse(raw.topics);
+  if (!topicsResult.success) {
+    throw new DataError('topics.json', describeZodError(topicsResult.error));
+  }
 
   const cards: CardDef[] = [];
   const seenIds = new Map<string, string>();
@@ -197,5 +217,10 @@ export function validateGameData(raw: {
     cards.push(...(parsed.data as CardDef[]));
   }
 
-  return { config: configResult.data, factions: factionsResult.data, cards };
+  return {
+    config: configResult.data,
+    factions: factionsResult.data,
+    topics: topicsResult.data,
+    cards
+  };
 }

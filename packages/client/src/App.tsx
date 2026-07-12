@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { GameScreen } from './GameScreen';
 import { LobbyScreen } from './LobbyScreen';
 import { StartScreen } from './StartScreen';
@@ -5,6 +6,14 @@ import { useGame } from './useGame';
 
 export function App() {
   const { state, createGame, joinGame, sendAction, leaveGame } = useGame();
+
+  // Schauplatz-Hintergrund auf die ganze Seite anwenden (Lobby + Spiel).
+  useEffect(() => {
+    document.body.style.background = state.topic ? state.topic.colors.background : '';
+    return () => {
+      document.body.style.background = '';
+    };
+  }, [state.topic]);
 
   if (state.dataError) {
     return (
@@ -28,12 +37,14 @@ export function App() {
         <LobbyScreen
           roomCode={state.roomCode!}
           serverAddress={state.serverAddress ?? ''}
+          topic={state.topic}
           onCancel={leaveGame}
         />
       )}
       {state.screen === 'game' && state.view && (
         <GameScreen
           view={state.view}
+          topic={state.topic}
           status={state.status}
           opponentConnected={state.opponentConnected}
           onAction={sendAction}

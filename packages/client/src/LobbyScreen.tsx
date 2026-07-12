@@ -3,14 +3,16 @@
 
 import QRCode from 'qrcode';
 import { useEffect, useState } from 'react';
+import type { Topic } from '@pcf/engine';
 
 interface Props {
   roomCode: string;
   serverAddress: string;
+  topic: Topic | null;
   onCancel: () => void;
 }
 
-export function LobbyScreen({ roomCode, serverAddress, onCancel }: Props) {
+export function LobbyScreen({ roomCode, serverAddress, topic, onCancel }: Props) {
   const [qr, setQr] = useState<string | null>(null);
 
   const joinUrl =
@@ -28,6 +30,11 @@ export function LobbyScreen({ roomCode, serverAddress, onCancel }: Props) {
   return (
     <div className="screen lobby-screen">
       <h1>Warte auf Gegner …</h1>
+      {topic && (
+        <p className="topic-tag">
+          Schauplatz: {topic.emoji} <strong>{topic.name}</strong>
+        </p>
+      )}
       <p>Raum-Code für den zweiten Spieler:</p>
       <div className="room-code">{roomCode}</div>
       {qr && (

@@ -169,4 +169,34 @@ describe('Server: Raum, Beitritt, Aktionen, gefilterte Sicht', () => {
     expect(String(err.message)).toContain('Wiederverbinden');
     c.ws.close();
   });
+
+  it('Schauplatz: der Ersteller wählt das Thema, beide Clients bekommen es', async () => {
+    const c1 = await connect(server.port);
+    c1.send({ type: 'create', faction: 'humans', topic: 'mars' });
+    const created = await c1.next('created');
+    expect((created.topic as { id: string }).id).toBe('mars');
+
+    const c2 = await connect(server.port);
+    c2.send({ type: 'join', code: created.code, faction: 'animals' });
+    const joined = await c2.next('joined');
+    expect((joined.topic as { id: string }).id).toBe('mars');
+
+    const state1 = await c1.next('state');
+    const state2 = await c2.next('state');
+    expect((state1.topic as { id: string }).id).toBe('mars');
+    expect((state2.topic as { id: string }).id).toBe('mars');
+    // Das Thema kommt mit allen Anzeigedaten (Farben) beim Client an:
+    expect((state2.topic as { colors: { background: string } }).colors.background).toBeTruthy();
+
+    c1.ws.close();
+    c2.ws.close();
+  });
+
+  it('unbekanntes Thema wird abgelehnt', async () => {
+    const c = await connect(server.port);
+    c.send({ type: 'create', faction: 'humans', topic: 'unterwasser' });
+    const err = await c.next('error');
+    expect(String(err.message)).toContain('Thema');
+    c.ws.close();
+  });
 });

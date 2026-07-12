@@ -1,9 +1,9 @@
 // Startbildschirm: Fraktion wählen, dann Partie erstellen oder beitreten.
-// Die Fraktionsliste kommt vom Server (/info) – neue Fraktionen in den
-// Datendateien erscheinen hier automatisch.
+// Fraktions- und Themenliste kommen vom Server (/info) – neue Einträge in
+// den Datendateien erscheinen hier automatisch.
 
 import { useCallback, useEffect, useState, type CSSProperties } from 'react';
-import type { Faction } from '@pcf/engine';
+import type { Faction, Topic } from '@pcf/engine';
 import type { ConnectionStatus } from './useGame';
 
 const params = new URLSearchParams(window.location.search);
@@ -18,7 +18,7 @@ function infoUrl(serverInput: string): string {
 
 interface Props {
   status: ConnectionStatus;
-  onCreate: (server: string, faction: string) => void;
+  onCreate: (server: string, faction: string, topicId: string) => void;
   onJoin: (server: string, code: string, faction: string) => void;
 }
 
@@ -28,9 +28,11 @@ export function StartScreen({ status, onCreate, onJoin }: Props) {
   const [room, setRoom] = useState(defaultRoom);
   const [faction, setFaction] = useState<string | null>(null);
   const [factions, setFactions] = useState<Faction[] | null>(null);
+  const [topics, setTopics] = useState<Topic[]>([]);
+  const [topicId, setTopicId] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
 
-  const loadFactions = useCallback(async (serverInput: string) => {
+  const loadInfo = useCallback(async (serverInput: string) => {
     setLoadError(null);
     try {
       const res = await fetch(infoUrl(serverInput));
@@ -40,6 +42,9 @@ export function StartScreen({ status, onCreate, onJoin }: Props) {
         setFactions(null);
       } else {
         setFactions(json.factions as Faction[]);
+        const loadedTopics = (json.topics as Topic[]) ?? [];
+        setTopics(loadedTopics);
+        setTopicId((current) => current ?? loadedTopics[0]?.id ?? null);
       }
     } catch {
       setFactions(null);
@@ -50,7 +55,7 @@ export function StartScreen({ status, onCreate, onJoin }: Props) {
   }, []);
 
   useEffect(() => {
-    loadFactions(server);
+    loadInfo(server);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -72,12 +77,12 @@ export function StartScreen({ status, onCreate, onJoin }: Props) {
             type="text"
             value={server}
             onChange={(e) => setServer(e.target.value)}
-            onBlur={() => loadFactions(server)}
+            onBlur={() => loadInfo(server)}
             placeholder="z. B. 192.168.1.23:3000"
             autoCapitalize="off"
             autoCorrect="off"
           />
-          <button className="secondary" onClick={() => loadFactions(server)}>
+          <button className="secondary" onClick={() => loadInfo(server)}>
             Prüfen
           </button>
         </div>
@@ -119,9 +124,33 @@ export function StartScreen({ status, onCreate, onJoin }: Props) {
         </div>
 
         {mode === 'create' ? (
-          <button className="primary big" disabled={!ready} onClick={() => onCreate(server, faction!)}>
-            {busy ? 'Verbinde …' : 'Partie erstellen'}
-          </button>
+          <>
+            {topics.length > 0 && (
+              <>
+                <h2>Schauplatz wählen</h2>
+                <div className="topic-grid">
+                  {topics.map((t) => (
+                    <button
+                      key={t.id}
+                      className={`topic-card ${topicId === t.id ? 'selected' : ''}`}
+                      style={{ '--topic-accent': t.colors.accent } as CSSProperties}
+                      onClick={() => setTopicId(t.id)}
+                    >
+                      <span className="topic-emoji">{t.emoji}</span>
+                      <span className="topic-name">{t.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+            <button
+              className="primary big"
+              disabled={!ready || topicId === null}
+              onClick={() => onCreate(server, faction!, topicId!)}
+            >
+              {busy ? 'Verbinde …' : 'Partie erstellen'}
+            </button>
+          </>
         ) : (
           <>
             <label htmlFor="room">Raum-Code</label>
@@ -141,6 +170,7 @@ export function StartScreen({ status, onCreate, onJoin }: Props) {
             >
               {busy ? 'Verbinde …' : 'Beitreten'}
             </button>
+            <p className="hint">Den Schauplatz wählt der Spieler, der die Partie erstellt.</p>
           </>
         )}
         {faction === null && factions && <p className="hint">Bitte zuerst eine Fraktion wählen.</p>}
