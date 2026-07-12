@@ -11,6 +11,8 @@ interface TestClient {
   ws: WebSocket;
   /** Alle jemals empfangenen Nachrichten (Roh-Protokoll für die Sicht-Prüfung). */
   received: { type: string; [k: string]: unknown }[];
+  /** Zuletzt empfangene Spielsicht (unabhängig von next()-Konsumenten). */
+  lastView: ClientView | null;
   /** Wartet auf die nächste noch nicht abgeholte Nachricht dieses Typs. */
   next: (type: string) => Promise<Record<string, unknown>>;
   send: (msg: unknown) => void;
@@ -23,25 +25,27 @@ function connect(port: number): Promise<TestClient> {
     const unread: Record<string, unknown>[] = [];
     const waiters: { type: string; resolve: (m: Record<string, unknown>) => void }[] = [];
 
+    const client: TestClient = {
+      ws,
+      received,
+      lastView: null,
+      send: (msg) => ws.send(JSON.stringify(msg)),
+      next: (type) => {
+        const i = unread.findIndex((m) => m.type === type);
+        if (i !== -1) return Promise.resolve(unread.splice(i, 1)[0]);
+        return new Promise((res) => waiters.push({ type, resolve: res }));
+      }
+    };
+
     ws.on('message', (raw) => {
       const msg = JSON.parse(String(raw));
       received.push(msg);
+      if (msg.type === 'state') client.lastView = msg.view as ClientView;
       const i = waiters.findIndex((w) => w.type === msg.type);
       if (i !== -1) waiters.splice(i, 1)[0].resolve(msg);
       else unread.push(msg);
     });
-    ws.on('open', () =>
-      resolve({
-        ws,
-        received,
-        send: (msg) => ws.send(JSON.stringify(msg)),
-        next: (type) => {
-          const i = unread.findIndex((m) => m.type === type);
-          if (i !== -1) return Promise.resolve(unread.splice(i, 1)[0]);
-          return new Promise((res) => waiters.push({ type, resolve: res }));
-        }
-      })
-    );
+    ws.on('open', () => resolve(client));
     ws.on('error', reject);
   });
 }
@@ -97,22 +101,20 @@ describe('Server: Raum, Beitritt, Aktionen, gefilterte Sicht', () => {
   });
 
   it('nur der aktive Spieler darf handeln; beide erhalten den neuen Zustand', async () => {
-    // Wer anfängt, ist zufällig – wir versuchen es mit A:
-    a.send({ type: 'action', action: { type: 'pass' } });
-    const first = await Promise.race([a.next('state'), a.next('error')]);
+    // Wer anfängt, ist zufällig – aus der zuletzt empfangenen Sicht ablesen.
+    const active = a.lastView!.active;
+    const activeClient = active === 0 ? a : b;
+    const inactiveClient = active === 0 ? b : a;
 
-    let stateA: ClientView;
-    let stateB: ClientView;
-    if (first.type === 'error') {
-      // A war nicht dran → Zugsperre funktioniert; jetzt passt B.
-      expect(String(first.message)).toContain('nicht am Zug');
-      b.send({ type: 'action', action: { type: 'pass' } });
-      stateA = (await a.next('state')).view as ClientView;
-      stateB = (await b.next('state')).view as ClientView;
-    } else {
-      stateA = first.view as ClientView;
-      stateB = (await b.next('state')).view as ClientView;
-    }
+    // Der nicht-aktive Spieler versucht zu handeln → Zugsperre greift.
+    inactiveClient.send({ type: 'action', action: { type: 'pass' } });
+    const err = await inactiveClient.next('error');
+    expect(String(err.message)).toContain('nicht am Zug');
+
+    // Der aktive Spieler passt → beide Clients erhalten den neuen Zustand.
+    activeClient.send({ type: 'action', action: { type: 'pass' } });
+    const stateA = (await a.next('state')).view as ClientView;
+    const stateB = (await b.next('state')).view as ClientView;
     expect(stateA.log.some((l) => l.text.includes('passt'))).toBe(true);
     expect(stateB.log.some((l) => l.text.includes('passt'))).toBe(true);
   });

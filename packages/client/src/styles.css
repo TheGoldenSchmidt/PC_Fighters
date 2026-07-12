@@ -622,22 +622,16 @@ input:focus {
   letter-spacing: 0.05em;
 }
 
-/* Creature Tile on Board */
-.creature {
+/* Kreatur-Figur auf dem Feld: Artwork im Rahmen, ATK/HP-Badges an den
+   unteren Ecken, Namensschild (Plaque) darunter. */
+.creature-figure {
   width: 100%;
   height: 100%;
-  border-radius: 12px;
-  padding: 6px;
-  text-align: center;
-  background: rgba(15, 20, 35, 0.9);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-top: 3px solid var(--accent-2);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  position: relative;
-  overflow: hidden;
+  align-items: center;
+  gap: 3px;
+  min-height: 0;
   animation: play-in 0.45s cubic-bezier(0.18, 0.89, 0.32, 1.28);
 }
 
@@ -646,97 +640,145 @@ input:focus {
   100% { transform: scale(1) translateY(0); opacity: 1; }
 }
 
-.creature.enemy {
-  border-top-color: var(--danger);
-}
-
-.creature.exhausted {
-  opacity: 0.55;
-  filter: grayscale(0.5);
-  background: rgba(10, 12, 20, 0.8);
-}
-
-.creature.can-fly {
-  border-top-color: var(--gold);
-}
-
-.creature-header {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 4px;
-}
-
-.creature-portrait {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 1px solid rgba(255,255,255,0.2);
-  flex-shrink: 0;
-}
-
-.creature-portrait-fallback {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.1);
+.figure-frame {
+  position: relative;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(15, 20, 35, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-top: 3px solid var(--accent-2);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.75rem;
+}
+
+.creature-figure.enemy .figure-frame {
+  border-top-color: var(--danger);
+}
+
+.creature-figure.can-fly .figure-frame {
+  border-top-color: var(--gold);
+}
+
+.figure-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+.figure-image-fallback {
+  font-size: 1.7rem;
+  opacity: 0.85;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
+}
+
+.figure-stat {
+  position: absolute;
+  bottom: 3px;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 5px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 0.82rem;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.55);
+  z-index: 2;
+}
+
+.figure-stat.stat-atk {
+  left: 3px;
+  background: linear-gradient(180deg, #b45309, #7c2d12);
+}
+
+.figure-stat.stat-hp {
+  right: 3px;
+  background: linear-gradient(180deg, #b91c1c, #7f1d1d);
+}
+
+.figure-stat.buffed {
+  color: #6ee7b7;
+  box-shadow: 0 0 8px rgba(52, 211, 153, 0.5);
+}
+
+.figure-stat.damaged {
+  color: #fecaca;
+  box-shadow: 0 0 8px rgba(248, 113, 113, 0.6);
+}
+
+.figure-stat.reduced {
+  color: #fca5a5;
+}
+
+.figure-plaque {
+  max-width: 100%;
+  padding: 1px 8px;
+  border-radius: 6px;
+  background: linear-gradient(180deg, rgba(30, 38, 60, 0.95), rgba(15, 20, 35, 0.95));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-family: var(--font-title);
+  font-weight: 700;
+  font-size: 0.68rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   flex-shrink: 0;
 }
 
-.creature-name {
-  font-size: 0.75rem;
-  font-weight: 700;
-  font-family: var(--font-title);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  text-align: left;
-  flex: 1;
-}
-
-.creature-stats {
-  display: flex;
-  justify-content: space-around;
-  background: rgba(0,0,0,0.3);
-  border-radius: 6px;
-  padding: 3px 2px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  margin: 4px 0;
-}
-
-.creature-stats .stat {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-}
-
-.stat.buffed { color: #34d399; }
-.stat.damaged { color: #f87171; }
-.stat.reduced { color: #f87171; }
-
-.creature-keywords {
-  color: var(--muted);
-  font-size: 0.62rem;
+.figure-keywords {
+  max-width: 100%;
+  color: var(--theme-accent, var(--muted));
+  opacity: 0.9;
+  font-size: 0.58rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.03em;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
-.exhausted-label {
-  font-size: 0.6rem;
-  text-transform: uppercase;
-  font-weight: 700;
-  color: var(--muted);
-  letter-spacing: 0.05em;
+.creature-figure.exhausted {
+  opacity: 0.55;
+  filter: grayscale(0.6);
+}
+
+.creature-figure.exhausted .figure-frame {
+  transform: rotate(-3deg);
+}
+
+/* Angriff: eigene Figuren stoßen nach oben vor, gegnerische nach unten. */
+.creature-figure.own.attacking {
+  animation: lunge-up 0.55s ease-in-out;
+}
+
+.creature-figure.enemy.attacking {
+  animation: lunge-down 0.55s ease-in-out;
+}
+
+@keyframes lunge-up {
+  0%, 100% { transform: translateY(0); }
+  35% { transform: translateY(-16px) scale(1.08); }
+  65% { transform: translateY(4px); }
+}
+
+@keyframes lunge-down {
+  0%, 100% { transform: translateY(0); }
+  35% { transform: translateY(16px) scale(1.08); }
+  65% { transform: translateY(-4px); }
 }
 
 /* Floating damage numbers */
@@ -1124,7 +1166,7 @@ input:focus {
 
 /* Reduced Motion Override */
 @media (prefers-reduced-motion: reduce) {
-  *, .creature, .dmg-float, .base-chip.hit, .hand-card.playable:hover {
+  *, .creature-figure, .dmg-float, .base-chip.hit, .hand-card.playable:hover {
     animation: none !important;
     transform: none !important;
     transition: none !important;

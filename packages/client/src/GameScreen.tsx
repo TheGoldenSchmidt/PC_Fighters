@@ -7,7 +7,7 @@
 // Ausspielen aufs Feld (Mount-Animation über den uid-Key) und machen beim
 // Angriff einen Ausfallschritt – gesteuert über die Kampf-Events im Log.
 
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import type {
   CardDef,
   ClientView,
@@ -376,12 +376,32 @@ export function GameScreen({ view, topic, status, opponentConnected, onAction, o
   );
 }
 
-function getCardArtworkUrl(cardId: string): string {
-  const withArt = ['rekrut', 'schildwache', 'feldscherin'];
-  if (withArt.includes(cardId)) {
-    return `/assets/cards/${cardId}.png`;
-  }
-  return '';
+/**
+ * Karten-Artwork: Es wird immer /assets/cards/<id>.png versucht – existiert
+ * das Bild nicht, erscheint der Fallback. So braucht ein neues Artwork nur
+ * als PNG mit der Karten-id abgelegt zu werden, ohne Codeänderung.
+ */
+function CardArt({
+  cardId,
+  className,
+  alt,
+  fallback
+}: {
+  cardId: string;
+  className: string;
+  alt: string;
+  fallback: ReactNode;
+}) {
+  const [failed, setFailed] = useState(false);
+  if (failed) return <>{fallback}</>;
+  return (
+    <img
+      src={`/assets/cards/${cardId}.png`}
+      className={className}
+      alt={alt}
+      onError={() => setFailed(true)}
+    />
+  );
 }
 
 function CreatureTile({
@@ -398,44 +418,44 @@ function CreatureTile({
   const attackReduced = creature.attack < creature.baseAttack;
   const healthBuffed = creature.maxHealth > creature.baseMaxHealth;
   const damaged = creature.health < creature.maxHealth;
-  const artUrl = getCardArtworkUrl(creature.cardId);
 
   return (
     <div
       className={
-        'creature' +
+        'creature-figure' +
         (creature.exhausted ? ' exhausted' : '') +
         (own ? ' own' : ' enemy') +
         (creature.canFly ? ' can-fly' : '') +
-        (attacking ? ' attacking' : '')
+        (attacking ? ' attacking' : '') +
+        ` card-${creature.cardId}`
       }
     >
-      <div className="creature-header">
-        {artUrl ? (
-          <img src={artUrl} className="creature-portrait" alt={creature.name} />
-        ) : (
-          <div className="creature-portrait-fallback">
-            {creature.canFly ? '🕊️' : '⚔️'}
-          </div>
-        )}
-        <div className="creature-name" title={creature.name}>
-          {creature.name}
+      <div className="figure-frame">
+        <CardArt
+          cardId={creature.cardId}
+          className="figure-image"
+          alt={creature.name}
+          fallback={
+            <div className="figure-image-fallback">
+              {creature.cardId === 'ratte' ? '🐀' : creature.canFly ? '🕊️' : '⚔️'}
+            </div>
+          }
+        />
+        <div className={`figure-stat stat-atk ${attackBuffed ? 'buffed' : attackReduced ? 'reduced' : ''}`}>
+          {creature.attack}
+        </div>
+        <div className={`figure-stat stat-hp ${damaged ? 'damaged' : healthBuffed ? 'buffed' : ''}`}>
+          {creature.health}
         </div>
       </div>
-      <div className="creature-stats">
-        <span className={attackBuffed ? 'stat buffed' : attackReduced ? 'stat reduced' : 'stat'}>
-          ⚔ {creature.attack}
-        </span>
-        <span className={damaged ? 'stat damaged' : healthBuffed ? 'stat buffed' : 'stat'}>
-          ♥ {creature.health}/{creature.maxHealth}
-        </span>
+      <div className="figure-plaque" title={creature.name}>
+        {creature.name}
       </div>
       {creature.keywords.length > 0 && (
-        <div className="creature-keywords" title={creature.keywords.join(' · ')}>
-          {creature.keywords.join(' · ')}
+        <div className="figure-keywords" title={creature.keywords.join(' · ')}>
+          {creature.keywords[0]}
         </div>
       )}
-      {creature.exhausted && <div className="exhausted-label">erschöpft</div>}
     </div>
   );
 }
@@ -451,8 +471,6 @@ function HandCard({
   playable: boolean;
   onTap: () => void;
 }) {
-  const artUrl = getCardArtworkUrl(card.id);
-
   return (
     <button
       className={
@@ -473,13 +491,16 @@ function HandCard({
       </div>
 
       <div className="hand-card-art-container">
-        {artUrl ? (
-          <img src={artUrl} className="hand-card-art" alt={card.name} />
-        ) : (
-          <div className={`hand-card-art-fallback theme-${card.faction}`}>
-            <span className="fallback-symbol">{card.type === 'creature' ? '🛡️' : '⚡'}</span>
-          </div>
-        )}
+        <CardArt
+          cardId={card.id}
+          className="hand-card-art"
+          alt={card.name}
+          fallback={
+            <div className={`hand-card-art-fallback theme-${card.faction}`}>
+              <span className="fallback-symbol">{card.type === 'creature' ? '🛡️' : '⚡'}</span>
+            </div>
+          }
+        />
       </div>
 
       {card.type === 'creature' ? (
