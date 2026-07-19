@@ -7,8 +7,21 @@
 // Zustand weiter an ("shownView") und spielt die Events Lane für Lane ab:
 // Projektil fliegt → Schaden erscheint → Sterbeanimation → nächste Lane.
 // Erst danach wird auf den neuen Serverzustand umgeschaltet.
+//
+// Lebendigkeit: Figuren haben Idle-Animationen (CSS), laufen bei
+// Lane-Wechseln sichtbar hinüber (uid-Diff → lane-move-Animation), und
+// Phasen-Banner kündigen Runde/Kampf/Zug an. Langes Drücken auf Karten
+// oder Figuren öffnet eine Detailansicht mit Keyword-Erklärungen.
 
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type MouseEvent as ReactMouseEvent,
+  type ReactNode
+} from 'react';
 import type {
   AttackEvent,
   CardDef,
@@ -20,11 +33,12 @@ import type {
   PlayerIndex,
   Topic
 } from '@pcf/engine';
-import type { ConnectionStatus } from './useGame';
+import type { ConnectionStatus, KeywordInfo } from './useGame';
 
 interface Props {
   view: ClientView;
   topic: Topic | null;
+  keywordInfo: KeywordInfo | null;
   status: ConnectionStatus;
   opponentConnected: boolean;
   onAction: (action: PlayerAction) => void;
@@ -74,17 +88,75 @@ const EMPTY_FX: FxState = {
   activeLane: null
 };
 
+/** Daten für die Detailansicht (Handkarte oder Figur auf dem Feld). */
+interface DetailData {
+  cardId: string;
+  name: string;
+  cost?: number;
+  attack?: number;
+  health?: number;
+  maxHealth?: number;
+  keywords: string[];
+  text?: string;
+  signature?: boolean;
+}
+
 // Timing der Kampf-Abspielung (Millisekunden)
 const PROJECTILE_MS = 500;
 const IMPACT_MS = 650;
 const DEATH_MS = 600;
 const LANE_PAUSE_MS = 200;
+const BANNER_MS = 1500;
+const LONG_PRESS_MS = 450;
 
-export function GameScreen({ view, topic, status, opponentConnected, onAction, onLeave }: Props) {
+/** Langes Drücken (Touch oder Maus) erkennen, ohne den normalen Tap zu stören. */
+function useLongPress(onLongPress: (() => void) | undefined, ms = LONG_PRESS_MS) {
+  const timer = useRef<number | null>(null);
+  const fired = useRef(false);
+  const clear = () => {
+    if (timer.current) {
+      window.clearTimeout(timer.current);
+      timer.current = null;
+    }
+  };
+  return {
+    fired,
+    handlers: {
+      onPointerDown: () => {
+        if (!onLongPress) return;
+        fired.current = false;
+        clear();
+        timer.current = window.setTimeout(() => {
+          fired.current = true;
+          onLongPress();
+        }, ms);
+      },
+      onPointerUp: clear,
+      onPointerLeave: clear,
+      onPointerCancel: clear,
+      onContextMenu: (e: ReactMouseEvent) => {
+        if (onLongPress) e.preventDefault();
+      }
+    }
+  };
+}
+
+export function GameScreen({
+  view,
+  topic,
+  keywordInfo,
+  status,
+  opponentConnected,
+  onAction,
+  onLeave
+}: Props) {
   const [selection, setSelection] = useState<Selection>(null);
   const [shownView, setShownViewState] = useState<ClientView>(view);
   const [isReplaying, setIsReplaying] = useState(false);
   const [fx, setFx] = useState<FxState>(EMPTY_FX);
+  const [moveFx, setMoveFx] = useState<Record<number, number>>({});
+  const [banner, setBanner] = useState<{ key: number; text: string } | null>(null);
+  const [detail, setDetail] = useState<DetailData | null>(null);
   const logRef = useRef<HTMLDivElement>(null);
 
   const shownViewRef = useRef(view);
@@ -93,8 +165,40 @@ export function GameScreen({ view, topic, status, opponentConnected, onAction, o
   const runningRef = useRef(false);
   const cancelledRef = useRef(false);
   const lastLogId = useRef<number | null>(null);
+  const moveTimer = useRef<number | null>(null);
+  const bannerTimer = useRef<number | null>(null);
 
+  /** Zeigt kurz ein großes Phasen-Banner in der Bildschirmmitte. */
+  const showBanner = (text: string) => {
+    setBanner({ key: Date.now(), text });
+    if (bannerTimer.current) window.clearTimeout(bannerTimer.current);
+    bannerTimer.current = window.setTimeout(() => setBanner(null), BANNER_MS);
+  };
+
+  /**
+   * Neue Sicht anzeigen. Vergleicht vorher die Lanes: Kreaturen, die die
+   * Lane gewechselt haben (fliegend, Hetzjagd), bekommen eine sichtbare
+   * Lauf-Animation statt einfach an der neuen Position aufzutauchen.
+   */
   const setShown = (v: ClientView) => {
+    const prev = shownViewRef.current;
+    const moved: Record<number, number> = {};
+    for (const side of [0, 1] as PlayerIndex[]) {
+      const prevLane = new Map<number, number>();
+      prev.board[side].forEach((c, i) => {
+        if (c) prevLane.set(c.uid, i);
+      });
+      v.board[side].forEach((c, i) => {
+        if (!c) return;
+        const from = prevLane.get(c.uid);
+        if (from !== undefined && from !== i) moved[c.uid] = from - i;
+      });
+    }
+    if (Object.keys(moved).length > 0) {
+      setMoveFx(moved);
+      if (moveTimer.current) window.clearTimeout(moveTimer.current);
+      moveTimer.current = window.setTimeout(() => setMoveFx({}), 600);
+    }
     shownViewRef.current = v;
     setShownViewState(v);
   };
@@ -104,6 +208,8 @@ export function GameScreen({ view, topic, status, opponentConnected, onAction, o
   const myTurn = shownView.active === me && shownView.winner === null && !isReplaying;
   const myBoard = shownView.board[me];
   const energy = shownView.players[me].energy;
+  const canPlaySomething =
+    myTurn && shownView.phase === 'play' && shownView.hand.some((c) => c.cost <= energy);
 
   // Auswahl zurücksetzen, wenn sich die angezeigte Lage ändert
   useEffect(() => setSelection(null), [shownView]);
@@ -111,6 +217,35 @@ export function GameScreen({ view, topic, status, opponentConnected, onAction, o
   useEffect(() => {
     logRef.current?.scrollTo({ top: logRef.current.scrollHeight });
   }, [shownView.log.length]);
+
+  // Phasen-Banner: Rundenwechsel, Flug-Phase, eigener Zug.
+  const prevMeta = useRef<{ round: number; phase: string; myTurn: boolean; init: boolean }>({
+    round: view.round,
+    phase: view.phase,
+    myTurn: false,
+    init: false
+  });
+  useEffect(() => {
+    const m = prevMeta.current;
+    if (!m.init) {
+      m.init = true;
+    } else if (shownView.round !== m.round) {
+      showBanner(`Runde ${shownView.round}`);
+    } else if (shownView.phase === 'fly' && m.phase !== 'fly') {
+      showBanner('🕊 Flug-Phase');
+    } else if (myTurn && !m.myTurn && shownView.phase === 'play' && shownView.round > 1) {
+      showBanner('Du bist am Zug!');
+    }
+    m.round = shownView.round;
+    m.phase = shownView.phase;
+    m.myTurn = myTurn;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shownView, myTurn]);
+
+  useEffect(() => {
+    if (isReplaying) showBanner('⚔️ Kampf!');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isReplaying]);
 
   // Neue Kampf-Events sammeln und die Abspielung starten.
   useEffect(() => {
@@ -308,6 +443,31 @@ export function GameScreen({ view, topic, status, opponentConnected, onAction, o
     );
   }
 
+  function openCreatureDetail(c: CreatureView) {
+    setDetail({
+      cardId: c.cardId,
+      name: c.name,
+      attack: c.attack,
+      health: c.health,
+      maxHealth: c.maxHealth,
+      keywords: c.keywords,
+      text: c.text
+    });
+  }
+
+  function openCardDetail(card: CardDef) {
+    setDetail({
+      cardId: card.id,
+      name: card.name,
+      cost: card.cost,
+      attack: card.type === 'creature' ? card.attack : undefined,
+      health: card.type === 'creature' ? card.health : undefined,
+      keywords: card.type === 'creature' ? card.keywords : [],
+      text: card.text,
+      signature: card.signature
+    });
+  }
+
   const showSummonConfirm =
     selection?.kind === 'hand' && selectedCard?.type === 'action' &&
     selectedCard.effect.kind === 'summon';
@@ -346,6 +506,19 @@ export function GameScreen({ view, topic, status, opponentConnected, onAction, o
         }
       : {}
   ) as CSSProperties;
+
+  // Konfetti fürs Sieges-Overlay (einmalig ausgewürfelt)
+  const confetti = useMemo(
+    () =>
+      Array.from({ length: 40 }, (_, i) => ({
+        left: Math.random() * 100,
+        delay: Math.random() * 2,
+        duration: 2.5 + Math.random() * 2,
+        color: ['#f59e0b', '#3b82f6', '#34d399', '#f87171', '#a78bfa'][i % 5],
+        size: 6 + Math.random() * 6
+      })),
+    []
+  );
 
   return (
     <div className="screen game-screen" style={themeVars}>
@@ -406,6 +579,8 @@ export function GameScreen({ view, topic, status, opponentConnected, onAction, o
                   creature={enemyCreature}
                   attacking={isAttacking(opp, lane)}
                   dying={isDying(opp, lane)}
+                  moveDelta={enemyCreature ? moveFx[enemyCreature.uid] : undefined}
+                  onDetail={openCreatureDetail}
                 />
                 {enemyDmg && <span className="dmg-float">-{enemyDmg.damage}</span>}
               </div>
@@ -424,6 +599,8 @@ export function GameScreen({ view, topic, status, opponentConnected, onAction, o
                   own
                   attacking={isAttacking(me, lane)}
                   dying={isDying(me, lane)}
+                  moveDelta={ownCreature ? moveFx[ownCreature.uid] : undefined}
+                  onDetail={openCreatureDetail}
                 />
                 {ownDmg && <span className="dmg-float">-{ownDmg.damage}</span>}
               </button>
@@ -459,7 +636,7 @@ export function GameScreen({ view, topic, status, opponentConnected, onAction, o
             🏰 {Math.max(0, shownView.players[me].base)}
             {baseHit(me) && <span className="dmg-float">-{baseHit(me)!.damage}</span>}
           </div>
-          <div className="energy-chip">
+          <div className={'energy-chip' + (canPlaySomething ? ' pulse' : '')}>
             ⚡ {energy}/{shownView.energyCap}
           </div>
           <div className="deck-chip">📚 {shownView.players[me].deckCount}</div>
@@ -495,16 +672,91 @@ export function GameScreen({ view, topic, status, opponentConnected, onAction, o
               selected={selection?.kind === 'hand' && selection.index === i}
               playable={myTurn && shownView.phase === 'play' && card.cost <= energy}
               onTap={() => tapHandCard(i)}
+              onDetail={openCardDetail}
             />
           ))}
           {shownView.hand.length === 0 && <div className="hint empty-hand">Keine Handkarten</div>}
         </div>
+        <p className="hint press-hint">Tipp: Karte oder Figur lange gedrückt halten für Details</p>
       </footer>
+
+      {/* ---- Phasen-Banner ---- */}
+      {banner && (
+        <div key={banner.key} className="phase-banner">
+          {banner.text}
+        </div>
+      )}
+
+      {/* ---- Karten-Detailansicht ---- */}
+      {detail && (
+        <div className="overlay detail-overlay" onClick={() => setDetail(null)}>
+          <div className="detail-card" onClick={(e) => e.stopPropagation()}>
+            <div className="detail-art">
+              <CardArt
+                cardId={detail.cardId}
+                className="detail-art-img"
+                alt={detail.name}
+                fallback={<div className="detail-art-fallback">🃏</div>}
+              />
+              {detail.cost !== undefined && <span className="cost detail-cost">{detail.cost}</span>}
+            </div>
+            <h2 className="detail-name">
+              {detail.signature ? '★ ' : ''}
+              {detail.name}
+            </h2>
+            {detail.attack !== undefined && (
+              <div className="detail-stats">
+                <span className="detail-stat">⚔ {detail.attack}</span>
+                <span className="detail-stat">
+                  ♥ {detail.health}
+                  {detail.maxHealth !== undefined ? `/${detail.maxHealth}` : ''}
+                </span>
+              </div>
+            )}
+            {detail.keywords.length > 0 && (
+              <div className="detail-keywords">
+                {detail.keywords.map((k) => (
+                  <div key={k} className="detail-keyword">
+                    <strong>{keywordInfo?.[k]?.label ?? k}</strong>
+                    <span>{keywordInfo?.[k]?.description ?? ''}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+            {detail.text && <p className="detail-text">{detail.text}</p>}
+            <button className="secondary" onClick={() => setDetail(null)}>
+              Schließen
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ---- Spielende ---- */}
       {shownView.winner !== null && (
         <div className="overlay">
-          <div className="overlay-box">
+          {shownView.winner === me && (
+            <div className="confetti" aria-hidden>
+              {confetti.map((c, i) => (
+                <span
+                  key={i}
+                  style={{
+                    left: `${c.left}%`,
+                    background: c.color,
+                    width: c.size,
+                    height: c.size * 0.6,
+                    animationDelay: `${c.delay}s`,
+                    animationDuration: `${c.duration}s`
+                  }}
+                />
+              ))}
+            </div>
+          )}
+          <div
+            className={
+              'overlay-box ' +
+              (shownView.winner === 'draw' ? 'draw' : shownView.winner === me ? 'win' : 'lose')
+            }
+          >
             <h1>
               {shownView.winner === 'draw'
                 ? '🤝 Unentschieden!'
@@ -558,13 +810,21 @@ function CreatureTile({
   creature,
   own,
   attacking,
-  dying
+  dying,
+  moveDelta,
+  onDetail
 }: {
   creature: CreatureView | null;
   own?: boolean;
   attacking?: boolean;
   dying?: boolean;
+  /** Lane-Differenz (alt − neu), wenn die Figur gerade die Lane gewechselt hat. */
+  moveDelta?: number;
+  onDetail?: (c: CreatureView) => void;
 }) {
+  const longPress = useLongPress(
+    creature && onDetail ? () => onDetail(creature) : undefined
+  );
   if (!creature) return <span className="empty-slot">frei</span>;
   const attackBuffed = creature.attack > creature.baseAttack;
   const attackReduced = creature.attack < creature.baseAttack;
@@ -580,10 +840,29 @@ function CreatureTile({
         (creature.canFly ? ' can-fly' : '') +
         (attacking ? ' attacking' : '') +
         (dying ? ' dying' : '') +
+        (moveDelta !== undefined ? ' lane-move' : '') +
         ` card-${creature.cardId}`
       }
+      style={
+        moveDelta !== undefined
+          ? ({ '--move-x': `calc(${moveDelta} * (100% + 20px))` } as CSSProperties)
+          : undefined
+      }
+      {...longPress.handlers}
+      onClick={(e) => {
+        // Nach langem Drücken den normalen Tap unterdrücken (sonst würde
+        // z. B. die Lane darunter ausgewählt).
+        if (longPress.fired.current) {
+          e.preventDefault();
+          e.stopPropagation();
+          longPress.fired.current = false;
+        }
+      }}
     >
-      <div className="figure-frame">
+      <div
+        className="figure-frame"
+        style={{ animationDelay: `${-((creature.uid % 7) * 0.4)}s` }}
+      >
         <CardArt
           cardId={creature.cardId}
           className="figure-image"
@@ -617,13 +896,16 @@ function HandCard({
   card,
   selected,
   playable,
-  onTap
+  onTap,
+  onDetail
 }: {
   card: CardDef;
   selected: boolean;
   playable: boolean;
   onTap: () => void;
+  onDetail: (card: CardDef) => void;
 }) {
+  const longPress = useLongPress(() => onDetail(card));
   return (
     <button
       className={
@@ -633,7 +915,14 @@ function HandCard({
         (card.signature ? ' signature-card' : '') +
         ` faction-${card.faction}`
       }
-      onClick={onTap}
+      {...longPress.handlers}
+      onClick={() => {
+        if (longPress.fired.current) {
+          longPress.fired.current = false;
+          return;
+        }
+        onTap();
+      }}
     >
       <div className="hand-card-top">
         <span className="cost">{card.cost}</span>

@@ -45,6 +45,7 @@ export function App() {
         <GameScreen
           view={state.view}
           topic={state.topic}
+          keywordInfo={state.keywordInfo}
           status={state.status}
           opponentConnected={state.opponentConnected}
           onAction={sendAction}

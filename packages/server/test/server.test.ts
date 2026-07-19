@@ -73,6 +73,10 @@ describe('Server: Raum, Beitritt, Aktionen, gefilterte Sicht', () => {
     code = created.code as string;
     expect(code).toMatch(/^\d{4}$/);
     expect(created.token).toBeTruthy();
+    // Keyword-Erklärungen für die Detailansicht werden mitgeliefert:
+    const keywords = created.keywords as Record<string, { label: string; description: string }>;
+    expect(keywords.gift.description).toContain('stirbt');
+    expect(keywords.flink.label).toBeTruthy();
   });
 
   it('Spieler B tritt bei, beide erhalten den Startzustand', async () => {

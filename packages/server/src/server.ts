@@ -19,9 +19,15 @@ import {
   type GameData,
   type GameState,
   type PlayerAction,
+  KEYWORDS,
   type PlayerIndex,
   type Topic
 } from '@pcf/engine';
+
+/** Keyword-Erklärungen für die Karten-Detailansicht des Clients (einmal berechnet). */
+const keywordInfo = Object.fromEntries(
+  Object.entries(KEYWORDS).map(([id, k]) => [id, { label: k.label, description: k.description }])
+);
 
 interface RoomPlayer {
   token: string;
@@ -295,6 +301,7 @@ export function startServer(port: number): Promise<RunningServer> {
             token: room.players[0].token,
             playerIndex: 0,
             topic,
+            keywords: keywordInfo,
             factions: requireData().factions
           });
           break;
@@ -320,7 +327,8 @@ export function startServer(port: number): Promise<RunningServer> {
             code: room.code,
             token: room.players[1].token,
             playerIndex: 1,
-            topic: room.topic
+            topic: room.topic,
+            keywords: keywordInfo
           });
           // Beide Spieler da → Partie starten
           room.state = createGame(requireData(), [room.players[0].faction, faction]);
@@ -338,7 +346,13 @@ export function startServer(port: number): Promise<RunningServer> {
           // Alte Verbindung (falls noch offen) ersetzen
           room.players[idx].socket?.close();
           attach(room, idx as PlayerIndex);
-          send(socket, { type: 'rejoined', code: room.code, playerIndex: idx, topic: room.topic });
+          send(socket, {
+            type: 'rejoined',
+            code: room.code,
+            playerIndex: idx,
+            topic: room.topic,
+            keywords: keywordInfo
+          });
           notifyOpponentConnection(room, idx as PlayerIndex);
           if (room.state) {
             send(socket, {

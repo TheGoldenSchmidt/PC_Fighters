@@ -587,12 +587,22 @@ input:focus {
   justify-content: center;
   padding: 6px;
   position: relative;
-  overflow: hidden;
+  /* KEIN overflow:hidden – Figuren dürfen beim Angriff/Aufstellen leicht
+     über den Slot hinausragen (2.5D-Wirkung). */
+}
+
+/* Tiefenstaffelung: gegnerische Reihe steht "weiter hinten" */
+.enemy-slot {
+  transform: scale(0.93);
+  transform-origin: top center;
+  filter: brightness(0.92);
 }
 
 .own-slot {
   border-style: solid;
   border-color: rgba(255,255,255,0.15);
+  transform: scale(1.02);
+  transform-origin: bottom center;
 }
 
 .own-slot.targetable {
@@ -687,6 +697,67 @@ input:focus {
   justify-content: center;
   transform: rotateX(9deg);
   transform-origin: bottom center;
+  /* Idle: die Figur "atmet" – jede mit eigenem Takt (animation-delay per uid) */
+  animation: idle-bob 3s ease-in-out infinite;
+}
+
+@keyframes idle-bob {
+  0%, 100% {
+    transform: rotateX(9deg) translateY(0);
+  }
+  50% {
+    transform: rotateX(9deg) translateY(-2.5px) scale(1.008);
+  }
+}
+
+/* Fliegende schweben deutlich sichtbar */
+.creature-figure.can-fly .figure-frame {
+  animation: fly-hover 2.2s ease-in-out infinite;
+}
+
+@keyframes fly-hover {
+  0%, 100% {
+    transform: rotateX(9deg) translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: rotateX(9deg) translateY(-7px) rotate(1.2deg);
+  }
+}
+
+/* Der Standschatten der Fliegenden pulsiert gegenläufig zum Schweben */
+.creature-figure.can-fly::before {
+  animation: shadow-breathe 2.2s ease-in-out infinite;
+}
+
+@keyframes shadow-breathe {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.8);
+    opacity: 0.6;
+  }
+}
+
+/* Lane-Wechsel (fliegend/Hetzjagd): Figur läuft sichtbar von der alten
+   Position herüber, mit kleinem Hüpfer. Überstimmt die play-in-Animation. */
+.creature-figure.lane-move {
+  animation: lane-walk 0.5s cubic-bezier(0.25, 0.8, 0.35, 1);
+}
+
+@keyframes lane-walk {
+  0% {
+    transform: translateX(var(--move-x, 0px)) translateY(0);
+    opacity: 1;
+  }
+  50% {
+    transform: translateX(calc(var(--move-x, 0px) / 2)) translateY(-10px);
+  }
+  100% {
+    transform: translateX(0) translateY(0);
+    opacity: 1;
+  }
 }
 
 .creature-figure.enemy .figure-frame {
@@ -789,7 +860,9 @@ input:focus {
   filter: grayscale(0.6);
 }
 
+/* Erschöpfte ruhen sich aus: kein Idle-Wippen, leicht zur Seite gekippt */
 .creature-figure.exhausted .figure-frame {
+  animation: none;
   transform: rotateX(9deg) rotate(-3deg);
 }
 
@@ -805,14 +878,14 @@ input:focus {
 
 @keyframes lunge-up {
   0%, 100% { transform: translateY(0); }
-  35% { transform: translateY(-14px) scale(1.07); }
-  65% { transform: translateY(3px); }
+  35% { transform: translateY(-22px) scale(1.1); }
+  65% { transform: translateY(4px); }
 }
 
 @keyframes lunge-down {
   0%, 100% { transform: translateY(0); }
-  35% { transform: translateY(14px) scale(1.07); }
-  65% { transform: translateY(-3px); }
+  35% { transform: translateY(22px) scale(1.1); }
+  65% { transform: translateY(-4px); }
 }
 
 /* Sterbeanimation: Figur kippt um, wird grau und löst sich auf. */
@@ -1281,6 +1354,275 @@ input:focus {
   color: #ffa198;
   text-align: left;
   font-family: monospace;
+}
+
+/* ---------- Phasen-Banner ---------- */
+
+.phase-banner {
+  position: fixed;
+  top: 36%;
+  left: 50%;
+  z-index: 18;
+  font-family: var(--font-title);
+  font-size: 2.1rem;
+  font-weight: 800;
+  color: var(--gold);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.9), 0 0 30px rgba(245, 158, 11, 0.35);
+  white-space: nowrap;
+  pointer-events: none;
+  animation: banner-pop 1.5s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+}
+
+@keyframes banner-pop {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) scale(0.4);
+  }
+  18% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1.08);
+  }
+  30% {
+    transform: translateX(-50%) scale(1);
+  }
+  78% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-18px) scale(0.92);
+  }
+}
+
+/* ---------- Energie-Puls (es ist etwas spielbar) ---------- */
+
+.energy-chip.pulse {
+  animation: energy-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes energy-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 rgba(245, 158, 11, 0);
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.55);
+  }
+}
+
+/* ---------- Sanfte Bildschirm-Einblendung ---------- */
+
+.screen {
+  animation: screen-in 0.35s ease-out;
+}
+
+@keyframes screen-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---------- Karten-Detailansicht (langes Drücken) ---------- */
+
+.creature-figure,
+.hand-card {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.press-hint {
+  text-align: center;
+  font-size: 0.7rem;
+  opacity: 0.6;
+  margin: 0;
+}
+
+.detail-overlay {
+  z-index: 40;
+}
+
+.detail-card {
+  background: var(--panel);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius);
+  padding: 16px;
+  width: 100%;
+  max-width: 320px;
+  max-height: 86vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: detail-in 0.25s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7);
+}
+
+@keyframes detail-in {
+  from {
+    opacity: 0;
+    transform: scale(0.85) translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.detail-art {
+  position: relative;
+  width: 100%;
+  height: 170px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--panel-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.detail-art-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+.detail-art-fallback {
+  font-size: 3rem;
+  opacity: 0.7;
+}
+
+.detail-cost {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 30px;
+  height: 30px;
+  font-size: 1rem;
+}
+
+.detail-name {
+  margin: 0;
+  font-family: var(--font-title);
+  font-size: 1.25rem;
+  text-align: center;
+}
+
+.detail-stats {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.detail-keywords {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.detail-keyword {
+  background: var(--panel-2);
+  border-left: 3px solid var(--theme-accent, var(--gold));
+  border-radius: 6px;
+  padding: 6px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.82rem;
+}
+
+.detail-keyword strong {
+  color: var(--theme-accent, var(--gold));
+}
+
+.detail-keyword span {
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.detail-text {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.4;
+  text-align: center;
+}
+
+/* ---------- Sieg / Niederlage ---------- */
+
+.overlay-box.win {
+  border: 2px solid var(--gold);
+  box-shadow: 0 0 40px rgba(245, 158, 11, 0.35);
+}
+
+.overlay-box.win h1 {
+  animation: trophy-bounce 0.9s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+
+@keyframes trophy-bounce {
+  0% {
+    transform: scale(0.2) rotate(-14deg);
+    opacity: 0;
+  }
+  55% {
+    transform: scale(1.25) rotate(4deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+.overlay-box.lose {
+  border: 2px solid rgba(229, 83, 60, 0.5);
+}
+
+.overlay-box.lose h1 {
+  animation: lose-shake 0.7s ease-in-out;
+}
+
+@keyframes lose-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+.confetti {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.confetti span {
+  position: absolute;
+  top: -12px;
+  border-radius: 2px;
+  animation: confetti-fall linear infinite;
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-5vh) rotate(0deg);
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(105vh) rotate(660deg);
+    opacity: 0.4;
+  }
 }
 
 /* Reduced Motion Override */

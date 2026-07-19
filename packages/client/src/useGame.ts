@@ -8,6 +8,9 @@ import { toWsUrl } from './config';
 export type ConnectionStatus = 'idle' | 'connecting' | 'connected' | 'reconnecting';
 export type Screen = 'start' | 'lobby' | 'game';
 
+/** Keyword-Erklärungen (id → Label + Beschreibung), kommen vom Server. */
+export type KeywordInfo = Record<string, { label: string; description: string }>;
+
 export interface GameClientState {
   screen: Screen;
   status: ConnectionStatus;
@@ -16,6 +19,7 @@ export interface GameClientState {
   serverAddress: string | null;
   /** Vom Raum-Ersteller gewählter Schauplatz (kommt vom Server). */
   topic: Topic | null;
+  keywordInfo: KeywordInfo | null;
   error: string | null;
   dataError: string | null;
   opponentConnected: boolean;
@@ -28,6 +32,7 @@ const initial: GameClientState = {
   roomCode: null,
   serverAddress: null,
   topic: null,
+  keywordInfo: null,
   error: null,
   dataError: null,
   opponentConnected: true
@@ -59,14 +64,23 @@ export function useGame() {
             token: msg.token as string
           };
           saveSession();
-          patch({ screen: 'lobby', roomCode: msg.code as string, topic: msg.topic as Topic });
+          patch({
+            screen: 'lobby',
+            roomCode: msg.code as string,
+            topic: msg.topic as Topic,
+            keywordInfo: (msg.keywords as KeywordInfo) ?? null
+          });
           break;
         case 'joined':
         case 'rejoined':
           if (msg.token) session.current!.token = msg.token as string;
           session.current!.code = msg.code as string;
           saveSession();
-          patch({ roomCode: msg.code as string, topic: (msg.topic as Topic) ?? null });
+          patch({
+            roomCode: msg.code as string,
+            topic: (msg.topic as Topic) ?? null,
+            keywordInfo: (msg.keywords as KeywordInfo) ?? null
+          });
           break;
         case 'state':
           patch({
