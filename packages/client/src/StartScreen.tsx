@@ -5,16 +5,11 @@
 import { useCallback, useEffect, useState, type CSSProperties } from 'react';
 import type { Faction, Topic } from '@pcf/engine';
 import type { ConnectionStatus } from './useGame';
+import { defaultServerHost, isCloud, toInfoUrl } from './config';
 
 const params = new URLSearchParams(window.location.search);
-const defaultServer = params.get('server') ?? `${window.location.hostname}:3000`;
+const defaultServer = params.get('server') ?? defaultServerHost();
 const defaultRoom = params.get('room') ?? '';
-
-function infoUrl(serverInput: string): string {
-  let s = serverInput.trim().replace(/^https?:\/\//, '').replace(/\/+$/, '');
-  if (!s.includes(':')) s += ':3000';
-  return `http://${s}/info`;
-}
 
 interface Props {
   status: ConnectionStatus;
@@ -35,7 +30,7 @@ export function StartScreen({ status, onCreate, onJoin }: Props) {
   const loadInfo = useCallback(async (serverInput: string) => {
     setLoadError(null);
     try {
-      const res = await fetch(infoUrl(serverInput));
+      const res = await fetch(toInfoUrl(serverInput));
       const json = await res.json();
       if (json.dataError) {
         setLoadError(json.dataError as string);
@@ -71,25 +66,33 @@ export function StartScreen({ status, onCreate, onJoin }: Props) {
         <p className="subtitle">Das ultimative Duell: Humans vs. Animals</p>
       </header>
 
-      <section className="panel">
-        <label htmlFor="server">Server-Adresse</label>
-        <div className="row">
-          <input
-            id="server"
-            type="text"
-            value={server}
-            onChange={(e) => setServer(e.target.value)}
-            onBlur={() => loadInfo(server)}
-            placeholder="z. B. 192.168.1.23:3000"
-            autoCapitalize="off"
-            autoCorrect="off"
-          />
-          <button className="secondary" onClick={() => loadInfo(server)}>
-            Prüfen
-          </button>
-        </div>
-        {loadError && <p className="hint error-hint">{loadError}</p>}
-      </section>
+      {/* Server-Adresse nur im lokalen Betrieb. Im Cloud-Build liefert der
+          Server die Seite selbst aus – es gibt nichts einzutippen. */}
+      {!isCloud && (
+        <section className="panel">
+          <label htmlFor="server">Server-Adresse</label>
+          <div className="row">
+            <input
+              id="server"
+              type="text"
+              value={server}
+              onChange={(e) => setServer(e.target.value)}
+              onBlur={() => loadInfo(server)}
+              placeholder="z. B. 192.168.1.23:3000"
+              autoCapitalize="off"
+              autoCorrect="off"
+            />
+            <button className="secondary" onClick={() => loadInfo(server)}>
+              Prüfen
+            </button>
+          </div>
+        </section>
+      )}
+      {loadError && (
+        <section className="panel">
+          <p className="hint error-hint">{loadError}</p>
+        </section>
+      )}
 
       <section className="panel">
         <h2>Fraktion wählen</h2>

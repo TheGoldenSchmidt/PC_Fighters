@@ -7,6 +7,8 @@ import { randomBytes } from 'node:crypto';
 import { WebSocketServer, WebSocket } from 'ws';
 import { writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import sirv from 'sirv';
 import {
   applyAction,
   buildClientView,
@@ -147,9 +149,17 @@ export function startServer(port: number): Promise<RunningServer> {
     }
   };
 
+  // Im Cloud-Betrieb liefert dieser Server auch die gebaute Client-Seite aus
+  // (packages/client/dist). Existiert der Ordner nicht (lokale Entwicklung mit
+  // separatem Vite-Server), bleibt der statische Teil einfach inaktiv.
+  const clientDist = fileURLToPath(new URL('../../client/dist', import.meta.url));
+  const serveClient = existsSync(clientDist)
+    ? sirv(clientDist, { single: true, gzip: true })
+    : null;
+
   const httpServer: Server = createServer((req, res) => {
-    // /info: Fraktionsliste für den Startbildschirm des Clients.
-    // CORS offen, weil der Client vom Vite-Server (anderer Port) kommt.
+    // /info: Fraktions- und Themenliste für den Startbildschirm des Clients.
+    // CORS offen, weil der Client lokal von einem anderen Port (Vite) kommt.
     const cors = { 'access-control-allow-origin': '*' };
     if (req.url?.startsWith('/info')) {
       if (dataError) {
@@ -165,6 +175,13 @@ export function startServer(port: number): Promise<RunningServer> {
           topics: data!.topics
         })
       );
+      return;
+    }
+    if (serveClient) {
+      serveClient(req, res, () => {
+        res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' });
+        res.end('Nicht gefunden.');
+      });
       return;
     }
     res.writeHead(200, { 'content-type': 'text/plain; charset=utf-8', ...cors });

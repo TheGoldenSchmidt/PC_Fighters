@@ -198,11 +198,41 @@ Danach ist der Stand online gesichert – auch wenn dem Rechner etwas passiert.
 
 ---
 
-## 7. Später: Umzug in die Cloud
+## 7. Von überall spielen (kostenlos online stellen)
 
-Aktuell spielt ihr im selben WLAN. Das Projekt ist aber schon so gebaut, dass der Server genauso gut bei einem Cloud-Anbieter laufen könnte – dann kann man **von überall** gegeneinander spielen, nicht nur zu Hause.
+Wenn du **keinen Rechner mehr laufen lassen** willst, kannst du das Spiel einmalig
+kostenlos ins Internet stellen. Danach öffnen beide Spieler einfach eine feste
+Internet-Adresse auf dem Handy – von überall, nicht nur im selben WLAN. Kein
+Terminal, keine Installation, keine Adresse eintippen.
 
-Für euch würde sich dabei fast nichts ändern: Statt der `192.168...`-Adresse tragt ihr im Startbildschirm einfach die neue Internet-Adresse des Servers ein. Alles andere bleibt gleich. Es ist vorbereitet – wenn es so weit ist, ist das ein kleiner Schritt, kein Umbau.
+Wir nutzen dafür **Render** (kostenloser Tarif). Das Projekt ist dafür schon
+vorbereitet: Ein einziger Server liefert die Spielseite aus **und** hält die
+Verbindungen.
+
+**So geht's (einmalig, ca. 5 Minuten):**
+
+1. Gehe auf **[render.com](https://render.com)** und erstelle ein kostenloses
+   Konto – am einfachsten mit „Sign up with GitHub" (dann ist dein Repo direkt
+   verbunden).
+2. Klicke oben auf **New** → **Blueprint**.
+3. Wähle dein Repo **PC_Fighters** aus der Liste. Render erkennt die Datei
+   `render.yaml` automatisch und schlägt einen Web-Dienst namens `pc-fighters`
+   vor. Bestätige mit **Apply** / **Create**.
+4. Render baut jetzt das Spiel (dauert 2–3 Minuten). Danach bekommst du oben eine
+   Adresse wie **`https://pc-fighters.onrender.com`**.
+5. Fertig. Diese Adresse teilst du – beide Spieler öffnen sie auf dem Handy,
+   wählen Fraktion + Schauplatz, „Partie erstellen", Code oder QR-Code teilen,
+   der andere tritt bei. Los geht's.
+
+**Gut zu wissen:**
+
+- Beim kostenlosen Tarif „schläft" der Server nach ~15 Minuten ohne Nutzung ein.
+  Der erste Spieler, der die Seite dann öffnet, wartet einmalig **~30–60 Sekunden**,
+  bis der Server wieder wach ist. Danach läuft alles normal.
+- Jedes Mal, wenn du etwas änderst und mit `git push` hochlädst (siehe Abschnitt 6),
+  baut Render die neue Version **automatisch** – du musst nichts weiter tun.
+- Das lokale Spiel im WLAN (Abschnitte 1–5) funktioniert weiterhin genauso; die
+  Cloud ist nur eine zusätzliche Möglichkeit.
 
 ---
 

@@ -4,6 +4,7 @@
 import QRCode from 'qrcode';
 import { useEffect, useState } from 'react';
 import type { Topic } from '@pcf/engine';
+import { isCloud } from './config';
 
 interface Props {
   roomCode: string;
@@ -15,9 +16,12 @@ interface Props {
 export function LobbyScreen({ roomCode, serverAddress, topic, onCancel }: Props) {
   const [qr, setQr] = useState<string | null>(null);
 
-  const joinUrl =
-    `${window.location.origin}${window.location.pathname}` +
-    `?server=${encodeURIComponent(serverAddress)}&room=${roomCode}`;
+  // Im Cloud-Betrieb ist der Server dieselbe Adresse wie die Seite – der Link
+  // braucht nur den Raum-Code. Lokal muss die Serveradresse mitgegeben werden.
+  const base = `${window.location.origin}${window.location.pathname}`;
+  const joinUrl = isCloud
+    ? `${base}?room=${roomCode}`
+    : `${base}?server=${encodeURIComponent(serverAddress)}&room=${roomCode}`;
 
   useEffect(() => {
     QRCode.toDataURL(joinUrl, { width: 240, margin: 1 })
@@ -25,7 +29,7 @@ export function LobbyScreen({ roomCode, serverAddress, topic, onCancel }: Props)
       .catch(() => setQr(null));
   }, [joinUrl]);
 
-  const isLocalhost = /localhost|127\.0\.0\.1/.test(window.location.hostname);
+  const isLocalhost = !isCloud && /localhost|127\.0\.0\.1/.test(window.location.hostname);
 
   return (
     <div className="screen lobby-screen">

@@ -1,0 +1,14 @@
+# Render-Blueprint: beschreibt den Cloud-Dienst für "Political Correct Fighters".
+# Render liest diese Datei automatisch, wenn du das Repo als "Blueprint" anlegst –
+# du musst dann keine Felder von Hand ausfüllen.
+#
+# Ein einziger Web-Dienst: baut den Client und startet den Server, der die
+# gebaute Seite ausliefert UND die Spielverbindungen (WebSocket) hält.
+# Render stellt die Umgebungsvariable PORT bereit – der Server nutzt sie bereits.
+services:
+  - type: web
+    name: pc-fighters
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start

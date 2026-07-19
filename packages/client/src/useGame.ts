@@ -3,6 +3,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ClientView, PlayerAction, Topic } from '@pcf/engine';
+import { toWsUrl } from './config';
 
 export type ConnectionStatus = 'idle' | 'connecting' | 'connected' | 'reconnecting';
 export type Screen = 'start' | 'lobby' | 'game';
@@ -31,13 +32,6 @@ const initial: GameClientState = {
   dataError: null,
   opponentConnected: true
 };
-
-/** "192.168.1.5", "192.168.1.5:3000" oder "http://..." → ws-URL. */
-export function toWsUrl(input: string): string {
-  let s = input.trim().replace(/^https?:\/\//, '').replace(/^wss?:\/\//, '').replace(/\/+$/, '');
-  if (!s.includes(':')) s += ':3000';
-  return `ws://${s}`;
-}
 
 export function useGame() {
   const [state, setState] = useState<GameClientState>(initial);
