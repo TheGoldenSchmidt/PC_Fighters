@@ -3,7 +3,7 @@
 // verschwindet die Quelle, verschwindet automatisch auch der Bonus.
 
 import { KEYWORDS } from './keywords.js';
-import type { AttackEvent, Creature, GameState, PlayerIndex, TokenDef } from './types.js';
+import type { CombatEvent, Creature, GameState, PlayerIndex, TokenDef } from './types.js';
 
 /** Fehlerhafte/unerlaubte Aktion eines Spielers (Meldung ist für den Client gedacht). */
 export class GameRuleError extends Error {
@@ -56,6 +56,12 @@ export function getMaxHealth(state: GameState, owner: PlayerIndex, lane: number)
   return c.baseMaxHealth + c.permHealthBonus + auraBonus(state, owner, lane).health;
 }
 
+export interface DeathInfo {
+  owner: PlayerIndex;
+  lane: number;
+  name: string;
+}
+
 /**
  * Nach jeder Zustandsänderung aufrufen: gleicht Lebenspunkte an geänderte
  * Auren an und entfernt tote Kreaturen.
@@ -63,8 +69,8 @@ export function getMaxHealth(state: GameState, owner: PlayerIndex, lane: number)
  * Fällt das Maximum (Aura fällt weg), sinkt das aktuelle Leben höchstens
  * auf das neue Maximum – bereits erlittener Schaden wird nicht doppelt bestraft.
  */
-export function recalcBoard(state: GameState): string[] {
-  const deaths: string[] = [];
+export function recalcBoard(state: GameState): DeathInfo[] {
+  const deaths: DeathInfo[] = [];
   let changed = true;
   while (changed) {
     changed = false;
@@ -81,7 +87,7 @@ export function recalcBoard(state: GameState): string[] {
         c.lastMaxHealth = max;
         if (c.currentHealth <= 0) {
           state.board[owner][lane] = null;
-          deaths.push(`${c.name} wird zerstört.`);
+          deaths.push({ owner, lane, name: c.name });
           changed = true; // Auren der toten Kreatur fallen weg → neu rechnen
         }
       }
@@ -149,6 +155,6 @@ export function freeLanes(state: GameState, owner: PlayerIndex): number[] {
   return lanes;
 }
 
-export function log(state: GameState, text: string, event?: AttackEvent): void {
+export function log(state: GameState, text: string, event?: CombatEvent): void {
   state.log.push({ id: state.log.length, round: state.round, text, ...(event ? { event } : {}) });
 }

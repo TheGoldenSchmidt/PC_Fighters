@@ -88,7 +88,8 @@ export const cardSchema = z.discriminatedUnion('type', [
     type: z.literal('creature'),
     attack: z.number().int().min(0),
     health: z.number().int().min(1),
-    keywords: z.array(keywordSchema).default([])
+    keywords: z.array(keywordSchema).default([]),
+    projectile: z.string().min(1).optional()
   }),
   z.object({
     ...cardBase,

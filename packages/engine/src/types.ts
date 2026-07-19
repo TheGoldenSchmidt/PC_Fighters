@@ -61,6 +61,8 @@ export interface CreatureCard {
   health: number;
   keywords: string[];
   signature?: boolean;
+  /** Emoji, das beim Angriff als Projektil fliegt (z. B. "🗡️"). */
+  projectile?: string;
   text?: string;
 }
 
@@ -120,8 +122,8 @@ export interface PlayerState {
 export type Phase = 'play' | 'fly' | 'ended';
 
 /**
- * Strukturiertes Kampf-Ereignis am Log-Eintrag – die UI nutzt es, um
- * Angriffe zu animieren (wer schlägt zu, in welcher Lane, wie viel Schaden).
+ * Strukturierte Kampf-Ereignisse am Log-Eintrag – die UI spielt sie als
+ * Sequenz ab (Lane für Lane: Projektil, Schaden, Sterbeanimation).
  */
 export interface AttackEvent {
   kind: 'attack';
@@ -132,12 +134,21 @@ export interface AttackEvent {
   toBase: boolean;
 }
 
+export interface DeathEvent {
+  kind: 'death';
+  lane: number;
+  /** Besitzer der zerstörten Kreatur. */
+  owner: PlayerIndex;
+}
+
+export type CombatEvent = AttackEvent | DeathEvent;
+
 export interface LogEntry {
   /** Fortlaufende Nummer über die ganze Partie (stabil trotz gekürzter Sicht). */
   id: number;
   round: number;
   text: string;
-  event?: AttackEvent;
+  event?: CombatEvent;
 }
 
 export interface GameState {
@@ -176,6 +187,8 @@ export interface CreatureView {
   baseMaxHealth: number;
   exhausted: boolean;
   canFly: boolean;
+  /** Emoji des Angriffs-Projektils (aus der Kartendatei, optional). */
+  projectile?: string;
   text?: string;
 }
 

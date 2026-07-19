@@ -132,6 +132,18 @@ describe('Kampflogik', () => {
     const event = after.log.find((l) => l.event?.kind === 'attack')?.event;
     expect(event).toMatchObject({ lane: 1, attacker: 0, damage: 2, toBase: true });
   });
+
+  it('Kampf-Log enthält Sterbe-Events nach den Angriffen derselben Lane', () => {
+    const s = emptyState();
+    put(s, 0, 0, 'ritter'); // 4/4
+    put(s, 1, 0, 'wolf'); // 3/2 → stirbt
+    const after = passBoth(s);
+    const events = after.log.filter((l) => l.event).map((l) => l.event!);
+    const attackIdx = events.findIndex((e) => e.kind === 'attack');
+    const deathIdx = events.findIndex((e) => e.kind === 'death');
+    expect(deathIdx).toBeGreaterThan(attackIdx);
+    expect(events[deathIdx]).toMatchObject({ kind: 'death', lane: 0, owner: 1 });
+  });
 });
 
 describe('Themen (Topics)', () => {

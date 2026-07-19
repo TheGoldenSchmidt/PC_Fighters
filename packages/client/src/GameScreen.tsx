@@ -2,16 +2,20 @@
 // (dynamisch aus der Config – auch 4+ Lanes funktionieren), Handkarten
 // als scrollbare Leiste. Bedienung über große Tap-Flächen statt Drag & Drop.
 //
-// Optik: Der vom Raum-Ersteller gewählte Schauplatz (Topic) färbt Hintergrund
-// und Lanes über CSS-Variablen ein. Animationen: Kreaturen "ploppen" beim
-// Ausspielen aufs Feld (Mount-Animation über den uid-Key) und machen beim
-// Angriff einen Ausfallschritt – gesteuert über die Kampf-Events im Log.
+// Kampf-Abspielung: Der Server schickt nach dem Kampf den fertigen Zustand
+// PLUS strukturierte Events (Angriffe, Tode). Der Client zeigt den alten
+// Zustand weiter an ("shownView") und spielt die Events Lane für Lane ab:
+// Projektil fliegt → Schaden erscheint → Sterbeanimation → nächste Lane.
+// Erst danach wird auf den neuen Serverzustand umgeschaltet.
 
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import type {
+  AttackEvent,
   CardDef,
   ClientView,
+  CombatEvent,
   CreatureView,
+  DeathEvent,
   PlayerAction,
   PlayerIndex,
   Topic
@@ -33,94 +37,221 @@ type Selection =
   | { kind: 'fly'; fromLane: number }
   | null;
 
-/** Ein gerade laufender Angriffs-Effekt (Ausfallschritt + Schadenszahl). */
-interface HitFx {
+interface FxProjectile {
   key: string;
   lane: number;
   attacker: PlayerIndex;
-  damage: number;
   toBase: boolean;
+  emoji: string;
 }
 
-const FX_STAGGER_MS = 500; // Abstand zwischen zwei Angriffs-Animationen
-const FX_DURATION_MS = 650; // Dauer eines einzelnen Effekts
+interface FxImpact {
+  key: string;
+  lane: number;
+  side: PlayerIndex;
+  damage: number;
+}
+
+interface FxBaseImpact {
+  key: string;
+  side: PlayerIndex;
+  damage: number;
+}
+
+interface FxState {
+  projectiles: FxProjectile[];
+  impacts: FxImpact[];
+  baseImpacts: FxBaseImpact[];
+  dying: { lane: number; owner: PlayerIndex }[];
+  activeLane: number | null;
+}
+
+const EMPTY_FX: FxState = {
+  projectiles: [],
+  impacts: [],
+  baseImpacts: [],
+  dying: [],
+  activeLane: null
+};
+
+// Timing der Kampf-Abspielung (Millisekunden)
+const PROJECTILE_MS = 500;
+const IMPACT_MS = 650;
+const DEATH_MS = 600;
+const LANE_PAUSE_MS = 200;
 
 export function GameScreen({ view, topic, status, opponentConnected, onAction, onLeave }: Props) {
   const [selection, setSelection] = useState<Selection>(null);
-  const [fx, setFx] = useState<HitFx[]>([]);
+  const [shownView, setShownViewState] = useState<ClientView>(view);
+  const [isReplaying, setIsReplaying] = useState(false);
+  const [fx, setFx] = useState<FxState>(EMPTY_FX);
   const logRef = useRef<HTMLDivElement>(null);
+
+  const shownViewRef = useRef(view);
+  const latestViewRef = useRef(view);
+  const queueRef = useRef<CombatEvent[]>([]);
+  const runningRef = useRef(false);
+  const cancelledRef = useRef(false);
   const lastLogId = useRef<number | null>(null);
-  const fxTimers = useRef<number[]>([]);
+
+  const setShown = (v: ClientView) => {
+    shownViewRef.current = v;
+    setShownViewState(v);
+  };
 
   const me = view.you;
-  const opp = me === 0 ? 1 : 0;
-  const myTurn = view.active === me && view.winner === null;
-  const myBoard = view.board[me];
-  const energy = view.players[me].energy;
+  const opp: PlayerIndex = me === 0 ? 1 : 0;
+  const myTurn = shownView.active === me && shownView.winner === null && !isReplaying;
+  const myBoard = shownView.board[me];
+  const energy = shownView.players[me].energy;
 
-  // Auswahl zurücksetzen, wenn ein neuer Zustand kommt (Karte könnte weg sein)
-  useEffect(() => setSelection(null), [view]);
+  // Auswahl zurücksetzen, wenn sich die angezeigte Lage ändert
+  useEffect(() => setSelection(null), [shownView]);
 
   useEffect(() => {
     logRef.current?.scrollTo({ top: logRef.current.scrollHeight });
-  }, [view.log.length]);
+  }, [shownView.log.length]);
 
-  // Neue Kampf-Events aus dem Log ziehen und nacheinander abspielen.
+  // Neue Kampf-Events sammeln und die Abspielung starten.
   useEffect(() => {
+    latestViewRef.current = view;
     const maxId = view.log.length > 0 ? view.log[view.log.length - 1].id : -1;
     if (lastLogId.current === null) {
       // Erster Zustand (auch nach Reconnect): alte Einträge nicht nachspielen.
       lastLogId.current = maxId;
+      setShown(view);
       return;
     }
-    const fresh = view.log.filter((e) => e.id > lastLogId.current! && e.event?.kind === 'attack');
-    lastLogId.current = maxId;
+    const fresh = view.log.filter((e) => e.id > lastLogId.current! && e.event);
+    lastLogId.current = Math.max(lastLogId.current, maxId);
 
-    fresh.forEach((entry, i) => {
-      const ev = entry.event!;
-      const item: HitFx = {
-        key: `fx-${entry.id}`,
-        lane: ev.lane,
-        attacker: ev.attacker,
-        damage: ev.damage,
-        toBase: ev.toBase
-      };
-      const start = window.setTimeout(() => {
-        setFx((f) => [...f, item]);
-        const stop = window.setTimeout(
-          () => setFx((f) => f.filter((x) => x.key !== item.key)),
-          FX_DURATION_MS
-        );
-        fxTimers.current.push(stop);
-      }, i * FX_STAGGER_MS);
-      fxTimers.current.push(start);
-    });
-  }, [view.log]);
+    if (fresh.length === 0) {
+      if (!runningRef.current) setShown(view);
+      return;
+    }
+    queueRef.current.push(...fresh.map((e) => e.event!));
+    if (!runningRef.current) void runReplay();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view]);
 
-  useEffect(() => () => fxTimers.current.forEach((t) => window.clearTimeout(t)), []);
+  useEffect(() => {
+    // Wichtig: beim (Re-)Mount zurücksetzen – Reacts StrictMode mountet im
+    // Dev-Modus doppelt, sonst bliebe das Abbruch-Flag dauerhaft gesetzt.
+    cancelledRef.current = false;
+    return () => {
+      cancelledRef.current = true;
+    };
+  }, []);
+
+  async function runReplay() {
+    runningRef.current = true;
+    setIsReplaying(true);
+    const sleep = (ms: number) => new Promise<void>((r) => window.setTimeout(r, ms));
+
+    while (queueRef.current.length > 0 && !cancelledRef.current) {
+      const ev = queueRef.current.shift()!;
+
+      if (ev.kind === 'attack') {
+        // Gleichzeitige Angriffe derselben Lane zusammen abspielen
+        const group: AttackEvent[] = [ev];
+        while (
+          queueRef.current[0]?.kind === 'attack' &&
+          (queueRef.current[0] as AttackEvent).lane === ev.lane
+        ) {
+          group.push(queueRef.current.shift() as AttackEvent);
+        }
+
+        const board = shownViewRef.current.board;
+        const projectiles: FxProjectile[] = group.map((g, i) => {
+          const attackerCreature = board[g.attacker][g.lane];
+          return {
+            key: `p-${g.lane}-${g.attacker}-${Date.now()}-${i}`,
+            lane: g.lane,
+            attacker: g.attacker,
+            toBase: g.toBase,
+            emoji:
+              attackerCreature?.projectile ??
+              (attackerCreature?.keywords.includes('gift') ? '☠️' : '💥')
+          };
+        });
+        setFx((f) => ({ ...f, activeLane: ev.lane, projectiles }));
+        await sleep(PROJECTILE_MS);
+        if (cancelledRef.current) break;
+
+        // Einschlag: Schaden sichtbar auf die angezeigte Lage anwenden
+        const next = structuredClone(shownViewRef.current);
+        const impacts: FxImpact[] = [];
+        const baseImpacts: FxBaseImpact[] = [];
+        group.forEach((g, i) => {
+          const defender: PlayerIndex = g.attacker === 0 ? 1 : 0;
+          if (g.toBase) {
+            next.players[defender].base -= g.damage;
+            baseImpacts.push({ key: `b-${g.lane}-${i}-${Date.now()}`, side: defender, damage: g.damage });
+          } else {
+            const target = next.board[defender][g.lane];
+            if (target) target.health = Math.max(0, target.health - g.damage);
+            impacts.push({ key: `i-${g.lane}-${i}-${Date.now()}`, lane: g.lane, side: defender, damage: g.damage });
+          }
+        });
+        setShown(next);
+        setFx((f) => ({ ...f, projectiles: [], impacts, baseImpacts }));
+        await sleep(IMPACT_MS);
+        setFx((f) => ({ ...f, impacts: [], baseImpacts: [] }));
+        await sleep(LANE_PAUSE_MS);
+      } else {
+        // Tode derselben Lane (gleichzeitiger Kampf) gemeinsam abspielen
+        const deaths: DeathEvent[] = [ev];
+        while (
+          queueRef.current[0]?.kind === 'death' &&
+          (queueRef.current[0] as DeathEvent).lane === ev.lane
+        ) {
+          deaths.push(queueRef.current.shift() as DeathEvent);
+        }
+        setFx((f) => ({
+          ...f,
+          activeLane: ev.lane,
+          dying: [...f.dying, ...deaths.map((d) => ({ lane: d.lane, owner: d.owner }))]
+        }));
+        await sleep(DEATH_MS);
+        if (cancelledRef.current) break;
+        const next = structuredClone(shownViewRef.current);
+        for (const d of deaths) next.board[d.owner][d.lane] = null;
+        setShown(next);
+        setFx((f) => ({
+          ...f,
+          dying: f.dying.filter((x) => !deaths.some((d) => d.lane === x.lane && d.owner === x.owner))
+        }));
+      }
+    }
+
+    setFx(EMPTY_FX);
+    setShown(latestViewRef.current);
+    runningRef.current = false;
+    setIsReplaying(false);
+  }
 
   const selectedCard: CardDef | null =
     selection && (selection.kind === 'hand' || selection.kind === 'move')
-      ? view.hand[selection.index] ?? null
+      ? shownView.hand[selection.index] ?? null
       : null;
 
   /** Welche eigenen Lanes sind gerade gültige Tap-Ziele? */
-  function laneTargets(): { lanes: Set<number>; needs: 'free' | 'occupied' | null } {
+  function laneTargets(): { lanes: Set<number> } {
     const free = new Set<number>();
     const occupied = new Set<number>();
     myBoard.forEach((c, i) => (c ? occupied.add(i) : free.add(i)));
 
     if (selection?.kind === 'fly' || selection?.kind === 'move') {
-      return { lanes: free, needs: 'free' };
+      return { lanes: free };
     }
     if (selection?.kind === 'hand' && selectedCard) {
-      if (selectedCard.type === 'creature') return { lanes: free, needs: 'free' };
+      if (selectedCard.type === 'creature') return { lanes: free };
       const kind = selectedCard.effect.kind;
       if (kind === 'buffHealth' || kind === 'buffAttackTemp' || kind === 'moveCreature') {
-        return { lanes: occupied, needs: 'occupied' };
+        return { lanes: occupied };
       }
     }
-    return { lanes: new Set(), needs: null };
+    return { lanes: new Set<number>() };
   }
 
   const targets = laneTargets();
@@ -129,7 +260,7 @@ export function GameScreen({ view, topic, status, opponentConnected, onAction, o
     if (!myTurn) return;
 
     // Flug-Phase: eigene fliegende Kreatur wählen bzw. Ziel-Lane antippen
-    if (view.phase === 'fly') {
+    if (shownView.phase === 'fly') {
       if (selection?.kind === 'fly' && targets.lanes.has(lane)) {
         onAction({ type: 'flyMove', fromLane: selection.fromLane, toLane: lane });
         setSelection(null);
@@ -169,8 +300,8 @@ export function GameScreen({ view, topic, status, opponentConnected, onAction, o
   }
 
   function tapHandCard(index: number) {
-    if (!myTurn || view.phase !== 'play') return;
-    const card = view.hand[index];
+    if (!myTurn || shownView.phase !== 'play') return;
+    const card = shownView.hand[index];
     if (!card || card.cost > energy) return;
     setSelection(
       selection?.kind === 'hand' && selection.index === index ? null : { kind: 'hand', index }
@@ -181,10 +312,11 @@ export function GameScreen({ view, topic, status, opponentConnected, onAction, o
     selection?.kind === 'hand' && selectedCard?.type === 'action' &&
     selectedCard.effect.kind === 'summon';
 
-  const statusText =
-    view.winner !== null
+  const statusText = isReplaying
+    ? '⚔️ Kampf läuft …'
+    : shownView.winner !== null
       ? 'Partie beendet'
-      : view.phase === 'fly'
+      : shownView.phase === 'fly'
         ? myTurn
           ? '🕊 Flug-Phase: fliegende Kreatur antippen und Ziel-Lane wählen'
           : 'Flug-Phase des Gegners …'
@@ -196,14 +328,14 @@ export function GameScreen({ view, topic, status, opponentConnected, onAction, o
             : 'Du bist am Zug'
           : 'Gegner ist am Zug …';
 
-  // ---- Animations-Helfer ----
+  // ---- Effekt-Abfragen fürs Rendering ----
   const isAttacking = (side: PlayerIndex, lane: number) =>
-    fx.some((f) => f.attacker === side && f.lane === lane);
-  /** Schadenszahl, die gerade über der Kreatur von `side` in `lane` schwebt. */
+    fx.projectiles.some((p) => p.attacker === side && p.lane === lane);
+  const isDying = (side: PlayerIndex, lane: number) =>
+    fx.dying.some((d) => d.owner === side && d.lane === lane);
   const incomingDamage = (side: PlayerIndex, lane: number) =>
-    fx.find((f) => !f.toBase && f.lane === lane && f.attacker !== side);
-  /** Basis von `side` wird gerade getroffen? */
-  const baseHit = (side: PlayerIndex) => fx.find((f) => f.toBase && f.attacker !== side);
+    fx.impacts.find((i) => i.side === side && i.lane === lane);
+  const baseHit = (side: PlayerIndex) => fx.baseImpacts.find((b) => b.side === side);
 
   const themeVars = (
     topic
@@ -220,16 +352,19 @@ export function GameScreen({ view, topic, status, opponentConnected, onAction, o
       {/* ---- Kopfzeile: Gegner ---- */}
       <header className="player-bar opponent-bar">
         <div className={`base-chip ${baseHit(opp) ? 'hit' : ''}`}>
-          🏰 {Math.max(0, view.players[opp].base)}
+          🏰 {Math.max(0, shownView.players[opp].base)}
           {baseHit(opp) && <span className="dmg-float">-{baseHit(opp)!.damage}</span>}
         </div>
-        <div className="hand-backs" aria-label={`Gegner hat ${view.players[opp].handCount} Handkarten`}>
-          {Array.from({ length: Math.min(view.players[opp].handCount, 10) }, (_, i) => (
+        <div
+          className="hand-backs"
+          aria-label={`Gegner hat ${shownView.players[opp].handCount} Handkarten`}
+        >
+          {Array.from({ length: Math.min(shownView.players[opp].handCount, 10) }, (_, i) => (
             <span key={i} className="card-back" />
           ))}
-          <span className="hand-count">{view.players[opp].handCount}</span>
+          <span className="hand-count">{shownView.players[opp].handCount}</span>
         </div>
-        <div className="deck-chip">📚 {view.players[opp].deckCount}</div>
+        <div className="deck-chip">📚 {shownView.players[opp].deckCount}</div>
         <div
           className={`conn-dot ${opponentConnected ? 'ok' : 'lost'}`}
           title={opponentConnected ? 'Gegner verbunden' : 'Gegner: Verbindung verloren'}
@@ -243,31 +378,34 @@ export function GameScreen({ view, topic, status, opponentConnected, onAction, o
               {topic.emoji}{' '}
             </span>
           )}
-          Runde {view.round}/{view.roundLimit}
+          Runde {shownView.round}/{shownView.roundLimit}
         </span>
         <span className={`turn-indicator ${myTurn ? 'my-turn' : ''}`}>{statusText}</span>
-        <span className={`conn-dot ${status === 'connected' ? 'ok' : 'lost'}`}
+        <span
+          className={`conn-dot ${status === 'connected' ? 'ok' : 'lost'}`}
           title={status === 'connected' ? 'Verbunden' : 'Verbindung verloren'}
         />
       </div>
 
       {/* ---- Lanes ---- */}
-      <main className="lanes" style={{ '--lanes': view.lanes } as CSSProperties}>
-        {Array.from({ length: view.lanes }, (_, lane) => {
+      <main className="lanes" style={{ '--lanes': shownView.lanes } as CSSProperties}>
+        {Array.from({ length: shownView.lanes }, (_, lane) => {
           const targetable = myTurn && targets.lanes.has(lane);
           const flySource = selection?.kind === 'fly' && selection.fromLane === lane;
           const moveSource = selection?.kind === 'move' && selection.fromLane === lane;
-          const enemyCreature = view.board[opp][lane];
+          const enemyCreature = shownView.board[opp][lane];
           const ownCreature = myBoard[lane];
           const enemyDmg = incomingDamage(opp, lane);
           const ownDmg = incomingDamage(me, lane);
+          const combatActive = isReplaying && fx.activeLane === lane;
           return (
-            <div className="lane" key={lane}>
+            <div className={'lane' + (combatActive ? ' combat-active' : '')} key={lane}>
               <div className="slot enemy-slot">
                 <CreatureTile
                   key={enemyCreature?.uid ?? 'leer'}
                   creature={enemyCreature}
                   attacking={isAttacking(opp, lane)}
+                  dying={isDying(opp, lane)}
                 />
                 {enemyDmg && <span className="dmg-float">-{enemyDmg.damage}</span>}
               </div>
@@ -285,9 +423,21 @@ export function GameScreen({ view, topic, status, opponentConnected, onAction, o
                   creature={ownCreature}
                   own
                   attacking={isAttacking(me, lane)}
+                  dying={isDying(me, lane)}
                 />
                 {ownDmg && <span className="dmg-float">-{ownDmg.damage}</span>}
               </button>
+              {/* Fliegende Projektile dieser Lane */}
+              {fx.projectiles
+                .filter((p) => p.lane === lane)
+                .map((p) => (
+                  <span
+                    key={p.key}
+                    className={'projectile ' + (p.attacker === me ? 'from-own' : 'from-enemy')}
+                  >
+                    {p.emoji}
+                  </span>
+                ))}
             </div>
           );
         })}
@@ -295,7 +445,7 @@ export function GameScreen({ view, topic, status, opponentConnected, onAction, o
 
       {/* ---- Kampf-Log ---- */}
       <div className="log" ref={logRef}>
-        {view.log.map((entry) => (
+        {shownView.log.map((entry) => (
           <div key={entry.id} className="log-entry">
             {entry.text}
           </div>
@@ -306,19 +456,19 @@ export function GameScreen({ view, topic, status, opponentConnected, onAction, o
       <footer className="own-area">
         <div className="player-bar own-bar">
           <div className={`base-chip ${baseHit(me) ? 'hit' : ''}`}>
-            🏰 {Math.max(0, view.players[me].base)}
+            🏰 {Math.max(0, shownView.players[me].base)}
             {baseHit(me) && <span className="dmg-float">-{baseHit(me)!.damage}</span>}
           </div>
           <div className="energy-chip">
-            ⚡ {energy}/{view.energyCap}
+            ⚡ {energy}/{shownView.energyCap}
           </div>
-          <div className="deck-chip">📚 {view.players[me].deckCount}</div>
-          {view.phase === 'play' && myTurn && (
+          <div className="deck-chip">📚 {shownView.players[me].deckCount}</div>
+          {shownView.phase === 'play' && myTurn && (
             <button className="pass-button" onClick={() => onAction({ type: 'pass' })}>
               Passen
             </button>
           )}
-          {view.phase === 'fly' && myTurn && (
+          {shownView.phase === 'fly' && myTurn && (
             <button className="pass-button" onClick={() => onAction({ type: 'flyDone' })}>
               Fertig
             </button>
@@ -338,33 +488,33 @@ export function GameScreen({ view, topic, status, opponentConnected, onAction, o
         )}
 
         <div className="hand">
-          {view.hand.map((card, i) => (
+          {shownView.hand.map((card, i) => (
             <HandCard
               key={`${card.id}-${i}`}
               card={card}
               selected={selection?.kind === 'hand' && selection.index === i}
-              playable={myTurn && view.phase === 'play' && card.cost <= energy}
+              playable={myTurn && shownView.phase === 'play' && card.cost <= energy}
               onTap={() => tapHandCard(i)}
             />
           ))}
-          {view.hand.length === 0 && <div className="hint empty-hand">Keine Handkarten</div>}
+          {shownView.hand.length === 0 && <div className="hint empty-hand">Keine Handkarten</div>}
         </div>
       </footer>
 
       {/* ---- Spielende ---- */}
-      {view.winner !== null && (
+      {shownView.winner !== null && (
         <div className="overlay">
           <div className="overlay-box">
             <h1>
-              {view.winner === 'draw'
+              {shownView.winner === 'draw'
                 ? '🤝 Unentschieden!'
-                : view.winner === me
+                : shownView.winner === me
                   ? '🏆 Du gewinnst!'
                   : '💀 Du verlierst!'}
             </h1>
             <p>
-              Basis-Leben: Du {Math.max(0, view.players[me].base)} – Gegner{' '}
-              {Math.max(0, view.players[opp].base)}
+              Basis-Leben: Du {Math.max(0, shownView.players[me].base)} – Gegner{' '}
+              {Math.max(0, shownView.players[opp].base)}
             </p>
             <button className="primary big" onClick={onLeave}>
               Zurück zum Start
@@ -407,11 +557,13 @@ function CardArt({
 function CreatureTile({
   creature,
   own,
-  attacking
+  attacking,
+  dying
 }: {
   creature: CreatureView | null;
   own?: boolean;
   attacking?: boolean;
+  dying?: boolean;
 }) {
   if (!creature) return <span className="empty-slot">frei</span>;
   const attackBuffed = creature.attack > creature.baseAttack;
@@ -427,6 +579,7 @@ function CreatureTile({
         (own ? ' own' : ' enemy') +
         (creature.canFly ? ' can-fly' : '') +
         (attacking ? ' attacking' : '') +
+        (dying ? ' dying' : '') +
         ` card-${creature.cardId}`
       }
     >

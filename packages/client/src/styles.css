@@ -622,8 +622,13 @@ input:focus {
   letter-spacing: 0.05em;
 }
 
-/* Kreatur-Figur auf dem Feld: Artwork im Rahmen, ATK/HP-Badges an den
-   unteren Ecken, Namensschild (Plaque) darunter. */
+/* Kreatur-Figur auf dem Feld: steht wie eine 3D-Spielfigur im Slot –
+   Artwork im leicht gekippten Rahmen, Standschatten am Boden,
+   ATK/HP-Badges an den unteren Ecken, Namensschild (Plaque) darunter. */
+.slot {
+  perspective: 520px;
+}
+
 .creature-figure {
   width: 100%;
   height: 100%;
@@ -632,12 +637,38 @@ input:focus {
   align-items: center;
   gap: 3px;
   min-height: 0;
-  animation: play-in 0.45s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+  position: relative;
+  transform-style: preserve-3d;
+  animation: play-in 0.6s cubic-bezier(0.18, 0.89, 0.32, 1.28);
 }
 
+/* Karte wird zur Figur: dreht sich in 3D auf und "landet" auf dem Feld */
 @keyframes play-in {
-  0% { transform: scale(0.6) translateY(20px); opacity: 0; }
-  100% { transform: scale(1) translateY(0); opacity: 1; }
+  0% {
+    transform: perspective(600px) rotateY(85deg) translateY(26px) scale(0.45);
+    opacity: 0;
+  }
+  55% {
+    transform: perspective(600px) rotateY(-12deg) translateY(-4px) scale(1.08);
+    opacity: 1;
+  }
+  100% {
+    transform: perspective(600px) rotateY(0deg) translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Standschatten unter der Figur */
+.creature-figure::before {
+  content: '';
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  bottom: 24px;
+  height: 12px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.55) 0%, transparent 70%);
+  z-index: -1;
 }
 
 .figure-frame {
@@ -654,6 +685,8 @@ input:focus {
   display: flex;
   align-items: center;
   justify-content: center;
+  transform: rotateX(9deg);
+  transform-origin: bottom center;
 }
 
 .creature-figure.enemy .figure-frame {
@@ -757,28 +790,114 @@ input:focus {
 }
 
 .creature-figure.exhausted .figure-frame {
-  transform: rotate(-3deg);
+  transform: rotateX(9deg) rotate(-3deg);
 }
 
-/* Angriff: eigene Figuren stoßen nach oben vor, gegnerische nach unten. */
+/* Angriff: eigene Figuren stoßen nach oben vor, gegnerische nach unten
+   (parallel dazu fliegt das Projektil durch die Lane). */
 .creature-figure.own.attacking {
-  animation: lunge-up 0.55s ease-in-out;
+  animation: lunge-up 0.5s ease-in-out;
 }
 
 .creature-figure.enemy.attacking {
-  animation: lunge-down 0.55s ease-in-out;
+  animation: lunge-down 0.5s ease-in-out;
 }
 
 @keyframes lunge-up {
   0%, 100% { transform: translateY(0); }
-  35% { transform: translateY(-16px) scale(1.08); }
-  65% { transform: translateY(4px); }
+  35% { transform: translateY(-14px) scale(1.07); }
+  65% { transform: translateY(3px); }
 }
 
 @keyframes lunge-down {
   0%, 100% { transform: translateY(0); }
-  35% { transform: translateY(16px) scale(1.08); }
-  65% { transform: translateY(-4px); }
+  35% { transform: translateY(14px) scale(1.07); }
+  65% { transform: translateY(-3px); }
+}
+
+/* Sterbeanimation: Figur kippt um, wird grau und löst sich auf. */
+.creature-figure.dying {
+  animation: death-out 0.6s ease-in forwards;
+  z-index: 3;
+}
+
+@keyframes death-out {
+  0% {
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
+  30% {
+    filter: brightness(1.8);
+    transform: scale(1.04);
+  }
+  100% {
+    opacity: 0;
+    filter: grayscale(1) brightness(0.5);
+    transform: rotateZ(80deg) translateY(16px) scale(0.55);
+  }
+}
+
+.creature-figure.dying::after {
+  content: '💀';
+  position: absolute;
+  top: 20%;
+  left: 50%;
+  font-size: 1.4rem;
+  animation: skull-rise 0.6s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes skull-rise {
+  0% { opacity: 0; transform: translate(-50%, 8px) scale(0.5); }
+  40% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -22px) scale(1.2); }
+}
+
+/* Projektile: fliegen innerhalb der Lane vom Angreifer zum Ziel. */
+.projectile {
+  position: absolute;
+  left: 50%;
+  z-index: 8;
+  font-size: 1.5rem;
+  pointer-events: none;
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.4));
+}
+
+.projectile.from-own {
+  animation: proj-up 0.5s ease-in forwards;
+}
+
+.projectile.from-enemy {
+  animation: proj-down 0.5s ease-in forwards;
+}
+
+@keyframes proj-up {
+  0% { top: 74%; transform: translateX(-50%) scale(0.6); opacity: 0; }
+  20% { opacity: 1; }
+  100% { top: 10%; transform: translateX(-50%) scale(1.2); opacity: 1; }
+}
+
+@keyframes proj-down {
+  0% { top: 10%; transform: translateX(-50%) scale(0.6); opacity: 0; }
+  20% { opacity: 1; }
+  100% { top: 74%; transform: translateX(-50%) scale(1.2); opacity: 1; }
+}
+
+/* Lane, in der gerade gekämpft wird, hervorheben */
+.lane {
+  position: relative;
+}
+
+.lane.combat-active .slot {
+  border-color: var(--gold);
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.25);
+}
+
+.lane.combat-active .lane-label {
+  color: var(--gold);
+  opacity: 1;
+  text-shadow: 0 0 8px rgba(245, 158, 11, 0.5);
 }
 
 /* Floating damage numbers */

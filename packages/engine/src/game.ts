@@ -28,6 +28,13 @@ import type {
 
 export { GameRuleError, getEffectiveAttack, getMaxHealth };
 
+/** Auren neu berechnen, Tote entfernen und als Sterbe-Events loggen. */
+function logDeaths(state: GameState): void {
+  for (const d of recalcBoard(state)) {
+    log(state, `${d.name} wird zerstört.`, { kind: 'death', lane: d.lane, owner: d.owner });
+  }
+}
+
 // ---------------------------------------------------------------- Deck & Start
 
 function shuffle<T>(arr: T[], random: () => number): T[] {
@@ -148,7 +155,7 @@ function endRound(state: GameState): void {
       creature.movedThisFlyPhase = false;
     }
   }
-  recalcBoard(state).forEach((d) => log(state, d));
+  logDeaths(state);
 
   if (state.round >= state.config.roundLimit) {
     const [a, b] = state.players;
@@ -224,7 +231,7 @@ function resolveCombat(state: GameState): void {
           log(state, `Lane ${lane + 1}: Gift! ${a.name} stirbt sofort.`);
         }
       }
-      recalcBoard(state).forEach((d) => log(state, d));
+      logDeaths(state);
     } else if (a && !b && !a.exhausted) {
       const dmg = getEffectiveAttack(state, 0, lane);
       state.players[1].base -= dmg;
@@ -343,7 +350,7 @@ function playPhaseAction(state: GameState, player: PlayerIndex, action: PlayerAc
   p.energy -= card.cost;
   p.hand.splice(action.handIndex, 1);
   state.consecutivePasses = 0;
-  recalcBoard(state).forEach((d) => log(state, d));
+  logDeaths(state);
   state.active = otherPlayer(player);
 }
 
@@ -382,7 +389,7 @@ function flyPhaseAction(state: GameState, player: PlayerIndex, action: PlayerAct
   state.board[player][action.fromLane] = null;
   creature.movedThisFlyPhase = true;
   log(state, `${creature.name} fliegt in Lane ${action.toLane + 1}.`);
-  recalcBoard(state).forEach((d) => log(state, d));
+  logDeaths(state);
 
   if (!playerHasFlyers(state, player)) {
     state.players[player].flyDone = true;
@@ -440,6 +447,7 @@ export function buildClientView(state: GameState, player: PlayerIndex, data: Gam
         owner === player &&
         hasKeyword(c, 'flying') &&
         !c.movedThisFlyPhase,
+      projectile: cardDef?.type === 'creature' ? cardDef.projectile : undefined,
       text: cardDef?.text ?? (c.isToken ? 'Token' : undefined)
     };
   };
