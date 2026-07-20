@@ -34,18 +34,24 @@ function requireFriendlyCreature(ctx: EffectContext, lane: number | undefined) {
 
 export const EFFECTS: { [K in Effect['kind']]: EffectResolver<K> } = {
   buffHealth(ctx, effect) {
-    const { creature } = requireFriendlyCreature(ctx, ctx.action.targetLane);
+    const { creature, lane } = requireFriendlyCreature(ctx, ctx.action.targetLane);
     // Nur das Maximum erhöhen – recalcBoard() hebt das aktuelle Leben mit an.
     creature.permHealthBonus += effect.amount;
-    log(ctx.state, `${ctx.card.name}: ${creature.name} erhält dauerhaft +${effect.amount} Leben.`);
+    log(ctx.state, `${ctx.card.name}: ${creature.name} erhält dauerhaft +${effect.amount} Leben.`, {
+      kind: 'spell',
+      lane,
+      effect: 'buff',
+      faction: ctx.card.faction
+    });
   },
 
   buffAttackTemp(ctx, effect) {
-    const { creature } = requireFriendlyCreature(ctx, ctx.action.targetLane);
+    const { creature, lane } = requireFriendlyCreature(ctx, ctx.action.targetLane);
     creature.tempAttackBonus += effect.amount;
     log(
       ctx.state,
-      `${ctx.card.name}: ${creature.name} erhält +${effect.amount} Angriff bis zum Rundenende.`
+      `${ctx.card.name}: ${creature.name} erhält +${effect.amount} Angriff bis zum Rundenende.`,
+      { kind: 'spell', lane, effect: 'attackBuff', faction: ctx.card.faction }
     );
   },
 
@@ -60,7 +66,8 @@ export const EFFECTS: { [K in Effect['kind']]: EffectResolver<K> } = {
       ctx.state.board[ctx.player][lanes[i]] = creature;
       log(
         ctx.state,
-        `${ctx.card.name}: ${creature.name} (${effect.token.attack}/${effect.token.health}) erscheint in Lane ${lanes[i] + 1}.`
+        `${ctx.card.name}: ${creature.name} (${effect.token.attack}/${effect.token.health}) erscheint in Lane ${lanes[i] + 1}.`,
+        { kind: 'spell', lane: lanes[i], effect: 'summon', faction: ctx.card.faction }
       );
     }
   },
@@ -79,7 +86,12 @@ export const EFFECTS: { [K in Effect['kind']]: EffectResolver<K> } = {
     }
     ctx.state.board[ctx.player][to] = creature;
     ctx.state.board[ctx.player][lane] = null;
-    log(ctx.state, `${ctx.card.name}: ${creature.name} wechselt in Lane ${to + 1}.`);
+    log(ctx.state, `${ctx.card.name}: ${creature.name} wechselt in Lane ${to + 1}.`, {
+      kind: 'spell',
+      lane: to,
+      effect: 'move',
+      faction: ctx.card.faction
+    });
   }
 };
 

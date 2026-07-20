@@ -143,12 +143,29 @@ export interface DeathEvent {
 
 export type CombatEvent = AttackEvent | DeathEvent;
 
+/**
+ * Zauber-Ereignis einer Aktionskarte – die UI spielt es als kurzen Effekt auf
+ * der Ziel-Lane ab (Schild-Glühen, Funken, Staub …). Kreaturen brauchen kein
+ * eigenes Event: ihr Erscheinen löst die Spawn-Animation über die neue uid aus.
+ */
+export interface SpellEvent {
+  kind: 'spell';
+  lane: number;
+  /** Welche Art Effekt gespielt wird (bestimmt Farbe/Form der Animation). */
+  effect: 'buff' | 'attackBuff' | 'summon' | 'move';
+  /** Fraktion des Ausspielenden – färbt den Effekt ein. */
+  faction: string;
+}
+
+/** Alles, was als strukturiertes Ereignis an einem Log-Eintrag hängen kann. */
+export type LogEvent = CombatEvent | SpellEvent;
+
 export interface LogEntry {
   /** Fortlaufende Nummer über die ganze Partie (stabil trotz gekürzter Sicht). */
   id: number;
   round: number;
   text: string;
-  event?: CombatEvent;
+  event?: LogEvent;
 }
 
 export interface GameState {

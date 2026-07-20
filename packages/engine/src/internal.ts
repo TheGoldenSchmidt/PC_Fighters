@@ -3,7 +3,7 @@
 // verschwindet die Quelle, verschwindet automatisch auch der Bonus.
 
 import { KEYWORDS } from './keywords.js';
-import type { CombatEvent, Creature, GameState, PlayerIndex, TokenDef } from './types.js';
+import type { Creature, GameState, LogEvent, PlayerIndex, TokenDef } from './types.js';
 
 /** Fehlerhafte/unerlaubte Aktion eines Spielers (Meldung ist für den Client gedacht). */
 export class GameRuleError extends Error {
@@ -155,6 +155,6 @@ export function freeLanes(state: GameState, owner: PlayerIndex): number[] {
   return lanes;
 }
 
-export function log(state: GameState, text: string, event?: CombatEvent): void {
+export function log(state: GameState, text: string, event?: LogEvent): void {
   state.log.push({ id: state.log.length, round: state.round, text, ...(event ? { event } : {}) });
 }

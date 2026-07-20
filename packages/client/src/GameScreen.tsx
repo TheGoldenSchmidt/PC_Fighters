@@ -26,15 +26,16 @@ import type {
   AttackEvent,
   CardDef,
   ClientView,
-  CombatEvent,
   CreatureView,
   DeathEvent,
+  LogEvent,
   PlayerAction,
   PlayerIndex,
+  SpellEvent,
   Topic
 } from '@pcf/engine';
 import type { ConnectionStatus, KeywordInfo } from './useGame';
-import { Battlefield3D, webglSupported } from './Battlefield3D';
+import { Battlefield3D, webglSupported, type SpellEffectKind } from './Battlefield3D';
 
 interface Props {
   view: ClientView;
@@ -73,11 +74,19 @@ interface FxBaseImpact {
   damage: number;
 }
 
+interface FxSpell {
+  key: string;
+  lane: number;
+  effect: SpellEffectKind;
+  faction: string;
+}
+
 interface FxState {
   projectiles: FxProjectile[];
   impacts: FxImpact[];
   baseImpacts: FxBaseImpact[];
   dying: { lane: number; owner: PlayerIndex }[];
+  spells: FxSpell[];
   activeLane: number | null;
 }
 
@@ -86,6 +95,7 @@ const EMPTY_FX: FxState = {
   impacts: [],
   baseImpacts: [],
   dying: [],
+  spells: [],
   activeLane: null
 };
 
@@ -106,6 +116,7 @@ interface DetailData {
 const PROJECTILE_MS = 500;
 const IMPACT_MS = 650;
 const DEATH_MS = 600;
+const SPELL_MS = 750;
 const LANE_PAUSE_MS = 200;
 const BANNER_MS = 1500;
 const LONG_PRESS_MS = 450;
@@ -164,7 +175,7 @@ export function GameScreen({
 
   const shownViewRef = useRef(view);
   const latestViewRef = useRef(view);
-  const queueRef = useRef<CombatEvent[]>([]);
+  const queueRef = useRef<LogEvent[]>([]);
   const runningRef = useRef(false);
   const cancelledRef = useRef(false);
   const lastLogId = useRef<number | null>(null);
@@ -336,7 +347,7 @@ export function GameScreen({
         await sleep(IMPACT_MS);
         setFx((f) => ({ ...f, impacts: [], baseImpacts: [] }));
         await sleep(LANE_PAUSE_MS);
-      } else {
+      } else if (ev.kind === 'death') {
         // Tode derselben Lane (gleichzeitiger Kampf) gemeinsam abspielen
         const deaths: DeathEvent[] = [ev];
         while (
@@ -359,6 +370,27 @@ export function GameScreen({
           ...f,
           dying: f.dying.filter((x) => !deaths.some((d) => d.lane === x.lane && d.owner === x.owner))
         }));
+      } else {
+        // Zauber-Effekte einer Aktionskarte: alle direkt aufeinanderfolgenden
+        // Spell-Events gemeinsam zeigen (z. B. Beschwörung mehrerer Tokens).
+        const spellEvents: SpellEvent[] = [ev];
+        while (queueRef.current[0]?.kind === 'spell') {
+          spellEvents.push(queueRef.current.shift() as SpellEvent);
+        }
+        const spells: FxSpell[] = spellEvents.map((s, i) => ({
+          key: `s-${s.lane}-${i}-${Date.now()}`,
+          lane: s.lane,
+          effect: s.effect,
+          faction: s.faction
+        }));
+        // Neuen Serverzustand direkt zeigen: beschworene Kreatur erscheint,
+        // Buff-Zahlen/Lane-Wechsel werden sichtbar – parallel zum Effekt.
+        setShown(latestViewRef.current);
+        setFx((f) => ({ ...f, activeLane: ev.lane, spells }));
+        await sleep(SPELL_MS);
+        if (cancelledRef.current) break;
+        setFx((f) => ({ ...f, spells: [] }));
+        await sleep(LANE_PAUSE_MS);
       }
     }
 
@@ -499,6 +531,8 @@ export function GameScreen({
   const incomingDamage = (side: PlayerIndex, lane: number) =>
     fx.impacts.find((i) => i.side === side && i.lane === lane);
   const baseHit = (side: PlayerIndex) => fx.baseImpacts.find((b) => b.side === side);
+  // Zauber-Effekte treffen immer eigene Lanes (Aktionskarten zielen auf sich selbst)
+  const spellOnLane = (lane: number) => fx.spells.find((s) => s.lane === lane);
 
   const themeVars = (
     topic
@@ -570,6 +604,7 @@ export function GameScreen({
             view={shownView}
             me={me}
             fx={fx}
+            topic={topic}
             onUnsupported={() => setUse3d(false)}
           />
         )}
@@ -617,6 +652,10 @@ export function GameScreen({
                   onDetail={openCreatureDetail}
                 />
                 {ownDmg && <span className="dmg-float">-{ownDmg.damage}</span>}
+                {/* Zauber-Effekt (2D-Fallback ohne WebGL) */}
+                {!use3d && spellOnLane(lane) && (
+                  <span className={`spell-burst spell-${spellOnLane(lane)!.effect}`} aria-hidden />
+                )}
               </button>
               {/* Fliegende Projektile dieser Lane (2D-Fallback – in 3D
                   übernehmen die Leucht-Geschosse des Schlachtfelds) */}

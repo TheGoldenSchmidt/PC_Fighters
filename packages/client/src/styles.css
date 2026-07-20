@@ -970,6 +970,42 @@ input:focus {
   100% { top: 74%; transform: translateX(-50%) scale(1.2); opacity: 1; }
 }
 
+/* Zauber-Effekt einer Aktionskarte (nur 2D-Fallback ohne WebGL) */
+.spell-burst {
+  position: absolute;
+  left: 50%;
+  bottom: 18%;
+  width: 60%;
+  aspect-ratio: 1;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 7;
+  animation: spell-burst 0.75s ease-out forwards;
+  --spell-color: #ffd766;
+}
+
+.spell-burst.spell-buff { --spell-color: #5ee8a0; }
+.spell-burst.spell-attackBuff { --spell-color: #ff8a4d; }
+.spell-burst.spell-summon { --spell-color: #ffd766; }
+.spell-burst.spell-move { --spell-color: #d9c4a0; }
+
+@keyframes spell-burst {
+  0% {
+    opacity: 0;
+    box-shadow: 0 0 0 0 var(--spell-color);
+    background: radial-gradient(circle, var(--spell-color) 0%, transparent 60%);
+    transform: translateX(-50%) scale(0.4);
+  }
+  30% { opacity: 0.9; }
+  100% {
+    opacity: 0;
+    box-shadow: 0 0 30px 12px transparent;
+    background: radial-gradient(circle, transparent 0%, transparent 70%);
+    transform: translateX(-50%) scale(1.5);
+  }
+}
+
 /* ---- 3D-Modus: Die Figur zeichnet das Schlachtfeld-Canvas, die Kachel
    liefert nur noch die Overlays (ATK/HP-Badges, Namensschild, Keywords).
    Diese Regeln stehen bewusst NACH den 2D-Regeln, damit sie gewinnen. ---- */
