@@ -556,6 +556,19 @@ input:focus {
   flex: 1;
   min-height: 0;
   z-index: 3;
+  /* Anker für das 3D-Schlachtfeld-Canvas */
+  position: relative;
+}
+
+/* 3D-Schlachtfeld: transparentes WebGL-Canvas über dem Lane-Raster.
+   Taps gehen durch (pointer-events: none), die DOM-Slots bleiben bedienbar. */
+.battlefield3d {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 6;
+  pointer-events: none;
 }
 
 .lane {
@@ -955,6 +968,65 @@ input:focus {
   0% { top: 10%; transform: translateX(-50%) scale(0.6); opacity: 0; }
   20% { opacity: 1; }
   100% { top: 74%; transform: translateX(-50%) scale(1.2); opacity: 1; }
+}
+
+/* ---- 3D-Modus: Die Figur zeichnet das Schlachtfeld-Canvas, die Kachel
+   liefert nur noch die Overlays (ATK/HP-Badges, Namensschild, Keywords).
+   Diese Regeln stehen bewusst NACH den 2D-Regeln, damit sie gewinnen. ---- */
+
+.creature-figure.figure-3d {
+  /* Overlays über das Canvas heben (Canvas hat z-index 6) */
+  z-index: 8;
+  /* sanftes Einblenden statt 3D-Kartendreher – die Beschwörung macht WebGL */
+  animation: overlay-in 0.5s ease;
+}
+
+@keyframes overlay-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* CSS-Standschatten aus – das Schlachtfeld rendert einen eigenen */
+.creature-figure.figure-3d::before {
+  display: none;
+}
+
+.creature-figure.figure-3d .figure-frame {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  overflow: visible;
+  transform: none;
+  animation: none;
+}
+
+/* Erschöpfung zeigt die 3D-Figur selbst (graue, eingesackte Pose) –
+   die Badges bleiben gut lesbar */
+.creature-figure.figure-3d.exhausted {
+  opacity: 0.85;
+  filter: none;
+}
+
+.creature-figure.figure-3d.exhausted .figure-frame {
+  transform: none;
+}
+
+/* Angriffs-Ausfall und Umkippen macht das 3D-Modell; Overlays nur ausblenden */
+.creature-figure.figure-3d.own.attacking,
+.creature-figure.figure-3d.enemy.attacking {
+  animation: none;
+}
+
+.creature-figure.figure-3d.dying {
+  animation: overlay-death 0.6s ease-in forwards;
+}
+
+@keyframes overlay-death {
+  to {
+    opacity: 0;
+  }
 }
 
 /* Lane, in der gerade gekämpft wird, hervorheben */

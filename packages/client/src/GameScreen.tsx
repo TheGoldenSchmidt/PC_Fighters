@@ -34,6 +34,7 @@ import type {
   Topic
 } from '@pcf/engine';
 import type { ConnectionStatus, KeywordInfo } from './useGame';
+import { Battlefield3D, webglSupported } from './Battlefield3D';
 
 interface Props {
   view: ClientView;
@@ -151,6 +152,8 @@ export function GameScreen({
   onLeave
 }: Props) {
   const [selection, setSelection] = useState<Selection>(null);
+  // 3D-Figuren nur, wenn der Browser WebGL kann – sonst 2D-Fallback (Artwork)
+  const [use3d, setUse3d] = useState(webglSupported);
   const [shownView, setShownViewState] = useState<ClientView>(view);
   const [isReplaying, setIsReplaying] = useState(false);
   const [fx, setFx] = useState<FxState>(EMPTY_FX);
@@ -562,6 +565,14 @@ export function GameScreen({
 
       {/* ---- Lanes ---- */}
       <main className="lanes" style={{ '--lanes': shownView.lanes } as CSSProperties}>
+        {use3d && (
+          <Battlefield3D
+            view={shownView}
+            me={me}
+            fx={fx}
+            onUnsupported={() => setUse3d(false)}
+          />
+        )}
         {Array.from({ length: shownView.lanes }, (_, lane) => {
           const targetable = myTurn && targets.lanes.has(lane);
           const flySource = selection?.kind === 'fly' && selection.fromLane === lane;
@@ -573,10 +584,11 @@ export function GameScreen({
           const combatActive = isReplaying && fx.activeLane === lane;
           return (
             <div className={'lane' + (combatActive ? ' combat-active' : '')} key={lane}>
-              <div className="slot enemy-slot">
+              <div className="slot enemy-slot" data-slot={`${opp}-${lane}`}>
                 <CreatureTile
                   key={enemyCreature?.uid ?? 'leer'}
                   creature={enemyCreature}
+                  flat3d={use3d}
                   attacking={isAttacking(opp, lane)}
                   dying={isDying(opp, lane)}
                   moveDelta={enemyCreature ? moveFx[enemyCreature.uid] : undefined}
@@ -591,12 +603,14 @@ export function GameScreen({
                   (targetable ? ' targetable' : '') +
                   (flySource || moveSource ? ' selected-slot' : '')
                 }
+                data-slot={`${me}-${lane}`}
                 onClick={() => tapOwnLane(lane)}
               >
                 <CreatureTile
                   key={ownCreature?.uid ?? 'leer'}
                   creature={ownCreature}
                   own
+                  flat3d={use3d}
                   attacking={isAttacking(me, lane)}
                   dying={isDying(me, lane)}
                   moveDelta={ownCreature ? moveFx[ownCreature.uid] : undefined}
@@ -604,10 +618,12 @@ export function GameScreen({
                 />
                 {ownDmg && <span className="dmg-float">-{ownDmg.damage}</span>}
               </button>
-              {/* Fliegende Projektile dieser Lane */}
-              {fx.projectiles
-                .filter((p) => p.lane === lane)
-                .map((p) => (
+              {/* Fliegende Projektile dieser Lane (2D-Fallback – in 3D
+                  übernehmen die Leucht-Geschosse des Schlachtfelds) */}
+              {!use3d &&
+                fx.projectiles
+                  .filter((p) => p.lane === lane)
+                  .map((p) => (
                   <span
                     key={p.key}
                     className={'projectile ' + (p.attacker === me ? 'from-own' : 'from-enemy')}
@@ -809,6 +825,7 @@ function CardArt({
 function CreatureTile({
   creature,
   own,
+  flat3d,
   attacking,
   dying,
   moveDelta,
@@ -816,6 +833,8 @@ function CreatureTile({
 }: {
   creature: CreatureView | null;
   own?: boolean;
+  /** 3D-Modus: Figur zeichnet das Schlachtfeld-Canvas, hier nur Overlays. */
+  flat3d?: boolean;
   attacking?: boolean;
   dying?: boolean;
   /** Lane-Differenz (alt − neu), wenn die Figur gerade die Lane gewechselt hat. */
@@ -841,6 +860,7 @@ function CreatureTile({
         (attacking ? ' attacking' : '') +
         (dying ? ' dying' : '') +
         (moveDelta !== undefined ? ' lane-move' : '') +
+        (flat3d ? ' figure-3d' : '') +
         ` card-${creature.cardId}`
       }
       style={
@@ -861,18 +881,22 @@ function CreatureTile({
     >
       <div
         className="figure-frame"
-        style={{ animationDelay: `${-((creature.uid % 7) * 0.4)}s` }}
+        style={flat3d ? undefined : { animationDelay: `${-((creature.uid % 7) * 0.4)}s` }}
       >
-        <CardArt
-          cardId={creature.cardId}
-          className="figure-image"
-          alt={creature.name}
-          fallback={
-            <div className="figure-image-fallback">
-              {creature.cardId === 'ratte' ? '🐀' : creature.canFly ? '🕊️' : '⚔️'}
-            </div>
-          }
-        />
+        {/* Im 3D-Modus steht hier die WebGL-Figur – der Rahmen bleibt als
+            unsichtbarer Träger für die ATK/HP-Badges erhalten. */}
+        {!flat3d && (
+          <CardArt
+            cardId={creature.cardId}
+            className="figure-image"
+            alt={creature.name}
+            fallback={
+              <div className="figure-image-fallback">
+                {creature.cardId === 'ratte' ? '🐀' : creature.canFly ? '🕊️' : '⚔️'}
+              </div>
+            }
+          />
+        )}
         <div className={`figure-stat stat-atk ${attackBuffed ? 'buffed' : attackReduced ? 'reduced' : ''}`}>
           {creature.attack}
         </div>
