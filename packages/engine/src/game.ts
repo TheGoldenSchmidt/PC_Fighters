@@ -1,6 +1,16 @@
 // Spiellogik: reine Funktionen auf dem GameState, kein Netzwerk, kein UI.
 // applyAction(state, spieler, aktion) → neuer Zustand (oder GameRuleError).
 
+import {
+  applyHinrichten,
+  getAbility,
+  hasAbility,
+  onDeathTriggers,
+  onPlayAbilities,
+  onRoundEndAbilities,
+  onRoundStartAbilities,
+  resolvePoison
+} from './abilities.js';
 import { resolveEffect } from './effects.js';
 import { buildFactionTree, matchesScope } from './factions.js';
 import {
@@ -29,10 +39,21 @@ import type {
 
 export { GameRuleError, getEffectiveAttack, getMaxHealth };
 
-/** Auren neu berechnen, Tote entfernen und als Sterbe-Events loggen. */
+/**
+ * Auren neu berechnen, Tote entfernen und als Sterbe-Events loggen. Beim-Tod-
+ * Effekte (todesfluch, beschwoeren, sammeln) können neue Tode auslösen – daher
+ * bis zur Stabilität wiederholen.
+ */
 function logDeaths(state: GameState): void {
-  for (const d of recalcBoard(state)) {
-    log(state, `${d.name} wird zerstört.`, { kind: 'death', lane: d.lane, owner: d.owner });
+  let deaths = recalcBoard(state);
+  let guard = 0;
+  while (deaths.length > 0 && guard < 100) {
+    for (const d of deaths) {
+      log(state, `${d.name} wird zerstört.`, { kind: 'death', lane: d.lane, owner: d.owner });
+    }
+    onDeathTriggers(state, deaths);
+    deaths = recalcBoard(state);
+    guard += 1;
   }
 }
 
@@ -88,6 +109,7 @@ export function createGame(
     hand: [],
     base: data.config.baseHealth,
     energy: 0,
+    knowledge: 0,
     flyDone: false
   });
 
@@ -135,11 +157,15 @@ function startRound(state: GameState): void {
   state.consecutivePasses = 0;
   state.players[0].flyDone = false;
   state.players[1].flyDone = false;
+  // Rundenbeginn-Effekte (Rundenwachstum, lernen/wissen pro Runde) – wirkt auf
+  // Kreaturen, die aus einer früheren Runde übrig sind (Runde 1: leeres Feld).
+  onRoundStartAbilities(state);
+  recalcBoard(state);
   log(state, `— Runde ${state.round} beginnt (${energy} Energie, Spieler ${state.startingPlayer + 1} fängt an) —`);
 }
 
 function endRound(state: GameState): void {
-  // Rundenende-Effekte (z. B. heilt_nachbarn)
+  // Rundenende-Effekte: Alt-Keywords (z. B. heilt_nachbarn) …
   for (const owner of [0, 1] as PlayerIndex[]) {
     state.board[owner].forEach((creature, lane) => {
       if (!creature) return;
@@ -151,6 +177,8 @@ function endRound(state: GameState): void {
       }
     });
   }
+  // … und neue Fähigkeiten (heilung, ueberstunden).
+  onRoundEndAbilities(state);
   // Temporäre Buffs entfernen, Erschöpfung aufheben
   for (const row of state.board) {
     for (const creature of row) {
@@ -194,6 +222,49 @@ function checkBaseDestroyed(state: GameState): boolean {
   return true;
 }
 
+/** Ein Angriff Kreatur→Kreatur inkl. Gift, Wucht (Überschuss→Basis) und Dornen. */
+function creatureStrike(
+  state: GameState,
+  attacker: Creature,
+  defender: Creature,
+  atk: number,
+  attackerIdx: PlayerIndex,
+  lane: number
+): void {
+  const defenderHealthBefore = defender.currentHealth;
+  defender.currentHealth -= atk;
+  attacker.attackedThisRound = true;
+  log(state, `Lane ${lane + 1}: ${attacker.name} trifft ${defender.name} für ${atk}.`, {
+    kind: 'attack',
+    lane,
+    attacker: attackerIdx,
+    damage: atk,
+    toBase: false
+  });
+  // Alt-Keyword Gift (Sofort-Tod) …
+  if (hasKeyword(attacker, 'poison') && defender.currentHealth > 0) {
+    defender.currentHealth = 0;
+    log(state, `Lane ${lane + 1}: Gift! ${defender.name} stirbt sofort.`);
+  }
+  // … neue Gift-Marken (Zermürbung).
+  const gift = getAbility(attacker, 'gift');
+  if (gift) defender.poison += gift.staerke;
+  // Wucht: Überschussschaden trifft die gegnerische Basis.
+  if (hasAbility(attacker, 'wucht')) {
+    const overflow = Math.max(0, atk - defenderHealthBefore);
+    if (overflow > 0) {
+      state.players[otherPlayer(attackerIdx)].base -= overflow;
+      log(state, `Lane ${lane + 1}: Wucht! ${overflow} Überschuss trifft die Basis.`);
+    }
+  }
+  // Dornen: Verteidiger fügt dem Angreifer Schaden zu.
+  const dornen = getAbility(defender, 'dornen');
+  if (dornen) {
+    attacker.currentHealth -= dornen.x;
+    log(state, `Lane ${lane + 1}: Dornen! ${defender.name} verletzt ${attacker.name} um ${dornen.x}.`);
+  }
+}
+
 function resolveCombat(state: GameState): void {
   log(state, '— Kampfphase —');
   for (let lane = 0; lane < state.config.lanes; lane++) {
@@ -208,37 +279,23 @@ function resolveCombat(state: GameState): void {
       const atkB = b.exhausted ? 0 : getEffectiveAttack(state, 1, lane);
       if (atkA === 0 && atkB === 0) continue;
 
+      // Hinrichten (beim Angriff, vor dem Schaden).
       if (atkA > 0) {
-        b.currentHealth -= atkA;
-        log(state, `Lane ${lane + 1}: ${a.name} trifft ${b.name} für ${atkA}.`, {
-          kind: 'attack',
-          lane,
-          attacker: 0,
-          damage: atkA,
-          toBase: false
-        });
-        if (hasKeyword(a, 'poison') && b.currentHealth > 0) {
-          b.currentHealth = 0;
-          log(state, `Lane ${lane + 1}: Gift! ${b.name} stirbt sofort.`);
-        }
+        const h = getAbility(a, 'hinrichten');
+        if (h) applyHinrichten(state, 0, lane, h.maxHp);
       }
       if (atkB > 0) {
-        a.currentHealth -= atkB;
-        log(state, `Lane ${lane + 1}: ${b.name} trifft ${a.name} für ${atkB}.`, {
-          kind: 'attack',
-          lane,
-          attacker: 1,
-          damage: atkB,
-          toBase: false
-        });
-        if (hasKeyword(b, 'poison') && a.currentHealth > 0) {
-          a.currentHealth = 0;
-          log(state, `Lane ${lane + 1}: Gift! ${a.name} stirbt sofort.`);
-        }
+        const h = getAbility(b, 'hinrichten');
+        if (h) applyHinrichten(state, 1, lane, h.maxHp);
       }
+
+      if (atkA > 0) creatureStrike(state, a, b, atkA, 0, lane);
+      if (atkB > 0) creatureStrike(state, b, a, atkB, 1, lane);
       logDeaths(state);
+      if (checkBaseDestroyed(state)) return; // Wucht kann die Basis zerstören
     } else if (a && !b && !a.exhausted) {
       const dmg = getEffectiveAttack(state, 0, lane);
+      a.attackedThisRound = true;
       state.players[1].base -= dmg;
       log(state, `Lane ${lane + 1}: ${a.name} trifft die gegnerische Basis für ${dmg}.`, {
         kind: 'attack',
@@ -250,6 +307,7 @@ function resolveCombat(state: GameState): void {
       if (checkBaseDestroyed(state)) return;
     } else if (b && !a && !b.exhausted) {
       const dmg = getEffectiveAttack(state, 1, lane);
+      b.attackedThisRound = true;
       state.players[0].base -= dmg;
       log(state, `Lane ${lane + 1}: ${b.name} trifft die gegnerische Basis für ${dmg}.`, {
         kind: 'attack',
@@ -261,6 +319,10 @@ function resolveCombat(state: GameState): void {
       if (checkBaseDestroyed(state)) return;
     }
   }
+
+  // Gift-Zermürbung am Ende der Kampfphase (Marken bleiben bestehen).
+  resolvePoison(state);
+  logDeaths(state);
 }
 
 // ---------------------------------------------------------------- Flug-Phase
@@ -345,6 +407,9 @@ function playPhaseAction(state: GameState, player: PlayerIndex, action: PlayerAc
       `Spieler ${player + 1} spielt ${card.name} in Lane ${action.lane + 1}` +
         (creature.exhausted ? '.' : ' – flink und sofort kampfbereit!')
     );
+    // Beim-Ausspielen-Effekte (sturzflug, lernen, wissen, Puls, umverteilung,
+    // beschwoeren, entwaffnen, experiment).
+    onPlayAbilities(state, player, action.lane);
   } else {
     if (card.type !== 'action') {
       throw new GameRuleError(`${card.name} ist eine Kreatur – bitte eine Lane wählen.`);
@@ -441,6 +506,8 @@ export function buildClientView(state: GameState, player: PlayerIndex, data: Gam
       cardId: c.cardId,
       name: c.name,
       keywords: c.keywords,
+      abilities: c.abilities,
+      poison: c.poison,
       attack: getEffectiveAttack(state, owner, lane),
       baseAttack: c.baseAttack,
       health: c.currentHealth,

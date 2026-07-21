@@ -1,5 +1,6 @@
 export * from './types.js';
 export { KEYWORDS, hasKeyword } from './keywords.js';
+export { ABILITIES, getAbility, hasAbility } from './abilities.js';
 export { EFFECTS } from './effects.js';
 export {
   applyAction,

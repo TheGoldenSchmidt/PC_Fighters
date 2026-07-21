@@ -75,6 +75,39 @@ export const effectSchema = z.discriminatedUnion('kind', [
   })
 ]);
 
+// --- Fähigkeiten (parametrisierte Primitive) ---
+const statSchema = z.object({ atk: z.number().int(), hp: z.number().int() });
+const scopeSchema = z.enum(['same_sub', 'same_top', 'any']);
+
+export const abilitySchema = z.discriminatedUnion('kind', [
+  z.object({ kind: z.literal('skalierung'), scope: scopeSchema, per: statSchema, cap: z.number().int().min(0).optional(), includeSelf: z.boolean().optional() }),
+  z.object({ kind: z.literal('aura'), scope: scopeSchema, buff: statSchema, timing: z.enum(['dauerhaft', 'einmal_beim_ausspielen']) }),
+  z.object({ kind: z.literal('nachbar'), effect: z.enum(['schild', 'banner', 'schadensuebernahme']), scope: scopeSchema, amount: z.number().int() }),
+  z.object({ kind: z.literal('heilung'), scope: scopeSchema, reichweite: z.enum(['nachbarn', 'scope']), amount: z.number().int().min(1), mehrWennBasisUnter: z.object({ schwelle: z.number().int(), amount: z.number().int().min(1) }).optional() }),
+  z.object({ kind: z.literal('wachstum'), per_round: statSchema, ziel: z.enum(['selbst', 'verbuendeter']).optional(), scope: scopeSchema.optional() }),
+  z.object({ kind: z.literal('verstaerker'), ziel: z.literal('wachstum'), scope: scopeSchema, faktor: z.number().int().min(1) }),
+  z.object({ kind: z.literal('rettung'), mode: z.enum(['survive_1hp', 'revive_1hp', 'full_heal']) }),
+  z.object({ kind: z.literal('ueberstunden'), bonus: statSchema }),
+  z.object({ kind: z.literal('werkzeug'), atk: z.number().int().min(1) }),
+  z.object({ kind: z.literal('improvisation'), scope: scopeSchema, mode: z.enum(['schwelle', 'pro_fehlende_hp']), bonus: statSchema, schwelle: z.number().int().optional(), proHp: z.number().int().min(1).optional() }),
+  z.object({ kind: z.literal('sammeln'), bonus: statSchema, trigger: z.enum(['any', 'own', 'enemy']) }),
+  z.object({ kind: z.literal('lernen'), n: z.number().int().min(1), proRunde: z.boolean().optional() }),
+  z.object({ kind: z.literal('wissen'), x: z.number().int().min(1), proRunde: z.boolean().optional() }),
+  z.object({ kind: z.literal('experiment'), schadenProMarker: z.number().int().min(1).optional(), proMarker: statSchema.optional() }),
+  z.object({ kind: z.literal('neugier'), bonus: statSchema.optional(), basisschaden: z.number().int().min(1).optional(), wucht: z.boolean().optional() }),
+  z.object({ kind: z.literal('umverteilung'), menge: z.number().int().min(1), schwelle: z.number().int().optional(), ziel: z.enum(['einer', 'alle']), art: z.enum(['atk', 'gift']).optional(), dauer: z.enum(['dauerhaft', 'runde']).optional() }),
+  z.object({ kind: z.literal('kaltbluetig'), bonus: statSchema }),
+  z.object({ kind: z.literal('dornen'), x: z.number().int().min(1) }),
+  z.object({ kind: z.literal('sturzflug'), x: z.number().int().min(1) }),
+  z.object({ kind: z.literal('wucht') }),
+  z.object({ kind: z.literal('urgewalt') }),
+  z.object({ kind: z.literal('gift'), staerke: z.number().int().min(1) }),
+  z.object({ kind: z.literal('beschwoeren'), timing: z.enum(['beim_ausspielen', 'beim_tod']), count: z.number().int().min(1), token: tokenSchema }),
+  z.object({ kind: z.literal('entwaffnen'), entfernt: z.array(z.string().min(1)).min(1) }),
+  z.object({ kind: z.literal('todesfluch'), atk: z.number().int().min(1) }),
+  z.object({ kind: z.literal('hinrichten'), maxHp: z.number().int().min(1) })
+]);
+
 const cardBase = {
   id: z.string().min(1),
   name: z.string().min(1),
@@ -91,6 +124,7 @@ export const cardSchema = z.discriminatedUnion('type', [
     attack: z.number().int().min(0),
     health: z.number().int().min(1),
     keywords: z.array(keywordSchema).default([]),
+    abilities: z.array(abilitySchema).default([]),
     projectile: z.string().min(1).optional()
   }),
   z.object({

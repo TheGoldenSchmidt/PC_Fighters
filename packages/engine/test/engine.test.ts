@@ -30,6 +30,7 @@ function player(faction: string): PlayerState {
     hand: [],
     base: data.config.baseHealth,
     energy: 10,
+    knowledge: 0,
     flyDone: false
   };
 }
@@ -71,15 +72,23 @@ function put(
     name: card.name,
     faction: card.faction,
     keywords: card.keywords,
+    abilities: (card.abilities ?? []).map((a) => ({ ...a })),
     baseAttack: card.attack,
     baseMaxHealth: card.health,
     permHealthBonus: 0,
+    permAttackBonus: 0,
     tempAttackBonus: 0,
     currentHealth: card.health,
     lastMaxHealth: card.health,
     exhausted: opts.exhausted ?? false,
     movedThisFlyPhase: false,
-    isToken: false
+    isToken: false,
+    poison: 0,
+    attackedThisRound: false,
+    spawnRound: state.round,
+    ueberstundenDone: false,
+    rettungUsed: false,
+    schutzUsed: false
   };
   state.board[owner][lane] = c;
   recalcBoard(state);

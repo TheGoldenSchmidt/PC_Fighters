@@ -19,6 +19,7 @@ import {
   type GameData,
   type GameState,
   type PlayerAction,
+  ABILITIES,
   KEYWORDS,
   type PlayerIndex,
   type Topic
@@ -27,6 +28,11 @@ import {
 /** Keyword-Erklärungen für die Karten-Detailansicht des Clients (einmal berechnet). */
 const keywordInfo = Object.fromEntries(
   Object.entries(KEYWORDS).map(([id, k]) => [id, { label: k.label, description: k.description }])
+);
+
+/** Fähigkeiten-Erklärungen (parametrisierte Primitive) für die Karten-Detailansicht. */
+const abilityInfo = Object.fromEntries(
+  Object.entries(ABILITIES).map(([id, a]) => [id, { label: a.label, description: a.description }])
 );
 
 interface RoomPlayer {
@@ -302,6 +308,7 @@ export function startServer(port: number): Promise<RunningServer> {
             playerIndex: 0,
             topic,
             keywords: keywordInfo,
+            abilities: abilityInfo,
             factions: requireData().factions
           });
           break;
@@ -328,7 +335,8 @@ export function startServer(port: number): Promise<RunningServer> {
             token: room.players[1].token,
             playerIndex: 1,
             topic: room.topic,
-            keywords: keywordInfo
+            keywords: keywordInfo,
+            abilities: abilityInfo
           });
           // Beide Spieler da → Partie starten
           room.state = createGame(requireData(), [room.players[0].faction, faction]);
@@ -351,7 +359,8 @@ export function startServer(port: number): Promise<RunningServer> {
             code: room.code,
             playerIndex: idx,
             topic: room.topic,
-            keywords: keywordInfo
+            keywords: keywordInfo,
+            abilities: abilityInfo
           });
           notifyOpponentConnection(room, idx as PlayerIndex);
           if (room.state) {
