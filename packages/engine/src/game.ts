@@ -222,6 +222,12 @@ function checkBaseDestroyed(state: GameState): boolean {
   return true;
 }
 
+/** Extra Basisschaden von `neugier`, wenn die Kreatur allein in ihrer Lane angreift. */
+function soloBasisschaden(c: Creature): number {
+  const n = getAbility(c, 'neugier');
+  return n?.basisschaden ?? 0;
+}
+
 /** Ein Angriff Kreatur→Kreatur inkl. Gift, Wucht (Überschuss→Basis) und Dornen. */
 function creatureStrike(
   state: GameState,
@@ -294,7 +300,7 @@ function resolveCombat(state: GameState): void {
       logDeaths(state);
       if (checkBaseDestroyed(state)) return; // Wucht kann die Basis zerstören
     } else if (a && !b && !a.exhausted) {
-      const dmg = getEffectiveAttack(state, 0, lane);
+      const dmg = getEffectiveAttack(state, 0, lane) + soloBasisschaden(a);
       a.attackedThisRound = true;
       state.players[1].base -= dmg;
       log(state, `Lane ${lane + 1}: ${a.name} trifft die gegnerische Basis für ${dmg}.`, {
@@ -306,7 +312,7 @@ function resolveCombat(state: GameState): void {
       });
       if (checkBaseDestroyed(state)) return;
     } else if (b && !a && !b.exhausted) {
-      const dmg = getEffectiveAttack(state, 1, lane);
+      const dmg = getEffectiveAttack(state, 1, lane) + soloBasisschaden(b);
       b.attackedThisRound = true;
       state.players[0].base -= dmg;
       log(state, `Lane ${lane + 1}: ${b.name} trifft die gegnerische Basis für ${dmg}.`, {

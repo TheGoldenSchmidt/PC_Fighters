@@ -110,5 +110,404 @@
       }
     },
     "text": "Beschwört zwei 1/1-Rekrut-Token in freie eigene Lanes."
+  },
+
+  {
+    "id": "flugblatt_verteiler",
+    "name": "Flugblatt-Verteiler",
+    "faction": "sozis",
+    "type": "creature",
+    "cost": 1,
+    "attack": 1,
+    "health": 2,
+    "abilities": [{ "kind": "skalierung", "scope": "same_sub", "per": { "atk": 1, "hp": 0 }, "cap": 3 }],
+    "text": "+1 Angriff je weiterem Sozi (max +3).",
+    "projectile": "📄"
+  },
+  {
+    "id": "streikposten",
+    "name": "Streikposten",
+    "faction": "sozis",
+    "type": "creature",
+    "cost": 2,
+    "attack": 2,
+    "health": 3,
+    "abilities": [{ "kind": "nachbar", "effect": "schadensuebernahme", "scope": "same_sub", "amount": 1 }],
+    "text": "Solidarität: fängt einen tödlichen Treffer für einen Nachbar-Sozi ab.",
+    "projectile": "✊"
+  },
+  {
+    "id": "solidaritaetskasse",
+    "name": "Solidaritätskasse",
+    "faction": "sozis",
+    "type": "creature",
+    "cost": 3,
+    "attack": 2,
+    "health": 4,
+    "abilities": [{ "kind": "heilung", "scope": "same_sub", "reichweite": "scope", "amount": 1 }],
+    "text": "Rundenende: heile alle deine Sozis um 1.",
+    "projectile": "💰"
+  },
+  {
+    "id": "basisdemokratie",
+    "name": "Basisdemokratie",
+    "faction": "sozis",
+    "type": "creature",
+    "cost": 3,
+    "attack": 1,
+    "health": 6,
+    "abilities": [{ "kind": "skalierung", "scope": "same_sub", "per": { "atk": 1, "hp": 0 }, "includeSelf": true }],
+    "text": "+1 Angriff je Sozi (inkl. sich selbst).",
+    "projectile": "🗳️"
+  },
+  {
+    "id": "gewerkschaftssekretaerin",
+    "name": "Gewerkschaftssekretärin",
+    "faction": "sozis",
+    "type": "creature",
+    "cost": 4,
+    "attack": 3,
+    "health": 5,
+    "abilities": [
+      { "kind": "aura", "scope": "same_sub", "buff": { "atk": 1, "hp": 1 }, "timing": "dauerhaft" },
+      { "kind": "umverteilung", "menge": 2, "schwelle": 5, "ziel": "einer", "art": "atk", "dauer": "dauerhaft" }
+    ],
+    "signature": true,
+    "text": "★ Sozis +1/+1. Beim Ausspielen: ein Gegner mit 5+ ATK verliert 2 ATK.",
+    "projectile": "📢"
+  },
+  {
+    "id": "generalstreik",
+    "name": "Generalstreik",
+    "faction": "sozis",
+    "type": "creature",
+    "cost": 5,
+    "attack": 4,
+    "health": 6,
+    "abilities": [{ "kind": "umverteilung", "menge": 2, "ziel": "alle", "art": "atk", "dauer": "runde" }],
+    "text": "Beim Ausspielen: alle Gegner −2 ATK diese Runde.",
+    "projectile": "🚫"
+  },
+  {
+    "id": "die_massen",
+    "name": "Die Massen",
+    "faction": "sozis",
+    "type": "creature",
+    "cost": 6,
+    "attack": 5,
+    "health": 7,
+    "abilities": [
+      { "kind": "skalierung", "scope": "same_sub", "per": { "atk": 1, "hp": 1 } },
+      { "kind": "wucht" }
+    ],
+    "text": "+1/+1 je weiterem Sozi; Wucht (Überschussschaden trifft die Basis).",
+    "projectile": "👥"
+  },
+
+  {
+    "id": "lehrling",
+    "name": "Lehrling",
+    "faction": "arbeiter",
+    "type": "creature",
+    "cost": 1,
+    "attack": 1,
+    "health": 2,
+    "abilities": [{ "kind": "wachstum", "per_round": { "atk": 0, "hp": 1 } }],
+    "text": "Rundenwachstum +0/+1.",
+    "projectile": "🔧"
+  },
+  {
+    "id": "fliessbandarbeiter",
+    "name": "Fließbandarbeiter",
+    "faction": "arbeiter",
+    "type": "creature",
+    "cost": 2,
+    "attack": 2,
+    "health": 3,
+    "abilities": [{ "kind": "wachstum", "per_round": { "atk": 1, "hp": 0 } }],
+    "text": "Rundenwachstum +1/+0.",
+    "projectile": "🔩"
+  },
+  {
+    "id": "werkzeugkiste",
+    "name": "Werkzeugkiste",
+    "faction": "arbeiter",
+    "type": "creature",
+    "cost": 2,
+    "attack": 0,
+    "health": 4,
+    "abilities": [{ "kind": "werkzeug", "atk": 2 }],
+    "text": "Gibt einem Arbeiter +2 ATK; springt beim Tod des Trägers weiter.",
+    "projectile": "🧰"
+  },
+  {
+    "id": "schichtwechsel",
+    "name": "Schichtwechsel",
+    "faction": "arbeiter",
+    "type": "creature",
+    "cost": 3,
+    "attack": 3,
+    "health": 4,
+    "abilities": [{ "kind": "ueberstunden", "bonus": { "atk": 2, "hp": 2 } }],
+    "text": "Überstunden: einmalig +2/+2, wenn eine volle Runde überlebt.",
+    "projectile": "🕗"
+  },
+  {
+    "id": "vorarbeiter",
+    "name": "Vorarbeiter",
+    "faction": "arbeiter",
+    "type": "creature",
+    "cost": 4,
+    "attack": 3,
+    "health": 4,
+    "abilities": [
+      { "kind": "nachbar", "effect": "banner", "scope": "any", "amount": 1 },
+      { "kind": "wachstum", "per_round": { "atk": 1, "hp": 1 }, "ziel": "verbuendeter", "scope": "same_sub" }
+    ],
+    "signature": true,
+    "text": "★ Nachbarn +1 ATK; jede Runde wächst ein anderer Arbeiter um +1/+1.",
+    "projectile": "🚩"
+  },
+  {
+    "id": "kranfuehrer",
+    "name": "Kranführer",
+    "faction": "arbeiter",
+    "type": "creature",
+    "cost": 4,
+    "attack": 4,
+    "health": 4,
+    "abilities": [{ "kind": "wucht" }],
+    "text": "Wucht: Überschussschaden trifft die gegnerische Basis.",
+    "projectile": "🏗️"
+  },
+  {
+    "id": "betriebsrat",
+    "name": "Betriebsrat",
+    "faction": "arbeiter",
+    "type": "creature",
+    "cost": 5,
+    "attack": 3,
+    "health": 6,
+    "abilities": [{ "kind": "verstaerker", "ziel": "wachstum", "scope": "same_sub", "faktor": 2 }],
+    "text": "Alle Rundenwachstum-Effekte deiner Arbeiter lösen doppelt aus.",
+    "projectile": "📋"
+  },
+  {
+    "id": "stahlgiesser",
+    "name": "Stahlgießer",
+    "faction": "arbeiter",
+    "type": "creature",
+    "cost": 6,
+    "attack": 5,
+    "health": 7,
+    "abilities": [{ "kind": "wachstum", "per_round": { "atk": 2, "hp": 0 } }],
+    "text": "Rundenwachstum +2/+0.",
+    "projectile": "🔥"
+  },
+
+  {
+    "id": "streuner",
+    "name": "Streuner",
+    "faction": "obdachlose",
+    "type": "creature",
+    "cost": 1,
+    "attack": 2,
+    "health": 1,
+    "abilities": [{ "kind": "sammeln", "bonus": { "atk": 0, "hp": 1 }, "trigger": "any" }],
+    "text": "Stirbt eine Kreatur, dauerhaft +0/+1.",
+    "projectile": "🥫"
+  },
+  {
+    "id": "pfandsammler",
+    "name": "Pfandsammler",
+    "faction": "obdachlose",
+    "type": "creature",
+    "cost": 2,
+    "attack": 2,
+    "health": 2,
+    "abilities": [{ "kind": "sammeln", "bonus": { "atk": 1, "hp": 0 }, "trigger": "any" }],
+    "text": "Stirbt eine Kreatur, dauerhaft +1/+0.",
+    "projectile": "🍾"
+  },
+  {
+    "id": "der_alte_hund",
+    "name": "Der alte Hund",
+    "faction": "obdachlose",
+    "type": "creature",
+    "cost": 2,
+    "attack": 1,
+    "health": 4,
+    "abilities": [{ "kind": "rettung", "mode": "survive_1hp" }],
+    "text": "Überlebt den ersten tödlichen Treffer bei 1 HP.",
+    "projectile": "🦴"
+  },
+  {
+    "id": "improvisiertes_lager",
+    "name": "Improvisiertes Lager",
+    "faction": "obdachlose",
+    "type": "creature",
+    "cost": 3,
+    "attack": 2,
+    "health": 5,
+    "abilities": [{ "kind": "improvisation", "scope": "same_sub", "mode": "schwelle", "bonus": { "atk": 2, "hp": 0 }, "schwelle": 7 }],
+    "signature": true,
+    "text": "★ Deine Obdachlosen +2 ATK, solange deine Basis ≤ 7 HP hat.",
+    "projectile": "⛺"
+  },
+  {
+    "id": "schrottsammlerin",
+    "name": "Schrottsammlerin",
+    "faction": "obdachlose",
+    "type": "creature",
+    "cost": 3,
+    "attack": 3,
+    "health": 3,
+    "abilities": [{ "kind": "beschwoeren", "timing": "beim_tod", "count": 1, "token": { "name": "Fund-Token", "attack": 1, "health": 1, "keywords": [] } }],
+    "text": "Beim Tod: erzeuge einen 1/1-Fund-Token.",
+    "projectile": "🔦"
+  },
+  {
+    "id": "suppenkueche",
+    "name": "Suppenküche",
+    "faction": "obdachlose",
+    "type": "creature",
+    "cost": 4,
+    "attack": 1,
+    "health": 7,
+    "abilities": [{ "kind": "heilung", "scope": "same_sub", "reichweite": "scope", "amount": 1, "mehrWennBasisUnter": { "schwelle": 7, "amount": 2 } }],
+    "text": "Rundenende: heile Obdachlose um 2 (Basis ≤ 7), sonst um 1.",
+    "projectile": "🍲"
+  },
+  {
+    "id": "ueberlebenskuenstler",
+    "name": "Überlebenskünstler",
+    "faction": "obdachlose",
+    "type": "creature",
+    "cost": 4,
+    "attack": 3,
+    "health": 5,
+    "abilities": [
+      { "kind": "rettung", "mode": "survive_1hp" },
+      { "kind": "improvisation", "scope": "same_sub", "mode": "schwelle", "bonus": { "atk": 3, "hp": 0 }, "schwelle": 7 }
+    ],
+    "text": "Überlebt einen tödlichen Treffer; Obdachlose +3 ATK bei Basis ≤ 7.",
+    "projectile": "🔥"
+  },
+  {
+    "id": "meute_der_vergessenen",
+    "name": "Die Meute der Vergessenen",
+    "faction": "obdachlose",
+    "type": "creature",
+    "cost": 6,
+    "attack": 4,
+    "health": 8,
+    "abilities": [{ "kind": "improvisation", "scope": "same_sub", "mode": "pro_fehlende_hp", "bonus": { "atk": 1, "hp": 1 }, "proHp": 3 }],
+    "text": "Obdachlose +1/+1 je 3 fehlende Basis-HP.",
+    "projectile": "🐕"
+  },
+
+  {
+    "id": "erstsemester",
+    "name": "Erstsemester",
+    "faction": "studenten",
+    "type": "creature",
+    "cost": 1,
+    "attack": 1,
+    "health": 2,
+    "abilities": [{ "kind": "lernen", "n": 1 }],
+    "text": "Beim Ausspielen: ziehe 1 Karte.",
+    "projectile": "📚"
+  },
+  {
+    "id": "nachhilfe",
+    "name": "Nachhilfe",
+    "faction": "studenten",
+    "type": "creature",
+    "cost": 2,
+    "attack": 1,
+    "health": 3,
+    "abilities": [{ "kind": "wissen", "x": 1 }],
+    "text": "Beim Ausspielen: +1 Wissens-Marker.",
+    "projectile": "✏️"
+  },
+  {
+    "id": "koffein_junkie",
+    "name": "Koffein-Junkie",
+    "faction": "studenten",
+    "type": "creature",
+    "cost": 2,
+    "attack": 3,
+    "health": 1,
+    "abilities": [{ "kind": "ueberstunden", "bonus": { "atk": 0, "hp": 2 } }],
+    "text": "Überstunden: einmalig +0/+2, wenn eine volle Runde überlebt.",
+    "projectile": "☕"
+  },
+  {
+    "id": "gruppenarbeit",
+    "name": "Gruppenarbeit",
+    "faction": "studenten",
+    "type": "creature",
+    "cost": 3,
+    "attack": 2,
+    "health": 4,
+    "abilities": [{ "kind": "skalierung", "scope": "same_sub", "per": { "atk": 1, "hp": 1 } }],
+    "text": "+1/+1 je weiterem Studenten.",
+    "projectile": "📎"
+  },
+  {
+    "id": "experimentelle_formel",
+    "name": "Experimentelle Formel",
+    "faction": "studenten",
+    "type": "creature",
+    "cost": 3,
+    "attack": 2,
+    "health": 3,
+    "abilities": [{ "kind": "experiment", "schadenProMarker": 1 }],
+    "text": "Beim Ausspielen: verbrauche alle Wissens-Marker, verteile so viel Schaden auf Gegner.",
+    "projectile": "⚗️"
+  },
+  {
+    "id": "bibliothekar",
+    "name": "Bibliothekar",
+    "faction": "studenten",
+    "type": "creature",
+    "cost": 4,
+    "attack": 2,
+    "health": 5,
+    "abilities": [
+      { "kind": "lernen", "n": 1, "proRunde": true },
+      { "kind": "wissen", "x": 1, "proRunde": true },
+      { "kind": "aura", "scope": "same_sub", "buff": { "atk": 1, "hp": 0 }, "timing": "dauerhaft" }
+    ],
+    "signature": true,
+    "text": "★ Jede Runde: ziehe 1 Karte und +1 Wissen. Studenten +1 ATK.",
+    "projectile": "📖"
+  },
+  {
+    "id": "doktorandin",
+    "name": "Doktorandin",
+    "faction": "studenten",
+    "type": "creature",
+    "cost": 5,
+    "attack": 3,
+    "health": 6,
+    "abilities": [{ "kind": "experiment", "proMarker": { "atk": 1, "hp": 1 } }],
+    "text": "Beim Ausspielen: +1/+1 je Wissens-Marker (verbraucht alle).",
+    "projectile": "🎓"
+  },
+  {
+    "id": "die_fakultaet",
+    "name": "Die Fakultät",
+    "faction": "studenten",
+    "type": "creature",
+    "cost": 6,
+    "attack": 4,
+    "health": 6,
+    "abilities": [
+      { "kind": "lernen", "n": 2 },
+      { "kind": "wissen", "x": 2 }
+    ],
+    "text": "Beim Ausspielen: ziehe 2 Karten und +2 Wissen.",
+    "projectile": "🏛️"
   }
 ]

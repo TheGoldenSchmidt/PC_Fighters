@@ -106,5 +106,432 @@
       "target": "friendlyCreature"
     },
     "text": "Eine verbündete Kreatur erhält +2 Angriff bis zum Rundenende."
+  },
+
+  {
+    "id": "streunerkatze",
+    "name": "Streunerkatze",
+    "faction": "katzen",
+    "type": "creature",
+    "cost": 1,
+    "attack": 2,
+    "health": 1,
+    "keywords": ["flink"],
+    "text": "Flink: sofort kampfbereit.",
+    "projectile": "🐾"
+  },
+  {
+    "id": "getigerter",
+    "name": "Getigerter",
+    "faction": "katzen",
+    "type": "creature",
+    "cost": 2,
+    "attack": 3,
+    "health": 1,
+    "keywords": ["flink"],
+    "text": "Flink: sofort kampfbereit.",
+    "projectile": "🐾"
+  },
+  {
+    "id": "hauskater",
+    "name": "Hauskater",
+    "faction": "katzen",
+    "type": "creature",
+    "cost": 2,
+    "attack": 2,
+    "health": 2,
+    "keywords": ["flink"],
+    "abilities": [{ "kind": "neugier", "bonus": { "atk": 2, "hp": 0 } }],
+    "text": "Flink; +2 ATK, solange er allein in der Lane steht.",
+    "projectile": "🐾"
+  },
+  {
+    "id": "schwarze_katze",
+    "name": "Schwarze Katze",
+    "faction": "katzen",
+    "type": "creature",
+    "cost": 3,
+    "attack": 3,
+    "health": 2,
+    "keywords": ["flink"],
+    "abilities": [{ "kind": "todesfluch", "atk": 1 }],
+    "text": "Flink; beim Tod: der Angreifer verliert 1 ATK.",
+    "projectile": "🐾"
+  },
+  {
+    "id": "katzenmutter",
+    "name": "Katzenmutter",
+    "faction": "katzen",
+    "type": "creature",
+    "cost": 3,
+    "attack": 2,
+    "health": 3,
+    "abilities": [{ "kind": "beschwoeren", "timing": "beim_ausspielen", "count": 2, "token": { "name": "Kätzchen", "attack": 1, "health": 1, "keywords": ["flink"] } }],
+    "text": "Beim Ausspielen: 2× 1/1-Kätzchen (flink) in freie Lanes.",
+    "projectile": "🐈"
+  },
+  {
+    "id": "luchs",
+    "name": "Luchs",
+    "faction": "katzen",
+    "type": "creature",
+    "cost": 4,
+    "attack": 4,
+    "health": 3,
+    "keywords": ["flink"],
+    "abilities": [
+      { "kind": "rettung", "mode": "revive_1hp" },
+      { "kind": "neugier", "basisschaden": 2 }
+    ],
+    "signature": true,
+    "text": "★ Flink; Todes-Rettung; allein in der Lane: +2 Schaden auf die Basis.",
+    "projectile": "🐾"
+  },
+  {
+    "id": "wildkatze",
+    "name": "Wildkatze",
+    "faction": "katzen",
+    "type": "creature",
+    "cost": 5,
+    "attack": 5,
+    "health": 4,
+    "keywords": ["flink"],
+    "abilities": [{ "kind": "rettung", "mode": "revive_1hp" }],
+    "text": "Flink; überlebt den ersten tödlichen Treffer bei 1 HP.",
+    "projectile": "🐾"
+  },
+  {
+    "id": "der_puma",
+    "name": "Der Puma",
+    "faction": "katzen",
+    "type": "creature",
+    "cost": 6,
+    "attack": 6,
+    "health": 4,
+    "keywords": ["flink"],
+    "abilities": [{ "kind": "neugier", "bonus": { "atk": 3, "hp": 0 }, "wucht": true }],
+    "text": "Flink; allein in der Lane: +3 ATK und Wucht.",
+    "projectile": "🐾"
+  },
+
+  {
+    "id": "spatz",
+    "name": "Spatz",
+    "faction": "voegel",
+    "type": "creature",
+    "cost": 1,
+    "attack": 1,
+    "health": 1,
+    "keywords": ["fliegend", "flink"],
+    "text": "Fliegend und flink.",
+    "projectile": "🪶"
+  },
+  {
+    "id": "kraehe",
+    "name": "Krähe",
+    "faction": "voegel",
+    "type": "creature",
+    "cost": 2,
+    "attack": 2,
+    "health": 2,
+    "keywords": ["fliegend"],
+    "abilities": [{ "kind": "skalierung", "scope": "same_sub", "per": { "atk": 1, "hp": 0 } }],
+    "text": "Fliegend; +1 ATK je weiterem Vogel.",
+    "projectile": "🪶"
+  },
+  {
+    "id": "moewe",
+    "name": "Möwe",
+    "faction": "voegel",
+    "type": "creature",
+    "cost": 2,
+    "attack": 3,
+    "health": 1,
+    "keywords": ["fliegend"],
+    "text": "Fliegend.",
+    "projectile": "🪶"
+  },
+  {
+    "id": "taubenschwarm",
+    "name": "Taubenschwarm",
+    "faction": "voegel",
+    "type": "creature",
+    "cost": 3,
+    "attack": 3,
+    "health": 2,
+    "keywords": ["fliegend"],
+    "abilities": [{ "kind": "beschwoeren", "timing": "beim_ausspielen", "count": 1, "token": { "name": "Taube", "attack": 1, "health": 1, "keywords": ["fliegend"] } }],
+    "text": "Fliegend; beim Ausspielen: 1× 1/1-Taube (fliegend).",
+    "projectile": "🪶"
+  },
+  {
+    "id": "eule",
+    "name": "Eule",
+    "faction": "voegel",
+    "type": "creature",
+    "cost": 3,
+    "attack": 2,
+    "health": 4,
+    "keywords": ["fliegend"],
+    "abilities": [{ "kind": "entwaffnen", "entfernt": ["fliegend", "flink"] }],
+    "text": "Fliegend; beim Ausspielen: ein Gegner verliert fliegend/flink.",
+    "projectile": "🪶"
+  },
+  {
+    "id": "falke",
+    "name": "Falke",
+    "faction": "voegel",
+    "type": "creature",
+    "cost": 4,
+    "attack": 4,
+    "health": 3,
+    "keywords": ["fliegend", "flink"],
+    "abilities": [
+      { "kind": "sturzflug", "x": 2 },
+      { "kind": "skalierung", "scope": "same_sub", "per": { "atk": 1, "hp": 1 } }
+    ],
+    "signature": true,
+    "text": "★ Fliegend, flink; Sturzflug 2; +1/+1 je weiterem Vogel.",
+    "projectile": "🦅"
+  },
+  {
+    "id": "adler_voegel",
+    "name": "Adler",
+    "faction": "voegel",
+    "type": "creature",
+    "cost": 5,
+    "attack": 5,
+    "health": 4,
+    "keywords": ["fliegend"],
+    "abilities": [{ "kind": "sturzflug", "x": 3 }],
+    "text": "Fliegend; beim Ausspielen 3 Schaden auf ein Ziel.",
+    "projectile": "🦅"
+  },
+  {
+    "id": "der_schwarm",
+    "name": "Der Schwarm",
+    "faction": "voegel",
+    "type": "creature",
+    "cost": 6,
+    "attack": 4,
+    "health": 5,
+    "keywords": ["fliegend"],
+    "abilities": [{ "kind": "skalierung", "scope": "same_sub", "per": { "atk": 2, "hp": 2 } }],
+    "text": "Fliegend; +2/+2 je weiterem Vogel.",
+    "projectile": "🪶"
+  },
+
+  {
+    "id": "eidechse",
+    "name": "Eidechse",
+    "faction": "reptilien",
+    "type": "creature",
+    "cost": 1,
+    "attack": 1,
+    "health": 2,
+    "abilities": [{ "kind": "gift", "staerke": 1 }],
+    "text": "Gift 1: Angriffe setzen eine Giftmarke.",
+    "projectile": "🦎"
+  },
+  {
+    "id": "gecko",
+    "name": "Gecko",
+    "faction": "reptilien",
+    "type": "creature",
+    "cost": 2,
+    "attack": 1,
+    "health": 3,
+    "abilities": [{ "kind": "dornen", "x": 1 }],
+    "text": "Dornen 1: fügt Angreifern 1 Schaden zu.",
+    "projectile": "🦎"
+  },
+  {
+    "id": "klapperschlange",
+    "name": "Klapperschlange",
+    "faction": "reptilien",
+    "type": "creature",
+    "cost": 3,
+    "attack": 2,
+    "health": 3,
+    "abilities": [{ "kind": "gift", "staerke": 2 }],
+    "text": "Gift 2.",
+    "projectile": "🐍"
+  },
+  {
+    "id": "schildkroete",
+    "name": "Schildkröte",
+    "faction": "reptilien",
+    "type": "creature",
+    "cost": 3,
+    "attack": 0,
+    "health": 8,
+    "abilities": [{ "kind": "dornen", "x": 2 }],
+    "text": "Dornen 2.",
+    "projectile": "🐢"
+  },
+  {
+    "id": "koenig_der_kobras",
+    "name": "König der Kobras",
+    "faction": "reptilien",
+    "type": "creature",
+    "cost": 4,
+    "attack": 3,
+    "health": 5,
+    "abilities": [
+      { "kind": "gift", "staerke": 2 },
+      { "kind": "umverteilung", "menge": 1, "ziel": "einer", "art": "gift" },
+      { "kind": "kaltbluetig", "bonus": { "atk": 0, "hp": 2 } }
+    ],
+    "signature": true,
+    "text": "★ Gift 2; beim Ausspielen: Gegner in der Lane +1 Gift; +0/+2 solange er nicht angreift.",
+    "projectile": "🐍"
+  },
+  {
+    "id": "waran",
+    "name": "Waran",
+    "faction": "reptilien",
+    "type": "creature",
+    "cost": 4,
+    "attack": 4,
+    "health": 5,
+    "abilities": [{ "kind": "gift", "staerke": 1 }],
+    "text": "Gift 1.",
+    "projectile": "🦎"
+  },
+  {
+    "id": "krokodil",
+    "name": "Krokodil",
+    "faction": "reptilien",
+    "type": "creature",
+    "cost": 5,
+    "attack": 5,
+    "health": 6,
+    "abilities": [{ "kind": "hinrichten", "maxHp": 2 }],
+    "text": "Beim Angriff: zerstöre einen Gegner mit ≤ 2 HP.",
+    "projectile": "🐊"
+  },
+  {
+    "id": "uralte_schlange",
+    "name": "Uralte Schlange",
+    "faction": "reptilien",
+    "type": "creature",
+    "cost": 6,
+    "attack": 4,
+    "health": 8,
+    "abilities": [
+      { "kind": "gift", "staerke": 3 },
+      { "kind": "rettung", "mode": "full_heal" }
+    ],
+    "text": "Gift 3; Häutung: heilt sich einmal komplett und entfernt Gift.",
+    "projectile": "🐍"
+  },
+
+  {
+    "id": "compsognathus",
+    "name": "Compsognathus",
+    "faction": "dinos",
+    "type": "creature",
+    "cost": 1,
+    "attack": 2,
+    "health": 1,
+    "abilities": [{ "kind": "skalierung", "scope": "same_sub", "per": { "atk": 1, "hp": 1 } }],
+    "text": "+1/+1 je weiterem Dino.",
+    "projectile": "🦖"
+  },
+  {
+    "id": "velociraptor",
+    "name": "Velociraptor",
+    "faction": "dinos",
+    "type": "creature",
+    "cost": 3,
+    "attack": 4,
+    "health": 2,
+    "keywords": ["flink"],
+    "abilities": [{ "kind": "skalierung", "scope": "same_sub", "per": { "atk": 1, "hp": 0 } }],
+    "text": "Flink; +1 ATK je weiterem Dino.",
+    "projectile": "🦖"
+  },
+  {
+    "id": "triceratops",
+    "name": "Triceratops",
+    "faction": "dinos",
+    "type": "creature",
+    "cost": 4,
+    "attack": 3,
+    "health": 6,
+    "abilities": [{ "kind": "dornen", "x": 2 }],
+    "text": "Dornen 2.",
+    "projectile": "🦕"
+  },
+  {
+    "id": "stegosaurus",
+    "name": "Stegosaurus",
+    "faction": "dinos",
+    "type": "creature",
+    "cost": 4,
+    "attack": 2,
+    "health": 7,
+    "abilities": [{ "kind": "dornen", "x": 3 }],
+    "text": "Dornen 3.",
+    "projectile": "🦕"
+  },
+  {
+    "id": "pteranodon",
+    "name": "Pteranodon",
+    "faction": "dinos",
+    "type": "creature",
+    "cost": 4,
+    "attack": 4,
+    "health": 3,
+    "keywords": ["fliegend"],
+    "text": "Fliegend.",
+    "projectile": "🦅"
+  },
+  {
+    "id": "spinosaurus",
+    "name": "Spinosaurus",
+    "faction": "dinos",
+    "type": "creature",
+    "cost": 5,
+    "attack": 6,
+    "health": 5,
+    "abilities": [
+      { "kind": "wucht" },
+      { "kind": "aura", "scope": "same_sub", "buff": { "atk": 1, "hp": 0 }, "timing": "dauerhaft" }
+    ],
+    "text": "Wucht; andere Dinos +1 ATK.",
+    "projectile": "🦖"
+  },
+  {
+    "id": "tyrannosaurus_rex",
+    "name": "Tyrannosaurus Rex",
+    "faction": "dinos",
+    "type": "creature",
+    "cost": 6,
+    "attack": 7,
+    "health": 6,
+    "abilities": [
+      { "kind": "wucht" },
+      { "kind": "aura", "scope": "same_sub", "buff": { "atk": 1, "hp": 1 }, "timing": "einmal_beim_ausspielen" },
+      { "kind": "aura", "scope": "same_sub", "buff": { "atk": 1, "hp": 0 }, "timing": "dauerhaft" }
+    ],
+    "signature": true,
+    "text": "★ Wucht; Brüllen: Dinos einmalig +1/+1; andere Dinos dauerhaft +1 ATK.",
+    "projectile": "🦖"
+  },
+  {
+    "id": "brachiosaurus",
+    "name": "Brachiosaurus",
+    "faction": "dinos",
+    "type": "creature",
+    "cost": 7,
+    "attack": 6,
+    "health": 9,
+    "abilities": [
+      { "kind": "wucht" },
+      { "kind": "urgewalt" }
+    ],
+    "text": "Wucht; Urgewalt: immun gegen Zerstörung, nur im Kampf besiegbar.",
+    "projectile": "🦕"
   }
 ]

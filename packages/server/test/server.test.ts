@@ -5,7 +5,10 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import WebSocket from 'ws';
 import type { ClientView } from '@pcf/engine';
+import { buildFactionTree, loadGameData, topOf } from '@pcf/engine';
 import { startServer, type RunningServer } from '../src/server.js';
+
+const factionTree = buildFactionTree(loadGameData().factions);
 
 interface TestClient {
   ws: WebSocket;
@@ -132,8 +135,9 @@ describe('Server: Raum, Beitritt, Aktionen, gefilterte Sicht', () => {
     for (const view of views) {
       // Nur die eigene Hand ist enthalten – und A (Humans) darf niemals
       // Animals-Karten als Handkarten geschickt bekommen (B spielt Animals).
+      // Handkarten können Sub-Fraktionen sein, ihre Oberfraktion ist "humans".
       expect(view.you).toBe(0);
-      for (const card of view.hand) expect(card.faction).toBe('humans');
+      for (const card of view.hand) expect(topOf(factionTree, card.faction)).toBe('humans');
       // Der Gegner-Eintrag enthält nur Zähler, keine Kartenlisten:
       const opponent = view.players[1] as unknown as Record<string, unknown>;
       expect(opponent.hand).toBeUndefined();

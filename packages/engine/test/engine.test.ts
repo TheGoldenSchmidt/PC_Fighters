@@ -303,11 +303,21 @@ describe('Ausspielen & Energie', () => {
     ).toThrow(/Energie/);
   });
 
-  it('Deckbau: 15 Karten, Signaturkarte nur einmal', () => {
+  it('Deckbau: deckSize Karten, parent-aware, maxCopies/Signatur respektiert', () => {
+    const tree = buildFactionTree(data.factions);
     const deck = buildDeck(data, 'humans', Math.random);
     expect(deck).toHaveLength(data.config.deckSize);
-    expect(deck.filter((id) => id === 'kommandantin')).toHaveLength(1);
-    expect(deck.filter((id) => id === 'rekrut')).toHaveLength(data.config.maxCopiesPerCard);
+    // Alle Karten gehören zur Oberfraktion "humans" (inkl. Sub-Fraktionen).
+    for (const id of deck) {
+      expect(topOf(tree, data.cardsById[id].faction)).toBe('humans');
+    }
+    // Keine Karte öfter als maxCopies; Signaturkarten höchstens einmal.
+    const counts = new Map<string, number>();
+    for (const id of deck) counts.set(id, (counts.get(id) ?? 0) + 1);
+    for (const [id, n] of counts) {
+      const max = data.cardsById[id].signature ? 1 : data.config.maxCopiesPerCard;
+      expect(n).toBeLessThanOrEqual(max);
+    }
   });
 
   it('createGame: Starthand, Basisleben und Runde 1 mit 1 Energie', () => {
