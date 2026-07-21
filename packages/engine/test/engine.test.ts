@@ -2,10 +2,14 @@ import { describe, expect, it } from 'vitest';
 import {
   applyAction,
   buildDeck,
+  buildFactionTree,
   createGame,
   getEffectiveAttack,
   getMaxHealth,
-  loadGameData
+  loadGameData,
+  matchesScope,
+  topOf,
+  validateGameData
 } from '../src/index.js';
 import { recalcBoard } from '../src/internal.js';
 import type {
@@ -34,6 +38,7 @@ function player(faction: string): PlayerState {
 function emptyState(): GameState {
   return {
     config: data.config,
+    factionTree: buildFactionTree(data.factions),
     round: 1,
     phase: 'play',
     startingPlayer: 0,
@@ -303,5 +308,31 @@ describe('Ausspielen & Energie', () => {
     expect(g.players[0].base).toBe(data.config.baseHealth);
     expect(g.players[0].energy).toBe(1);
     expect(g.players[0].deck).toHaveLength(data.config.deckSize - data.config.startingHand);
+  });
+});
+
+describe('Fraktionsbaum', () => {
+  const tree = buildFactionTree(data.factions);
+
+  it('löst Sub-Fraktionen zur Oberfraktion auf (topOf)', () => {
+    expect(topOf(tree, 'katzen')).toBe('animals');
+    expect(topOf(tree, 'sozis')).toBe('humans');
+    expect(topOf(tree, 'humans')).toBe('humans');
+    expect(topOf(tree, 'animals')).toBe('animals');
+  });
+
+  it('matchesScope: same_sub / same_top / any', () => {
+    expect(matchesScope(tree, 'same_sub', 'katzen', 'katzen')).toBe(true);
+    expect(matchesScope(tree, 'same_sub', 'katzen', 'voegel')).toBe(false);
+    expect(matchesScope(tree, 'same_top', 'katzen', 'voegel')).toBe(true);
+    expect(matchesScope(tree, 'same_top', 'katzen', 'sozis')).toBe(false);
+    expect(matchesScope(tree, 'any', 'katzen', 'sozis')).toBe(true);
+  });
+
+  it('parent-Validierung: unbekannte Oberfraktion wird abgelehnt', () => {
+    const bad = [{ id: 'x', name: 'X', parent: 'gibtsnicht' }];
+    expect(() =>
+      validateGameData({ config: data.config, factions: bad, topics: [], cardFiles: [] })
+    ).toThrow(/Oberfraktion "gibtsnicht" gibt es nicht/);
   });
 });

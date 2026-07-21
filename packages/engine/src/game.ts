@@ -2,6 +2,7 @@
 // applyAction(state, spieler, aktion) → neuer Zustand (oder GameRuleError).
 
 import { resolveEffect } from './effects.js';
+import { buildFactionTree, matchesScope } from './factions.js';
 import {
   freeLanes,
   GameRuleError,
@@ -52,7 +53,10 @@ function shuffle<T>(arr: T[], random: () => number): T[] {
  * wird nach dem Mischen auf deckSize gekürzt.
  */
 export function buildDeck(data: GameData, faction: string, random: () => number): string[] {
-  const cards = data.cards.filter((c) => c.faction === faction);
+  // Parent-aware: wählt der Spieler eine Oberfraktion, gehören alle Karten ihrer
+  // Sub-Fraktionen dazu (same_top). Eine Sub-Fraktion liefert nur ihre Karten.
+  const tree = buildFactionTree(data.factions);
+  const cards = data.cards.filter((c) => matchesScope(tree, 'same_top', c.faction, faction));
   if (cards.length === 0) {
     throw new GameRuleError(`Für die Fraktion "${faction}" gibt es keine Karten.`);
   }
@@ -89,6 +93,7 @@ export function createGame(
 
   const state: GameState = {
     config: data.config,
+    factionTree: buildFactionTree(data.factions),
     round: 0,
     phase: 'play',
     startingPlayer: random() < 0.5 ? 0 : 1,

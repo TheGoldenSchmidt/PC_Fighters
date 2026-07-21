@@ -10,5 +10,6 @@ export {
   getEffectiveAttack,
   getMaxHealth
 } from './game.js';
+export { buildFactionTree, matchesScope, topOf } from './factions.js';
 export { DataError, validateGameData } from './schema.js';
 export { loadGameData } from './loadData.js';

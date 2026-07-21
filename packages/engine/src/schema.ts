@@ -20,8 +20,10 @@ export const configSchema = z.object({
 export const factionSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
-  color: z.string().min(1),
-  description: z.string()
+  parent: z.string().min(1).nullable().default(null),
+  color: z.string().min(1).optional(),
+  description: z.string().optional(),
+  theme: z.object({ color: z.string().min(1) }).optional()
 });
 
 export const factionsSchema = z.array(factionSchema);
@@ -180,6 +182,25 @@ export function validateGameData(raw: {
     throw new DataError('factions.json', describeZodError(factionsResult.error));
   }
   const factionIds = new Set(factionsResult.data.map((f) => f.id));
+
+  // Fraktionsbaum prüfen: jede parent-Referenz muss existieren und selbst eine
+  // Oberfraktion sein (kein tiefer verschachtelter Baum, nur zwei Ebenen).
+  const factionProblems: string[] = [];
+  const byId = new Map(factionsResult.data.map((f) => [f.id, f]));
+  for (const f of factionsResult.data) {
+    if (f.parent == null) continue;
+    const parent = byId.get(f.parent);
+    if (!parent) {
+      factionProblems.push(
+        `Fraktion "${f.name}": Oberfraktion "${f.parent}" gibt es nicht in factions.json`
+      );
+    } else if (parent.parent != null) {
+      factionProblems.push(
+        `Fraktion "${f.name}": "${f.parent}" ist selbst eine Sub-Fraktion – erlaubt sind nur zwei Ebenen`
+      );
+    }
+  }
+  if (factionProblems.length > 0) throw new DataError('factions.json', factionProblems);
 
   const topicsResult = topicsSchema.safeParse(raw.topics);
   if (!topicsResult.success) {

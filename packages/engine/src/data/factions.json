@@ -1,14 +1,74 @@
 [
   {
     "id": "humans",
-    "name": "Humans",
+    "name": "Menschen",
+    "parent": null,
     "color": "#4a7dff",
-    "description": "Ordnung & Synergie: Menschen stärken sich gegenseitig mit Auren und Heilung."
+    "description": "Ordnung & Synergie: Menschen stärken sich gegenseitig mit Auren, Wachstum und Solidarität.",
+    "theme": { "color": "#3b6ea5" }
+  },
+  {
+    "id": "sozis",
+    "name": "Die Sozis",
+    "parent": "humans",
+    "description": "Einzeln mittelmäßig, kollektiv gefährlich – bestrafen starke Einzelgegner.",
+    "theme": { "color": "#b23b3b" }
+  },
+  {
+    "id": "arbeiter",
+    "name": "Die Arbeiter",
+    "parent": "humans",
+    "description": "Wert über Zeit: jede Runde stärker.",
+    "theme": { "color": "#c98a3b" }
+  },
+  {
+    "id": "obdachlose",
+    "name": "Die Obdachlosen",
+    "parent": "humans",
+    "description": "Underdogs: stark, wenn ihr hinten liegt.",
+    "theme": { "color": "#7a6f5d" }
+  },
+  {
+    "id": "studenten",
+    "name": "Die Studenten",
+    "parent": "humans",
+    "description": "Kartenvorteil und Combos – zerbrechlich, aber explosiv.",
+    "theme": { "color": "#6a5acd" }
   },
   {
     "id": "animals",
-    "name": "Animals",
+    "name": "Tiere",
+    "parent": null,
     "color": "#3fae5a",
-    "description": "Tempo & Mobilität: Tiere schlagen schnell zu und wechseln flink die Lane."
+    "description": "Tempo & Mobilität: Tiere schlagen schnell zu und wechseln flink die Lane.",
+    "theme": { "color": "#4a7c59" }
+  },
+  {
+    "id": "katzen",
+    "name": "Katzen",
+    "parent": "animals",
+    "description": "Schnelle Glaskanonen, am stärksten allein.",
+    "theme": { "color": "#d98a2b" }
+  },
+  {
+    "id": "voegel",
+    "name": "Vögel",
+    "parent": "animals",
+    "description": "Fliegend, evasiv, Schwarm-Chip.",
+    "theme": { "color": "#4aa3d4" }
+  },
+  {
+    "id": "reptilien",
+    "name": "Reptilien",
+    "parent": "animals",
+    "description": "Gift, Zähigkeit, Zermürbung.",
+    "theme": { "color": "#4a9c5a" }
+  },
+  {
+    "id": "dinos",
+    "name": "Dinos",
+    "parent": "animals",
+    "description": "Rohe Wucht, Apex-Bedrohungen.",
+    "theme": { "color": "#8a5a2b" }
   }
 ]

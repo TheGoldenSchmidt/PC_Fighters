@@ -17,8 +17,25 @@ export interface GameConfig {
 export interface Faction {
   id: string;
   name: string;
-  color: string;
-  description: string;
+  /** Oberfraktion (z. B. "animals") oder null bei einer Oberfraktion selbst. */
+  parent: string | null;
+  /** Optional – nur Oberfraktionen tragen heute eine Anzeigefarbe für die UI. */
+  color?: string;
+  description?: string;
+  /** Optionales Design (Farbe) für das kommende UI-Rework. */
+  theme?: { color: string };
+}
+
+/** Parent-Lookup: fraktion-id → Oberfraktion-id (null = ist selbst Oberfraktion). */
+export type FactionTree = Record<string, string | null>;
+
+/** Reichweite eines Effekts über den Fraktionsbaum. */
+export type Scope = 'same_sub' | 'same_top' | 'any';
+
+/** Angriffs-/Lebens-Paar (z. B. für Buffs, Skalierung, Wachstum). */
+export interface Stat {
+  atk: number;
+  hp: number;
 }
 
 /** Schauplatz einer Partie – rein optisch, wird vom Raum-Ersteller gewählt. */
@@ -170,6 +187,8 @@ export interface LogEntry {
 
 export interface GameState {
   config: GameConfig;
+  /** Fraktionsbaum (parent-Lookup), damit scope=same_top ohne GameData auflösbar ist. */
+  factionTree: FactionTree;
   round: number;
   phase: Phase;
   startingPlayer: PlayerIndex;
