@@ -1,10 +1,17 @@
 {
   "lanes": 3,
   "baseHealth": 15,
-  "deckSize": 15,
   "startingHand": 4,
   "cardsDrawnPerTurn": 1,
-  "energyCap": 6,
   "roundLimit": 12,
-  "maxCopiesPerCard": 2
+  "energy": {
+    "start": 1,
+    "perRound": 1,
+    "cap": null
+  },
+  "deckbuilding": {
+    "size": 20,
+    "maxCopies": 2,
+    "factionRule": "singleTop"
+  }
 }

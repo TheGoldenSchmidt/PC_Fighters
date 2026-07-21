@@ -306,7 +306,7 @@ describe('Ausspielen & Energie', () => {
   it('Deckbau: deckSize Karten, parent-aware, maxCopies/Signatur respektiert', () => {
     const tree = buildFactionTree(data.factions);
     const deck = buildDeck(data, 'humans', Math.random);
-    expect(deck).toHaveLength(data.config.deckSize);
+    expect(deck).toHaveLength(data.config.deckbuilding.size);
     // Alle Karten gehören zur Oberfraktion "humans" (inkl. Sub-Fraktionen).
     for (const id of deck) {
       expect(topOf(tree, data.cardsById[id].faction)).toBe('humans');
@@ -315,7 +315,7 @@ describe('Ausspielen & Energie', () => {
     const counts = new Map<string, number>();
     for (const id of deck) counts.set(id, (counts.get(id) ?? 0) + 1);
     for (const [id, n] of counts) {
-      const max = data.cardsById[id].signature ? 1 : data.config.maxCopiesPerCard;
+      const max = data.cardsById[id].signature ? 1 : data.config.deckbuilding.maxCopies;
       expect(n).toBeLessThanOrEqual(max);
     }
   });
@@ -326,7 +326,7 @@ describe('Ausspielen & Energie', () => {
     expect(g.players[0].hand).toHaveLength(data.config.startingHand);
     expect(g.players[0].base).toBe(data.config.baseHealth);
     expect(g.players[0].energy).toBe(1);
-    expect(g.players[0].deck).toHaveLength(data.config.deckSize - data.config.startingHand);
+    expect(g.players[0].deck).toHaveLength(data.config.deckbuilding.size - data.config.startingHand);
   });
 });
 

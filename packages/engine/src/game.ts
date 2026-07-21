@@ -13,6 +13,7 @@ import {
 } from './abilities.js';
 import { resolveEffect } from './effects.js';
 import { buildFactionTree, matchesScope } from './factions.js';
+import { validateDeck } from './schema.js';
 import {
   freeLanes,
   GameRuleError,
@@ -29,6 +30,7 @@ import type {
   ClientView,
   Creature,
   CreatureView,
+  DeckList,
   GameConfig,
   GameData,
   GameState,
@@ -59,6 +61,13 @@ function logDeaths(state: GameState): void {
 
 // ---------------------------------------------------------------- Deck & Start
 
+/** Energie einer Runde: start + (Runde-1)*perRound, optional durch cap gedeckelt. */
+export function roundEnergy(config: GameConfig, round: number): number {
+  const { start, perRound, cap } = config.energy;
+  const value = start + Math.max(0, round - 1) * perRound;
+  return cap != null ? Math.min(value, cap) : value;
+}
+
 function shuffle<T>(arr: T[], random: () => number): T[] {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -83,10 +92,20 @@ export function buildDeck(data: GameData, faction: string, random: () => number)
   }
   const deck: string[] = [];
   for (const card of cards) {
-    const copies = card.signature ? 1 : data.config.maxCopiesPerCard;
+    const copies = card.signature ? 1 : data.config.deckbuilding.maxCopies;
     for (let i = 0; i < copies; i++) deck.push(card.id);
   }
-  return shuffle(deck, random).slice(0, data.config.deckSize);
+  return shuffle(deck, random).slice(0, data.config.deckbuilding.size);
+}
+
+/** Baut den Ziehstapel aus einer geprüften Deckliste (spielergewählt). */
+export function buildDeckFromList(data: GameData, deck: DeckList, random: () => number): string[] {
+  validateDeck(deck, data); // wirft DeckError bei ungültigem Deck
+  const ids: string[] = [];
+  for (const entry of deck.cards) {
+    for (let i = 0; i < entry.count; i++) ids.push(entry.cardId);
+  }
+  return shuffle(ids, random);
 }
 
 function drawCards(state: GameState, player: PlayerIndex, amount: number): void {
@@ -101,11 +120,13 @@ function drawCards(state: GameState, player: PlayerIndex, amount: number): void 
 export function createGame(
   data: GameData,
   factions: [string, string],
-  random: () => number = Math.random
+  random: () => number = Math.random,
+  /** Optionale spielergewählte Decks (Deck-Editor). Ohne Angabe: Auto-Deck. */
+  decks?: [DeckList | null, DeckList | null]
 ): GameState {
-  const makePlayer = (faction: string): PlayerState => ({
+  const makePlayer = (faction: string, deck: DeckList | null): PlayerState => ({
     faction,
-    deck: buildDeck(data, faction, random),
+    deck: deck ? buildDeckFromList(data, deck, random) : buildDeck(data, faction, random),
     hand: [],
     base: data.config.baseHealth,
     energy: 0,
@@ -121,7 +142,7 @@ export function createGame(
     startingPlayer: random() < 0.5 ? 0 : 1,
     active: 0,
     consecutivePasses: 0,
-    players: [makePlayer(factions[0]), makePlayer(factions[1])],
+    players: [makePlayer(factions[0], decks?.[0] ?? null), makePlayer(factions[1], decks?.[1] ?? null)],
     board: [
       Array.from({ length: data.config.lanes }, () => null),
       Array.from({ length: data.config.lanes }, () => null)
@@ -147,8 +168,8 @@ function startRound(state: GameState): void {
     drawCards(state, 0, state.config.cardsDrawnPerTurn);
     drawCards(state, 1, state.config.cardsDrawnPerTurn);
   }
-  // 2. Energie: Rundenzahl, gedeckelt – Rest verfällt am Rundenende
-  const energy = Math.min(state.round, state.config.energyCap);
+  // 2. Energie: start + (Runde-1)*perRound, optional gedeckelt – Rest verfällt
+  const energy = roundEnergy(state.config, state.round);
   state.players[0].energy = energy;
   state.players[1].energy = energy;
 
@@ -544,7 +565,9 @@ export function buildClientView(state: GameState, player: PlayerIndex, data: Gam
     round: state.round,
     roundLimit: state.config.roundLimit,
     lanes: state.config.lanes,
-    energyCap: state.config.energyCap,
+    // Energie ist rundenbasiert (ggf. ungedeckelt): der Client zeigt die
+    // Rundenenergie als "Cap" an (⚡ n/n).
+    energyCap: roundEnergy(state.config, state.round),
     phase: state.phase,
     active: state.active,
     winner: state.winner,

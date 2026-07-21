@@ -3,18 +3,26 @@
 // (welche Datei, welche Karte, welches Feld).
 
 import { z } from 'zod';
+import { buildFactionTree, topOf } from './factions.js';
 import { KEYWORDS } from './keywords.js';
-import type { CardDef, Faction, GameConfig, Topic } from './types.js';
+import type { CardDef, DeckList, Faction, GameConfig, GameData, Topic } from './types.js';
 
 export const configSchema = z.object({
   lanes: z.number().int().min(1).max(6),
   baseHealth: z.number().int().min(1),
-  deckSize: z.number().int().min(1),
   startingHand: z.number().int().min(0),
   cardsDrawnPerTurn: z.number().int().min(0),
-  energyCap: z.number().int().min(1),
   roundLimit: z.number().int().min(1),
-  maxCopiesPerCard: z.number().int().min(1)
+  energy: z.object({
+    start: z.number().int().min(0),
+    perRound: z.number().int().min(0),
+    cap: z.number().int().min(1).nullable()
+  }),
+  deckbuilding: z.object({
+    size: z.number().int().min(1),
+    maxCopies: z.number().int().min(1),
+    factionRule: z.enum(['singleTop', 'singleSub', 'free'])
+  })
 });
 
 export const factionSchema = z.object({
@@ -279,4 +287,78 @@ export function validateGameData(raw: {
     topics: topicsResult.data,
     cards
   };
+}
+
+// ---------------------------------------------------------------- Deckbau
+
+export const deckSchema = z.object({
+  faction: z.string().min(1).optional(),
+  cards: z
+    .array(
+      z.object({
+        cardId: z.string().min(1),
+        count: z.number().int().min(1)
+      })
+    )
+    .min(1, 'ein Deck braucht mindestens eine Karte')
+});
+
+/** Deck-Validierung mit deutschen, konkreten Fehlermeldungen. */
+export class DeckError extends Error {
+  constructor(public problems: string[]) {
+    super('Deck ungültig:\n' + problems.map((p) => `  • ${p}`).join('\n'));
+    this.name = 'DeckError';
+  }
+}
+
+/**
+ * Prüft eine Deckliste gegen Größe, maxCopies (Signaturkarten max. 1) und die
+ * konfigurierte factionRule. Gibt das geprüfte Deck zurück oder wirft DeckError.
+ */
+export function validateDeck(deck: unknown, data: GameData): DeckList {
+  const parsed = deckSchema.safeParse(deck);
+  if (!parsed.success) {
+    throw new DeckError(describeZodError(parsed.error));
+  }
+  const dl = parsed.data;
+  const { size, maxCopies, factionRule } = data.config.deckbuilding;
+  const tree = buildFactionTree(data.factions);
+  const problems: string[] = [];
+
+  let total = 0;
+  const seen = new Set<string>();
+  const tops = new Set<string>();
+  const subs = new Set<string>();
+
+  for (const entry of dl.cards) {
+    const card = data.cardsById[entry.cardId];
+    if (!card) {
+      problems.push(`Unbekannte Karte "${entry.cardId}".`);
+      continue;
+    }
+    if (seen.has(entry.cardId)) {
+      problems.push(`Karte "${card.name}" ist mehrfach aufgeführt – bitte zusammenfassen.`);
+    }
+    seen.add(entry.cardId);
+    total += entry.count;
+    const max = card.signature ? 1 : maxCopies;
+    if (entry.count > max) {
+      problems.push(`Zu viele Kopien von "${card.name}": ${entry.count}, erlaubt sind ${max}.`);
+    }
+    tops.add(topOf(tree, card.faction));
+    subs.add(card.faction);
+  }
+
+  if (total !== size) {
+    problems.push(`Deck ungültig: ${total} Karten, erlaubt sind ${size}.`);
+  }
+  if (factionRule === 'singleTop' && tops.size > 1) {
+    problems.push('Deck mischt mehrere Oberfraktionen – erlaubt ist nur Mensch ODER Tier.');
+  }
+  if (factionRule === 'singleSub' && subs.size > 1) {
+    problems.push('Deck mischt mehrere Sub-Fraktionen – erlaubt ist nur eine.');
+  }
+
+  if (problems.length > 0) throw new DeckError(problems);
+  return dl;
 }

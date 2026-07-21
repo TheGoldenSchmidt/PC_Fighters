@@ -3,15 +3,41 @@
 
 export type PlayerIndex = 0 | 1;
 
+export interface EnergyConfig {
+  start: number;
+  perRound: number;
+  /** null = ungedeckelt (Runde n = start + (n-1)*perRound Energie). */
+  cap: number | null;
+}
+
+export type FactionRule = 'singleTop' | 'singleSub' | 'free';
+
+export interface DeckbuildingConfig {
+  size: number;
+  maxCopies: number;
+  factionRule: FactionRule;
+}
+
 export interface GameConfig {
   lanes: number;
   baseHealth: number;
-  deckSize: number;
   startingHand: number;
   cardsDrawnPerTurn: number;
-  energyCap: number;
   roundLimit: number;
-  maxCopiesPerCard: number;
+  energy: EnergyConfig;
+  deckbuilding: DeckbuildingConfig;
+}
+
+/** Deck-Datenstruktur (spielergewählt) – für den kommenden Deck-Editor. */
+export interface DeckEntry {
+  cardId: string;
+  count: number;
+}
+
+export interface DeckList {
+  /** Optional: Oberfraktion des Decks (rein informativ). */
+  faction?: string;
+  cards: DeckEntry[];
 }
 
 export interface Faction {

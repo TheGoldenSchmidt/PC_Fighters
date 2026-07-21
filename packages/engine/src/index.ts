@@ -6,11 +6,13 @@ export {
   applyAction,
   buildClientView,
   buildDeck,
+  buildDeckFromList,
   createGame,
   GameRuleError,
   getEffectiveAttack,
-  getMaxHealth
+  getMaxHealth,
+  roundEnergy
 } from './game.js';
 export { buildFactionTree, matchesScope, topOf } from './factions.js';
-export { DataError, validateGameData } from './schema.js';
+export { DataError, DeckError, validateDeck, validateGameData } from './schema.js';
 export { loadGameData } from './loadData.js';
