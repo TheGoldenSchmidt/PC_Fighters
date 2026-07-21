@@ -8,7 +8,9 @@ import {
   getMaxHealth,
   loadGameData,
   matchesScope,
+  roundEnergy,
   topOf,
+  validateDeck,
   validateGameData
 } from '../src/index.js';
 import { recalcBoard } from '../src/internal.js';
@@ -353,5 +355,260 @@ describe('Fraktionsbaum', () => {
     expect(() =>
       validateGameData({ config: data.config, factions: bad, topics: [], cardFiles: [] })
     ).toThrow(/Oberfraktion "gibtsnicht" gibt es nicht/);
+  });
+});
+
+describe('Neue Fähigkeiten – Skalierung & Auren', () => {
+  it('skalierung wächst mit Anzahl und schrumpft dynamisch beim Sterben', () => {
+    const s = emptyState();
+    put(s, 0, 0, 'flugblatt_verteiler'); // 1/2, +1 ATK je weiterem Sozi (cap 3)
+    expect(getEffectiveAttack(s, 0, 0)).toBe(1);
+    put(s, 0, 1, 'solidaritaetskasse'); // Sozi
+    put(s, 0, 2, 'basisdemokratie'); // Sozi
+    expect(getEffectiveAttack(s, 0, 0)).toBe(3); // +2 (zwei weitere Sozis)
+    s.board[0][2] = null; // einer stirbt
+    recalcBoard(s);
+    expect(getEffectiveAttack(s, 0, 0)).toBe(2); // dynamisch zurück auf +1
+  });
+
+  it('skalierung cap begrenzt den Bonus', () => {
+    const s = emptyState();
+    const c = put(s, 0, 0, 'die_massen'); // Sozi
+    c.abilities = [{ kind: 'skalierung', scope: 'same_sub', per: { atk: 1, hp: 0 }, cap: 1 }];
+    put(s, 0, 1, 'flugblatt_verteiler'); // Sozi
+    put(s, 0, 2, 'basisdemokratie'); // Sozi
+    recalcBoard(s);
+    expect(getEffectiveAttack(s, 0, 0)).toBe(6); // Basis 5 + cap 1
+  });
+
+  it('skalierung includeSelf zählt sich selbst mit', () => {
+    const s = emptyState();
+    put(s, 0, 0, 'basisdemokratie'); // 1/6, +1 ATK je Sozi inkl. sich selbst
+    expect(getEffectiveAttack(s, 0, 0)).toBe(2); // allein: self zählt
+  });
+
+  it('aura dauerhaft verschwindet, wenn die Quelle stirbt', () => {
+    const s = emptyState();
+    put(s, 0, 0, 'spinosaurus'); // Dino, Aura same_sub +1 ATK
+    put(s, 0, 1, 'triceratops'); // Dino 3/6
+    expect(getEffectiveAttack(s, 0, 1)).toBe(4); // 3 + Aura 1
+    s.board[0][0] = null;
+    recalcBoard(s);
+    expect(getEffectiveAttack(s, 0, 1)).toBe(3);
+  });
+
+  it('neugier gilt nur allein in der Lane', () => {
+    const s = emptyState();
+    put(s, 0, 0, 'hauskater'); // 2/2, neugier +2 ATK solo
+    expect(getEffectiveAttack(s, 0, 0)).toBe(4);
+    put(s, 1, 0, 'moewe'); // Gegner in der Lane
+    expect(getEffectiveAttack(s, 0, 0)).toBe(2);
+  });
+});
+
+describe('Neue Fähigkeiten – Kampf', () => {
+  it('wucht: Überschussschaden trifft die Basis', () => {
+    const s = emptyState();
+    put(s, 0, 0, 'kranfuehrer'); // 4/4 Wucht
+    put(s, 1, 0, 'streunerkatze', { exhausted: true }); // 2/1, wehrt sich nicht
+    const after = passBoth(s);
+    expect(after.board[1][0]).toBeNull();
+    expect(after.players[1].base).toBe(data.config.baseHealth - 3); // 4 - 1 HP = 3 Überschuss
+  });
+
+  it('dornen: der Angreifer nimmt Schaden', () => {
+    const s = emptyState();
+    put(s, 0, 0, 'ritter'); // 4/4, greift an
+    put(s, 1, 0, 'gecko', { exhausted: true }); // 1/3 Dornen 1
+    const after = passBoth(s);
+    expect(after.board[1][0]).toBeNull(); // Gecko stirbt (4 Schaden)
+    expect(after.board[0][0]?.currentHealth).toBe(3); // Ritter nimmt 1 Dornen-Schaden
+  });
+
+  it('gift: Marken machen Schaden am Kampfende und bleiben bestehen', () => {
+    const s = emptyState();
+    put(s, 0, 0, 'klapperschlange'); // 2/3 Gift 2
+    put(s, 1, 0, 'brachiosaurus', { exhausted: true }); // 6/9, wehrt sich nicht
+    const after = passBoth(s);
+    // Treffer 2 + Gift 2 = 4 Schaden auf 9 HP → 5; Marken bleiben 2
+    expect(after.board[1][0]?.currentHealth).toBe(5);
+    expect(after.board[1][0]?.poison).toBe(2);
+  });
+
+  it('hinrichten überspringt urgewalt und trifft einen anderen schwachen Gegner', () => {
+    const s = emptyState();
+    put(s, 0, 0, 'krokodil'); // 5/6, hinrichten ≤2 HP; greift Lane 0 an
+    put(s, 1, 0, 'die_massen', { exhausted: true }); // 5/7 (>2 HP, kein Ziel), überlebt Kampf
+    const brachio = put(s, 1, 1, 'brachiosaurus', { exhausted: true }); // urgewalt
+    brachio.currentHealth = 2; // verwundet, aber immun gegen Hinrichten
+    put(s, 1, 2, 'moewe', { exhausted: true }); // 3/1 (≤2 HP) – gültiges Hinrichten-Ziel
+    const after = passBoth(s);
+    expect(after.board[1][1]).not.toBeNull(); // urgewalt überlebt das Hinrichten
+    expect(after.board[1][2]).toBeNull(); // stattdessen wird die Möwe hingerichtet
+  });
+
+  it('todesfluch: der Angreifer verliert dauerhaft ATK', () => {
+    const s = emptyState();
+    put(s, 0, 0, 'schwarze_katze'); // 3/2, beim Tod: Angreifer −1 ATK
+    put(s, 1, 0, 'die_massen'); // 5/7, tötet die Katze
+    const after = passBoth(s);
+    expect(after.board[0][0]).toBeNull();
+    expect(getEffectiveAttack(after, 1, 0)).toBe(4); // 5 − 1 (Todesfluch)
+  });
+});
+
+describe('Neue Fähigkeiten – Rettung, Trigger & Wachstum', () => {
+  it('Todes-Rettung greift genau einmal pro Spiel', () => {
+    const s = emptyState();
+    put(s, 0, 0, 'der_alte_hund'); // 1/4, survive_1hp
+    put(s, 1, 0, 'wildkatze'); // 5/4, tödlich
+    const r1 = passBoth(s);
+    expect(r1.board[0][0]?.currentHealth).toBe(1); // gerettet bei 1 HP
+    expect(r1.board[0][0]?.rettungUsed).toBe(true);
+    const r2 = passBoth(r1);
+    expect(r2.board[0][0]).toBeNull(); // zweiter tödlicher Treffer: keine Rettung mehr
+  });
+
+  it('sammeln: dauerhafter Bonus, wenn eine Kreatur stirbt', () => {
+    const s = emptyState();
+    put(s, 0, 0, 'streuner'); // 2/1, sammeln +0/+1 (any); Lane 0 frei → trifft Basis, überlebt
+    put(s, 0, 1, 'ritter'); // 4/4
+    put(s, 1, 1, 'moewe'); // 3/1 – stirbt im Kampf
+    const after = passBoth(s);
+    expect(after.board[1][1]).toBeNull();
+    expect(getMaxHealth(after, 0, 0)).toBe(2); // Streuner 1 HP + Sammeln 1
+  });
+
+  it('beschwoeren beim Ausspielen: Katzenmutter erzeugt zwei Kätzchen', () => {
+    const s = emptyState();
+    s.players[0].hand = ['katzenmutter'];
+    const after = applyAction(s, 0, { type: 'playCreature', handIndex: 0, lane: 0 }, data);
+    expect(after.board[0].filter(Boolean)).toHaveLength(3); // Mutter + 2 Kätzchen
+    const kitten = after.board[0].find((c) => c?.name === 'Kätzchen');
+    expect(kitten?.faction).toBe('katzen'); // Token erbt die Sub-Fraktion
+  });
+
+  it('beschwoeren beim Tod: Schrottsammlerin hinterlässt einen Fund-Token', () => {
+    const s = emptyState();
+    put(s, 0, 0, 'schrottsammlerin'); // 3/3
+    put(s, 1, 0, 'wildkatze'); // 5/4, tötet sie
+    const after = passBoth(s);
+    const token = after.board[0].find((c) => c?.name === 'Fund-Token');
+    expect(token).toBeTruthy();
+    expect(token?.faction).toBe('obdachlose');
+  });
+
+  it('lernen zieht beim Ausspielen eine Karte', () => {
+    const s = emptyState();
+    s.players[0].deck = ['ritter', 'wolf'];
+    s.players[0].hand = ['erstsemester'];
+    const after = applyAction(s, 0, { type: 'playCreature', handIndex: 0, lane: 0 }, data);
+    expect(after.players[0].hand).toEqual(['ritter']);
+  });
+
+  it('wissen füllt den spielerweiten Pool', () => {
+    const s = emptyState();
+    s.players[0].hand = ['nachhilfe'];
+    const after = applyAction(s, 0, { type: 'playCreature', handIndex: 0, lane: 0 }, data);
+    expect(after.players[0].knowledge).toBe(1);
+  });
+
+  it('Rundenwachstum stapelt jede Runde', () => {
+    const s = emptyState();
+    put(s, 0, 0, 'lehrling'); // 1/2, Rundenwachstum +0/+1; Lane frei → überlebt
+    const after = passBoth(s); // eine volle Runde → Rundenbeginn 2 löst Wachstum aus
+    expect(getMaxHealth(after, 0, 0)).toBe(3); // 2 + 1
+  });
+
+  it('ueberstunden löst nur einmal aus', () => {
+    let s = emptyState();
+    put(s, 0, 0, 'schichtwechsel'); // 3/4, ueberstunden +2/+2
+    s = passBoth(s);
+    s = passBoth(s);
+    s = passBoth(s);
+    expect(getMaxHealth(s, 0, 0)).toBe(6); // 4 + 2, nicht +4
+    expect(s.board[0][0]?.ueberstundenDone).toBe(true);
+  });
+});
+
+describe('Deckbau-Regeln (Zod)', () => {
+  const katzenVoegel = [
+    { cardId: 'streunerkatze', count: 2 },
+    { cardId: 'getigerter', count: 2 },
+    { cardId: 'hauskater', count: 2 },
+    { cardId: 'schwarze_katze', count: 2 },
+    { cardId: 'katzenmutter', count: 2 },
+    { cardId: 'luchs', count: 1 },
+    { cardId: 'spatz', count: 2 },
+    { cardId: 'kraehe', count: 2 },
+    { cardId: 'moewe', count: 2 },
+    { cardId: 'der_schwarm', count: 1 },
+    { cardId: 'eule', count: 2 }
+  ]; // Summe 20, Oberfraktion animals
+
+  it('akzeptiert ein gültiges 20er-singleTop-Deck', () => {
+    expect(() => validateDeck({ cards: katzenVoegel }, data)).not.toThrow();
+  });
+
+  it('lehnt zu große Decks ab', () => {
+    const deck = { cards: [...katzenVoegel, { cardId: 'moewe', count: 1 }] };
+    // moewe doppelt → wird als "mehrfach aufgeführt" ODER Größe erkannt
+    expect(() => validateDeck(deck, data)).toThrow(/21 Karten, erlaubt sind 20|mehrfach/);
+  });
+
+  it('lehnt zu viele Kopien ab', () => {
+    const deck = { cards: [{ cardId: 'streunerkatze', count: 20 }] };
+    expect(() => validateDeck(deck, data)).toThrow(/Zu viele Kopien von "Streunerkatze": 20, erlaubt sind 2/);
+  });
+
+  it('lehnt Signaturkarten über 1 ab', () => {
+    const deck = {
+      cards: [
+        { cardId: 'luchs', count: 2 },
+        { cardId: 'streunerkatze', count: 2 },
+        { cardId: 'getigerter', count: 2 },
+        { cardId: 'hauskater', count: 2 },
+        { cardId: 'schwarze_katze', count: 2 },
+        { cardId: 'katzenmutter', count: 2 },
+        { cardId: 'spatz', count: 2 },
+        { cardId: 'kraehe', count: 2 },
+        { cardId: 'moewe', count: 2 },
+        { cardId: 'der_schwarm', count: 2 }
+      ]
+    };
+    expect(() => validateDeck(deck, data)).toThrow(/Zu viele Kopien von "Luchs": 2, erlaubt sind 1/);
+  });
+
+  it('lehnt gemischte Oberfraktionen (singleTop) ab', () => {
+    const deck = {
+      cards: [
+        { cardId: 'streunerkatze', count: 2 },
+        { cardId: 'getigerter', count: 2 },
+        { cardId: 'hauskater', count: 2 },
+        { cardId: 'schwarze_katze', count: 2 },
+        { cardId: 'katzenmutter', count: 2 },
+        { cardId: 'spatz', count: 2 },
+        { cardId: 'kraehe', count: 2 },
+        { cardId: 'moewe', count: 2 },
+        { cardId: 'lehrling', count: 2 }, // Mensch!
+        { cardId: 'fliessbandarbeiter', count: 2 }
+      ]
+    };
+    expect(() => validateDeck(deck, data)).toThrow(/mehrere Oberfraktionen/);
+  });
+
+  it('lehnt unbekannte Karten ab', () => {
+    expect(() => validateDeck({ cards: [{ cardId: 'gibtsnicht', count: 20 }] }, data)).toThrow(
+      /Unbekannte Karte "gibtsnicht"/
+    );
+  });
+});
+
+describe('Energie (ungedeckelt)', () => {
+  it('roundEnergy: Runde n = start + (n-1)*perRound, ohne Cap', () => {
+    expect(roundEnergy(data.config, 1)).toBe(1);
+    expect(roundEnergy(data.config, 6)).toBe(6);
+    expect(roundEnergy(data.config, 7)).toBe(7); // Brachiosaurus (7) ab Runde 7 spielbar
+    expect(roundEnergy(data.config, 12)).toBe(12);
   });
 });
