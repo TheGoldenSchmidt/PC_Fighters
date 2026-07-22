@@ -1,10 +1,22 @@
 import { useEffect } from 'react';
+import { FigurePreview } from './FigurePreview';
 import { GameScreen } from './GameScreen';
 import { LobbyScreen } from './LobbyScreen';
 import { StartScreen } from './StartScreen';
 import { useGame } from './useGame';
 
+// Entwickler-Vorschau: /?figure=<cardId> zeigt eine einzelne Figur (nur DEV).
+// Stabil pro Seitenaufruf – daher vor allen Hooks; die Reihenfolge bleibt gleich.
+const previewCardId = import.meta.env.DEV
+  ? new URLSearchParams(window.location.search).get('figure')
+  : null;
+
 export function App() {
+  if (previewCardId) return <FigurePreview cardId={previewCardId} />;
+  return <Game />;
+}
+
+function Game() {
   const { state, createGame, joinGame, sendAction, leaveGame } = useGame();
 
   // Schauplatz-Hintergrund auf die ganze Seite anwenden (Lobby + Spiel).
