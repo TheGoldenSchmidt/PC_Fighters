@@ -192,6 +192,8 @@ export interface VisualPart {
 export interface Visual {
   /** Auflösung der Geometrie (Default "mid"). */
   detailLevel?: DetailLevel;
+  /** Relative Zielhöhe (1 = Normalgröße). Größere Kreaturen z. B. 1.25. */
+  height?: number;
   /** Benannte Farbrollen, die Bausteine per `color` referenzieren. */
   palette?: Record<string, string>;
   parts: VisualPart[];

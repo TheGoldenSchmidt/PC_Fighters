@@ -12,12 +12,21 @@
 // kleiner/größer, damit die Größenverhältnisse stimmen.
 
 import * as THREE from 'three';
+import type { Animations, VisualCatalogEntry } from '@pcf/engine';
+import { buildFigure } from './figures/CardFigure';
+import { createAnimationPlayer } from './figures/AnimationPlayer';
 
 // ---- Timing (muss zur Kampf-Abspielung im GameScreen passen) ----
 export const SPAWN_MS = 650;
 export const ATTACK_MS = 500;
 export const HIT_MS = 420;
 export const DEATH_MS = 600;
+
+/** Reduced-Motion einmalig auslesen (Idle beruhigen, Klips kürzer wirken). */
+const reducedMotion =
+  typeof window !== 'undefined' &&
+  typeof window.matchMedia === 'function' &&
+  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 export interface Figure {
   /** Wurzel-Gruppe – wird von außen positioniert und skaliert. */
@@ -458,7 +467,120 @@ const easeOutBack = (p: number) => {
   return 1 + (c + 1) * q * q * q + c * q * q;
 };
 
-export function createFigure(cardId: string, facing: 1 | -1, seed: number): Figure {
+/**
+ * Datengetriebene Figur aus dem `visual`/`animations`-Block einer Karte.
+ * Gleiches `Figure`-Interface wie der Code-Rig-Pfad; der Battlefield merkt
+ * keinen Unterschied. `play*` löst die passenden Klips im Player aus.
+ */
+function createDataFigure(facing: 1 | -1, entry: VisualCatalogEntry, defaultClips: Animations): Figure {
+  const built = buildFigure(entry.visual!);
+  const model = built.root;
+
+  const root = new THREE.Group();
+  // Blickrichtung auf der äußeren Ebene (wie beim Rig-Pfad die "pose"-Gruppe):
+  // so zeigen Animations-Ausfälle (+z) korrekt zum Gegner.
+  const outer = new THREE.Group();
+  outer.rotation.y = facing === 1 ? 0 : Math.PI;
+  outer.add(model);
+  root.add(outer);
+
+  const shadow = new THREE.Mesh(
+    geo('shadow', () => new THREE.CircleGeometry(0.5, 16)),
+    new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.32, depthWrite: false })
+  );
+  shadow.rotation.x = -Math.PI / 2;
+  shadow.position.y = 0.02;
+  root.add(shadow);
+
+  const ring = new THREE.Mesh(
+    geo('ring', () => new THREE.RingGeometry(0.42, 0.55, 24)),
+    new THREE.MeshBasicMaterial({ color: 0xf5b74a, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide })
+  );
+  ring.rotation.x = -Math.PI / 2;
+  ring.position.y = 0.03;
+  root.add(ring);
+
+  const clips: Animations = { ...defaultClips, ...(entry.animations ?? {}) };
+  const player = createAnimationPlayer(built.parts, clips, { reducedMotion });
+  const deathMs = (clips.death?.duration ?? 1.0) * 1000;
+
+  // Farb-Basis fürs Erschöpfungs-Dimmen (Player fasst Farbe nicht an).
+  const mats: { m: THREE.MeshStandardMaterial; color: THREE.Color }[] = [];
+  model.traverse((o) => {
+    if (o instanceof THREE.Mesh && o.material instanceof THREE.MeshStandardMaterial) {
+      mats.push({ m: o.material, color: o.material.color.clone() });
+    }
+  });
+  const grayCol = new THREE.Color(0x5a6070);
+  let exhausted = false;
+  let spawnT0 = -1;
+  let deathT0 = -1;
+
+  return {
+    root,
+    playSpawn() {
+      spawnT0 = performance.now();
+      player.play('entrance');
+    },
+    playAttack() {
+      player.play('attack');
+    },
+    playHit() {
+      player.play('hit');
+    },
+    playDeath() {
+      if (deathT0 >= 0) return;
+      deathT0 = performance.now();
+      player.play('death');
+    },
+    setExhausted(on) {
+      if (on === exhausted) return;
+      exhausted = on;
+      for (const e of mats) {
+        e.m.color.copy(e.color);
+        if (exhausted) e.m.color.lerp(grayCol, 0.45);
+      }
+    },
+    setWalking() {
+      // Datengetriebene Figuren: der Idle-Loop sorgt für Lebendigkeit,
+      // ein separater Lauf-Klip ist optional und (noch) nicht nötig.
+    },
+    isDeathFinished(now) {
+      return deathT0 >= 0 && now - deathT0 > deathMs;
+    },
+    update(now) {
+      player.update(now);
+      if (spawnT0 >= 0) {
+        const rp = Math.min(1, (now - spawnT0) / (SPAWN_MS * 1.15));
+        (ring.material as THREE.MeshBasicMaterial).opacity = 0.85 * (1 - rp);
+        ring.scale.setScalar(0.6 + rp * 1.6);
+        if (rp >= 1) spawnT0 = -1;
+      }
+      if (deathT0 >= 0) {
+        const p = Math.min(1, (now - deathT0) / deathMs);
+        (shadow.material as THREE.MeshBasicMaterial).opacity = 0.32 * (1 - p * p);
+      }
+    },
+    dispose() {
+      model.traverse((o) => {
+        if (o instanceof THREE.Mesh && o.material instanceof THREE.MeshStandardMaterial) o.material.dispose();
+      });
+      (shadow.material as THREE.MeshBasicMaterial).dispose();
+      (ring.material as THREE.MeshBasicMaterial).dispose();
+      // Geometrien liegen im gemeinsamen Cache und bleiben erhalten.
+    }
+  };
+}
+
+export function createFigure(
+  cardId: string,
+  facing: 1 | -1,
+  seed: number,
+  entry?: VisualCatalogEntry | null,
+  defaultClips?: Animations
+): Figure {
+  if (entry?.visual) return createDataFigure(facing, entry, defaultClips ?? {});
+
   const rig = buildRig(cardId);
 
   const root = new THREE.Group();

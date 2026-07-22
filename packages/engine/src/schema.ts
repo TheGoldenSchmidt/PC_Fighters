@@ -151,6 +151,7 @@ const visualPartSchema = z.object({
 const visualSchema = z
   .object({
     detailLevel: z.enum(['low', 'mid', 'high']).optional(),
+    height: z.number().positive('height muss größer als 0 sein').optional(),
     palette: z.record(z.string().min(1)).optional(),
     parts: z.array(visualPartSchema).min(1, 'eine Figur braucht mindestens einen Baustein in "parts"')
   })

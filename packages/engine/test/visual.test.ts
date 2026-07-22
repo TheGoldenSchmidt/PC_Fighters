@@ -110,6 +110,13 @@ describe('Visual/Animations – Schema-Validierung', () => {
     ).toThrow(/Track 1 verweist auf unbekannten Baustein "schwanz"/);
   });
 
+  it('akzeptiert optionale height, lehnt height <= 0 ab', () => {
+    expect(() => check([creature({ visual: { ...okVisual, height: 1.25 } })])).not.toThrow();
+    expect(() => check([creature({ visual: { ...okVisual, height: 0 } })])).toThrow(
+      /visual\.height.*zu klein/
+    );
+  });
+
   it('erlaubt Track auf "root" auch ohne visual', () => {
     expect(() =>
       check([

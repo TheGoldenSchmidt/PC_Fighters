@@ -203,11 +203,14 @@ function orbColor(emoji: string): number {
   }
 }
 
-export function Battlefield3D({ view, me, fx, topic, onUnsupported }: Props) {
+export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const worldRef = useRef<World | null>(null);
   const onUnsupportedRef = useRef(onUnsupported);
   onUnsupportedRef.current = onUnsupported;
+  // Katalog kann asynchron (nach dem Mount) eintreffen – über Ref lesen.
+  const catalogRef = useRef(catalog);
+  catalogRef.current = catalog;
 
   // ---- Szene einmalig aufbauen ----
   useEffect(() => {
@@ -451,7 +454,14 @@ export function Battlefield3D({ view, me, fx, topic, onUnsupported }: Props) {
         seen.add(c.uid);
         let rec = world.figures.get(c.uid);
         if (!rec) {
-          const fig = createFigure(c.cardId, side === me ? -1 : 1, c.uid);
+          const cat = catalogRef.current;
+          const fig = createFigure(
+            c.cardId,
+            side === me ? -1 : 1,
+            c.uid,
+            cat?.cards[c.cardId],
+            cat?.defaultClips
+          );
           rec = { fig, side, lane, health: c.health, onBoard: true, dying: false, placed: false };
           world.figures.set(c.uid, rec);
           world.scene.add(fig.root);
