@@ -209,4 +209,31 @@ describe('Server: Raum, Beitritt, Aktionen, gefilterte Sicht', () => {
     expect(String(err.message)).toContain('Thema');
     c.ws.close();
   });
+
+  it('Testmodus: beide Hände starten mit den Figuren-Karten und viel Energie', async () => {
+    const data = loadGameData();
+    const figureCardIds = data.cards
+      .filter((c) => c.type === 'creature' && data.figures[c.id]?.visual)
+      .map((c) => c.id);
+    expect(figureCardIds.length).toBeGreaterThan(0);
+
+    const c1 = await connect(server.port);
+    c1.send({ type: 'create', faction: 'humans', testMode: true });
+    const created = await c1.next('created');
+    expect(created.testMode).toBe(true);
+
+    const c2 = await connect(server.port);
+    c2.send({ type: 'join', code: created.code, faction: 'animals' });
+    const joined = await c2.next('joined');
+    expect(joined.testMode).toBe(true);
+
+    const state1 = (await c1.next('state')).view as ClientView;
+    const state2 = (await c2.next('state')).view as ClientView;
+    expect(state1.hand.map((c) => c.id).sort()).toEqual([...figureCardIds].sort());
+    expect(state2.hand.map((c) => c.id).sort()).toEqual([...figureCardIds].sort());
+    expect(state1.you === 0 ? state1.players[0].energy : state1.players[1].energy).toBeGreaterThanOrEqual(40);
+
+    c1.ws.close();
+    c2.ws.close();
+  });
 });

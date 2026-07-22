@@ -109,7 +109,7 @@ export function StartScreen({ status, onCreate, onJoin }: Props) {
               onClick={() => setFaction(f.id)}
             >
               <div className="faction-emblem-wrapper">
-                <img src={`/assets/emblems/${f.id}.png`} className="faction-emblem" alt={`${f.name} Emblem`} />
+                <FactionEmblem faction={f} />
               </div>
               <strong className="faction-name">{f.name}</strong>
               <span className="faction-desc">{f.description}</span>
@@ -195,5 +195,26 @@ export function StartScreen({ status, onCreate, onJoin }: Props) {
         {faction === null && factions && <p className="hint">Bitte zuerst eine Fraktion wählen.</p>}
       </section>
     </div>
+  );
+}
+
+/**
+ * Fraktions-Emblem: versucht erst /assets/emblems/<id>.png, bei Sub-Fraktionen
+ * ohne eigenes Emblem dann das der Oberfraktion, sonst der Anfangsbuchstabe.
+ * Nur Ober-Fraktionen haben heute eigene Emblem-Dateien.
+ */
+function FactionEmblem({ faction }: { faction: Faction }) {
+  const candidates = [faction.id, ...(faction.parent ? [faction.parent] : [])];
+  const [step, setStep] = useState(0);
+  if (step >= candidates.length) {
+    return <span className="faction-emblem-fallback">{faction.name.charAt(0)}</span>;
+  }
+  return (
+    <img
+      src={`/assets/emblems/${candidates[step]}.png`}
+      className="faction-emblem"
+      alt={`${faction.name} Emblem`}
+      onError={() => setStep((s) => s + 1)}
+    />
   );
 }
