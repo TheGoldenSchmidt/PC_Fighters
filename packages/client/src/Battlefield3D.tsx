@@ -115,6 +115,8 @@ interface World {
   orbs: Orb[];
   spellFx: SpellFx[];
   ground: Ground;
+  shadowCatcher: THREE.Mesh | null;
+  realShadows: boolean;
   raf: number;
   firstSync: boolean;
   seenProjectiles: Set<string>;
@@ -226,6 +228,20 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
       return;
     }
     renderer.setClearColor(0x000000, 0);
+    // Filmisches Tone-Mapping + sRGB → wärmerer, „wertigerer" Look (billig).
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.1;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+    // Perf-Stufe: echte Kontaktschatten nur auf leistungsfähigen Geräten
+    // (Desktop). Auf Touch-/Reduced-Motion-Geräten bleiben die Blob-Schatten.
+    const mq = (q: string) => typeof window.matchMedia === 'function' && window.matchMedia(q).matches;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const realShadows = !mq('(pointer: coarse)') && !mq('(prefers-reduced-motion: reduce)');
+    if (realShadows) {
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    }
 
     const scene = new THREE.Scene();
     // Gekippte, tiefere Kamera: man blickt von der eigenen Seite über das Feld,
@@ -239,10 +255,36 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
     scene.add(new THREE.HemisphereLight(0xcfe0ff, 0x4a3d2c, 1.5));
     const sun = new THREE.DirectionalLight(0xfff2dd, 2.1);
     sun.position.set(3, 8, 4);
+    if (realShadows) {
+      sun.castShadow = true;
+      const size = dpr >= 2 ? 2048 : 1024;
+      sun.shadow.mapSize.set(size, size);
+      const cam = sun.shadow.camera;
+      cam.near = 0.5;
+      cam.far = 40;
+      cam.left = -12;
+      cam.right = 12;
+      cam.top = 10;
+      cam.bottom = -10;
+      cam.updateProjectionMatrix();
+      sun.shadow.bias = -0.0008;
+    }
     scene.add(sun);
     const rim = new THREE.DirectionalLight(0x8ab4ff, 0.6);
     rim.position.set(-4, 5, -6);
     scene.add(rim);
+
+    // Kontaktschatten-Ebene (nur der Schatten ist sichtbar, der Karten-
+    // Hintergrund scheint durch). Ersetzt bei Bedarf die Blob-Schatten.
+    const shadowCatcher = realShadows
+      ? new THREE.Mesh(new THREE.PlaneGeometry(60, 60), new THREE.ShadowMaterial({ opacity: 0.3 }))
+      : null;
+    if (shadowCatcher) {
+      shadowCatcher.rotation.x = -Math.PI / 2;
+      shadowCatcher.position.y = 0;
+      shadowCatcher.receiveShadow = true;
+      scene.add(shadowCatcher);
+    }
 
     // ---- Thematischer 3D-Boden (halbtransparent, damit die DOM-Lane-Rahmen,
     // "FREI"-Hinweise und Ziel-Markierungen darunter sichtbar bleiben) ----
@@ -296,6 +338,8 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
       orbs: [],
       spellFx: [],
       ground: { floor, grid, glow },
+      shadowCatcher,
+      realShadows,
       raf: 0,
       firstSync: true,
       seenProjectiles: new Set(),
@@ -423,6 +467,10 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
       (grid.material as THREE.Material).dispose();
       glow.geometry.dispose();
       (glow.material as THREE.Material).dispose();
+      if (shadowCatcher) {
+        shadowCatcher.geometry.dispose();
+        (shadowCatcher.material as THREE.Material).dispose();
+      }
       renderer.dispose();
       worldRef.current = null;
     };
@@ -460,7 +508,8 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
             side === me ? -1 : 1,
             c.uid,
             cat?.cards[c.cardId],
-            cat?.defaultClips
+            cat?.defaultClips,
+            { realShadows: world.realShadows }
           );
           rec = { fig, side, lane, health: c.health, onBoard: true, dying: false, placed: false };
           world.figures.set(c.uid, rec);

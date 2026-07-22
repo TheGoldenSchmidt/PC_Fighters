@@ -472,7 +472,12 @@ const easeOutBack = (p: number) => {
  * Gleiches `Figure`-Interface wie der Code-Rig-Pfad; der Battlefield merkt
  * keinen Unterschied. `play*` löst die passenden Klips im Player aus.
  */
-function createDataFigure(facing: 1 | -1, entry: VisualCatalogEntry, defaultClips: Animations): Figure {
+function createDataFigure(
+  facing: 1 | -1,
+  entry: VisualCatalogEntry,
+  defaultClips: Animations,
+  realShadows: boolean
+): Figure {
   const built = buildFigure(entry.visual!);
   const model = built.root;
 
@@ -484,9 +489,12 @@ function createDataFigure(facing: 1 | -1, entry: VisualCatalogEntry, defaultClip
   outer.add(model);
   root.add(outer);
 
+  // Bei echten Schatten wirft das Modell selbst einen Kontaktschatten; der
+  // gefälschte Blob wird dann ausgeblendet.
+  const blobBase = realShadows ? 0 : 0.32;
   const shadow = new THREE.Mesh(
     geo('shadow', () => new THREE.CircleGeometry(0.5, 16)),
-    new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.32, depthWrite: false })
+    new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: blobBase, depthWrite: false })
   );
   shadow.rotation.x = -Math.PI / 2;
   shadow.position.y = 0.02;
@@ -558,7 +566,7 @@ function createDataFigure(facing: 1 | -1, entry: VisualCatalogEntry, defaultClip
       }
       if (deathT0 >= 0) {
         const p = Math.min(1, (now - deathT0) / deathMs);
-        (shadow.material as THREE.MeshBasicMaterial).opacity = 0.32 * (1 - p * p);
+        (shadow.material as THREE.MeshBasicMaterial).opacity = blobBase * (1 - p * p);
       }
     },
     dispose() {
@@ -577,11 +585,18 @@ export function createFigure(
   facing: 1 | -1,
   seed: number,
   entry?: VisualCatalogEntry | null,
-  defaultClips?: Animations
+  defaultClips?: Animations,
+  opts?: { realShadows?: boolean }
 ): Figure {
-  if (entry?.visual) return createDataFigure(facing, entry, defaultClips ?? {});
+  const realShadows = opts?.realShadows ?? false;
+  if (entry?.visual) return createDataFigure(facing, entry, defaultClips ?? {}, realShadows);
 
   const rig = buildRig(cardId);
+  if (realShadows) {
+    rig.node.traverse((o) => {
+      if (o instanceof THREE.Mesh) o.castShadow = true;
+    });
+  }
 
   const root = new THREE.Group();
   // pose: Ebene für Animations-Offsets (Ausfall, Rückstoß, Umfallen)
@@ -590,10 +605,11 @@ export function createFigure(
   pose.add(rig.node);
   root.add(pose);
 
-  // Weicher Standschatten (Fake, robust und billig auf Mobilgeräten)
+  // Weicher Standschatten (Fake) – bei echten Schatten ausgeblendet.
+  const blobBase = realShadows ? 0 : 0.32;
   const shadow = new THREE.Mesh(
     geo('shadow', () => new THREE.CircleGeometry(0.5, 16)),
-    new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.32, depthWrite: false })
+    new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: blobBase, depthWrite: false })
   );
   shadow.rotation.x = -Math.PI / 2;
   shadow.position.y = 0.02;
@@ -722,7 +738,7 @@ export function createFigure(
         pose.position.y = -p * 0.18;
         const op = 1 - p * p;
         for (const e of mats) e.m.opacity = op;
-        (shadow.material as THREE.MeshBasicMaterial).opacity = 0.32 * op;
+        (shadow.material as THREE.MeshBasicMaterial).opacity = blobBase * op;
       }
 
       pose.scale.setScalar(scl);
