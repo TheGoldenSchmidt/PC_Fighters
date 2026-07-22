@@ -112,12 +112,43 @@ export function FigurePreview({ cardId }: { cardId: string }) {
     window.addEventListener('pointerup', onUp);
 
     let raf = 0;
-    const tick = () => {
+    let paused = false;
+    const renderOnce = () => renderer.render(scene, camera);
+    const loop = () => {
       fig.update(performance.now());
-      renderer.render(scene, camera);
-      raf = requestAnimationFrame(tick);
+      renderOnce();
+      if (!paused) raf = requestAnimationFrame(loop);
     };
-    tick();
+    loop();
+
+    // Imperative Steuerung für deterministische Screenshots (Werkstatt/Kritiker).
+    // Der Render-Loop wird eingefroren, damit die Aufnahme nicht mit rAF kollidiert.
+    const clipFns = { entrance: 'playSpawn', attack: 'playAttack', hit: 'playHit', death: 'playDeath' } as const;
+    const handle = {
+      freeze() {
+        paused = true;
+        cancelAnimationFrame(raf);
+      },
+      live() {
+        if (paused) {
+          paused = false;
+          loop();
+        }
+      },
+      /** Yaw setzen und ein Einzelbild rendern (Figur steht still). */
+      yaw(rad: number) {
+        fig.root.rotation.y = rad;
+        fig.update(performance.now());
+        renderOnce();
+      },
+      /** Klip auslösen und den Frame `deltaMs` nach Start rendern (eingefroren). */
+      clip(name: keyof typeof clipFns, deltaMs = 0) {
+        fig[clipFns[name]]();
+        fig.update(performance.now() + deltaMs);
+        renderOnce();
+      }
+    };
+    (window as unknown as { __figure?: typeof handle }).__figure = handle;
 
     const onResize = () => {
       const nw = mount.clientWidth || 1;
@@ -131,6 +162,7 @@ export function FigurePreview({ cardId }: { cardId: string }) {
 
     return () => {
       cancelAnimationFrame(raf);
+      delete (window as unknown as { __figure?: unknown }).__figure;
       ro.disconnect();
       renderer.domElement.removeEventListener('pointerdown', onDown);
       renderer.domElement.removeEventListener('pointermove', onMove);

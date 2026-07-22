@@ -191,6 +191,30 @@ export function startServer(port: number): Promise<RunningServer> {
     // /info: Fraktions- und Themenliste für den Startbildschirm des Clients.
     // CORS offen, weil der Client lokal von einem anderen Port (Vite) kommt.
     const cors = { 'access-control-allow-origin': '*' };
+
+    // /snap: NUR-DEV-Werkzeug für die Figuren-Werkstatt. Der Client schickt ein
+    // Canvas-Bild (data-URL/base64) per POST; der Server legt es als PNG ab.
+    // Aktiv nur, wenn PCF_SNAP=<Zielordner> gesetzt ist – in Produktion inaktiv.
+    if (req.method === 'POST' && req.url?.startsWith('/snap') && process.env.PCF_SNAP) {
+      const name = (new URL(req.url, 'http://x').searchParams.get('name') || 'snap').replace(
+        /[^a-z0-9_-]/gi,
+        '_'
+      );
+      let body = '';
+      req.on('data', (c) => (body += c));
+      req.on('end', () => {
+        try {
+          const b64 = body.replace(/^data:image\/\w+;base64,/, '');
+          writeFileSync(join(process.env.PCF_SNAP!, `${name}.png`), Buffer.from(b64, 'base64'));
+          res.writeHead(200, cors);
+          res.end('ok');
+        } catch (e) {
+          res.writeHead(500, cors);
+          res.end(String(e));
+        }
+      });
+      return;
+    }
     if (req.url?.startsWith('/info')) {
       if (dataError) {
         res.writeHead(500, { 'content-type': 'application/json; charset=utf-8', ...cors });
