@@ -18,7 +18,7 @@
 
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
-import type { ClientView, PlayerIndex, Topic } from '@pcf/engine';
+import type { ClientView, PlayerIndex, Topic, VisualCatalog } from '@pcf/engine';
 import { createFigure, type Figure } from './figures3d';
 
 /** Zauber-Effektarten der Aktionskarten (Spiegel des engine-SpellEvent). */
@@ -36,6 +36,8 @@ interface Props {
   me: PlayerIndex;
   fx: BattlefieldFx;
   topic: Topic | null;
+  /** Aussehen/Animation je cardId (Phase 3 nutzt es; fehlt es → Golem-Fallback). */
+  catalog: VisualCatalog | null;
   onUnsupported: () => void;
 }
 

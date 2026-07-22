@@ -32,7 +32,8 @@ import type {
   PlayerAction,
   PlayerIndex,
   SpellEvent,
-  Topic
+  Topic,
+  VisualCatalog
 } from '@pcf/engine';
 import type { ConnectionStatus, KeywordInfo } from './useGame';
 import { Battlefield3D, webglSupported, type SpellEffectKind } from './Battlefield3D';
@@ -41,6 +42,7 @@ interface Props {
   view: ClientView;
   topic: Topic | null;
   keywordInfo: KeywordInfo | null;
+  catalog: VisualCatalog | null;
   status: ConnectionStatus;
   opponentConnected: boolean;
   onAction: (action: PlayerAction) => void;
@@ -157,6 +159,7 @@ export function GameScreen({
   view,
   topic,
   keywordInfo,
+  catalog,
   status,
   opponentConnected,
   onAction,
@@ -605,6 +608,7 @@ export function GameScreen({
             me={me}
             fx={fx}
             topic={topic}
+            catalog={catalog}
             onUnsupported={() => setUse3d(false)}
           />
         )}

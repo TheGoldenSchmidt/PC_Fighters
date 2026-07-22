@@ -46,6 +46,7 @@ export function App() {
           view={state.view}
           topic={state.topic}
           keywordInfo={state.keywordInfo}
+          catalog={state.catalog}
           status={state.status}
           opponentConnected={state.opponentConnected}
           onAction={sendAction}

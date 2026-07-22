@@ -2,8 +2,8 @@
 // Wiederverbinden mit Raum-Code + Token, und der komplette UI-Zustand.
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { ClientView, PlayerAction, Topic } from '@pcf/engine';
-import { toWsUrl } from './config';
+import type { ClientView, PlayerAction, Topic, VisualCatalog } from '@pcf/engine';
+import { toInfoUrl, toWsUrl } from './config';
 
 export type ConnectionStatus = 'idle' | 'connecting' | 'connected' | 'reconnecting';
 export type Screen = 'start' | 'lobby' | 'game';
@@ -20,6 +20,8 @@ export interface GameClientState {
   /** Vom Raum-Ersteller gewählter Schauplatz (kommt vom Server). */
   topic: Topic | null;
   keywordInfo: KeywordInfo | null;
+  /** Aussehen/Animation aller Karten (vom /info-Endpunkt, opak durchgereicht). */
+  catalog: VisualCatalog | null;
   error: string | null;
   dataError: string | null;
   opponentConnected: boolean;
@@ -33,6 +35,7 @@ const initial: GameClientState = {
   serverAddress: null,
   topic: null,
   keywordInfo: null,
+  catalog: null,
   error: null,
   dataError: null,
   opponentConnected: true
@@ -52,6 +55,19 @@ export function useGame() {
     patch({ error: message });
     if (errorTimer.current) window.clearTimeout(errorTimer.current);
     errorTimer.current = window.setTimeout(() => patch({ error: null }), 4000);
+  }, []);
+
+  // Aussehen/Animation aller Karten einmalig über /info holen (fire-and-forget;
+  // blockiert das Spiel nicht – fehlt der Katalog, greift der Golem-Fallback).
+  const loadCatalog = useCallback((serverInput: string) => {
+    fetch(toInfoUrl(serverInput))
+      .then((r) => r.json())
+      .then((j) => {
+        if (j && j.visuals) patch({ catalog: j.visuals as VisualCatalog });
+      })
+      .catch(() => {
+        /* ohne Katalog: Golem-Fallback im Client */
+      });
   }, []);
 
   const handleMessage = useCallback(
@@ -151,11 +167,12 @@ export function useGame() {
       const url = toWsUrl(serverInput);
       session.current = { url, code: '', token: '' };
       patch({ serverAddress: serverInput.trim() });
+      loadCatalog(serverInput);
       open(url, (socket) =>
         socket.send(JSON.stringify({ type: 'create', faction, topic: topicId }))
       );
     },
-    [open]
+    [open, loadCatalog]
   );
 
   const joinGame = useCallback(
@@ -163,11 +180,12 @@ export function useGame() {
       const url = toWsUrl(serverInput);
       session.current = { url, code: '', token: '' };
       patch({ serverAddress: serverInput.trim() });
+      loadCatalog(serverInput);
       open(url, (socket) =>
         socket.send(JSON.stringify({ type: 'join', code: code.trim(), faction }))
       );
     },
-    [open]
+    [open, loadCatalog]
   );
 
   const sendAction = useCallback(
@@ -198,6 +216,7 @@ export function useGame() {
       const s = JSON.parse(stored) as { url: string; code: string; token: string };
       if (s.url && s.code && s.token) {
         session.current = s;
+        loadCatalog(s.url);
         open(s.url, (socket) =>
           socket.send(JSON.stringify({ type: 'rejoin', code: s.code, token: s.token }))
         );

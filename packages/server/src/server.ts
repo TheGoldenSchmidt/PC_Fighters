@@ -12,6 +12,7 @@ import sirv from 'sirv';
 import {
   applyAction,
   buildClientView,
+  buildVisualCatalog,
   createGame,
   DataError,
   GameRuleError,
@@ -184,7 +185,10 @@ export function startServer(port: number): Promise<RunningServer> {
         JSON.stringify({
           name: 'Political Correct Fighters',
           factions: data!.factions,
-          topics: data!.topics
+          topics: data!.topics,
+          // Aussehen/Animation als OPAKE Daten – der Server interpretiert sie nie,
+          // er reicht sie nur weiter (wie factions/keywords). Der Client rendert.
+          visuals: buildVisualCatalog(data!)
         })
       );
       return;
