@@ -32,6 +32,7 @@ export function loadGameData(dataDir: string = DATA_DIR): GameData {
   const config = readJson('config.json', join(dataDir, 'config.json'));
   const factions = readJson('factions.json', join(dataDir, 'factions.json'));
   const topics = readJson('topics.json', join(dataDir, 'topics.json'));
+  const animations = readJson('animations.json', join(dataDir, 'animations.json'));
 
   const cardsDir = join(dataDir, 'cards');
   const files = readdirSync(cardsDir).filter((f) => f.endsWith('.json'));
@@ -40,7 +41,7 @@ export function loadGameData(dataDir: string = DATA_DIR): GameData {
     content: readJson(`cards/${file}`, join(cardsDir, file))
   }));
 
-  const validated = validateGameData({ config, factions, topics, cardFiles });
+  const validated = validateGameData({ config, factions, topics, cardFiles, animations });
   return {
     ...validated,
     cardsById: Object.fromEntries(validated.cards.map((c) => [c.id, c]))

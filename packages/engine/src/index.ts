@@ -16,3 +16,5 @@ export {
 export { buildFactionTree, matchesScope, topOf } from './factions.js';
 export { DataError, DeckError, validateDeck, validateGameData } from './schema.js';
 export { loadGameData } from './loadData.js';
+export { buildVisualCatalog } from './visualCatalog.js';
+export type { VisualCatalog, VisualCatalogEntry } from './visualCatalog.js';

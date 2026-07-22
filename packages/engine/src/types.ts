@@ -156,6 +156,77 @@ export type Ability =
   // Beim Angriff: zerstöre einen Gegner mit ≤ maxHp Leben.
   | { kind: 'hinrichten'; maxHp: number };
 
+// ---- Aussehen & Animation (reine Daten – interpretiert ausschließlich der
+// Client beim Rendern; die Engine validiert nur die Struktur). ----
+
+export type DetailLevel = 'low' | 'mid' | 'high';
+
+/** Primitiv-Bausteine. `group` ist ein reiner Container ohne Geometrie. */
+export type PartShape = 'ico' | 'box' | 'cyl' | 'cone' | 'sph' | 'group';
+
+export interface VisualPart {
+  /** Eindeutig je Figur; von Animations-Tracks adressierbar. "root" ist reserviert. */
+  id: string;
+  shape: PartShape;
+  /**
+   * Formabhängige Maße: ico/sph = Radius (Zahl); box = Zahl oder [x,y,z];
+   * cyl = [rOben, rUnten, höhe]; cone = [radius, höhe]. Bei `group` entfällt es.
+   */
+  size?: number | number[];
+  pos?: [number, number, number];
+  /** Rotation in Radiant. */
+  rot?: [number, number, number];
+  scale?: number | [number, number, number];
+  /** Palettenrolle (Schlüssel in `visual.palette`) ODER Hex-Farbe (#rrggbb). */
+  color?: string;
+  /** Optionale Hierarchie: id eines anderen Bausteins (Default: Figur-Wurzel). */
+  parent?: string;
+  roughness?: number;
+  metalness?: number;
+  transparent?: boolean;
+  opacity?: number;
+  /** Nur `sph`: partielle Kugel [phiStart, phiLength, thetaStart, thetaLength]. */
+  arc?: [number, number, number, number];
+}
+
+export interface Visual {
+  /** Auflösung der Geometrie (Default "mid"). */
+  detailLevel?: DetailLevel;
+  /** Benannte Farbrollen, die Bausteine per `color` referenzieren. */
+  palette?: Record<string, string>;
+  parts: VisualPart[];
+}
+
+/** Auf welche Baustein-Eigenschaft ein Keyframe-Track wirkt. */
+export type AnimProp =
+  | 'pos.x'
+  | 'pos.y'
+  | 'pos.z'
+  | 'rot.x'
+  | 'rot.y'
+  | 'rot.z'
+  | 'scale'
+  | 'emissive'
+  | 'opacity';
+
+export interface AnimationTrack {
+  /** id eines Bausteins oder "root" (ganze Figur). */
+  part: string;
+  prop: AnimProp;
+  /** Keyframes [zeit, wert], nach Zeit aufsteigend. pos/rot sind Offsets, scale ein Faktor. */
+  keys: [number, number][];
+}
+
+export interface AnimationClip {
+  duration: number;
+  /** Idle läuft als Loop; Einzel-Klips (entrance/attack/hit/death) spielen einmal. */
+  loop?: boolean;
+  tracks: AnimationTrack[];
+}
+
+/** Klip-Name (z. B. "idle", "attack") → Klip. Fehlende Klips erben aus den Defaults. */
+export type Animations = Record<string, AnimationClip>;
+
 export interface CreatureCard {
   id: string;
   name: string;
@@ -171,6 +242,10 @@ export interface CreatureCard {
   /** Emoji, das beim Angriff als Projektil fliegt (z. B. "🗡️"). */
   projectile?: string;
   text?: string;
+  /** Optional: prozedurale 3D-Figur (sonst Golem-Fallback im Client). */
+  visual?: Visual;
+  /** Optional: eigene Animations-Klips (überschreiben die geteilten Defaults). */
+  animations?: Animations;
 }
 
 export interface ActionCard {
@@ -192,6 +267,8 @@ export interface GameData {
   topics: Topic[];
   cards: CardDef[];
   cardsById: Record<string, CardDef>;
+  /** Geteilte Standard-Animations-Klips (data/animations.json). */
+  defaultClips: Animations;
 }
 
 // Eine Kreatur auf dem Spielfeld.

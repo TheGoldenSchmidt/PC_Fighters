@@ -5,7 +5,15 @@
 import { z } from 'zod';
 import { buildFactionTree, topOf } from './factions.js';
 import { KEYWORDS } from './keywords.js';
-import type { CardDef, DeckList, Faction, GameConfig, GameData, Topic } from './types.js';
+import type {
+  Animations,
+  CardDef,
+  DeckList,
+  Faction,
+  GameConfig,
+  GameData,
+  Topic
+} from './types.js';
 
 export const configSchema = z.object({
   lanes: z.number().int().min(1).max(6),
@@ -116,6 +124,111 @@ export const abilitySchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('hinrichten'), maxHp: z.number().int().min(1) })
 ]);
 
+// ---------------------------------------------------------------- Visuals
+// Aussehen & Animation als reine Daten. Die Engine validiert nur die Struktur;
+// interpretiert (gerendert) wird ausschließlich im Client.
+
+const HEX = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
+const vec3 = z.tuple([z.number(), z.number(), z.number()]);
+const PART_SHAPES = ['ico', 'box', 'cyl', 'cone', 'sph', 'group'] as const;
+
+const visualPartSchema = z.object({
+  id: z.string().min(1),
+  shape: z.enum(PART_SHAPES),
+  size: z.union([z.number(), z.array(z.number()).min(1)]).optional(),
+  pos: vec3.optional(),
+  rot: vec3.optional(),
+  scale: z.union([z.number(), vec3]).optional(),
+  color: z.string().min(1).optional(),
+  parent: z.string().min(1).optional(),
+  roughness: z.number().min(0).max(1).optional(),
+  metalness: z.number().min(0).max(1).optional(),
+  transparent: z.boolean().optional(),
+  opacity: z.number().min(0).max(1).optional(),
+  arc: z.tuple([z.number(), z.number(), z.number(), z.number()]).optional()
+});
+
+const visualSchema = z
+  .object({
+    detailLevel: z.enum(['low', 'mid', 'high']).optional(),
+    palette: z.record(z.string().min(1)).optional(),
+    parts: z.array(visualPartSchema).min(1, 'eine Figur braucht mindestens einen Baustein in "parts"')
+  })
+  .superRefine((v, ctx) => {
+    const seen = new Set<string>();
+    for (let i = 0; i < v.parts.length; i++) {
+      const p = v.parts[i];
+      if (p.id === 'root') {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['parts', i, 'id'],
+          message: '"root" ist reserviert und darf kein Baustein-Name sein'
+        });
+      }
+      if (seen.has(p.id)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['parts', i, 'id'],
+          message: `der Baustein-Name "${p.id}" kommt mehrfach vor – Namen müssen eindeutig sein`
+        });
+      }
+      seen.add(p.id);
+      if (p.shape !== 'group' && p.size === undefined) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['parts', i, 'size'],
+          message: `Form "${p.shape}" braucht ein Feld "size" (Maße)`
+        });
+      }
+      if (p.color && !HEX.test(p.color) && !(v.palette && p.color in v.palette)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['parts', i, 'color'],
+          message: `Farbe "${p.color}" ist weder eine Hex-Farbe (#rrggbb) noch eine Rolle in "palette"`
+        });
+      }
+    }
+    const ids = new Set(v.parts.map((p) => p.id));
+    for (let i = 0; i < v.parts.length; i++) {
+      const p = v.parts[i];
+      if (p.parent && p.parent !== 'root' && !ids.has(p.parent)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['parts', i, 'parent'],
+          message: `"parent" verweist auf unbekannten Baustein "${p.parent}"`
+        });
+      }
+    }
+  });
+
+const ANIM_PROPS = [
+  'pos.x',
+  'pos.y',
+  'pos.z',
+  'rot.x',
+  'rot.y',
+  'rot.z',
+  'scale',
+  'emissive',
+  'opacity'
+] as const;
+
+const animTrackSchema = z.object({
+  part: z.string().min(1),
+  prop: z.enum(ANIM_PROPS),
+  keys: z
+    .array(z.tuple([z.number(), z.number()]))
+    .min(1, 'ein Track braucht mindestens einen Keyframe [zeit, wert]')
+});
+
+const animClipSchema = z.object({
+  duration: z.number().positive('duration muss größer als 0 sein'),
+  loop: z.boolean().optional(),
+  tracks: z.array(animTrackSchema)
+});
+
+export const animationsSchema = z.record(animClipSchema);
+
 const cardBase = {
   id: z.string().min(1),
   name: z.string().min(1),
@@ -133,7 +246,9 @@ export const cardSchema = z.discriminatedUnion('type', [
     health: z.number().int().min(1),
     keywords: z.array(keywordSchema).default([]),
     abilities: z.array(abilitySchema).default([]),
-    projectile: z.string().min(1).optional()
+    projectile: z.string().min(1).optional(),
+    visual: visualSchema.optional(),
+    animations: animationsSchema.optional()
   }),
   z.object({
     ...cardBase,
@@ -213,7 +328,15 @@ export function validateGameData(raw: {
   factions: unknown;
   topics: unknown;
   cardFiles: { file: string; content: unknown }[];
-}): { config: GameConfig; factions: Faction[]; topics: Topic[]; cards: CardDef[] } {
+  /** data/animations.json – geteilte Standard-Klips (optional; Default: {}). */
+  animations?: unknown;
+}): {
+  config: GameConfig;
+  factions: Faction[];
+  topics: Topic[];
+  cards: CardDef[];
+  defaultClips: Animations;
+} {
   const configResult = configSchema.safeParse(raw.config);
   if (!configResult.success) {
     throw new DataError('config.json', describeZodError(configResult.error));
@@ -249,6 +372,12 @@ export function validateGameData(raw: {
     throw new DataError('topics.json', describeZodError(topicsResult.error));
   }
 
+  const defaultClipsResult = animationsSchema.safeParse(raw.animations ?? {});
+  if (!defaultClipsResult.success) {
+    throw new DataError('animations.json', describeZodError(defaultClipsResult.error));
+  }
+  const defaultClips = defaultClipsResult.data as Animations;
+
   const cards: CardDef[] = [];
   const seenIds = new Map<string, string>();
   for (const { file, content } of raw.cardFiles) {
@@ -276,6 +405,21 @@ export function validateGameData(raw: {
         problems.push(`Karte "${card.name}": die id "${card.id}" wird schon in ${prev} benutzt`);
       }
       seenIds.set(card.id, file);
+
+      // Animations-Tracks dürfen nur existierende Bausteine (oder "root") adressieren.
+      if (card.type === 'creature' && card.animations) {
+        const partIds = new Set<string>(['root']);
+        for (const p of card.visual?.parts ?? []) partIds.add(p.id);
+        for (const [clip, def] of Object.entries(card.animations)) {
+          def.tracks.forEach((tr, i) => {
+            if (!partIds.has(tr.part)) {
+              problems.push(
+                `Karte "${card.name}": Animation "${clip}", Track ${i + 1} verweist auf unbekannten Baustein "${tr.part}"`
+              );
+            }
+          });
+        }
+      }
     }
     if (problems.length > 0) throw new DataError(file, problems);
     cards.push(...(parsed.data as CardDef[]));
@@ -285,7 +429,8 @@ export function validateGameData(raw: {
     config: configResult.data,
     factions: factionsResult.data,
     topics: topicsResult.data,
-    cards
+    cards,
+    defaultClips
   };
 }
 
