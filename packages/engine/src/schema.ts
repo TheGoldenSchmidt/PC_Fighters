@@ -131,12 +131,13 @@ export const abilitySchema = z.discriminatedUnion('kind', [
 
 const HEX = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
 const vec3 = z.tuple([z.number(), z.number(), z.number()]);
-const PART_SHAPES = ['ico', 'box', 'cyl', 'cone', 'sph', 'group'] as const;
+const PART_SHAPES = ['ico', 'box', 'cyl', 'cone', 'sph', 'capsule', 'torus', 'group'] as const;
 
 const visualPartSchema = z.object({
   id: z.string().min(1),
   shape: z.enum(PART_SHAPES),
   size: z.union([z.number(), z.array(z.number()).min(1)]).optional(),
+  detail: z.enum(['low', 'mid', 'high']).optional(),
   pos: vec3.optional(),
   rot: vec3.optional(),
   scale: z.union([z.number(), vec3]).optional(),

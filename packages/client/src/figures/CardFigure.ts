@@ -78,6 +78,19 @@ function buildGeometry(part: VisualPart, detail: DetailLevel): THREE.BufferGeome
       const h = arr[1] ?? 1;
       return geo(`k${r},${h},${d.seg}`, () => new THREE.ConeGeometry(r, h, Math.max(4, d.seg - 2)));
     }
+    case 'capsule': {
+      const arr = Array.isArray(s) ? s : [numOf(s), numOf(s)];
+      const r = arr[0] ?? 1;
+      const len = arr[1] ?? 1;
+      const cap = Math.max(2, Math.round(d.seg / 3));
+      return geo(`p${r},${len},${d.seg}`, () => new THREE.CapsuleGeometry(r, len, cap, d.seg));
+    }
+    case 'torus': {
+      const arr = Array.isArray(s) ? s : [numOf(s), numOf(s)];
+      const r = arr[0] ?? 1;
+      const tube = arr[1] ?? 0.3;
+      return geo(`t${r},${tube},${d.seg}`, () => new THREE.TorusGeometry(r, tube, Math.max(4, d.seg - 4), d.seg));
+    }
   }
 }
 
@@ -110,7 +123,7 @@ export function buildFigure(visual: Visual): BuiltFigure {
     if (part.shape === 'group') {
       obj = new THREE.Group();
     } else {
-      const g = buildGeometry(part, detail)!;
+      const g = buildGeometry(part, part.detail ?? detail)!;
       const m = new THREE.Mesh(g, makeMaterial(part, visual.palette));
       m.castShadow = true;
       obj = m;

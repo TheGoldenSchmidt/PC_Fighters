@@ -162,7 +162,7 @@ export type Ability =
 export type DetailLevel = 'low' | 'mid' | 'high';
 
 /** Primitiv-Bausteine. `group` ist ein reiner Container ohne Geometrie. */
-export type PartShape = 'ico' | 'box' | 'cyl' | 'cone' | 'sph' | 'group';
+export type PartShape = 'ico' | 'box' | 'cyl' | 'cone' | 'sph' | 'capsule' | 'torus' | 'group';
 
 export interface VisualPart {
   /** Eindeutig je Figur; von Animations-Tracks adressierbar. "root" ist reserviert. */
@@ -170,9 +170,12 @@ export interface VisualPart {
   shape: PartShape;
   /**
    * Formabhängige Maße: ico/sph = Radius (Zahl); box = Zahl oder [x,y,z];
-   * cyl = [rOben, rUnten, höhe]; cone = [radius, höhe]. Bei `group` entfällt es.
+   * cyl = [rOben, rUnten, höhe]; cone = [radius, höhe]; capsule = [radius, länge];
+   * torus = [radius, röhre]. Bei `group` entfällt es.
    */
   size?: number | number[];
+  /** Überschreibt das Detail-Level der Figur nur für diesen Baustein. */
+  detail?: DetailLevel;
   pos?: [number, number, number];
   /** Rotation in Radiant. */
   rot?: [number, number, number];

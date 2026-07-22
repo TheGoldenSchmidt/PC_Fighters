@@ -107,6 +107,17 @@ describe('Figuren – Schema-Validierung', () => {
     expect(() => checkFig(fig({ ...okVisual, height: 0 }))).toThrow(/visual\.height.*zu klein/);
   });
 
+  it('akzeptiert neue Formen capsule/torus und per-part detail', () => {
+    expect(() =>
+      checkFig(
+        fig({ parts: [
+          { id: 'arm', shape: 'capsule', size: [0.1, 0.6], color: '#fff', detail: 'high' },
+          { id: 'ring', shape: 'torus', size: [0.3, 0.08], color: '#fff' }
+        ] })
+      )
+    ).not.toThrow();
+  });
+
   it('cardId muss zum Dateinamen passen', () => {
     expect(() => checkFig(fig(okVisual), { file: 'figures/anders.json' })).toThrow(
       /muss aber zum Dateinamen passen/
