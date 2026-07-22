@@ -244,9 +244,16 @@ export interface CreatureCard {
   /** Emoji, das beim Angriff als Projektil fliegt (z. B. "🗡️"). */
   projectile?: string;
   text?: string;
-  /** Optional: prozedurale 3D-Figur (sonst Golem-Fallback im Client). */
-  visual?: Visual;
-  /** Optional: eigene Animations-Klips (überschreiben die geteilten Defaults). */
+}
+
+/**
+ * Eine Figur-Datei aus data/figures/ (Dateiname = cardId + ".json").
+ * Figur ablegen = Karte bekommt ein 3D-Modell; Datei löschen = Golem-Fallback.
+ */
+export interface FigureDef {
+  cardId: string;
+  visual: Visual;
+  /** Eigene Klips (überschreiben die geteilten Defaults aus animations.json). */
   animations?: Animations;
 }
 
@@ -271,6 +278,8 @@ export interface GameData {
   cardsById: Record<string, CardDef>;
   /** Geteilte Standard-Animations-Klips (data/animations.json). */
   defaultClips: Animations;
+  /** 3D-Figuren aus data/figures/ (cardId → Figur). */
+  figures: Record<string, FigureDef>;
 }
 
 // Eine Kreatur auf dem Spielfeld.

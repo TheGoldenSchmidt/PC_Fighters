@@ -20,12 +20,10 @@ export interface VisualCatalog {
 
 export function buildVisualCatalog(data: GameData): VisualCatalog {
   const cards: Record<string, VisualCatalogEntry> = {};
-  for (const c of data.cards) {
-    if (c.type !== 'creature') continue;
-    if (!c.visual && !c.animations) continue;
-    cards[c.id] = {
-      ...(c.visual ? { visual: c.visual } : {}),
-      ...(c.animations ? { animations: c.animations } : {})
+  for (const [cardId, fig] of Object.entries(data.figures)) {
+    cards[cardId] = {
+      visual: fig.visual,
+      ...(fig.animations ? { animations: fig.animations } : {})
     };
   }
 

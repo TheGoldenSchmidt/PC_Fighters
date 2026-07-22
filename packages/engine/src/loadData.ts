@@ -41,7 +41,21 @@ export function loadGameData(dataDir: string = DATA_DIR): GameData {
     content: readJson(`cards/${file}`, join(cardsDir, file))
   }));
 
-  const validated = validateGameData({ config, factions, topics, cardFiles, animations });
+  // 3D-Figuren: data/figures/*.json (Ordner darf fehlen → keine Figuren, Golem-Fallback).
+  const figuresDir = join(dataDir, 'figures');
+  let figureFiles: { file: string; content: unknown }[] = [];
+  try {
+    figureFiles = readdirSync(figuresDir)
+      .filter((f) => f.endsWith('.json'))
+      .map((file) => ({
+        file: `figures/${file}`,
+        content: readJson(`figures/${file}`, join(figuresDir, file))
+      }));
+  } catch {
+    // kein figures-Ordner vorhanden – das ist in Ordnung
+  }
+
+  const validated = validateGameData({ config, factions, topics, cardFiles, animations, figureFiles });
   return {
     ...validated,
     cardsById: Object.fromEntries(validated.cards.map((c) => [c.id, c]))

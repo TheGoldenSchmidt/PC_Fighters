@@ -10,6 +10,7 @@ import type {
   CardDef,
   DeckList,
   Faction,
+  FigureDef,
   GameConfig,
   GameData,
   Topic
@@ -230,6 +231,13 @@ const animClipSchema = z.object({
 
 export const animationsSchema = z.record(animClipSchema);
 
+/** Eine Figur-Datei aus data/figures/ (Dateiname = cardId). */
+export const figureFileSchema = z.object({
+  cardId: z.string().min(1),
+  visual: visualSchema,
+  animations: animationsSchema.optional()
+});
+
 const cardBase = {
   id: z.string().min(1),
   name: z.string().min(1),
@@ -247,9 +255,7 @@ export const cardSchema = z.discriminatedUnion('type', [
     health: z.number().int().min(1),
     keywords: z.array(keywordSchema).default([]),
     abilities: z.array(abilitySchema).default([]),
-    projectile: z.string().min(1).optional(),
-    visual: visualSchema.optional(),
-    animations: animationsSchema.optional()
+    projectile: z.string().min(1).optional()
   }),
   z.object({
     ...cardBase,
@@ -331,12 +337,15 @@ export function validateGameData(raw: {
   cardFiles: { file: string; content: unknown }[];
   /** data/animations.json – geteilte Standard-Klips (optional; Default: {}). */
   animations?: unknown;
+  /** data/figures/*.json – 3D-Figuren (optional; Default: keine). */
+  figureFiles?: { file: string; content: unknown }[];
 }): {
   config: GameConfig;
   factions: Faction[];
   topics: Topic[];
   cards: CardDef[];
   defaultClips: Animations;
+  figures: Record<string, FigureDef>;
 } {
   const configResult = configSchema.safeParse(raw.config);
   if (!configResult.success) {
@@ -406,24 +415,49 @@ export function validateGameData(raw: {
         problems.push(`Karte "${card.name}": die id "${card.id}" wird schon in ${prev} benutzt`);
       }
       seenIds.set(card.id, file);
-
-      // Animations-Tracks dürfen nur existierende Bausteine (oder "root") adressieren.
-      if (card.type === 'creature' && card.animations) {
-        const partIds = new Set<string>(['root']);
-        for (const p of card.visual?.parts ?? []) partIds.add(p.id);
-        for (const [clip, def] of Object.entries(card.animations)) {
-          def.tracks.forEach((tr, i) => {
-            if (!partIds.has(tr.part)) {
-              problems.push(
-                `Karte "${card.name}": Animation "${clip}", Track ${i + 1} verweist auf unbekannten Baustein "${tr.part}"`
-              );
-            }
-          });
-        }
-      }
     }
     if (problems.length > 0) throw new DataError(file, problems);
     cards.push(...(parsed.data as CardDef[]));
+  }
+
+  // ---- 3D-Figuren (data/figures/*.json) ----
+  const cardById = new Map(cards.map((c) => [c.id, c]));
+  const figures: Record<string, FigureDef> = {};
+  for (const { file, content } of raw.figureFiles ?? []) {
+    const parsed = figureFileSchema.safeParse(content);
+    if (!parsed.success) {
+      throw new DataError(file, describeZodError(parsed.error));
+    }
+    const fig = parsed.data as FigureDef;
+    const expectedId = file.replace(/^.*[/\\]/, '').replace(/\.json$/i, '');
+    const problems: string[] = [];
+    if (fig.cardId !== expectedId) {
+      problems.push(
+        `"cardId" ist "${fig.cardId}", muss aber zum Dateinamen passen ("${expectedId}")`
+      );
+    }
+    const card = cardById.get(fig.cardId);
+    if (!card) {
+      problems.push(`Es gibt keine Karte mit der id "${fig.cardId}"`);
+    } else if (card.type !== 'creature') {
+      problems.push(`Karte "${fig.cardId}" ist keine Kreatur – nur Kreaturen haben Figuren`);
+    }
+    if (figures[fig.cardId]) {
+      problems.push(`Für "${fig.cardId}" gibt es schon eine Figur-Datei`);
+    }
+    // Animations-Tracks dürfen nur existierende Bausteine (oder "root") adressieren.
+    const partIds = new Set<string>(['root', ...fig.visual.parts.map((p) => p.id)]);
+    for (const [clip, def] of Object.entries(fig.animations ?? {})) {
+      def.tracks.forEach((tr, i) => {
+        if (!partIds.has(tr.part)) {
+          problems.push(
+            `Animation "${clip}", Track ${i + 1} verweist auf unbekannten Baustein "${tr.part}"`
+          );
+        }
+      });
+    }
+    if (problems.length > 0) throw new DataError(file, problems);
+    figures[fig.cardId] = fig;
   }
 
   return {
@@ -431,7 +465,8 @@ export function validateGameData(raw: {
     factions: factionsResult.data,
     topics: topicsResult.data,
     cards,
-    defaultClips
+    defaultClips,
+    figures
   };
 }
 

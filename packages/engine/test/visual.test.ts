@@ -4,19 +4,8 @@ import type { GameData } from '../src/types.js';
 
 const data: GameData = loadGameData();
 
-/** Validiert eine Kartenliste gegen die echten config/factions/topics. */
-function check(cards: unknown[], animations: unknown = {}) {
-  return validateGameData({
-    config: data.config,
-    factions: data.factions,
-    topics: data.topics,
-    cardFiles: [{ file: 'cards/test.json', content: cards }],
-    animations
-  });
-}
-
-/** Basiskarte (Fraktion "humans" existiert) mit einstellbarem visual/animations. */
-function creature(extra: Record<string, unknown>) {
+/** Basiskarte (Fraktion "humans" existiert), auf die eine Figur verweisen kann. */
+function creature(extra: Record<string, unknown> = {}) {
   return {
     id: 'testfigur',
     name: 'Testfigur',
@@ -29,6 +18,20 @@ function creature(extra: Record<string, unknown>) {
   };
 }
 
+/** Validiert eine Figur-Datei gegen die echten Daten + eine Referenzkarte. */
+function checkFig(
+  figure: unknown,
+  opts: { file?: string; cards?: unknown[] } = {}
+) {
+  return validateGameData({
+    config: data.config,
+    factions: data.factions,
+    topics: data.topics,
+    cardFiles: [{ file: 'cards/test.json', content: opts.cards ?? [creature()] }],
+    figureFiles: [{ file: opts.file ?? 'figures/testfigur.json', content: figure }]
+  });
+}
+
 const okVisual = {
   detailLevel: 'mid',
   palette: { main: '#c46a30' },
@@ -37,92 +40,83 @@ const okVisual = {
     { id: 'nase', shape: 'ico', size: 0.1, pos: [0, 1, 0.5], color: '#241812' }
   ]
 };
+const fig = (visual: unknown, animations?: unknown) => ({
+  cardId: 'testfigur',
+  visual,
+  ...(animations ? { animations } : {})
+});
 
-describe('Visual/Animations – Schema-Validierung', () => {
+describe('Figuren – Schema-Validierung', () => {
   it('akzeptiert eine gültige Figur mit visual + animations', () => {
-    const res = check([
-      creature({
-        visual: okVisual,
-        animations: {
-          idle: { duration: 2, loop: true, tracks: [{ part: 'body', prop: 'pos.y', keys: [[0, 0], [1, 0.05], [2, 0]] }] }
-        }
+    const res = checkFig(
+      fig(okVisual, {
+        idle: { duration: 2, loop: true, tracks: [{ part: 'body', prop: 'pos.y', keys: [[0, 0], [1, 0.05], [2, 0]] }] }
       })
-    ]);
-    expect(res.cards).toHaveLength(1);
+    );
+    expect(res.figures.testfigur?.visual).toBeTruthy();
   });
 
-  it('bestehende Karten ohne visual bleiben gültig', () => {
+  it('bestehende Daten (inkl. echter Figuren) laden ohne Fehler', () => {
     expect(() => loadGameData()).not.toThrow();
   });
 
   it('lehnt doppelte Baustein-Namen ab', () => {
     expect(() =>
-      check([
-        creature({
-          visual: { parts: [
-            { id: 'body', shape: 'ico', size: 1, color: '#fff' },
-            { id: 'body', shape: 'ico', size: 1, color: '#fff' }
-          ] }
-        })
-      ])
+      checkFig(
+        fig({ parts: [
+          { id: 'body', shape: 'ico', size: 1, color: '#fff' },
+          { id: 'body', shape: 'ico', size: 1, color: '#fff' }
+        ] })
+      )
     ).toThrow(/kommt mehrfach vor/);
   });
 
   it('lehnt den reservierten Namen "root" ab', () => {
-    expect(() =>
-      check([creature({ visual: { parts: [{ id: 'root', shape: 'ico', size: 1, color: '#fff' }] } })])
-    ).toThrow(/"root" ist reserviert/);
+    expect(() => checkFig(fig({ parts: [{ id: 'root', shape: 'ico', size: 1, color: '#fff' }] }))).toThrow(
+      /"root" ist reserviert/
+    );
   });
 
   it('lehnt unbekannte Farbrolle ab (kein Hex, nicht in palette)', () => {
-    expect(() =>
-      check([creature({ visual: { parts: [{ id: 'body', shape: 'ico', size: 1, color: 'main' }] } })])
-    ).toThrow(/weder eine Hex-Farbe/);
+    expect(() => checkFig(fig({ parts: [{ id: 'body', shape: 'ico', size: 1, color: 'main' }] }))).toThrow(
+      /weder eine Hex-Farbe/
+    );
   });
 
   it('lehnt parent auf unbekannten Baustein ab', () => {
     expect(() =>
-      check([
-        creature({
-          visual: { parts: [{ id: 'body', shape: 'ico', size: 1, color: '#fff', parent: 'gibtsnicht' }] }
-        })
-      ])
+      checkFig(fig({ parts: [{ id: 'body', shape: 'ico', size: 1, color: '#fff', parent: 'gibtsnicht' }] }))
     ).toThrow(/unbekannten Baustein "gibtsnicht"/);
   });
 
   it('verlangt "size" für nicht-group-Formen, erlaubt group ohne size', () => {
-    expect(() =>
-      check([creature({ visual: { parts: [{ id: 'body', shape: 'ico', color: '#fff' }] } })])
-    ).toThrow(/braucht ein Feld "size"/);
-    expect(() =>
-      check([creature({ visual: { parts: [{ id: 'huelle', shape: 'group' }] } })])
-    ).not.toThrow();
+    expect(() => checkFig(fig({ parts: [{ id: 'body', shape: 'ico', color: '#fff' }] }))).toThrow(
+      /braucht ein Feld "size"/
+    );
+    expect(() => checkFig(fig({ parts: [{ id: 'huelle', shape: 'group' }] }))).not.toThrow();
   });
 
   it('lehnt Animations-Track auf unbekannten Baustein ab', () => {
     expect(() =>
-      check([
-        creature({
-          visual: okVisual,
-          animations: { idle: { duration: 1, tracks: [{ part: 'schwanz', prop: 'rot.z', keys: [[0, 0]] }] } }
-        })
-      ])
+      checkFig(fig(okVisual, { idle: { duration: 1, tracks: [{ part: 'schwanz', prop: 'rot.z', keys: [[0, 0]] }] } }))
     ).toThrow(/Track 1 verweist auf unbekannten Baustein "schwanz"/);
   });
 
   it('akzeptiert optionale height, lehnt height <= 0 ab', () => {
-    expect(() => check([creature({ visual: { ...okVisual, height: 1.25 } })])).not.toThrow();
-    expect(() => check([creature({ visual: { ...okVisual, height: 0 } })])).toThrow(
-      /visual\.height.*zu klein/
+    expect(() => checkFig(fig({ ...okVisual, height: 1.25 }))).not.toThrow();
+    expect(() => checkFig(fig({ ...okVisual, height: 0 }))).toThrow(/visual\.height.*zu klein/);
+  });
+
+  it('cardId muss zum Dateinamen passen', () => {
+    expect(() => checkFig(fig(okVisual), { file: 'figures/anders.json' })).toThrow(
+      /muss aber zum Dateinamen passen/
     );
   });
 
-  it('erlaubt Track auf "root" auch ohne visual', () => {
-    expect(() =>
-      check([
-        creature({ animations: { attack: { duration: 1, tracks: [{ part: 'root', prop: 'pos.z', keys: [[0, 0]] }] } } })
-      ])
-    ).not.toThrow();
+  it('cardId muss auf eine existierende Kreatur verweisen', () => {
+    expect(() => checkFig({ cardId: 'gibtsnicht', visual: okVisual }, { file: 'figures/gibtsnicht.json' })).toThrow(
+      /keine Karte mit der id "gibtsnicht"/
+    );
   });
 });
 
@@ -134,21 +128,11 @@ describe('Standard-Klips & Katalog', () => {
     }
   });
 
-  it('buildVisualCatalog enthält nur Karten mit visual/animations', () => {
-    const res = check([
-      creature({ id: 'mitfigur', visual: okVisual }),
-      creature({ id: 'ohnefigur' })
-    ]);
-    const game: GameData = {
-      ...data,
-      cards: res.cards,
-      cardsById: Object.fromEntries(res.cards.map((c) => [c.id, c])),
-      defaultClips: data.defaultClips
-    };
-    const catalog = buildVisualCatalog(game);
-    expect(catalog.cards.mitfigur?.visual).toBeTruthy();
-    expect(catalog.cards.ohnefigur).toBeUndefined();
-    expect(catalog.defaultClips.attack).toBeTruthy();
-    expect(catalog.palettes.humans).toBeTruthy();
+  it('buildVisualCatalog liefert die echten Figuren (wolf, pfandsammler)', () => {
+    const cat = buildVisualCatalog(data);
+    expect(cat.cards.wolf?.visual).toBeTruthy();
+    expect(cat.cards.pfandsammler?.visual).toBeTruthy();
+    expect(cat.defaultClips.attack).toBeTruthy();
+    expect(cat.palettes.humans).toBeTruthy();
   });
 });
