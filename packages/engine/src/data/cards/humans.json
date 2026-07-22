@@ -327,7 +327,919 @@
     "health": 2,
     "abilities": [{ "kind": "sammeln", "bonus": { "atk": 1, "hp": 0 }, "trigger": "any" }],
     "text": "Stirbt eine Kreatur, dauerhaft +1/+0.",
-    "projectile": "🍾"
+    "projectile": "🍾",
+    "visual": {
+      "detailLevel": "mid",
+      "palette": {
+        "coat": "#41493a",
+        "coatD": "#343b2f",
+        "beanie": "#5b6470",
+        "skin": "#c79c74",
+        "trouser": "#2f3743",
+        "shoe": "#1c1a18",
+        "bag": "#8f7d54",
+        "cap": "#d8d2c2"
+      },
+      "parts": [
+        {
+          "id": "legL",
+          "shape": "cyl",
+          "size": [
+            0.15,
+            0.13,
+            1
+          ],
+          "pos": [
+            -0.18,
+            0.55,
+            0
+          ],
+          "color": "trouser"
+        },
+        {
+          "id": "legR",
+          "shape": "cyl",
+          "size": [
+            0.15,
+            0.13,
+            1
+          ],
+          "pos": [
+            0.2,
+            0.55,
+            -0.05
+          ],
+          "color": "trouser"
+        },
+        {
+          "id": "shoeL",
+          "shape": "ico",
+          "size": 0.2,
+          "pos": [
+            -0.18,
+            0.09,
+            0.1
+          ],
+          "scale": [
+            1,
+            0.5,
+            1.5
+          ],
+          "color": "shoe"
+        },
+        {
+          "id": "shoeR",
+          "shape": "ico",
+          "size": 0.2,
+          "pos": [
+            0.2,
+            0.09,
+            0.05
+          ],
+          "scale": [
+            1,
+            0.5,
+            1.5
+          ],
+          "color": "shoe"
+        },
+        {
+          "id": "torso",
+          "shape": "cyl",
+          "size": [
+            0.34,
+            0.46,
+            1.15
+          ],
+          "pos": [
+            0,
+            1.55,
+            0.08
+          ],
+          "rot": [
+            0.12,
+            0,
+            0
+          ],
+          "color": "coat"
+        },
+        {
+          "id": "coatHem",
+          "shape": "cyl",
+          "size": [
+            0.46,
+            0.54,
+            0.35
+          ],
+          "pos": [
+            0,
+            1,
+            0.12
+          ],
+          "rot": [
+            0.12,
+            0,
+            0
+          ],
+          "color": "coatD"
+        },
+        {
+          "id": "shoulders",
+          "shape": "ico",
+          "size": 0.3,
+          "pos": [
+            0,
+            2.05,
+            0.02
+          ],
+          "scale": [
+            1.3,
+            0.7,
+            1
+          ],
+          "color": "coat"
+        },
+        {
+          "id": "head",
+          "shape": "ico",
+          "size": 0.28,
+          "pos": [
+            0,
+            2.4,
+            0.12
+          ],
+          "color": "skin"
+        },
+        {
+          "id": "nose",
+          "shape": "cone",
+          "size": [
+            0.06,
+            0.16
+          ],
+          "pos": [
+            0,
+            2.38,
+            0.4
+          ],
+          "rot": [
+            1.5707963267948966,
+            0,
+            0
+          ],
+          "color": "skin"
+        },
+        {
+          "id": "beanieDome",
+          "shape": "sph",
+          "size": 0.3,
+          "pos": [
+            0,
+            2.52,
+            0.12
+          ],
+          "color": "beanie",
+          "arc": [
+            0,
+            6.28319,
+            0,
+            1.72788
+          ]
+        },
+        {
+          "id": "beanieBrim",
+          "shape": "cyl",
+          "size": [
+            0.3,
+            0.3,
+            0.12
+          ],
+          "pos": [
+            0,
+            2.4,
+            0.12
+          ],
+          "color": "beanie"
+        },
+        {
+          "id": "armL",
+          "shape": "cyl",
+          "size": [
+            0.11,
+            0.1,
+            0.9
+          ],
+          "pos": [
+            -0.42,
+            1.6,
+            0.08
+          ],
+          "rot": [
+            0.1,
+            0,
+            0.25
+          ],
+          "color": "coat"
+        },
+        {
+          "id": "armR",
+          "shape": "cyl",
+          "size": [
+            0.11,
+            0.09,
+            0.95
+          ],
+          "pos": [
+            0.4,
+            1.55,
+            0.35
+          ],
+          "rot": [
+            0.9,
+            0,
+            -0.15
+          ],
+          "color": "coat"
+        },
+        {
+          "id": "handL",
+          "shape": "ico",
+          "size": 0.11,
+          "pos": [
+            -0.48,
+            1.12,
+            0.15
+          ],
+          "color": "skin"
+        },
+        {
+          "id": "handR",
+          "shape": "ico",
+          "size": 0.11,
+          "pos": [
+            0.5,
+            1.15,
+            0.78
+          ],
+          "color": "skin"
+        },
+        {
+          "id": "bagBody",
+          "shape": "cyl",
+          "size": [
+            0.38,
+            0.32,
+            0.55
+          ],
+          "pos": [
+            0.35,
+            0.3,
+            0.85
+          ],
+          "color": "bag"
+        },
+        {
+          "id": "bagLid",
+          "shape": "cyl",
+          "size": [
+            0.38,
+            0.38,
+            0.08
+          ],
+          "pos": [
+            0.35,
+            0.56,
+            0.85
+          ],
+          "color": "coatD"
+        },
+        {
+          "id": "bottles",
+          "shape": "group",
+          "pos": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "id": "b1",
+          "shape": "group",
+          "parent": "bottles",
+          "pos": [
+            0.3,
+            0.5,
+            0.88
+          ],
+          "rot": [
+            0.15,
+            0,
+            -0.12
+          ]
+        },
+        {
+          "id": "b1a",
+          "shape": "cyl",
+          "size": [
+            0.075,
+            0.075,
+            0.42
+          ],
+          "pos": [
+            0,
+            0.21,
+            0
+          ],
+          "parent": "b1",
+          "color": "#4f8159",
+          "roughness": 0.22,
+          "metalness": 0.12,
+          "transparent": true,
+          "opacity": 0.85
+        },
+        {
+          "id": "b1b",
+          "shape": "cyl",
+          "size": [
+            0.045,
+            0.075,
+            0.12
+          ],
+          "pos": [
+            0,
+            0.48,
+            0
+          ],
+          "parent": "b1",
+          "color": "#4f8159",
+          "roughness": 0.22,
+          "metalness": 0.12,
+          "transparent": true,
+          "opacity": 0.85
+        },
+        {
+          "id": "b1c",
+          "shape": "cyl",
+          "size": [
+            0.04,
+            0.045,
+            0.1
+          ],
+          "pos": [
+            0,
+            0.58,
+            0
+          ],
+          "parent": "b1",
+          "color": "#4f8159",
+          "roughness": 0.22,
+          "metalness": 0.12,
+          "transparent": true,
+          "opacity": 0.85
+        },
+        {
+          "id": "b1cap",
+          "shape": "cyl",
+          "size": [
+            0.045,
+            0.045,
+            0.06
+          ],
+          "pos": [
+            0,
+            0.65,
+            0
+          ],
+          "parent": "b1",
+          "color": "cap"
+        },
+        {
+          "id": "b2",
+          "shape": "group",
+          "parent": "bottles",
+          "pos": [
+            0.5,
+            0.5,
+            0.92
+          ],
+          "rot": [
+            0.2,
+            0,
+            0.15
+          ]
+        },
+        {
+          "id": "b2a",
+          "shape": "cyl",
+          "size": [
+            0.075,
+            0.075,
+            0.42
+          ],
+          "pos": [
+            0,
+            0.21,
+            0
+          ],
+          "parent": "b2",
+          "color": "#a9c2cc",
+          "roughness": 0.22,
+          "metalness": 0.12,
+          "transparent": true,
+          "opacity": 0.85
+        },
+        {
+          "id": "b2b",
+          "shape": "cyl",
+          "size": [
+            0.045,
+            0.075,
+            0.12
+          ],
+          "pos": [
+            0,
+            0.48,
+            0
+          ],
+          "parent": "b2",
+          "color": "#a9c2cc",
+          "roughness": 0.22,
+          "metalness": 0.12,
+          "transparent": true,
+          "opacity": 0.85
+        },
+        {
+          "id": "b2c",
+          "shape": "cyl",
+          "size": [
+            0.04,
+            0.045,
+            0.1
+          ],
+          "pos": [
+            0,
+            0.58,
+            0
+          ],
+          "parent": "b2",
+          "color": "#a9c2cc",
+          "roughness": 0.22,
+          "metalness": 0.12,
+          "transparent": true,
+          "opacity": 0.85
+        },
+        {
+          "id": "b2cap",
+          "shape": "cyl",
+          "size": [
+            0.045,
+            0.045,
+            0.06
+          ],
+          "pos": [
+            0,
+            0.65,
+            0
+          ],
+          "parent": "b2",
+          "color": "cap"
+        },
+        {
+          "id": "b3",
+          "shape": "group",
+          "parent": "bottles",
+          "pos": [
+            0.24,
+            0.5,
+            0.78
+          ],
+          "rot": [
+            0.1,
+            0,
+            0.25
+          ]
+        },
+        {
+          "id": "b3a",
+          "shape": "cyl",
+          "size": [
+            0.075,
+            0.075,
+            0.42
+          ],
+          "pos": [
+            0,
+            0.21,
+            0
+          ],
+          "parent": "b3",
+          "color": "#b47a34",
+          "roughness": 0.22,
+          "metalness": 0.12,
+          "transparent": true,
+          "opacity": 0.85
+        },
+        {
+          "id": "b3b",
+          "shape": "cyl",
+          "size": [
+            0.045,
+            0.075,
+            0.12
+          ],
+          "pos": [
+            0,
+            0.48,
+            0
+          ],
+          "parent": "b3",
+          "color": "#b47a34",
+          "roughness": 0.22,
+          "metalness": 0.12,
+          "transparent": true,
+          "opacity": 0.85
+        },
+        {
+          "id": "b3c",
+          "shape": "cyl",
+          "size": [
+            0.04,
+            0.045,
+            0.1
+          ],
+          "pos": [
+            0,
+            0.58,
+            0
+          ],
+          "parent": "b3",
+          "color": "#b47a34",
+          "roughness": 0.22,
+          "metalness": 0.12,
+          "transparent": true,
+          "opacity": 0.85
+        },
+        {
+          "id": "b3cap",
+          "shape": "cyl",
+          "size": [
+            0.045,
+            0.045,
+            0.06
+          ],
+          "pos": [
+            0,
+            0.65,
+            0
+          ],
+          "parent": "b3",
+          "color": "cap"
+        },
+        {
+          "id": "b4",
+          "shape": "group",
+          "parent": "bottles",
+          "pos": [
+            0.45,
+            0.5,
+            0.76
+          ],
+          "rot": [
+            0.25,
+            0,
+            -0.28
+          ]
+        },
+        {
+          "id": "b4a",
+          "shape": "cyl",
+          "size": [
+            0.075,
+            0.075,
+            0.42
+          ],
+          "pos": [
+            0,
+            0.21,
+            0
+          ],
+          "parent": "b4",
+          "color": "#6fa07a",
+          "roughness": 0.22,
+          "metalness": 0.12,
+          "transparent": true,
+          "opacity": 0.85
+        },
+        {
+          "id": "b4b",
+          "shape": "cyl",
+          "size": [
+            0.045,
+            0.075,
+            0.12
+          ],
+          "pos": [
+            0,
+            0.48,
+            0
+          ],
+          "parent": "b4",
+          "color": "#6fa07a",
+          "roughness": 0.22,
+          "metalness": 0.12,
+          "transparent": true,
+          "opacity": 0.85
+        },
+        {
+          "id": "b4c",
+          "shape": "cyl",
+          "size": [
+            0.04,
+            0.045,
+            0.1
+          ],
+          "pos": [
+            0,
+            0.58,
+            0
+          ],
+          "parent": "b4",
+          "color": "#6fa07a",
+          "roughness": 0.22,
+          "metalness": 0.12,
+          "transparent": true,
+          "opacity": 0.85
+        },
+        {
+          "id": "b4cap",
+          "shape": "cyl",
+          "size": [
+            0.045,
+            0.045,
+            0.06
+          ],
+          "pos": [
+            0,
+            0.65,
+            0
+          ],
+          "parent": "b4",
+          "color": "cap"
+        },
+        {
+          "id": "b5",
+          "shape": "group",
+          "parent": "bottles",
+          "pos": [
+            0.36,
+            0.5,
+            1
+          ],
+          "rot": [
+            0.05,
+            0,
+            0.02
+          ]
+        },
+        {
+          "id": "b5a",
+          "shape": "cyl",
+          "size": [
+            0.075,
+            0.075,
+            0.42
+          ],
+          "pos": [
+            0,
+            0.21,
+            0
+          ],
+          "parent": "b5",
+          "color": "#a9c2cc",
+          "roughness": 0.22,
+          "metalness": 0.12,
+          "transparent": true,
+          "opacity": 0.85
+        },
+        {
+          "id": "b5b",
+          "shape": "cyl",
+          "size": [
+            0.045,
+            0.075,
+            0.12
+          ],
+          "pos": [
+            0,
+            0.48,
+            0
+          ],
+          "parent": "b5",
+          "color": "#a9c2cc",
+          "roughness": 0.22,
+          "metalness": 0.12,
+          "transparent": true,
+          "opacity": 0.85
+        },
+        {
+          "id": "b5c",
+          "shape": "cyl",
+          "size": [
+            0.04,
+            0.045,
+            0.1
+          ],
+          "pos": [
+            0,
+            0.58,
+            0
+          ],
+          "parent": "b5",
+          "color": "#a9c2cc",
+          "roughness": 0.22,
+          "metalness": 0.12,
+          "transparent": true,
+          "opacity": 0.85
+        },
+        {
+          "id": "b5cap",
+          "shape": "cyl",
+          "size": [
+            0.045,
+            0.045,
+            0.06
+          ],
+          "pos": [
+            0,
+            0.65,
+            0
+          ],
+          "parent": "b5",
+          "color": "cap"
+        },
+        {
+          "id": "hb",
+          "shape": "group",
+          "parent": "root",
+          "pos": [
+            0.5,
+            0.92,
+            0.82
+          ],
+          "rot": [
+            0.5,
+            0,
+            0
+          ]
+        },
+        {
+          "id": "hba",
+          "shape": "cyl",
+          "size": [
+            0.075,
+            0.075,
+            0.42
+          ],
+          "pos": [
+            0,
+            0.21,
+            0
+          ],
+          "parent": "hb",
+          "color": "#4f8159",
+          "roughness": 0.22,
+          "metalness": 0.12,
+          "transparent": true,
+          "opacity": 0.85
+        },
+        {
+          "id": "hbb",
+          "shape": "cyl",
+          "size": [
+            0.045,
+            0.075,
+            0.12
+          ],
+          "pos": [
+            0,
+            0.48,
+            0
+          ],
+          "parent": "hb",
+          "color": "#4f8159",
+          "roughness": 0.22,
+          "metalness": 0.12,
+          "transparent": true,
+          "opacity": 0.85
+        },
+        {
+          "id": "hbc",
+          "shape": "cyl",
+          "size": [
+            0.04,
+            0.045,
+            0.1
+          ],
+          "pos": [
+            0,
+            0.58,
+            0
+          ],
+          "parent": "hb",
+          "color": "#4f8159",
+          "roughness": 0.22,
+          "metalness": 0.12,
+          "transparent": true,
+          "opacity": 0.85
+        },
+        {
+          "id": "hbcap",
+          "shape": "cyl",
+          "size": [
+            0.045,
+            0.045,
+            0.06
+          ],
+          "pos": [
+            0,
+            0.65,
+            0
+          ],
+          "parent": "hb",
+          "color": "cap"
+        }
+      ]
+    },
+    "animations": {
+      "idle": {
+        "duration": 2.6,
+        "loop": true,
+        "tracks": [
+          {
+            "part": "torso",
+            "prop": "rot.z",
+            "keys": [
+              [
+                0,
+                -0.035
+              ],
+              [
+                1.3,
+                0.035
+              ],
+              [
+                2.6,
+                -0.035
+              ]
+            ]
+          },
+          {
+            "part": "head",
+            "prop": "pos.y",
+            "keys": [
+              [
+                0,
+                0
+              ],
+              [
+                1.3,
+                0.03
+              ],
+              [
+                2.6,
+                0
+              ]
+            ]
+          },
+          {
+            "part": "bottles",
+            "prop": "rot.z",
+            "keys": [
+              [
+                0,
+                -0.05
+              ],
+              [
+                0.65,
+                0.05
+              ],
+              [
+                1.3,
+                -0.05
+              ],
+              [
+                1.95,
+                0.05
+              ],
+              [
+                2.6,
+                -0.05
+              ]
+            ]
+          }
+        ]
+      }
+    }
   },
   {
     "id": "der_alte_hund",
