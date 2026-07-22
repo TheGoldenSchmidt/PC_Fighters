@@ -1447,6 +1447,32 @@ input:focus {
   text-align: center;
 }
 
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin: 12px 0;
+  cursor: pointer;
+}
+
+.test-badge {
+  position: fixed;
+  top: 8px;
+  right: 8px;
+  background: #7c3aed;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  z-index: 180;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.35);
+  pointer-events: none;
+}
+
 .fatal h1 {
   font-family: var(--font-title);
   color: var(--danger);

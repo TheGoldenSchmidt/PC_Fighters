@@ -57,6 +57,7 @@ export function App() {
       {state.status === 'reconnecting' && (
         <div className="reconnect-banner">Verbindung verloren – versuche neu zu verbinden …</div>
       )}
+      {state.testMode && state.screen !== 'start' && <div className="test-badge">🧪 Testmodus</div>}
     </>
   );
 }

@@ -48,6 +48,20 @@ interface Room {
   state: GameState | null;
   /** Vom Raum-Ersteller gewählter Schauplatz (rein optisch). */
   topic: Topic;
+  /** Testmodus: beide Hände starten mit allen Karten, die eine 3D-Figur
+   * (visual) haben, plus viel Energie – zum schnellen Prüfen neuer Figuren,
+   * ohne eine Runde durchzuspielen. Rein server-seitig, Engine bleibt unberührt. */
+  testMode?: boolean;
+}
+
+/** Alle Kreaturen-Karten, die eine datengetriebene 3D-Figur mitbringen. */
+function testCardIds(d: GameData): string[] {
+  return d.cards.filter((c) => c.type === 'creature' && 'visual' in c && c.visual).map((c) => c.id);
+}
+
+/** Testmodus-Variante der Spieldaten: großzügige, ungedeckelte Energie. */
+function testGameData(d: GameData): GameData {
+  return { ...d, config: { ...d.config, energy: { start: 40, perRound: 40, cap: null } } };
 }
 
 interface SocketContext {
@@ -75,6 +89,7 @@ function saveRooms(rooms: Map<string, Room>) {
         code: room.code,
         topic: room.topic,
         state: room.state,
+        testMode: room.testMode,
         players: room.players.map(p => ({
           token: p.token,
           faction: p.faction
@@ -96,6 +111,7 @@ function loadRooms(): Map<string, Room> {
         code: string;
         topic: Topic;
         state: GameState | null;
+        testMode?: boolean;
         players: Array<{ token: string; faction: string }>;
       }>;
       for (const item of parsed) {
@@ -103,6 +119,7 @@ function loadRooms(): Map<string, Room> {
           code: item.code,
           topic: item.topic,
           state: item.state,
+          testMode: item.testMode,
           players: item.players.map(p => ({
             token: p.token,
             faction: p.faction,
@@ -300,7 +317,8 @@ export function startServer(port: number): Promise<RunningServer> {
             code: newRoomCode(),
             players: [{ token: randomBytes(12).toString('hex'), faction, socket: null }],
             state: null,
-            topic
+            topic,
+            testMode: Boolean(msg.testMode)
           };
           rooms.set(room.code, room);
           saveRooms(rooms);
@@ -311,6 +329,7 @@ export function startServer(port: number): Promise<RunningServer> {
             token: room.players[0].token,
             playerIndex: 0,
             topic,
+            testMode: room.testMode,
             keywords: keywordInfo,
             abilities: abilityInfo,
             factions: requireData().factions
@@ -339,11 +358,25 @@ export function startServer(port: number): Promise<RunningServer> {
             token: room.players[1].token,
             playerIndex: 1,
             topic: room.topic,
+            testMode: room.testMode,
             keywords: keywordInfo,
             abilities: abilityInfo
           });
           // Beide Spieler da → Partie starten
-          room.state = createGame(requireData(), [room.players[0].faction, faction]);
+          const d = requireData();
+          room.state = createGame(
+            room.testMode ? testGameData(d) : d,
+            [room.players[0].faction, faction]
+          );
+          if (room.testMode) {
+            // Beide Hände direkt mit allen Figuren-Karten füllen, damit sich
+            // neue 3D-Figuren ohne Ziehen/Runden-Warten prüfen lassen.
+            const testCards = testCardIds(d);
+            if (testCards.length > 0) {
+              room.state.players[0].hand = [...testCards];
+              room.state.players[1].hand = [...testCards];
+            }
+          }
           saveRooms(rooms);
           broadcastState(room);
           break;
@@ -363,6 +396,7 @@ export function startServer(port: number): Promise<RunningServer> {
             code: room.code,
             playerIndex: idx,
             topic: room.topic,
+            testMode: room.testMode,
             keywords: keywordInfo,
             abilities: abilityInfo
           });

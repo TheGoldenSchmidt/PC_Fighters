@@ -22,6 +22,8 @@ export interface GameClientState {
   keywordInfo: KeywordInfo | null;
   /** Aussehen/Animation aller Karten (vom /info-Endpunkt, opak durchgereicht). */
   catalog: VisualCatalog | null;
+  /** Testmodus: beide Hände starten mit allen Figuren-Karten + viel Energie. */
+  testMode: boolean;
   error: string | null;
   dataError: string | null;
   opponentConnected: boolean;
@@ -36,6 +38,7 @@ const initial: GameClientState = {
   topic: null,
   keywordInfo: null,
   catalog: null,
+  testMode: false,
   error: null,
   dataError: null,
   opponentConnected: true
@@ -84,7 +87,8 @@ export function useGame() {
             screen: 'lobby',
             roomCode: msg.code as string,
             topic: msg.topic as Topic,
-            keywordInfo: (msg.keywords as KeywordInfo) ?? null
+            keywordInfo: (msg.keywords as KeywordInfo) ?? null,
+            testMode: Boolean(msg.testMode)
           });
           break;
         case 'joined':
@@ -95,7 +99,8 @@ export function useGame() {
           patch({
             roomCode: msg.code as string,
             topic: (msg.topic as Topic) ?? null,
-            keywordInfo: (msg.keywords as KeywordInfo) ?? null
+            keywordInfo: (msg.keywords as KeywordInfo) ?? null,
+            testMode: Boolean(msg.testMode)
           });
           break;
         case 'state':
@@ -163,13 +168,13 @@ export function useGame() {
   );
 
   const createGame = useCallback(
-    (serverInput: string, faction: string, topicId: string) => {
+    (serverInput: string, faction: string, topicId: string, testMode = false) => {
       const url = toWsUrl(serverInput);
       session.current = { url, code: '', token: '' };
       patch({ serverAddress: serverInput.trim() });
       loadCatalog(serverInput);
       open(url, (socket) =>
-        socket.send(JSON.stringify({ type: 'create', faction, topic: topicId }))
+        socket.send(JSON.stringify({ type: 'create', faction, topic: topicId, testMode }))
       );
     },
     [open, loadCatalog]

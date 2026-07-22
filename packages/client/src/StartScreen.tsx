@@ -13,7 +13,7 @@ const defaultRoom = params.get('room') ?? '';
 
 interface Props {
   status: ConnectionStatus;
-  onCreate: (server: string, faction: string, topicId: string) => void;
+  onCreate: (server: string, faction: string, topicId: string, testMode?: boolean) => void;
   onJoin: (server: string, code: string, faction: string) => void;
 }
 
@@ -26,6 +26,9 @@ export function StartScreen({ status, onCreate, onJoin }: Props) {
   const [topics, setTopics] = useState<Topic[]>([]);
   const [topicId, setTopicId] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  // Testmodus: beide Hände starten mit allen Figuren-Karten + viel Energie –
+  // zum schnellen Prüfen neuer 3D-Figuren ohne Runden abzuwarten.
+  const [testMode, setTestMode] = useState(false);
 
   const loadInfo = useCallback(async (serverInput: string) => {
     setLoadError(null);
@@ -151,10 +154,18 @@ export function StartScreen({ status, onCreate, onJoin }: Props) {
                 </div>
               </>
             )}
+            <label className="checkbox-row">
+              <input
+                type="checkbox"
+                checked={testMode}
+                onChange={(e) => setTestMode(e.target.checked)}
+              />
+              🧪 Testmodus (alle Figuren-Karten sofort auf der Hand, viel Energie)
+            </label>
             <button
               className="primary big"
               disabled={!ready || topicId === null}
-              onClick={() => onCreate(server, faction!, topicId!)}
+              onClick={() => onCreate(server, faction!, topicId!, testMode)}
             >
               {busy ? 'Verbinde …' : 'Partie erstellen'}
             </button>
