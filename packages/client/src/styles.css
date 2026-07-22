@@ -243,6 +243,17 @@ input:focus {
   object-fit: contain;
 }
 
+.faction-emblem-fallback {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-title);
+  font-size: 1.4rem;
+  color: var(--faction-color, var(--accent));
+}
+
 .faction-name {
   font-family: var(--font-title);
   font-size: 1.1rem;

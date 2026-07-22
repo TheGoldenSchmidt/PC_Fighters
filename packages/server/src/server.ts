@@ -56,7 +56,7 @@ interface Room {
 
 /** Alle Kreaturen-Karten, die eine datengetriebene 3D-Figur mitbringen. */
 function testCardIds(d: GameData): string[] {
-  return d.cards.filter((c) => c.type === 'creature' && 'visual' in c && c.visual).map((c) => c.id);
+  return d.cards.filter((c) => c.type === 'creature' && d.figures[c.id]?.visual).map((c) => c.id);
 }
 
 /** Testmodus-Variante der Spieldaten: großzügige, ungedeckelte Energie. */
