@@ -24,8 +24,13 @@ Aufruf: `/figuren-werkstatt <cardId> [freier Prompt]`
 
 ### 2. Dev-Umgebung sicherstellen
 - Snap-Ordner wählen, z. B. `<scratchpad>/snaps`, und anlegen.
+- **Port 3000 vorher prüfen.** Ein Rest-Prozess aus einer früheren Sitzung (ohne
+  `PCF_SNAP`) blockiert sonst den Start mit `EADDRINUSE`, und `/snap` bleibt inaktiv.
+  Prüfen mit `netstat -ano` (Zeile mit `:3000` + „LISTENING"/„ABHÖREN"), die PID per
+  `Stop-Process -Id <pid> -Force` beenden, **bevor** der eigene Server gestartet wird.
 - **Server mit Snap-Endpunkt** starten (nur so ist `/snap` aktiv), im Hintergrund:
   `PCF_SNAP="<snaps-ordner>" PORT=3000 npx tsx packages/server/src/index.ts`
+  (bewusst `tsx` ohne `watch` – Datenänderungen brauchen ohnehin einen Neustart, siehe Schritt 4).
 - **Client** (Vite) starten, falls nicht schon offen. Standard-Port 5173; ist er belegt,
   einen freien Port wählen: `cd packages/client && npx vite --port <p> --strictPort`.
   (Der Client holt den Katalog von `:3000`, der Port ist also egal.)
@@ -35,9 +40,20 @@ Aufruf: `/figuren-werkstatt <cardId> [freier Prompt]`
 Spawne den Agenten **figuren-designer** mit dem Brief (und bei Runde >1 der
 Kritiker-Änderungsliste). Er schreibt `data/figures/<cardId>.json` und validiert mit `npm test`.
 
-### 4. Screenshots erzeugen
-Nach jedem Designer-Durchlauf **neu laden** (`navigate` auf die Vorschau-URL, ~600 ms warten),
-dann per `javascript_tool` diese Montage aufnehmen und an den Server posten:
+### 4. Server neu starten, dann Screenshots erzeugen
+**Vor jeder Aufnahme den Server neu starten** (PID auf Port 3000 per `netstat`/
+`Stop-Process` beenden, dann Schritt-2-Startbefehl erneut ausführen) – auch nach
+Überarbeitungsrunden. `loadGameData` liest `data/figures/*.json` per `readFileSync`
+nur **einmal beim Start** ein; das ist kein ES-Modul-Import, daher erkennt auch
+`tsx watch`/`node --watch` die Änderung nicht. Ohne Neustart liefert `/info` den
+alten Stand, die Vorschau zeigt „Keine Figur-Datei – Golem-Fallback" (Neuanlage)
+bzw. die vorige Version (Überarbeitung), und der Kritiker bewertet ein leeres oder
+veraltetes Bild – eine ganze Runde ist verschwendet.
+
+Danach im Browser **neu laden** (`navigate` auf die Vorschau-URL, ~600 ms warten),
+optional per `get_page_text` die Bausteinzahl gegenchecken (sollte > 0 sein und sich
+zwischen Runden ändern), dann per `javascript_tool` diese Montage aufnehmen und an
+den Server posten:
 ```js
 (async () => {
   await new Promise(r => setTimeout(r, 600));
@@ -70,8 +86,14 @@ Spawne **figuren-kritiker** mit dem PNG-Pfad + Brief. Er liest das Bild und lief
 Urteil (`GUT`/`ÜBERARBEITEN`) + konkrete Änderungsliste.
 
 ### 6. Iterieren
-Bei `ÜBERARBEITEN` und < 3 Runden: die Änderungsliste an denselben Designer zurückgeben
-(SendMessage an den Designer-Agenten, Kontext bleibt), zurück zu Schritt 4.
+Bei `ÜBERARBEITEN` und < 3 Runden: die Änderungsliste **per SendMessage an denselben
+Designer-Agenten** zurückgeben (agentId/Name aus dem ersten Spawn, Kontext bleibt
+erhalten) – **niemals** einen neuen `Agent`-Aufruf für die Überarbeitung starten und
+**niemals `isolation: "worktree"`** dabei verwenden. Ein neuer Agent kennt den
+bisherigen Kontext nicht; ein Worktree-Agent bearbeitet eine isolierte Kopie des Repos
+und ändert nicht die Datei, die der laufende Dev-Server tatsächlich liest – die
+Überarbeitung würde in der Vorschau schlicht nicht ankommen. Nach der Antwort zurück
+zu Schritt 4 (Server neu starten!).
 Bei `GUT` oder nach 3 Runden: Schleife beenden.
 
 ### 7. Abnahme & Commit
@@ -86,3 +108,25 @@ Bei `GUT` oder nach 3 Runden: Schleife beenden.
 - Server-`/snap` ist dev-only (nur bei gesetztem `PCF_SNAP`), also kein Produktionsrisiko.
 - Hintergrund-Server/-Client am Ende nicht vergessen (laufen lassen für weitere Läufe
   oder sauber stoppen).
+
+## Bekannte Fallstricke (aus vergangenen Läufen gelernt)
+
+Dieser Abschnitt wird bei jedem Lauf, der an einem neuen Fehler scheitert, um den
+Fund ergänzt – der Ablauf oben ist bereits entsprechend angepasst; hier steht das
+*Warum*, damit künftige Anpassungen nicht wieder dieselben Fehler machen.
+
+- **Server-Datenstand ≠ Dateisystem-Stand.** `loadGameData` liest alle `data/*.json`
+  (inkl. `figures/`) per `readFileSync`/`readdirSync` nur beim Prozessstart. Weder
+  Vite-HMR noch `tsx watch` bemerken das, weil es kein Modul-Import ist. Konsequenz:
+  jede Designer-Änderung braucht einen Server-Neustart, bevor der nächste Screenshot
+  aussagekräftig ist (siehe Schritt 4). Ein „leerer" Montage-Screenshot (nur
+  Hintergrund + Label, `0 Bausteine` oder unveränderte Bausteinzahl) ist das typische
+  Symptom – nicht sofort den Kritiker beauftragen, sondern erst Server neu starten
+  und Bausteinzahl per `get_page_text` gegenchecken.
+- **Port 3000 kann von einer vorherigen Sitzung belegt sein**, dann meist ohne
+  `PCF_SNAP` gestartet → `/snap` fehlt, `EADDRINUSE` beim eigenen Start. Vor dem
+  ersten Serverstart eines Laufs immer `netstat -ano | grep :3000` prüfen.
+- **Überarbeitungsrunden gehören zum selben Agenten.** `SendMessage` an die
+  bestehende Designer-agentId nutzen; ein frischer `Agent`-Aufruf (und erst recht
+  mit `isolation: "worktree"`) verliert den Kontext bzw. schreibt in eine Kopie des
+  Repos, die der Dev-Server nie sieht.
