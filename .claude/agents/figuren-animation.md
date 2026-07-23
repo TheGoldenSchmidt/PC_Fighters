@@ -27,9 +27,20 @@ und änderst **nur die Animationen**, nie die Form.
 - **`attack` thematisch überschreiben**, passend zum Projektil-Emoji der Karte:
   🐾 → Biss/Sprung (Vorwärts-Lunge über `root pos.z`, Kopf-Schnapp, Kiefer öffnen),
   🪨/🔨 → Ausholen und Wurf/Hieb, 🪶 → Flügelschlag. Bewegung erzählt die Aktion.
-- Bei **Wurf/Schuss** die geworfene Teil-Gruppe beim Release per `opacity` ausblenden
-  (das echte Projektil-Orb übernimmt den Flug); der Player stellt die Opacity danach
-  selbst wieder her.
+- **Wurf/Schuss-Rezept:** drei Phasen – **Ausholen** (Schulter zurück/hoch) →
+  **Release ~40 %** (Schulter + Ellbogen schnell nach vorn) → **Nachschwung** zurück
+  in Idle. Animiere die **Gelenk-`group`s** (`schulterR rot.x`, `ellbogenR rot.x`),
+  nicht die Segmente – nur so folgen Hand und Requisit.
+- **Richtung prüfen:** Figur blickt nach **+z**. Ein **positives** `rot.x` auf einem
+  hängenden Arm schwenkt nach **hinten (−z)**; für einen Wurf **nach vorn (+z)** muss
+  der Release **negativ** `rot.x` sein. Armschwung und Projektil-Bogen müssen in
+  **dieselbe Richtung (+z)** gehen – sonst wirft die Figur „nach hinten".
+- **Sichtbar fliegendes Projektil:** die **separate, root-geparentete** Wurf-Kopie
+  des Objekts (z. B. `wurfFlasche`) bekommt ab Release eine **Bogen-Bahn**
+  (`pos.x/y/z`-Keys, hoch+vorwärts) + danach `opacity`-Fade; die **gehaltene** Kopie
+  in der Hand wird beim Release per `opacity` ausgeblendet. So fliegt auch im Viewer
+  etwas (im Kampf übernimmt zusätzlich das Projektil-Orb den Lane-Flug). Der Player
+  stellt die Opacity nach dem Klip selbst wieder her.
 - Klips kurz und knackig halten (`attack` ~0.5 s), Bewegung mit klarer Aushol-,
   Kontakt- und Rückkehrphase, damit sie über den 3-Phasen-Montagestreifen lesbar ist.
 

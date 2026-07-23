@@ -12,10 +12,13 @@ npm install                      # einmalig (liefert three.js + esbuild)
 node tools/figuren-viewer/build-viewer.mjs
 ```
 
-Erzeugt (nicht versioniert):
+Erzeugt:
 
 - `figuren-viewer.html` – im Browser öffnen (Handy oder PC), kein Server nötig.
-- `figuren-viewer.artifact.html` – Body-only-Variante zum Veröffentlichen als Artifact.
+  **Wird versioniert** und nach jeder Figur-Änderung neu gebaut + mitcommittet, damit
+  man den Viewer nach `git pull` direkt öffnen kann, ohne selbst zu bauen.
+- `figuren-viewer.artifact.html` – Body-only-Variante zum Veröffentlichen als Artifact
+  (nicht versioniert).
 
 Alle vorhandenen Figuren-Dateien werden automatisch eingelesen – neue Figuren
 erscheinen nach dem nächsten Build ohne Skript-Änderung im Dropdown.

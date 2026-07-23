@@ -48,6 +48,20 @@ zuletzt, sondern gleich mit voller Sorgfalt:
 - `idle` (loop) bewegt **≥2 benannte Teile** (Atmen/Wippen + Schwanz/Ohren/Kleidung).
 - `attack` thematisch passend zum Projektil-Emoji überschreiben (Biss/Wurf/Hieb).
 
+## Gliedmaßen als Gelenk-Kette (Pflicht bei beweglichen Gliedmaßen)
+Es gibt **kein Skinning/IK** – ein Primitiv dreht immer um seinen **Mittelpunkt**. Ein
+Arm/Bein aus einem einzelnen Zylinder wippt beim Animieren um die Mitte statt um
+Schulter/Hüfte und sieht abgekoppelt aus. Baue jede animierbare Gliedmaße (Arm, Bein,
+Flügel, Kiefer) als **Kette mit Gelenk-Pivots**:
+- Gelenke = leere `group`-Bausteine **am Gelenkpunkt** (die drehen), Segmente als
+  **versetzte Kinder**: `schulterR (group) → oberarmR (cyl, nach unten versetzt)
+  → ellbogenR (group) → unterarmR (cyl) → handR → Requisit`.
+- Animiert wird die Gelenk-`group`, nicht das Segment; dann folgen alle Kinder.
+- **Keine `rot` auf den Segmenten** – ein Segment dreht um seinen Mittelpunkt und
+  löst sich vom Gelenk (Lücke). Ruhepose-Beugung auf die Gelenk-`group`s legen; das
+  Segment ist reiner Versatz mit Ende am Gelenk (Zylinderhöhe `h` → `pos [0,-h/2,0]`).
+- **Requisiten (Werkzeug, Flasche, Waffe) an die Hand parenten.**
+
 ## Größe steuern – der häufigste Fehler
 „Zu groß" ist fast nie ein Höhen-, sondern ein Proportions-Problem. Der Client-Auto-Fit
 skaliert die Figur auf `1.8 * (visual.height ?? 1)` **anhand der Bounding-Box-Höhe**.

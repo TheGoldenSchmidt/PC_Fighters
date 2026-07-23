@@ -92,6 +92,50 @@ zweiten anzulegen.
   Fluff-Icos an der Spitze ergeben einen buschigen Schwanz; ein einzelner Kegel
   mit Kugel wirkt wie eine Fahnenstange.
 
+### Gliedmaßen als Gelenk-Kette (Pflicht bei beweglichen Gliedmaßen)
+
+Es gibt **kein Skinning/IK** – ein Primitiv dreht immer um seinen **Mittelpunkt**.
+Ein Arm/Bein aus einem einzelnen Zylinder wippt daher beim Animieren um seine Mitte
+statt um Schulter/Hüfte und sieht abgekoppelt aus (bewiesen am Pfandsammler-Wurf).
+Regel für jede animierbare Gliedmaße (Arm, Bein, Flügel, Kiefer):
+
+- **Gelenke = leere `group`-Bausteine am Gelenkpunkt** (die drehen), Segmente als
+  **versetzte Kinder** (die drehen sich nicht selbst, sie hängen am Gelenk):
+  `schulterR (group @Schulterposition) → oberarmR (cyl, pos nach unten versetzt)
+  → ellbogenR (group @Ellbogen) → unterarmR (cyl) → handR → Requisit`.
+- Animiert wird die **Gelenk-`group`** (`schulterR rot.x`, `ellbogenR rot.x`), nicht
+  das Segment. Dann folgen alle Kinder (Unterarm, Hand, gehaltenes Objekt) korrekt.
+- **Requisiten (Werkzeug, Flasche, Waffe) an die Hand parenten**, damit sie mitgehen.
+- **Keine `rot` auf den Segmenten selbst.** Ein Segment (`cyl`) dreht um seinen
+  eigenen **Mittelpunkt** → sein oberes Ende löst sich vom Gelenk → sichtbare Lücke
+  (bewiesen am Pfandsammler-Arm: `oberarmR`/`unterarmR` hatten eigene `rot`). Ruhepose-
+  Beugung gehört auf die **Gelenk-`group`s**; das Segment bleibt reiner Versatz, so
+  positioniert, dass sein **Ende genau am Elterngelenk** sitzt (Zylinderhöhe `h` →
+  Segment `pos [0, -h/2, 0]` vom Gelenk, kein `rot`). So gibt es keine Lücke.
+- **Wurf-/Schlagrichtung prüfen:** Die Figur blickt nach **+z**. Ein **positives**
+  `rot.x` auf einem hängenden Arm schwenkt ihn nach **hinten (−z)**; für einen Wurf/
+  Schlag **nach vorn (+z)** muss der Release **negativ** `rot.x` sein. Immer gegen-
+  checken, dass **Armschwung und Projektil-Bogen in dieselbe Richtung (+z)** gehen.
+
+### Wurf/Schuss-Rezept
+
+- Bewegungsbogen in drei Phasen: **Ausholen** (Schulter zurück/hoch) → **Release
+  ~40 %** (Schulter + Ellbogen schnell nach vorn) → **Nachschwung** (zurück in Idle).
+- **Sichtbar fliegendes Projektil im Viewer:** eine **separate, root-geparentete**
+  Wurf-Kopie des Objekts bekommt ab dem Release eine **Bogen-Bahn** (`pos.x/y/z`-Keys,
+  hoch+vorwärts) und danach `opacity`-Fade; die **in der Hand gehaltene** Kopie wird
+  beim Release ausgeblendet. (Im echten Kampf übernimmt zusätzlich das Projektil-Orb
+  den Lane-Flug – der Viewer hat es nicht, daher die eigene Wurf-Kopie.)
+
+### Polygone / Detailgrad
+
+- Der Stil ist bewusst **low-poly + `flatShading`** – höhere Unterteilung bleibt
+  facettiert (echt glatt gäbe es nur ohne flatShading = Stilbruch fürs ganze Spiel).
+- **Detail über mehr/besser platzierte Teile** (40–80), nicht über feinere
+  Unterteilung. Für gezielte Rundungen (Helmkuppel o. ä.) `detail:"high"` **pro Teil**
+  setzen statt `visual.detailLevel` global anzuheben. Perf: viele Figuren × Schatten
+  auf dem Handy.
+
 ### Animation
 
 - **Immer ein lebendiger `idle`-Loop**, der **≥2 benannte Teile** bewegt
