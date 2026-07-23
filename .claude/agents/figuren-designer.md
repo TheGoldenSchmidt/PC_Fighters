@@ -28,6 +28,33 @@ Dateiformat:
 - Palette aus den **Fraktionsfarben** ableiten (Menschen kühl, Tiere warm; genaue
   `theme.color` steht im Brief). Benannte Palettenrollen nutzen.
 
+## Vorab lesen: Werkstatt-Wissen
+Die Werkstatt gibt dir im Brief die relevanten Punkte aus
+`.claude/skills/figuren-werkstatt/LESSONS.md` (Fallstricke & Best Practices) mit.
+Halte sie ein – sie fassen zusammen, was in früheren Läufen schiefging bzw. gut
+funktionierte. Ist im Brief nichts enthalten, lies die Datei selbst.
+
+## Zwei kritische Bereiche zuerst bauen
+Erfahrung zeigt: **Gesicht** und **Animation** brechen am häufigsten. Baue sie nicht
+zuletzt, sondern gleich mit voller Sorgfalt:
+
+**Gesicht (Pflicht bei Kreaturen mit Kopf):**
+- Augen **mehrteilig**: helle Sklera + dunkle Pupille (ggf. Braue) – keine Punktaugen.
+- Schnauze/Kiefer **abgesetzt**; bei Raubtieren Fangzähne in **Kontrastfarbe** an der
+  Kieferkante (nicht dieselbe Farbe wie die Wange daneben – sonst unsichtbar).
+- Ohren mit andersfarbigem **Innenteil**.
+
+**Animation (Pflicht):**
+- `idle` (loop) bewegt **≥2 benannte Teile** (Atmen/Wippen + Schwanz/Ohren/Kleidung).
+- `attack` thematisch passend zum Projektil-Emoji überschreiben (Biss/Wurf/Hieb).
+
+## Größe steuern – der häufigste Fehler
+„Zu groß" ist fast nie ein Höhen-, sondern ein Proportions-Problem. Der Client-Auto-Fit
+skaliert die Figur auf `1.8 * (visual.height ?? 1)` **anhand der Bounding-Box-Höhe**.
+Eine breite/flache Figur ohne gesetztes `visual.height` wird per Höhe hochskaliert und
+wirkt in der Breite riesig. → **`visual.height` bewusst setzen** (Mensch ≈ 1,
+mittelgroßes Tier ~0.6) **und schlank bauen** (sichtbare Beine, Rumpf nicht klobig).
+
 ## Konventionen (zwingend)
 - Koordinaten: **Füße bei y≈0**, Figur **blickt nach +z**. Auto-Fit skaliert die
   Figur später auf einheitliche Höhe und zentriert sie – baue in beliebigen Einheiten,
@@ -66,6 +93,10 @@ Pflicht: `id`, `shape`. Meist `size`, `pos`, `color`.
   (z. B. Wurf, Biss, Hieb) – nutze das Projektil-Emoji als Hinweis. Beim Wurf/Schuss
   die „geworfene" Teil-Gruppe per `opacity` beim Release ausblenden (das echte
   Projektil-Orb übernimmt den Flug); der Player stellt die Opacity danach selbst wieder her.
+- **Kein `emissive`-Track auf `root`.** Er legt weißen Glow über *jedes* Mesh der Figur
+  und wäscht sie farblos (bewiesener Fehler – der Angriff sah cremeweiß statt farbig aus).
+  Angriff/Treffer über **Pose** lösen. Falls überhaupt ein Glanz nötig ist: sehr niedriger
+  Wert (<0.1) auf einem **einzelnen kleinen Teil**, nie auf `root`.
 
 ## Validierung (immer vor Abgabe)
 `npm test` im Repo-Root – die Engine lädt und validiert dabei alle Figur-Dateien und
