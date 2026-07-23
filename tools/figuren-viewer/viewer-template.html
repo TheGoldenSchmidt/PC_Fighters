@@ -1,0 +1,413 @@
+<title>PC Fighters – Figuren-Viewer</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  #pcf-app {
+    min-height: 100vh;
+    margin: 0;
+    background: radial-gradient(120% 90% at 50% 0%, #202a30, #0a0f13 70%);
+    color: #e3e9ee;
+    font-family: system-ui, -apple-system, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+  }
+  #pcf-head { text-align: center; display: flex; flex-direction: column; gap: 2px; }
+  #pcf-eyebrow { font-size: 11px; letter-spacing: 2.5px; text-transform: uppercase; color: #6f8a7d; font-weight: 700; }
+  #pcf-title { font-weight: 800; letter-spacing: 0.5px; font-size: 18px; }
+  #pcf-sub { font-size: 12px; color: #93a3ae; text-align: center; max-width: 340px; }
+  #pcf-mount {
+    width: min(92vw, 440px);
+    height: min(64vh, 480px);
+    touch-action: none;
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  #pcf-mount canvas { display: block; touch-action: none; cursor: grab; }
+  .pcf-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; align-items: center; }
+  select, button {
+    font-family: inherit; font-weight: 700; color: #e3e9ee;
+    background: #131c22; border: 1px solid #3a4650; border-radius: 10px;
+    padding: 10px 14px; cursor: pointer; font-size: 14px;
+  }
+  button:active { transform: translateY(1px); }
+  button.pcf-death { background: #2a1618; }
+  button.pcf-on { border-color: #8fe6b0; color: #8fe6b0; }
+  select:focus-visible, button:focus-visible { outline: 2px solid #8fe6b0; outline-offset: 2px; }
+  #pcf-info { font-size: 12px; color: #93a3ae; font-variant-numeric: tabular-nums; }
+  #pcf-err { color: #ff8a8a; max-width: 360px; text-align: center; font-size: 13px; }
+  @media (prefers-reduced-motion: reduce) { button:active { transform: none; } }
+  #pcf-fb { width: min(92vw, 440px); display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+  #pcf-fb-label { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: #6f8a7d; font-weight: 700; }
+  textarea {
+    font-family: inherit; font-size: 14px; color: #e3e9ee; background: #101820;
+    border: 1px solid #3a4650; border-radius: 10px; padding: 10px 12px; width: 100%;
+    resize: vertical; line-height: 1.4;
+  }
+  textarea:focus-visible { outline: 2px solid #8fe6b0; outline-offset: 2px; }
+  #pcf-note { min-height: 64px; }
+  #pcf-out { min-height: 72px; background: #0c141a; color: #8fe6b0; font-size: 12.5px; display: none; }
+  #pcf-out.pcf-show { display: block; }
+  #pcf-fbstatus { font-size: 12px; color: #93a3ae; align-self: center; }
+</style>
+
+<div id="pcf-app">
+  <div id="pcf-head">
+    <div id="pcf-eyebrow">PC Fighters</div>
+    <div id="pcf-title">🐺 Figuren-Viewer</div>
+  </div>
+  <div class="pcf-row">
+    <select id="pcf-figure" aria-label="Figur wählen"></select>
+    <button id="pcf-rotate" title="Automatisch drehen">↻ Drehen</button>
+  </div>
+  <div id="pcf-mount"></div>
+  <div id="pcf-info"></div>
+  <div class="pcf-row" id="pcf-clips">
+    <button data-clip="idle">Idle</button>
+    <button data-clip="entrance">Einzug</button>
+    <button data-clip="attack">Angriff</button>
+    <button data-clip="hit">Treffer</button>
+    <button data-clip="death" class="pcf-death">Tod</button>
+  </div>
+  <div id="pcf-sub">Ziehen zum Drehen · Mausrad / Pinch zum Zoomen · Doppelklick setzt die Ansicht zurück. Buttons spielen die Klips, Idle läuft dauerhaft.</div>
+  <div id="pcf-fb">
+    <div id="pcf-fb-label">Feedback zur gewählten Figur</div>
+    <textarea id="pcf-note" placeholder="Was soll besser werden? z. B. „Schnauze zu lang, Augen zu klein, Angriff wirkt schlaff.“"></textarea>
+    <div class="pcf-row">
+      <button id="pcf-collect">Feedback für Chat sammeln</button>
+      <span id="pcf-fbstatus"></span>
+    </div>
+    <textarea id="pcf-out" readonly placeholder="Gesammeltes Feedback erscheint hier – kopieren und mir im Chat schicken."></textarea>
+  </div>
+  <div id="pcf-err"></div>
+</div>
+
+<script>/* three.js gebündelt als IIFE, setzt window.PCF_THREE – reines Inline-Script,
+   kein externer Host, CSP-konform. */
+__THREE_IIFE__
+</script>
+<script type="module">
+const THREE = window.PCF_THREE;
+
+// ---- Eingebettete Daten (aus dem Repo generiert) ----
+const FIGURES = __FIGURES_JSON__;          // { cardId: { cardId, visual, animations? } }
+const DEFAULT_CLIPS = __DEFAULT_CLIPS_JSON__; // entrance/attack/hit/death (geteilt)
+
+const FIGURE_HEIGHT = 1.8;
+
+// =====================================================================
+// Port von packages/client/src/figures/CardFigure.ts  (buildFigure)
+// =====================================================================
+const geoCache = new Map();
+function geo(key, make) { let g = geoCache.get(key); if (!g) { g = make(); geoCache.set(key, g); } return g; }
+const DETAIL = { low: { ico: 0, seg: 6 }, mid: { ico: 1, seg: 10 }, high: { ico: 2, seg: 16 } };
+const numOf = (s) => (typeof s === 'number' ? s : Array.isArray(s) ? (s[0] ?? 1) : 1);
+function tripleOf(s) {
+  if (typeof s === 'number') return [s, s, s];
+  if (Array.isArray(s)) return [s[0] ?? 1, s[1] ?? s[0] ?? 1, s[2] ?? s[0] ?? 1];
+  return [1, 1, 1];
+}
+function buildGeometry(part, detail) {
+  const d = DETAIL[detail]; const s = part.size;
+  switch (part.shape) {
+    case 'group': return null;
+    case 'ico': { const r = numOf(s); return geo(`i${r},${d.ico}`, () => new THREE.IcosahedronGeometry(r, d.ico)); }
+    case 'sph': {
+      const r = numOf(s); const a = part.arc;
+      const key = `s${r},${d.seg}${a ? ',' + a.join(',') : ''}`;
+      return geo(key, () => a
+        ? new THREE.SphereGeometry(r, d.seg, Math.max(4, d.seg - 2), a[0], a[1], a[2], a[3])
+        : new THREE.SphereGeometry(r, d.seg, Math.max(4, d.seg - 1)));
+    }
+    case 'box': { const [x, y, z] = tripleOf(s); return geo(`b${x},${y},${z}`, () => new THREE.BoxGeometry(x, y, z)); }
+    case 'cyl': { const [rt, rb, h] = tripleOf(s); return geo(`c${rt},${rb},${h},${d.seg}`, () => new THREE.CylinderGeometry(rt, rb, h, d.seg)); }
+    case 'cone': {
+      const arr = Array.isArray(s) ? s : [numOf(s), numOf(s)];
+      const r = arr[0] ?? 1, h = arr[1] ?? 1;
+      return geo(`k${r},${h},${d.seg}`, () => new THREE.ConeGeometry(r, h, Math.max(4, d.seg - 2)));
+    }
+    case 'capsule': {
+      const arr = Array.isArray(s) ? s : [numOf(s), numOf(s)];
+      const r = arr[0] ?? 1, len = arr[1] ?? 1, cap = Math.max(2, Math.round(d.seg / 3));
+      return geo(`p${r},${len},${d.seg}`, () => new THREE.CapsuleGeometry(r, len, cap, d.seg));
+    }
+    case 'torus': {
+      const arr = Array.isArray(s) ? s : [numOf(s), numOf(s)];
+      const r = arr[0] ?? 1, tube = arr[1] ?? 0.3;
+      return geo(`t${r},${tube},${d.seg}`, () => new THREE.TorusGeometry(r, tube, Math.max(4, d.seg - 4), d.seg));
+    }
+  }
+}
+function resolveColor(color, palette) {
+  if (!color) return '#888888';
+  if (color.startsWith('#')) return color;
+  return (palette && palette[color]) ?? '#888888';
+}
+function makeMaterial(part, palette) {
+  return new THREE.MeshStandardMaterial({
+    color: resolveColor(part.color, palette), flatShading: true,
+    roughness: part.roughness ?? 0.85, metalness: part.metalness ?? 0.05,
+    transparent: part.transparent ?? false, opacity: part.opacity ?? 1
+  });
+}
+function buildFigure(visual) {
+  const detail = visual.detailLevel ?? 'mid';
+  const model = new THREE.Group();
+  const parts = new Map(); parts.set('root', model);
+  const objs = new Map();
+  for (const part of visual.parts) {
+    let obj;
+    if (part.shape === 'group') obj = new THREE.Group();
+    else { const g = buildGeometry(part, part.detail ?? detail); const m = new THREE.Mesh(g, makeMaterial(part, visual.palette)); m.castShadow = true; obj = m; }
+    if (part.pos) obj.position.set(part.pos[0], part.pos[1], part.pos[2]);
+    if (part.rot) obj.rotation.set(part.rot[0], part.rot[1], part.rot[2]);
+    if (part.scale !== undefined) {
+      if (typeof part.scale === 'number') obj.scale.setScalar(part.scale);
+      else obj.scale.set(part.scale[0], part.scale[1], part.scale[2]);
+    }
+    objs.set(part.id, obj); parts.set(part.id, obj);
+  }
+  for (const part of visual.parts) {
+    const obj = objs.get(part.id);
+    const parent = part.parent && part.parent !== 'root' ? objs.get(part.parent) : undefined;
+    (parent ?? model).add(obj);
+  }
+  const box = new THREE.Box3().setFromObject(model);
+  const size = box.getSize(new THREE.Vector3());
+  const center = box.getCenter(new THREE.Vector3());
+  const targetH = FIGURE_HEIGHT * (visual.height ?? 1);
+  const s = size.y > 0 ? targetH / size.y : 1;
+  model.scale.setScalar(s);
+  model.position.set(-center.x * s, -box.min.y * s, -center.z * s);
+  return { root: model, parts };
+}
+
+// =====================================================================
+// Port von packages/client/src/figures/AnimationPlayer.ts
+// =====================================================================
+function sampleTrack(keys, t) {
+  if (t <= keys[0][0]) return keys[0][1];
+  const last = keys[keys.length - 1];
+  if (t >= last[0]) return last[1];
+  for (let i = 0; i < keys.length - 1; i++) {
+    const [a, va] = keys[i]; const [b, vb] = keys[i + 1];
+    if (t >= a && t <= b) { let u = (t - a) / (b - a); u = u * u * (3 - 2 * u); return va + (vb - va) * u; }
+  }
+  return last[1];
+}
+function addAxis(target, axis, v) { if (axis === 'x') target.x += v; else if (axis === 'y') target.y += v; else if (axis === 'z') target.z += v; }
+function createAnimationPlayer(parts, clips) {
+  const base = new Map();
+  for (const [name, obj] of parts) base.set(name, { p: obj.position.clone(), r: obj.rotation.clone(), s: obj.scale.clone() });
+  const root = parts.get('root');
+  const baseOpacity = new Map();
+  const mats = [];
+  root.traverse((o) => {
+    if (o.isMesh && o.material && o.material.isMeshStandardMaterial) {
+      mats.push(o.material);
+      if (!baseOpacity.has(o.material)) baseOpacity.set(o.material, o.material.opacity);
+      o.material.emissive.setRGB(0, 0, 0); o.material.emissiveIntensity = 0;
+    }
+  });
+  const idle = clips.idle;
+  let idleStart = 0, dead = false, oneShots = [];
+  function applyTrack(tr, v) {
+    const part = parts.get(tr.part); if (!part) return;
+    const dot = tr.prop.indexOf('.');
+    const type = dot < 0 ? tr.prop : tr.prop.slice(0, dot);
+    const axis = dot < 0 ? '' : tr.prop.slice(dot + 1);
+    if (type === 'pos') addAxis(part.position, axis, v);
+    else if (type === 'rot') addAxis(part.rotation, axis, v);
+    else if (type === 'scale') part.scale.multiplyScalar(v);
+    else if (type === 'emissive') part.traverse((o) => { if (o.isMesh && o.material && o.material.isMeshStandardMaterial) { o.material.emissive.setRGB(1, 1, 1); o.material.emissiveIntensity = Math.max(o.material.emissiveIntensity, v); } });
+    else if (type === 'opacity') part.traverse((o) => { if (o.isMesh && o.material && o.material.isMeshStandardMaterial) { o.material.transparent = true; o.material.opacity = (baseOpacity.get(o.material) ?? 1) * v; } });
+  }
+  return {
+    play(name) {
+      const clip = clips[name]; if (!clip) return;
+      const now = performance.now() / 1000;
+      if (name === 'death') { dead = true; oneShots = oneShots.filter((o) => o.name !== 'death'); oneShots.push({ name, clip, start: now }); }
+      else if (name === 'entrance') { dead = false; oneShots = oneShots.filter((o) => o.name !== 'death'); idleStart = now; oneShots.push({ name, clip, start: now }); }
+      else oneShots.push({ name, clip, start: now });
+    },
+    reset() { dead = false; oneShots = []; idleStart = performance.now() / 1000; },
+    update(nowMs) {
+      const now = nowMs / 1000;
+      for (const [name, b] of base) { const p = parts.get(name); if (!p) continue; p.position.copy(b.p); p.rotation.copy(b.r); p.scale.copy(b.s); }
+      for (const m of mats) { m.emissiveIntensity = 0; m.opacity = baseOpacity.get(m) ?? 1; }
+      const active = [];
+      if (!dead && idle) { const dur = idle.duration; const lt = (((now - idleStart) % dur) + dur) % dur; active.push([idle, lt]); }
+      oneShots = oneShots.filter((os) => {
+        const dur = os.clip.duration; let lt = now - os.start;
+        if (lt > dur) { if (os.name === 'death') lt = dur; else return false; }
+        active.push([os.clip, lt]); return true;
+      });
+      for (const [clip, lt] of active) for (const tr of clip.tracks) applyTrack(tr, sampleTrack(tr.keys, lt));
+    }
+  };
+}
+
+// =====================================================================
+// Szene (Port von FigurePreview.tsx) + Figur-Wiring (createDataFigure)
+// =====================================================================
+const mount = document.getElementById('pcf-mount');
+const errEl = document.getElementById('pcf-err');
+const infoEl = document.getElementById('pcf-info');
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.1;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+mount.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
+camera.position.set(3.2, 2.5, 4.6);
+camera.lookAt(0, 1.0, 0);
+scene.add(new THREE.HemisphereLight(0xcfe0ff, 0x4a3d2c, 1.5));
+const sun = new THREE.DirectionalLight(0xfff2dd, 2.1);
+sun.position.set(3, 8, 4); sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048); sun.shadow.camera.near = 0.5; sun.shadow.camera.far = 30;
+sun.shadow.camera.left = -4; sun.shadow.camera.right = 4; sun.shadow.camera.top = 5; sun.shadow.camera.bottom = -4;
+sun.shadow.bias = -0.0008; scene.add(sun);
+const rim = new THREE.DirectionalLight(0x8ab4ff, 0.6); rim.position.set(-4, 5, -6); scene.add(rim);
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), new THREE.ShadowMaterial({ opacity: 0.3 }));
+ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
+
+let current = null; // { root, parts, player, spawnT0, deathMs }
+let currentId = null;
+const notes = {}; // cardId -> Feedback-Text (bleibt beim Umschalten erhalten)
+
+function disposeCurrent() {
+  if (!current) return;
+  scene.remove(current.root);
+  current.root.traverse((o) => { if (o.isMesh && o.material && o.material.dispose) o.material.dispose(); });
+  current = null;
+}
+
+function loadFigure(cardId) {
+  errEl.textContent = '';
+  const entry = FIGURES[cardId];
+  if (!entry || !entry.visual) { errEl.textContent = 'Keine Figur-Daten für "' + cardId + '".'; return; }
+  disposeCurrent();
+  const built = buildFigure(entry.visual);
+  const outer = new THREE.Group(); outer.add(built.root);
+  const rootGrp = new THREE.Group(); rootGrp.add(outer); rootGrp.userData.spin = outer;
+  const clips = Object.assign({}, DEFAULT_CLIPS, entry.animations || {});
+  const player = createAnimationPlayer(built.parts, clips);
+  scene.add(rootGrp);
+  current = { root: rootGrp, spin: outer, parts: built.parts, player, deathMs: (clips.death?.duration ?? 1) * 1000 };
+  currentId = cardId;
+  player.play('entrance');
+  infoEl.textContent = entry.visual.parts.length + ' Bausteine · Klips: ' + ['idle', ...Object.keys(clips)].filter((v, i, a) => a.indexOf(v) === i).join(', ');
+}
+
+// ---- Orbit-Kamera zum Inspizieren: drehen (h/v), zoomen (Rad/Pinch) ----
+const target = new THREE.Vector3(0, 1.0, 0);
+const HOME = { r: 5.8, theta: 0.607, phi: 1.309 };   // entspricht der Ausgangspose
+const R_MIN = 1.6, R_MAX = 11, PHI_MIN = 0.18, PHI_MAX = 1.5;
+let orbit = { ...HOME };
+let autoRotate = false;
+
+function applyCamera() {
+  const { r, theta, phi } = orbit;
+  const sp = Math.sin(phi);
+  camera.position.set(
+    target.x + r * sp * Math.sin(theta),
+    target.y + r * Math.cos(phi),
+    target.z + r * sp * Math.cos(theta)
+  );
+  camera.lookAt(target);
+}
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+// Zeiger verwalten: 1 Zeiger = drehen, 2 Zeiger = pinch-zoom.
+const pointers = new Map();
+let pinchPrev = 0;
+const cv = renderer.domElement;
+cv.addEventListener('pointerdown', (e) => { pointers.set(e.pointerId, { x: e.clientX, y: e.clientY }); cv.setPointerCapture(e.pointerId); });
+cv.addEventListener('pointermove', (e) => {
+  const p = pointers.get(e.pointerId); if (!p) return;
+  const dx = e.clientX - p.x, dy = e.clientY - p.y;
+  p.x = e.clientX; p.y = e.clientY;
+  if (pointers.size >= 2) {
+    const pts = [...pointers.values()];
+    const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+    if (pinchPrev > 0) orbit.r = clamp(orbit.r * (pinchPrev / dist), R_MIN, R_MAX);
+    pinchPrev = dist;
+  } else {
+    orbit.theta -= dx * 0.01;
+    orbit.phi = clamp(orbit.phi - dy * 0.01, PHI_MIN, PHI_MAX);
+  }
+});
+function endPointer(e) { pointers.delete(e.pointerId); if (pointers.size < 2) pinchPrev = 0; }
+cv.addEventListener('pointerup', endPointer);
+cv.addEventListener('pointercancel', endPointer);
+window.addEventListener('pointerup', endPointer);
+cv.addEventListener('wheel', (e) => { e.preventDefault(); orbit.r = clamp(orbit.r * (e.deltaY > 0 ? 1.1 : 0.9), R_MIN, R_MAX); }, { passive: false });
+cv.addEventListener('dblclick', () => { orbit = { ...HOME }; });
+
+function resize() {
+  const w = mount.clientWidth || 1, h = mount.clientHeight || 1;
+  renderer.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(mount); resize();
+
+let last = performance.now();
+function loop() {
+  const now = performance.now();
+  if (autoRotate && pointers.size === 0) orbit.theta += (now - last) * 0.0004;
+  last = now;
+  applyCamera();
+  if (current) current.player.update(now);
+  renderer.render(scene, camera);
+  requestAnimationFrame(loop);
+}
+applyCamera();
+loop();
+
+// ---- UI-Verdrahtung ----
+const sel = document.getElementById('pcf-figure');
+for (const id of Object.keys(FIGURES)) { const o = document.createElement('option'); o.value = id; o.textContent = (FIGURES[id].visual ? '' : '⚠ ') + id; sel.appendChild(o); }
+sel.value = FIGURES.wolf ? 'wolf' : Object.keys(FIGURES)[0];
+const noteEl = document.getElementById('pcf-note');
+function saveNote() { if (currentId != null) notes[currentId] = noteEl.value; }
+function loadNote() { noteEl.value = notes[currentId] || ''; }
+sel.addEventListener('change', () => { saveNote(); loadFigure(sel.value); loadNote(); });
+noteEl.addEventListener('input', () => { if (currentId != null) notes[currentId] = noteEl.value; });
+
+document.getElementById('pcf-clips').addEventListener('click', (e) => {
+  const btn = e.target.closest('button[data-clip]'); if (!btn || !current) return;
+  const clip = btn.getAttribute('data-clip');
+  if (clip === 'idle') current.player.reset(); else current.player.play(clip);
+});
+const rotBtn = document.getElementById('pcf-rotate');
+rotBtn.addEventListener('click', () => { autoRotate = !autoRotate; rotBtn.classList.toggle('pcf-on', autoRotate); });
+
+// Feedback aller Figuren zu einem kopierbaren Block bündeln.
+const outEl = document.getElementById('pcf-out');
+const statusEl = document.getElementById('pcf-fbstatus');
+document.getElementById('pcf-collect').addEventListener('click', async () => {
+  saveNote();
+  const parts = [];
+  for (const id of Object.keys(FIGURES)) {
+    const t = (notes[id] || '').trim();
+    if (t) parts.push('[' + id + ']\n' + t);
+  }
+  if (!parts.length) { outEl.classList.remove('pcf-show'); statusEl.textContent = 'Noch keine Notiz eingetragen.'; return; }
+  const block = '=== PC Fighters – Figuren-Feedback ===\n\n' + parts.join('\n\n');
+  outEl.value = block; outEl.classList.add('pcf-show'); outEl.focus(); outEl.select();
+  try { await navigator.clipboard.writeText(block); statusEl.textContent = '✓ kopiert – schick es mir im Chat.'; }
+  catch { statusEl.textContent = 'markiert – bitte kopieren und mir im Chat schicken.'; }
+});
+
+// Für die headless-Prüfung erreichbar machen.
+window.__pcfViewer = { load: loadFigure, play: (c) => current && current.player.play(c), get parts() { return current ? current.parts.size : 0; } };
+
+loadFigure(sel.value);
+</script>
