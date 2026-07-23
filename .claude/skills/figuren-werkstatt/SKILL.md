@@ -12,7 +12,16 @@ und endet mit **Freigabe durch den Nutzer** vor dem Commit.
 
 Aufruf: `/figuren-werkstatt <cardId> [freier Prompt]`
 
+Die Werkstatt lernt: Sie **liest zu Beginn** das gesammelte Wissen (`LESSONS.md`) und
+**schlägt am Ende** neue Lektionen zur Freigabe vor. So werden Fehler nicht wiederholt
+und Best Practices weitergegeben.
+
 ## Ablauf (du orchestrierst, im Chat sichtbar)
+
+### 0. Werkstatt-Wissen laden
+Lies `.claude/skills/figuren-werkstatt/LESSONS.md` (Fallstricke & Best Practices).
+Die relevanten Punkte fließen unten in die Designer-/Spezialisten-/Kritiker-Briefs ein,
+damit niemand einen bekannten Fehler wiederholt.
 
 ### 1. Brief zusammenstellen
 - Kartendaten lesen: `packages/engine/src/data/cards/*.json` nach `<cardId>` durchsuchen
@@ -20,113 +29,111 @@ Aufruf: `/figuren-werkstatt <cardId> [freier Prompt]`
 - Fraktionsfarbe: `packages/engine/src/data/factions.json` → `theme.color` (bzw. Oberfraktion).
 - Vorhandene Figur (falls Überarbeitung): `data/figures/<cardId>.json`.
 - Daraus einen kurzen **Design-Brief** bauen (cardId, Name, Text, Fraktion+Farbe,
-  Projektil-Emoji, Nutzer-Prompt).
+  Projektil-Emoji, Nutzer-Prompt) **plus die passenden LESSONS.md-Punkte**.
 
 ### 2. Dev-Umgebung sicherstellen
 - Snap-Ordner wählen, z. B. `<scratchpad>/snaps`, und anlegen.
 - **Port 3000 vorher prüfen.** Ein Rest-Prozess aus einer früheren Sitzung (ohne
   `PCF_SNAP`) blockiert sonst den Start mit `EADDRINUSE`, und `/snap` bleibt inaktiv.
-  Prüfen mit `netstat -ano` (Zeile mit `:3000` + „LISTENING"/„ABHÖREN"), die PID per
-  `Stop-Process -Id <pid> -Force` beenden, **bevor** der eigene Server gestartet wird.
-- **Server mit Snap-Endpunkt** starten (nur so ist `/snap` aktiv), im Hintergrund:
-  `PCF_SNAP="<snaps-ordner>" PORT=3000 npx tsx packages/server/src/index.ts`
-  (bewusst `tsx` ohne `watch` – Datenänderungen brauchen ohnehin einen Neustart, siehe Schritt 4).
-- **Client** (Vite) starten, falls nicht schon offen. Standard-Port 5173; ist er belegt,
-  einen freien Port wählen: `cd packages/client && npx vite --port <p> --strictPort`.
-  (Der Client holt den Katalog von `:3000`, der Port ist also egal.)
-- Im Browser (mcp__Claude_Browser) `http://localhost:<clientport>/?figure=<cardId>` öffnen.
+  Prüfen (`ss -ltnp | grep :3000` bzw. `netstat -ano | grep :3000`), den Rest-Prozess
+  beenden, **bevor** der eigene Server gestartet wird.
+- **Server mit Snap-Endpunkt** starten (nur so ist `/snap` aktiv), entkoppelt im
+  Hintergrund (ein Vordergrund-Start kann mit Exit-Code 143/144 „scheitern", obwohl der
+  Server läuft – Signal an die Shell). Erfolg per `curl` prüfen, nicht am Exit-Code:
+  ```bash
+  setsid env PCF_SNAP="<snaps-ordner>" PORT=3000 npx tsx packages/server/src/index.ts \
+    > <scratchpad>/server.log 2>&1 < /dev/null &
+  sleep 3 && curl -s -o /dev/null -w "%{http_code}\n" http://localhost:3000/   # erwartet 200
+  ```
+  (bewusst `tsx` ohne `watch` – Datenänderungen brauchen ohnehin einen Neustart, siehe Schritt 4.)
+- **Client** (Vite) starten, falls nicht schon offen, ebenfalls entkoppelt:
+  `cd packages/client && setsid npx vite --port 5173 --strictPort > <scratchpad>/client.log 2>&1 < /dev/null &`
+  Ist 5173 belegt, freien Port wählen. (Der Client holt den Katalog von `:3000`.)
 
 ### 3. Designer beauftragen
-Spawne den Agenten **figuren-designer** mit dem Brief (und bei Runde >1 der
-Kritiker-Änderungsliste). Er schreibt `data/figures/<cardId>.json` und validiert mit `npm test`.
+Spawne **figuren-designer** mit dem Brief (inkl. LESSONS.md-Punkten; bei Runde >1 der
+Kritiker-Änderungsliste). Er schreibt `data/figures/<cardId>.json` und validiert mit
+`npm test`. Für die **Erstanlage** immer der Basis-Designer; Spezialisten kommen erst
+in Überarbeitungsrunden (Schritt 6).
 
 ### 4. Server neu starten, dann Screenshots erzeugen
-**Vor jeder Aufnahme den Server neu starten** (PID auf Port 3000 per `netstat`/
-`Stop-Process` beenden, dann Schritt-2-Startbefehl erneut ausführen) – auch nach
-Überarbeitungsrunden. `loadGameData` liest `data/figures/*.json` per `readFileSync`
-nur **einmal beim Start** ein; das ist kein ES-Modul-Import, daher erkennt auch
-`tsx watch`/`node --watch` die Änderung nicht. Ohne Neustart liefert `/info` den
-alten Stand, die Vorschau zeigt „Keine Figur-Datei – Golem-Fallback" (Neuanlage)
-bzw. die vorige Version (Überarbeitung), und der Kritiker bewertet ein leeres oder
-veraltetes Bild – eine ganze Runde ist verschwendet.
+**Vor jeder Aufnahme den Server neu starten** (Prozess auf Port 3000 beenden, dann den
+Startbefehl aus Schritt 2 erneut ausführen) – auch nach Überarbeitungsrunden.
+`loadGameData` liest `data/figures/*.json` per `readFileSync` nur **einmal beim Start**;
+weder `tsx watch` noch Vite-HMR bemerken die Änderung (kein Modul-Import). Ohne Neustart
+zeigt die Vorschau den alten Stand und der Kritiker bewertet ein veraltetes Bild – eine
+ganze Runde ist verschwendet.
 
-Danach im Browser **neu laden** (`navigate` auf die Vorschau-URL, ~600 ms warten),
-optional per `get_page_text` die Bausteinzahl gegenchecken (sollte > 0 sein und sich
-zwischen Runden ändern), dann per `javascript_tool` diese Montage aufnehmen und an
-den Server posten:
-```js
-(async () => {
-  await new Promise(r => setTimeout(r, 600));
-  const h = window.__figure, cv = document.querySelector('canvas');
-  if (!h || !cv) return 'NO HANDLE';
-  h.freeze();
-  const tw = 300, th = 340;
-  const m = document.createElement('canvas'); m.width = tw*2; m.height = th*2;
-  const ctx = m.getContext('2d'); ctx.fillStyle = '#141a1f'; ctx.fillRect(0,0,m.width,m.height);
-  const shots = [
-    ['vorne',   () => h.yaw(0.35)],
-    ['seite',   () => h.yaw(1.7)],
-    ['hinten',  () => h.yaw(3.2)],
-    ['angriff', () => { h.yaw(0.35); h.clip('attack', 260); }]
-  ];
-  shots.forEach((s,i) => { s[1](); const x=(i%2)*tw, y=((i/2)|0)*th;
-    ctx.drawImage(cv,0,0,cv.width,cv.height,x,y,tw,th);
-    ctx.fillStyle='#8fe6b0'; ctx.font='bold 15px sans-serif'; ctx.fillText(s[0], x+8, y+20); });
-  h.live();
-  const r = await fetch('http://localhost:3000/snap?name=<cardId>', {
-    method:'POST', headers:{'content-type':'text/plain'}, body: m.toDataURL('image/png') });
-  return 'snap '+r.status;
-})()
+Danach die Montage per committetem Helferskript erzeugen (rendert 6 Kacheln – vorne /
+seite / hinten + Angriff in 3 Phasen – und postet sie an `/snap`):
+```bash
+node .claude/skills/figuren-werkstatt/scripts/snap.mjs <cardId> [clientPort] [serverPort]
 ```
-Die Datei liegt dann als `<snaps-ordner>/<cardId>.png`. (Direkte Screenshots des
-Live-WebGL-Canvas per Screenshot-Tool **timeouten** – deshalb dieser Weg über `/snap`.)
+Ausgabe-PNG: `<snaps-ordner>/<cardId>.png`. Das Skript loggt die **Bausteinzahl** –
+ist sie `0` (oder unverändert zur Vorrunde), wurde der Server nicht neu gestartet:
+erst beheben, dann den Kritiker beauftragen.
 
-### 5. Kritiker beauftragen
-Spawne **figuren-kritiker** mit dem PNG-Pfad + Brief. Er liest das Bild und liefert
-Urteil (`GUT`/`ÜBERARBEITEN`) + konkrete Änderungsliste.
+Das Skript nutzt Playwright (Chromium unter `/opt/pw-browsers/chromium`) – der zuvor
+genutzte `mcp__Claude_Browser` ist nicht in jeder Umgebung vorhanden. Ist Browser-MCP
+verfügbar, geht derselbe Ablauf (freeze → yaw/clip → drawImage → `fetch /snap`) auch
+dort; das Skript ist aber der robuste Standardweg (direkte WebGL-Canvas-Screenshots
+timeouten).
 
-### 6. Iterieren
-Bei `ÜBERARBEITEN` und < 3 Runden: die Änderungsliste **per SendMessage an denselben
-Designer-Agenten** zurückgeben (agentId/Name aus dem ersten Spawn, Kontext bleibt
-erhalten) – **niemals** einen neuen `Agent`-Aufruf für die Überarbeitung starten und
-**niemals `isolation: "worktree"`** dabei verwenden. Ein neuer Agent kennt den
-bisherigen Kontext nicht; ein Worktree-Agent bearbeitet eine isolierte Kopie des Repos
-und ändert nicht die Datei, die der laufende Dev-Server tatsächlich liest – die
-Überarbeitung würde in der Vorschau schlicht nicht ankommen. Nach der Antwort zurück
-zu Schritt 4 (Server neu starten!).
-Bei `GUT` oder nach 3 Runden: Schleife beenden.
+### 5. Kritiker beauftragen (drei Linsen)
+Spawne **figuren-kritiker** mit dem PNG-Pfad + Brief. Er liest das Bild und liefert:
+- ein **Gesamturteil** (`GUT`/`ÜBERARBEITEN`),
+- **Teil-Urteile je Linse**: `A` Körper·Proportion·Größe, `B` Gesicht·Kopf,
+  `C` Animation,
+- eine **nach Linse gelabelte** Änderungsliste (`[A]`/`[B]`/`[C]`).
 
-### 7. Abnahme & Commit
-- Dem Nutzer die **finalen Screenshots** (das PNG) zeigen und den Kritiker-Bericht zusammenfassen.
-- **Auf Freigabe warten.** Erst nach explizitem OK committen:
-  nur `packages/engine/src/data/figures/<cardId>.json`,
-  Commit-Message z. B. „Figur <cardId>: <Kurzbeschreibung>".
+### 6. Iterieren – Hybrid-Routing an Spezialisten
+Bei `ÜBERARBEITEN` und < 3 Runden die gelabelten Punkte an den jeweils passenden
+Handler geben. Läuft mehr als eine Linse, die Handler **nacheinander** ausführen
+(Scopes sind disjunkt: Gesicht = Kopf-Teilbaum in `visual.parts`, Animation =
+`animations`), **jeder liest die Datei zuerst**; danach **ein** Server-Neustart:
+
+- **`[A]` Körper/Proportion/Größe →** zurück an den **Basis-Designer** per `SendMessage`
+  an dessen bestehende Agent-ID (Kontext bleibt; Statur ist das Skelett = ein Autor).
+- **`[B]` Gesicht →** Spezialist **figuren-gesicht** (nur wenn Linse B `ÜBERARBEITEN`).
+  Beim ersten Mal per `Agent` spawnen, danach per `SendMessage` an dieselbe ID.
+- **`[C]` Animation →** Spezialist **figuren-animation** (nur wenn Linse C `ÜBERARBEITEN`).
+  Ebenso: erst spawnen, dann per `SendMessage` fortführen.
+
+**Niemals `isolation: "worktree"`** und **niemals** einen frischen `Agent`-Aufruf für
+eine Fortsetzung: ein Worktree-Agent schreibt in eine Repo-Kopie, die der Dev-Server nie
+liest; ein frischer Agent verliert den Kontext. Nach den Änderungen zurück zu Schritt 4
+(Server neu starten!). Bei `GUT` oder nach 3 Runden: Schleife beenden.
+
+### 7. Abnahme
+- Dem Nutzer das **finale Montage-PNG** zeigen und die Kritiker-Teil-Urteile zusammenfassen.
+- **Auf Freigabe warten.**
+
+### 8. Lektionen vorschlagen, dann committen
+Nach dem OK des Nutzers:
+- **Reflektieren:** Was hat diesmal gut funktioniert (→ *Best Practice*)? Ging etwas
+  schief oder brauchte mehrere Runden für dieselbe Ursache (→ *Fallstrick*)? Formuliere
+  je Fund einen knappen Eintrag (*Symptom → Ursache → Regel*).
+- **Vorschlagen:** Zeige die vorgeschlagenen LESSONS.md-Ergänzungen dem Nutzer und
+  **warte auf dessen Freigabe** (Lektionen werden nie automatisch festgeschrieben).
+  Gibt es nichts Neues, sag das und überspring den Eintrag.
+- **Committen:** Nach Freigabe `packages/engine/src/data/figures/<cardId>.json`
+  committen, **zusammen mit** den freigegebenen `LESSONS.md`-Änderungen (falls
+  vorhanden). Commit-Message z. B. „Figur <cardId>: <Kurzbeschreibung>".
 - Danach im Testmodus prüfbar (die Figur erscheint im Spiel).
 
 ## Wichtig
-- Nur die Figur-Datei wird geändert; Karten-/Gameplay-Daten bleiben unangetastet.
+- Nur Figur-Datei(en) + ggf. `LESSONS.md` werden geändert; Karten-/Gameplay-Daten und
+  Engine-/Render-Code bleiben unangetastet.
 - Server-`/snap` ist dev-only (nur bei gesetztem `PCF_SNAP`), also kein Produktionsrisiko.
 - Hintergrund-Server/-Client am Ende nicht vergessen (laufen lassen für weitere Läufe
   oder sauber stoppen).
 
-## Bekannte Fallstricke (aus vergangenen Läufen gelernt)
+## Wissensspeicher & Selbst-Optimierung
+Das gesammelte Wissen steht in **`LESSONS.md`** (Fallstricke aus Fehlern, Best Practices
+aus Erfolgen). Schritt 0 liest es, Schritt 8 erweitert es nach Freigabe. So verbessert
+sich die Werkstatt mit jedem Lauf, statt dieselben Fehler zu wiederholen. Wächst der
+Figuren-Bestand, dient `LESSONS.md` auch als Kurator guter Referenz-Figuren.
 
-Dieser Abschnitt wird bei jedem Lauf, der an einem neuen Fehler scheitert, um den
-Fund ergänzt – der Ablauf oben ist bereits entsprechend angepasst; hier steht das
-*Warum*, damit künftige Anpassungen nicht wieder dieselben Fehler machen.
-
-- **Server-Datenstand ≠ Dateisystem-Stand.** `loadGameData` liest alle `data/*.json`
-  (inkl. `figures/`) per `readFileSync`/`readdirSync` nur beim Prozessstart. Weder
-  Vite-HMR noch `tsx watch` bemerken das, weil es kein Modul-Import ist. Konsequenz:
-  jede Designer-Änderung braucht einen Server-Neustart, bevor der nächste Screenshot
-  aussagekräftig ist (siehe Schritt 4). Ein „leerer" Montage-Screenshot (nur
-  Hintergrund + Label, `0 Bausteine` oder unveränderte Bausteinzahl) ist das typische
-  Symptom – nicht sofort den Kritiker beauftragen, sondern erst Server neu starten
-  und Bausteinzahl per `get_page_text` gegenchecken.
-- **Port 3000 kann von einer vorherigen Sitzung belegt sein**, dann meist ohne
-  `PCF_SNAP` gestartet → `/snap` fehlt, `EADDRINUSE` beim eigenen Start. Vor dem
-  ersten Serverstart eines Laufs immer `netstat -ano | grep :3000` prüfen.
-- **Überarbeitungsrunden gehören zum selben Agenten.** `SendMessage` an die
-  bestehende Designer-agentId nutzen; ein frischer `Agent`-Aufruf (und erst recht
-  mit `isolation: "worktree"`) verliert den Kontext bzw. schreibt in eine Kopie des
-  Repos, die der Dev-Server nie sieht.
+Widerspricht ein neuer Lauf einem bestehenden Eintrag, den Eintrag **korrigieren**
+(nicht einen zweiten anlegen). Ändert sich der Ablauf grundlegend, auch diese SKILL.md
+im selben Schritt anpassen.
