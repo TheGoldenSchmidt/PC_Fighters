@@ -34,6 +34,11 @@ zweiten anzulegen.
   `setsid … < /dev/null &` entkoppeln und den Erfolg per `curl :3000` statt am
   Exit-Code prüfen.
 
+- **Der Vite-Client (Port 5173) kann zwischen zwei Snap-Runden sterben.** Symptom:
+  `snap.mjs` bricht mit `net::ERR_CONNECTION_REFUSED` ab. → Vor jeder Aufnahme den
+  Client-Port prüfen und bei Bedarf neu starten (`ss -ltnp | grep :5173`, sonst
+  `vite`-Start wiederholen), nicht nur den Server.
+
 - **Überarbeitungen gehören zum selben Autor.** `SendMessage` an die bestehende
   Agent-ID nutzen; ein frischer `Agent`-Aufruf verliert den Kontext. **Niemals
   `isolation: "worktree"`** – ein Worktree-Agent bearbeitet eine isolierte
@@ -85,6 +90,16 @@ zweiten anzulegen.
   Mensch ≈ 1, mittelgroßes Tier ~0.6.
 - **Beine sichtbar lassen:** Rumpf hoch genug über den Beinen, sonst wirkt das
   Tier klobig/bärenhaft statt schlank.
+
+### Wiedererkennbarkeit / Abgrenzung von anderen Figuren
+
+- **Ähnlichkeit kommt vom geteilten Skelett – Pose differenziert.** Baut man Figur B
+  mit Figur A als Struktur-Referenz (z. B. Katze mit dem Wolf-Quadruped als Basis),
+  wird die Silhouette schnell „zu ähnlich" (bewiesen: der stehende Getigerte wirkte
+  wie ein umgefärbter Wolf). Farbe/Detail-Akzente reichen zur Abgrenzung nicht. →
+  Hat die Art eine **ikonische Haltung**, diese bauen statt der generischen Standpose:
+  die sitzende Putzhaltung machte den Getigerten sofort unverkennbar zur Katze. Pose >
+  Textur bei der Unterscheidbarkeit.
 
 ### Schwanz / Anhänge
 
@@ -142,6 +157,30 @@ Regel für jede animierbare Gliedmaße (Arm, Bein, Flügel, Kiefer):
   (Atmen/Wippen + Schwanz/Ohren/Kleidung).
 - **`attack` thematisch überschreiben** passend zum Projektil-Emoji (🐾 → Biss/
   Sprung, 🪨 → Wurf, ⚔️ → Hieb). Bewegung, nicht Blitz.
+- **Angriff muss andere Bausteine/Achsen bewegen als das `idle`.** Bewegt der Angriff
+  dieselbe Gliedmaße zur selben Stelle wie das Idle, liest er sich als Fortsetzung des
+  Idle statt als Aktion (bewiesen: der Getigerten-Angriff wirkte wie „Weiterputzen",
+  weil er dieselbe Pfote zur Schnauze führte). → Angriff über **eigene Pose-Signale**
+  codieren: ein Glied, das das Idle nie anfasst; Maul auf / Zähne; Ohren anlegen;
+  Schlag/Pfote klar nach vorn (+z) statt zur Ruhepose. Dann ist die Aktion auch als
+  Standbild vom Idle unterscheidbar.
 - **Animation aus mehreren Frames beurteilen**, nicht aus einem Standbild – der
   Montage-Streifen (`snap.mjs`) zeigt den Angriff in 3 Phasen (Ausholen, Kontakt,
   Rückkehr). Ein einzelner mittlerer Frame verbirgt Ruckler und Farb-Washes.
+
+### Effizienz (Runden/Token sparen bei gleicher/besserer Qualität)
+
+- **Teile-Bibliothek statt Neuerfindung.** Wiederkehrende Rigs (Gelenk-Arm/-Bein,
+  Vierbeiner-Grundgerüst, Schwanzkette, Gesichts-Kit) stehen kopierfertig in
+  `PARTS.md`. Der Designer **kopiert + tunt Zahlen**, statt jede Gliedmaße neu
+  herzuleiten. Hält die bewährte Gelenk-Struktur automatisch ein (keine Segment-
+  Rotation) und spart die typische „Rig kaputt"-Runde. Neue gute Muster dort ergänzen.
+- **Referenz-Steckbrief gegen Proportions-Runden.** Proportion ist die häufigste
+  Kritik-Ursache. Liegt eine Vorlage vor (Nutzer-Upload oder Web-Bild), liest der
+  **bildfähige Orchestrator** sie und gibt dem text-only Designer **Zahlen** (Kopf:Rumpf,
+  Beinlänge, Schwanz, Palette-Hex) statt einer Bilddatei. Wer den Steckbrief trifft,
+  spart die „zu groß / falsche Proportion"-Runde. Format in `PARTS.md`.
+- **Designer-Pre-Flight vor Abgabe.** Eine kurze Selbstcheck-Liste (visual.height?
+  kein root-emissive? kein rot auf Segmenten? Gesicht mehrteilig? idle ≥2 Teile?) fängt
+  genau die Trivialfehler ab, die sonst je eine volle Runde kosten. Steht im
+  `figuren-designer.md`.

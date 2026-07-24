@@ -30,6 +30,20 @@ damit niemand einen bekannten Fehler wiederholt.
 - Vorhandene Figur (falls Überarbeitung): `data/figures/<cardId>.json`.
 - Daraus einen kurzen **Design-Brief** bauen (cardId, Name, Text, Fraktion+Farbe,
   Projektil-Emoji, Nutzer-Prompt) **plus die passenden LESSONS.md-Punkte**.
+- **Auf `PARTS.md` verweisen:** Nenne im Brief die passenden Fragmente aus
+  `.claude/skills/figuren-werkstatt/PARTS.md` (z. B. „Vierbeiner-Grundgerüst +
+  Schwanzkette + Gesichts-Kit"), damit der Designer sie kopiert statt neu herzuleiten.
+
+### 1b. Referenz-Steckbrief (wenn eine Vorlage vorliegt)
+Liegt eine visuelle Vorlage vor – **Nutzer-Upload** (Bild/Mesh/Textur) oder eine von dir
+per `WebSearch`/`WebFetch` geholte Silhouette/Anatomie – dann **prüfst du (bildfähiger
+Orchestrator) sie selbst** und destillierst sie in **Zahlen**. Der `figuren-designer` ist
+text-only und kann kein Bild „sehen"; er bekommt fertige Werte, keine Bilddatei.
+Format des Steckbriefs siehe `PARTS.md` (Bauart/Breite-Verhältnis, Kopf:Rumpf, Beinlänge,
+Schnauze/Ohren/Augen, Schwanz, Palette-Hex, Charakter-Merkmale). Den Steckbrief in den
+Designer-Brief legen. Gibt es keine Vorlage, diesen Schritt überspringen.
+Hinweis: gelieferte Fremd-Assets (Meshes/Texturen) nur als Referenz ablesen, **nicht ins
+Repo committen** (Lizenz); das Ergebnis sind eigene Primitive.
 
 ### 2. Dev-Umgebung sicherstellen
 - Snap-Ordner wählen, z. B. `<scratchpad>/snaps`, und anlegen.

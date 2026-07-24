@@ -34,6 +34,20 @@ Die Werkstatt gibt dir im Brief die relevanten Punkte aus
 Halte sie ein – sie fassen zusammen, was in früheren Läufen schiefging bzw. gut
 funktionierte. Ist im Brief nichts enthalten, lies die Datei selbst.
 
+## Teile-Bibliothek nutzen (Tempo + Qualität)
+`.claude/skills/figuren-werkstatt/PARTS.md` enthält **kopierfertige Rig-Fragmente**
+(Gelenk-Arm, Gelenk-Bein, Vierbeiner-Grundgerüst, Schwanzkette, Gesichts-Kit). **Kopiere
+das passende Fragment und tune nur die Zahlen** (Positionen/Größen/Farben auf die Figur),
+statt eine Gliedmaße oder ein Gesicht von Grund auf neu herzuleiten. Das hält die
+bewährte Gelenk-Struktur (keine Segment-Rotation) automatisch ein und spart Runden. Lies
+die Datei zu Beginn.
+
+## Referenz-Steckbrief einhalten
+Enthält der Brief einen **Referenz-Steckbrief** (Zahlen zu Proportionen: Kopf:Rumpf,
+Beinlänge, Schnauze/Ohren/Augen, Schwanz, Palette), dann **triff diese Zahlen** – sie
+stammen aus einer echten Vorlage, die der Orchestrator geprüft hat. Proportion ist die
+häufigste Kritik-Ursache; wer den Steckbrief trifft, spart die Runde.
+
 ## Zwei kritische Bereiche zuerst bauen
 Erfahrung zeigt: **Gesicht** und **Animation** brechen am häufigsten. Baue sie nicht
 zuletzt, sondern gleich mit voller Sorgfalt:
@@ -111,6 +125,22 @@ Pflicht: `id`, `shape`. Meist `size`, `pos`, `color`.
   und wäscht sie farblos (bewiesener Fehler – der Angriff sah cremeweiß statt farbig aus).
   Angriff/Treffer über **Pose** lösen. Falls überhaupt ein Glanz nötig ist: sehr niedriger
   Wert (<0.1) auf einem **einzelnen kleinen Teil**, nie auf `root`.
+
+## Pre-Flight-Selbstcheck (vor der Rückgabe – verhindert verschwendete Runden)
+Hake **jeden Punkt** ab, bevor du abgibst. Jeder Fehler hier kostet sonst eine ganze
+Kritik-Runde (Designer → Server-Neustart → Montage → Kritiker):
+- [ ] `visual.height` bewusst gesetzt (Mensch ≈ 1, mittelgroßes Tier ~0.6)?
+- [ ] **Kein `emissive`-Track auf `root`** (wäscht die Figur weiß)?
+- [ ] **Kein `rot` auf Segmenten** (`oberarmR`/`unterarmR`/… ) – Beugung nur auf
+      Gelenk-`group`s (sonst Lücke)?
+- [ ] Bewegliche Gliedmaßen als **Gelenk-Kette** (leere `group`-Pivots), Requisit an
+      die Hand geparentet?
+- [ ] Wurf/Schlag: Release-Vorzeichen korrekt – **nach vorn (+z) = negatives `rot.x`**;
+      Armschwung und Projektil-Bogen in dieselbe Richtung?
+- [ ] Gesicht **mehrteilig** (Sklera+Pupille, abgesetzter Kiefer, Ohr-Innenteil);
+      Kontrast-Akzente in eigener Farbe an der Silhouetten-Kante?
+- [ ] `idle` (loop) bewegt **≥2 benannte Teile**?
+- [ ] Referenz-Steckbrief-Zahlen (falls vorhanden) getroffen?
 
 ## Validierung (immer vor Abgabe)
 `npm test` im Repo-Root – die Engine lädt und validiert dabei alle Figur-Dateien und
