@@ -20,6 +20,7 @@ import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import type { ClientView, PlayerIndex, Topic, VisualCatalog } from '@pcf/engine';
 import { createFigure, type Figure } from './figures3d';
+import { createEnvironment, type EnvironmentRec, type FieldMetrics } from './environments3d';
 
 /** Zauber-Effektarten der Aktionskarten (Spiegel des engine-SpellEvent). */
 export type SpellEffectKind = 'buff' | 'attackBuff' | 'summon' | 'move';
@@ -63,6 +64,24 @@ interface FigureRec {
   onBoard: boolean;
   dying: boolean;
   placed: boolean; // schon einmal positioniert (sonst direkt teleportieren)
+  /** Zeitpunkt des Angriffs-Zulaufs (0 = kein Zulauf aktiv). */
+  attackStart: number;
+  /** Welt-Versatz zum Gegner beim Zulauf (Spitzenwert, wird per Hüllkurve skaliert). */
+  approach: THREE.Vector3;
+}
+
+// Angriffs-Zulauf: die Figur tritt vor dem Schlag ein Stück auf den Gegner zu
+// und kehrt danach zurück (rein visuell, keine Positionsänderung im Spielzustand).
+const APPROACH_IN_MS = 150; // Zulauf nach vorn
+const APPROACH_HOLD_MS = 300; // kurz halten (Schlag)
+const APPROACH_OUT_MS = 480; // zurück in die Aufstellung
+
+function approachEnvelope(elapsed: number): number {
+  if (elapsed < 0) return 0;
+  if (elapsed < APPROACH_IN_MS) return elapsed / APPROACH_IN_MS;
+  if (elapsed < APPROACH_HOLD_MS) return 1;
+  if (elapsed < APPROACH_OUT_MS) return 1 - (elapsed - APPROACH_HOLD_MS) / (APPROACH_OUT_MS - APPROACH_HOLD_MS);
+  return 0;
 }
 
 interface Orb {
@@ -115,8 +134,15 @@ interface World {
   orbs: Orb[];
   spellFx: SpellFx[];
   ground: Ground;
+  environment: EnvironmentRec | null;
+  /** Pro Lane ein getönter Bodenstreifen (der „Weg", auf dem gekämpft wird). */
+  lanePaths: THREE.Mesh[];
+  pathGeo: THREE.PlaneGeometry;
   shadowCatcher: THREE.Mesh | null;
   realShadows: boolean;
+  /** Eigene Seite + Lane-Anzahl (für die lane-freie Umgebungs-Platzierung). */
+  me: PlayerIndex;
+  lanes: number;
   raf: number;
   firstSync: boolean;
   seenProjectiles: Set<string>;
@@ -329,6 +355,29 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
     // Nebel lässt den fernen Boden zur Akzentfarbe ausfaden → Horizont-Wirkung
     scene.fog = new THREE.Fog(0x0b101d, 18, 46);
 
+    // ---- Lane-Wege: je Lane ein getönter Bodenstreifen vom eigenen zum
+    // gegnerischen Slot. Macht sichtbar, dass eine Lane ein Kampf-Pfad ist,
+    // und trägt (zusammen mit dezenteren DOM-Boxen) die Arena-Wirkung. ----
+    const pathGeo = new THREE.PlaneGeometry(1, 1);
+    const lanePaths: THREE.Mesh[] = [];
+    for (let i = 0; i < 6; i++) {
+      const strip = new THREE.Mesh(
+        pathGeo,
+        new THREE.MeshBasicMaterial({
+          color: 0x63c9f8,
+          transparent: true,
+          opacity: 0.16,
+          depthWrite: false,
+          side: THREE.DoubleSide
+        })
+      );
+      strip.rotation.x = -Math.PI / 2;
+      strip.position.y = 0.006;
+      strip.visible = false;
+      scene.add(strip);
+      lanePaths.push(strip);
+    }
+
     const world: World = {
       renderer,
       scene,
@@ -338,8 +387,13 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
       orbs: [],
       spellFx: [],
       ground: { floor, grid, glow },
+      environment: null,
+      lanePaths,
+      pathGeo,
       shadowCatcher,
       realShadows,
+      me,
+      lanes: view.lanes,
       raf: 0,
       firstSync: true,
       seenProjectiles: new Set(),
@@ -385,6 +439,13 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
               rec.fig.setWalking(false);
             }
           }
+          // Angriffs-Zulauf: ein Stück auf den Gegner zu und zurück (rein visuell).
+          // Der Slot-Anker wird jeden Frame frisch kopiert → kein Aufsummieren.
+          if (rec.attackStart) {
+            const k = approachEnvelope(now - rec.attackStart);
+            if (k <= 0 && now - rec.attackStart > APPROACH_OUT_MS) rec.attackStart = 0;
+            else root.position.addScaledVector(rec.approach, k);
+          }
           root.scale.setScalar(anchor.scale);
         }
         rec.fig.update(now);
@@ -393,6 +454,60 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
           rec.fig.dispose();
           world.figures.delete(uid);
         }
+      }
+
+      // Feldgeometrie (aus den DOM-Slot-Ankern) für Lane-Wege + Umgebung
+      const opp: PlayerIndex = world.me === 0 ? 1 : 0;
+      const a0 = slotAnchor(world, world.me, 0);
+      const aN = slotAnchor(world, world.me, Math.max(0, world.lanes - 1));
+      const aF = slotAnchor(world, opp, 0) ?? slotAnchor(world, opp, Math.max(0, world.lanes - 1));
+      const haveField = !!(a0 && aN && aF);
+      const leftX = haveField ? Math.min(a0!.pos.x, aN!.pos.x) : 0;
+      const rightX = haveField ? Math.max(a0!.pos.x, aN!.pos.x) : 0;
+      const laneStep = haveField
+        ? world.lanes > 1
+          ? (rightX - leftX) / (world.lanes - 1)
+          : Math.max(rightX - leftX, 2.0)
+        : 2.0;
+
+      // Lane-Wege: getönter Streifen vom eigenen zum gegnerischen Slot je Lane
+      for (let i = 0; i < world.lanePaths.length; i++) {
+        const strip = world.lanePaths[i];
+        if (i >= world.lanes) {
+          strip.visible = false;
+          continue;
+        }
+        const near = slotAnchor(world, world.me, i);
+        const far = slotAnchor(world, opp, i);
+        if (!near || !far) {
+          strip.visible = false;
+          continue;
+        }
+        const midX = (near.pos.x + far.pos.x) / 2;
+        const midZ = (near.pos.z + far.pos.z) / 2;
+        const len = Math.abs(near.pos.z - far.pos.z) + laneStep * 0.55;
+        strip.position.set(midX, 0.006, midZ);
+        strip.scale.set(laneStep * 0.62, len, 1);
+        strip.visible = true;
+      }
+
+      // Umgebung (Deko) lane-frei an die aktuellen Feldkanten setzen
+      if (world.environment) {
+        if (haveField) {
+          world.environment.layout({
+            leftX,
+            rightX,
+            nearZ: a0!.pos.z,
+            farZ: aF!.pos.z,
+            laneStep,
+            scale: a0!.scale
+          });
+          world.environment.group.visible = true;
+        } else {
+          // Slots noch nicht im DOM (z. B. vor dem ersten Layout) → verbergen
+          world.environment.group.visible = false;
+        }
+        world.environment.update(now);
       }
 
       // Geschosse: leichte Bogenflugbahn von Angreifer zu Ziel
@@ -461,6 +576,15 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
       for (const s of world.spellFx) {
         disposeGroup(scene, s.group);
       }
+      if (world.environment) {
+        scene.remove(world.environment.group);
+        world.environment.dispose();
+      }
+      for (const strip of world.lanePaths) {
+        scene.remove(strip);
+        (strip.material as THREE.Material).dispose();
+      }
+      pathGeo.dispose();
       floor.geometry.dispose();
       (floor.material as THREE.Material).dispose();
       grid.geometry.dispose();
@@ -486,14 +610,39 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
     (world.ground.floor.material as THREE.MeshStandardMaterial).color.copy(lane);
     (world.ground.grid.material as THREE.Material as THREE.LineBasicMaterial).color.copy(border);
     (world.ground.glow.material as THREE.MeshBasicMaterial).color.copy(accent);
+    // Lane-Wege in der Akzentfarbe (heller Pfad auf dem dunklen Boden)
+    for (const strip of world.lanePaths) {
+      (strip.material as THREE.MeshBasicMaterial).color.copy(accent);
+    }
     // Nebelfarbe dunkel aus der Lane-Farbe ableiten → weicher Horizont
     if (world.scene.fog) world.scene.fog.color.copy(lane.clone().multiplyScalar(0.4));
   }, [topic]);
+
+  // ---- Prozedurale 3D-Umgebung (Deko) je nach Schauplatz auf-/abbauen ----
+  useEffect(() => {
+    const world = worldRef.current;
+    if (!world) return;
+    // Alte Umgebung entfernen
+    if (world.environment) {
+      world.scene.remove(world.environment.group);
+      world.environment.dispose();
+      world.environment = null;
+    }
+    // Neue Umgebung bauen (null = nur Farbe, keine Deko)
+    const env = createEnvironment(topic?.environment);
+    if (env) {
+      env.group.visible = false; // erst sichtbar, wenn die Slots vermessen sind
+      world.scene.add(env.group);
+      world.environment = env;
+    }
+  }, [topic?.environment]);
 
   // ---- Brett-Sync: Figuren erzeugen/aktualisieren/entfernen ----
   useEffect(() => {
     const world = worldRef.current;
     if (!world) return;
+    world.me = me;
+    world.lanes = view.lanes;
     const seen = new Set<number>();
 
     for (const side of [0, 1] as PlayerIndex[]) {
@@ -511,7 +660,7 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
             cat?.defaultClips,
             { realShadows: world.realShadows }
           );
-          rec = { fig, side, lane, health: c.health, onBoard: true, dying: false, placed: false };
+          rec = { fig, side, lane, health: c.health, onBoard: true, dying: false, placed: false, attackStart: 0, approach: new THREE.Vector3() };
           world.figures.set(c.uid, rec);
           world.scene.add(fig.root);
           if (!world.firstSync) fig.playSpawn();
@@ -564,6 +713,17 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
         const dir = defender === me ? 1 : -1;
         to = from.pos.clone();
         to.z += dir * 7;
+      }
+      // Angreifer läuft vor dem Schlag ein Stück auf den Gegner zu (gedeckelt,
+      // damit Basis-Angriffe nicht quer übers Feld stürmen).
+      if (attackerRec) {
+        const dirVec = to.clone().sub(from.pos);
+        dirVec.y = 0;
+        const dist = dirVec.length();
+        if (dist > 0.001) {
+          attackerRec.approach.copy(dirVec.normalize().multiplyScalar(Math.min(dist * 0.28, 0.7)));
+          attackerRec.attackStart = now;
+        }
       }
       const material = new THREE.MeshBasicMaterial({
         color: orbColor(p.emoji),

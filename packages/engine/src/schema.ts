@@ -54,7 +54,8 @@ export const topicSchema = z.object({
     lane: z.string().min(1),
     laneBorder: z.string().min(1),
     accent: z.string().min(1)
-  })
+  }),
+  environment: z.enum(['wald', 'hoehle', 'stadt']).optional()
 });
 
 export const topicsSchema = z.array(topicSchema).min(1, 'mindestens ein Thema wird benötigt');

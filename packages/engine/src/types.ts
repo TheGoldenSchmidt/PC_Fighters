@@ -64,6 +64,9 @@ export interface Stat {
   hp: number;
 }
 
+/** Prozedurale 3D-Umgebung eines Schauplatzes (rein optisch, lane-frei). */
+export type EnvironmentKind = 'wald' | 'hoehle' | 'stadt';
+
 /** Schauplatz einer Partie – rein optisch, wird vom Raum-Ersteller gewählt. */
 export interface Topic {
   id: string;
@@ -79,6 +82,12 @@ export interface Topic {
     /** Akzentfarbe (Lane-Beschriftung, Hervorhebungen). */
     accent: string;
   };
+  /**
+   * Optionale prozedurale 3D-Umgebung (Bäume, Höhle, Häuser …), die das
+   * Battlefield lane-frei um das Spielfeld herum aufbaut. Fehlt das Feld,
+   * bleibt es bei der reinen Farbgebung.
+   */
+  environment?: EnvironmentKind;
 }
 
 export interface TokenDef {
