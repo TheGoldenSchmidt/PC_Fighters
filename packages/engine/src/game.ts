@@ -3,7 +3,7 @@
 
 import {
   applyHinrichten,
-  getAbility,
+  getAbilities,
   hasAbility,
   onDeathTriggers,
   onPlayAbilities,
@@ -200,13 +200,16 @@ function endRound(state: GameState): void {
   }
   // … und neue Fähigkeiten (heilung, ueberstunden).
   onRoundEndAbilities(state);
-  // Temporäre Buffs entfernen, Erschöpfung aufheben
+  // Temporäre Buffs entfernen, Erschöpfung aufheben, Rundenzustand zurücksetzen.
   for (const row of state.board) {
     for (const creature of row) {
       if (!creature) continue;
       creature.tempAttackBonus = 0;
       creature.exhausted = false;
       creature.movedThisFlyPhase = false;
+      // Bugfix: wurde bisher nie zurückgesetzt, wodurch `kaltbluetig` faktisch
+      // "hat noch nie angegriffen" statt "diese Runde nicht angegriffen" prüfte.
+      creature.attackedThisRound = false;
     }
   }
   logDeaths(state);
@@ -245,8 +248,8 @@ function checkBaseDestroyed(state: GameState): boolean {
 
 /** Extra Basisschaden von `neugier`, wenn die Kreatur allein in ihrer Lane angreift. */
 function soloBasisschaden(c: Creature): number {
-  const n = getAbility(c, 'neugier');
-  return n?.basisschaden ?? 0;
+  // Summiert über alle neugier-Einträge (eine Karte kann theoretisch mehrere haben).
+  return getAbilities(c, 'neugier').reduce((sum, n) => sum + (n.basisschaden ?? 0), 0);
 }
 
 /** Ein Angriff Kreatur→Kreatur inkl. Gift, Wucht (Überschuss→Basis) und Dornen. */
@@ -273,9 +276,9 @@ function creatureStrike(
     defender.currentHealth = 0;
     log(state, `Lane ${lane + 1}: Gift! ${defender.name} stirbt sofort.`);
   }
-  // … neue Gift-Marken (Zermürbung).
-  const gift = getAbility(attacker, 'gift');
-  if (gift) defender.poison += gift.staerke;
+  // … neue Gift-Marken (Zermürbung). Mehrere gift-Einträge stapeln.
+  const giftStaerke = getAbilities(attacker, 'gift').reduce((sum, g) => sum + g.staerke, 0);
+  if (giftStaerke > 0) defender.poison += giftStaerke;
   // Wucht: Überschussschaden trifft die gegnerische Basis.
   if (hasAbility(attacker, 'wucht')) {
     const overflow = Math.max(0, atk - defenderHealthBefore);
@@ -284,11 +287,11 @@ function creatureStrike(
       log(state, `Lane ${lane + 1}: Wucht! ${overflow} Überschuss trifft die Basis.`);
     }
   }
-  // Dornen: Verteidiger fügt dem Angreifer Schaden zu.
-  const dornen = getAbility(defender, 'dornen');
-  if (dornen) {
-    attacker.currentHealth -= dornen.x;
-    log(state, `Lane ${lane + 1}: Dornen! ${defender.name} verletzt ${attacker.name} um ${dornen.x}.`);
+  // Dornen: Verteidiger fügt dem Angreifer Schaden zu. Mehrere dornen-Einträge stapeln.
+  const dornenX = getAbilities(defender, 'dornen').reduce((sum, d) => sum + d.x, 0);
+  if (dornenX > 0) {
+    attacker.currentHealth -= dornenX;
+    log(state, `Lane ${lane + 1}: Dornen! ${defender.name} verletzt ${attacker.name} um ${dornenX}.`);
   }
 }
 
@@ -306,14 +309,14 @@ function resolveCombat(state: GameState): void {
       const atkB = b.exhausted ? 0 : getEffectiveAttack(state, 1, lane);
       if (atkA === 0 && atkB === 0) continue;
 
-      // Hinrichten (beim Angriff, vor dem Schaden).
+      // Hinrichten (beim Angriff, vor dem Schaden). Mehrere hinrichten-Einträge
+      // auf derselben Karte lösen nacheinander aus (applyHinrichten überspringt
+      // bereits getroffene Ziele, siehe dortiger Kommentar).
       if (atkA > 0) {
-        const h = getAbility(a, 'hinrichten');
-        if (h) applyHinrichten(state, 0, lane, h.maxHp);
+        for (const h of getAbilities(a, 'hinrichten')) applyHinrichten(state, 0, lane, h.maxHp);
       }
       if (atkB > 0) {
-        const h = getAbility(b, 'hinrichten');
-        if (h) applyHinrichten(state, 1, lane, h.maxHp);
+        for (const h of getAbilities(b, 'hinrichten')) applyHinrichten(state, 1, lane, h.maxHp);
       }
 
       if (atkA > 0) creatureStrike(state, a, b, atkA, 0, lane);
@@ -513,6 +516,14 @@ export function applyAction(
     playPhaseAction(next, player, action, data);
   } else {
     flyPhaseAction(next, player, action);
+  }
+  // Sicherheitsnetz: resolveCombat prüft checkBaseDestroyed nur innerhalb der
+  // Kampfphase. Basisschaden AUSSERHALB des Kampfes (z. B. sturzflug/experiment
+  // beim Ausspielen) konnte die Basis bisher auf ≤0 senken, ohne die Partie zu
+  // beenden. Nur aufrufen, wenn noch nicht beendet – sonst würde die bereits
+  // geloggte Sieg-Meldung doppelt erscheinen.
+  if (next.phase !== 'ended') {
+    checkBaseDestroyed(next);
   }
   return next;
 }

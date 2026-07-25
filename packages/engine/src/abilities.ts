@@ -57,6 +57,20 @@ export function getAbility<K extends Ability['kind']>(
   return c.abilities.find((a) => a.kind === kind) as Extract<Ability, { kind: K }> | undefined;
 }
 
+/**
+ * Wie `getAbility`, aber liefert ALLE Vorkommen einer `kind` auf der Karte.
+ * `getAbility` gibt nur das erste zurück – hat eine Karte dieselbe Fähigkeit
+ * mehrfach (z. B. zwei `gift`-Einträge), stapelt sie mit `getAbility` still
+ * nicht. Aufrufer, die Boni/Schaden aus mehreren gleichartigen Fähigkeiten
+ * aufsummieren wollen, iterieren über das Ergebnis dieser Funktion.
+ */
+export function getAbilities<K extends Ability['kind']>(
+  c: Creature,
+  kind: K
+): Extract<Ability, { kind: K }>[] {
+  return c.abilities.filter((a) => a.kind === kind) as Extract<Ability, { kind: K }>[];
+}
+
 export function hasAbility(c: Creature, kind: Ability['kind']): boolean {
   return c.abilities.some((a) => a.kind === kind);
 }
@@ -389,8 +403,9 @@ function applyHeilung(
 export function onDeathTriggers(state: GameState, deaths: DeathInfo[]): void {
   for (const d of deaths) {
     const dead = d.creature;
-    const tf = getAbility(dead, 'todesfluch');
-    if (tf) {
+    // Mehrere todesfluch-Einträge auf derselben Karte stapeln (getAbility gäbe
+    // nur den ersten zurück).
+    for (const tf of getAbilities(dead, 'todesfluch')) {
       const enemy = otherPlayer(d.owner);
       const attacker = state.board[enemy][d.lane];
       if (attacker) {
@@ -405,19 +420,20 @@ export function onDeathTriggers(state: GameState, deaths: DeathInfo[]): void {
     }
   }
 
-  // sammeln: lebende Kreaturen reagieren auf jeden Tod (trigger-abhängig).
+  // sammeln: lebende Kreaturen reagieren auf jeden Tod (trigger-abhängig);
+  // mehrere sammeln-Einträge auf derselben Karte stapeln.
   for (const d of deaths) {
     for (const owner of [0, 1] as PlayerIndex[]) {
       for (const c of state.board[owner]) {
         if (!c) continue;
-        const sm = getAbility(c, 'sammeln');
-        if (!sm) continue;
-        const isOwn = d.owner === owner;
-        const match =
-          sm.trigger === 'any' || (sm.trigger === 'own' && isOwn) || (sm.trigger === 'enemy' && !isOwn);
-        if (match) {
-          c.permAttackBonus += sm.bonus.atk;
-          c.permHealthBonus += sm.bonus.hp;
+        for (const sm of getAbilities(c, 'sammeln')) {
+          const isOwn = d.owner === owner;
+          const match =
+            sm.trigger === 'any' || (sm.trigger === 'own' && isOwn) || (sm.trigger === 'enemy' && !isOwn);
+          if (match) {
+            c.permAttackBonus += sm.bonus.atk;
+            c.permHealthBonus += sm.bonus.hp;
+          }
         }
       }
     }
@@ -448,7 +464,10 @@ export function applyHinrichten(
   const order = [attackerLane, ...state.board[enemy].map((_, i) => i).filter((i) => i !== attackerLane)];
   for (const j of order) {
     const e = state.board[enemy][j];
-    if (!e || isUnremovable(e)) continue;
+    // currentHealth <= 0: bereits durch eine vorherige (gestapelte) Hinrichten-
+    // Fähigkeit getroffen, aber recalcBoard hat sie noch nicht entfernt – sonst
+    // würde eine zweite Hinrichten-Fähigkeit dasselbe Ziel doppelt loggen.
+    if (!e || isUnremovable(e) || e.currentHealth <= 0) continue;
     if (e.currentHealth <= maxHp) {
       e.currentHealth = 0;
       log(state, `${state.board[attackerOwner][attackerLane]?.name}: Hinrichten zerstört ${e.name}.`);

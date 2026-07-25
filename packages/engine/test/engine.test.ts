@@ -4,6 +4,7 @@ import {
   buildDeck,
   buildFactionTree,
   createGame,
+  createSeededRandom,
   getEffectiveAttack,
   getMaxHealth,
   loadGameData,
@@ -610,5 +611,73 @@ describe('Energie (ungedeckelt)', () => {
     expect(roundEnergy(data.config, 6)).toBe(6);
     expect(roundEnergy(data.config, 7)).toBe(7); // Brachiosaurus (7) ab Runde 7 spielbar
     expect(roundEnergy(data.config, 12)).toBe(12);
+  });
+});
+
+describe('Balancing V2 Phase 1: Determinismus, Bugfixes, Log-Schalter', () => {
+  it('createSeededRandom: gleicher Seed erzeugt exakt dieselbe Partie', () => {
+    const gA = createGame(data, ['humans', 'animals'], createSeededRandom(1234));
+    const gB = createGame(data, ['humans', 'animals'], createSeededRandom(1234));
+    expect(gA.startingPlayer).toBe(gB.startingPlayer);
+    expect(gA.players[0].deck).toEqual(gB.players[0].deck);
+    expect(gA.players[1].deck).toEqual(gB.players[1].deck);
+    expect(gA.players[0].hand).toEqual(gB.players[0].hand);
+    expect(gA.players[1].hand).toEqual(gB.players[1].hand);
+    // Andere Seeds erzeugen (mit überwältigender Wahrscheinlichkeit) andere Decks.
+    const gC = createGame(data, ['humans', 'animals'], createSeededRandom(9999));
+    expect(gC.players[0].deck).not.toEqual(gA.players[0].deck);
+  });
+
+  it('Bugfix: Sturzflug-Basisschaden beendet die Partie sofort in der Play-Phase', () => {
+    // Vorher prüfte nur resolveCombat() checkBaseDestroyed; Basisschaden aus
+    // onPlayAbilities (Sturzflug ohne Ziel in der Lane) konnte die Basis auf
+    // ≤0 senken, ohne dass die Partie endete.
+    const s = emptyState();
+    s.players[1].base = 3;
+    s.players[0].hand = ['adler_voegel']; // Sturzflug 3, gegnerisches Feld ist leer → Basis
+    const after = applyAction(s, 0, { type: 'playCreature', handIndex: 0, lane: 0 }, data);
+    expect(after.players[1].base).toBe(0);
+    expect(after.phase).toBe('ended');
+    expect(after.winner).toBe(0);
+  });
+
+  it('Bugfix: kaltbluetig-Bonus kehrt in der Folgerunde zurück (attackedThisRound wird zurückgesetzt)', () => {
+    const s = emptyState();
+    put(s, 0, 0, 'koenig_der_kobras'); // 3/5, kaltbluetig +0/+2 solange nicht angegriffen
+    expect(getMaxHealth(s, 0, 0)).toBe(7); // Bonus aktiv (noch nie angegriffen)
+    put(s, 1, 0, 'streunerkatze', { exhausted: true }); // wehrt sich nicht, stirbt
+    const after = passBoth(s); // Kobra greift an; Runde endet danach automatisch
+    expect(after.board[1][0]).toBeNull();
+    // Vorher blieb attackedThisRound für immer true → Bonus wäre dauerhaft weg.
+    expect(getMaxHealth(after, 0, 0)).toBe(7);
+  });
+
+  it('Bugfix: mehrere gleichartige Abilities stapeln (getAbilities statt getAbility)', () => {
+    const s = emptyState();
+    put(s, 0, 0, 'ritter'); // 4/4, greift an
+    const gecko = put(s, 1, 0, 'gecko', { exhausted: true }); // 1/3, Dornen 1
+    gecko.abilities.push({ kind: 'dornen', x: 1 }); // zweite Dornen-Fähigkeit auf derselben Karte
+    const after = passBoth(s);
+    expect(after.board[1][0]).toBeNull(); // Gecko stirbt (4 Schaden)
+    expect(after.board[0][0]?.currentHealth).toBe(2); // 4 − (1+1) Dornen statt nur 1
+  });
+
+  it("logModus:'aus' unterdrückt weiteres Loggen, ohne den Spielausgang zu ändern", () => {
+    const seed = 42;
+    let logged = createGame(data, ['humans', 'animals'], createSeededRandom(seed));
+    let silent = createGame(data, ['humans', 'animals'], createSeededRandom(seed));
+    silent.logModus = 'aus';
+    const silentLogLengthAtStart = silent.log.length;
+
+    for (let i = 0; i < 4 && logged.phase !== 'ended'; i++) {
+      logged = passBoth(logged);
+      silent = passBoth(silent);
+    }
+
+    expect(silent.log).toHaveLength(silentLogLengthAtStart); // kein einziger neuer Eintrag
+    expect(logged.winner).toBe(silent.winner);
+    expect(logged.round).toBe(silent.round);
+    expect(logged.players[0].base).toBe(silent.players[0].base);
+    expect(logged.players[1].base).toBe(silent.players[1].base);
   });
 });

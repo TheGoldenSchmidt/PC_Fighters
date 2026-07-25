@@ -141,7 +141,7 @@ export type Ability =
   // Verbraucht Wissens-Marker; Schaden auf Gegner und/oder Selbst-Buff je Marker.
   | { kind: 'experiment'; schadenProMarker?: number; proMarker?: Stat }
   // Bonus/Effekt, solange die Karte allein in ihrer Lane steht (solo).
-  | { kind: 'neugier'; bonus?: Stat; basisschaden?: number; wucht?: boolean }
+  | { kind: 'neugier'; bonus?: Stat; basisschaden?: number }
   // Senkt ATK eines/aller Gegner (oder setzt Gift), beim Ausspielen.
   | { kind: 'umverteilung'; menge: number; schwelle?: number; ziel: 'einer' | 'alle'; art?: 'atk' | 'gift'; dauer?: 'dauerhaft' | 'runde' }
   // +X/+Y, wenn die Karte in ihrer Runde nicht angreift.
@@ -408,6 +408,12 @@ export interface GameState {
   log: LogEntry[];
   winner: PlayerIndex | 'draw' | null;
   uidCounter: number;
+  /**
+   * Log-Schalter für Massensimulationen (Backtest): 'aus' unterdrückt jeden
+   * `log()`-Aufruf (state.log bleibt leer). Ohne Angabe (undefined) wird wie
+   * bisher immer geloggt – Server/Client sehen daher keinen Unterschied.
+   */
+  logModus?: 'voll' | 'aus';
 }
 
 export type PlayerAction =

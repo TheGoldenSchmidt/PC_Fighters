@@ -340,5 +340,10 @@ export function freeLanes(state: GameState, owner: PlayerIndex): number[] {
 }
 
 export function log(state: GameState, text: string, event?: LogEvent): void {
+  // Backtest-Massensimulationen schalten das Log per logModus:'aus' ab (der
+  // dominante Performance-Faktor bei structuredClone, siehe rng.ts/Backtest-
+  // Kommentare). state.log.length bleibt dabei 0, die id-Vergabe kollidiert
+  // also nicht, sollte das Log später wieder eingeschaltet werden.
+  if (state.logModus === 'aus') return;
   state.log.push({ id: state.log.length, round: state.round, text, ...(event ? { event } : {}) });
 }
