@@ -1,0 +1,244 @@
+// Tests für den Telemetrie-Sidecar (stats.ts). Zwei Dinge werden geprüft:
+// 1. Wirkungsfreiheit – aktivierte Statistik darf den Spielausgang NICHT ändern.
+// 2. Exakte Zählerwerte auf konstruierten Brettern für die zentralen Mechaniken.
+
+import { describe, expect, it } from 'vitest';
+import {
+  aktiviereStatistik,
+  applyAction,
+  buildFactionTree,
+  buildClientView,
+  createGame,
+  createSeededRandom,
+  loadGameData
+} from '../src/index.js';
+import { recalcBoard } from '../src/internal.js';
+import type { Creature, CreatureCard, GameData, GameState, PlayerIndex, PlayerState } from '../src/types.js';
+
+const data: GameData = loadGameData();
+
+function player(faction: string): PlayerState {
+  return {
+    faction,
+    deck: [],
+    hand: [],
+    base: data.config.baseHealth,
+    energy: 10,
+    knowledge: 0,
+    flyDone: false
+  };
+}
+
+/** Leerer Testzustand: Runde 1, Ausspielphase, Spieler 0 am Zug. */
+function emptyState(): GameState {
+  return {
+    config: data.config,
+    factionTree: buildFactionTree(data.factions),
+    round: 1,
+    phase: 'play',
+    startingPlayer: 0,
+    active: 0,
+    consecutivePasses: 0,
+    players: [player('humans'), player('animals')],
+    board: [
+      Array.from({ length: data.config.lanes }, () => null),
+      Array.from({ length: data.config.lanes }, () => null)
+    ],
+    log: [],
+    winner: null,
+    uidCounter: 0
+  };
+}
+
+/** Stellt eine Kreatur direkt aufs Feld (Standard: kampfbereit, spawnRound = state.round). */
+function put(
+  state: GameState,
+  owner: PlayerIndex,
+  lane: number,
+  cardId: string,
+  opts: { exhausted?: boolean; spawnRound?: number } = {}
+): Creature {
+  const card = data.cardsById[cardId] as CreatureCard;
+  state.uidCounter += 1;
+  const c: Creature = {
+    uid: state.uidCounter,
+    cardId,
+    name: card.name,
+    faction: card.faction,
+    keywords: card.keywords,
+    abilities: (card.abilities ?? []).map((a) => ({ ...a })),
+    baseAttack: card.attack,
+    baseMaxHealth: card.health,
+    permHealthBonus: 0,
+    permAttackBonus: 0,
+    tempAttackBonus: 0,
+    currentHealth: card.health,
+    lastMaxHealth: card.health,
+    exhausted: opts.exhausted ?? false,
+    movedThisFlyPhase: false,
+    isToken: false,
+    poison: 0,
+    attackedThisRound: false,
+    spawnRound: opts.spawnRound ?? state.round,
+    ueberstundenDone: false,
+    rettungUsed: false,
+    schutzUsed: false
+  };
+  state.board[owner][lane] = c;
+  recalcBoard(state);
+  return c;
+}
+
+/** Beide Spieler passen → Kampfphase läuft, danach Rundenende/Flugphase. */
+function passBoth(state: GameState): GameState {
+  const afterFirst = applyAction(state, state.active, { type: 'pass' }, data);
+  return applyAction(afterFirst, afterFirst.active, { type: 'pass' }, data);
+}
+
+describe('Telemetrie-Sidecar: Wirkungsfreiheit', () => {
+  it('state.stats ist ohne aktiviereStatistik() undefined', () => {
+    const s = emptyState();
+    expect(s.stats).toBeUndefined();
+  });
+
+  it('buildClientView liefert stats nie aus, auch wenn aktiviert', () => {
+    const s = emptyState();
+    aktiviereStatistik(s);
+    put(s, 0, 0, 'wolf');
+    const view = buildClientView(s, 0, data) as unknown as Record<string, unknown>;
+    expect('stats' in view).toBe(false);
+  });
+
+  it('dieselbe gesäte Partie hat mit/ohne aktivierte Statistik denselben Ausgang', () => {
+    const bauePartie = (mitStatistik: boolean) => {
+      const random = createSeededRandom(1234);
+      let s = createGame(data, ['humans', 'animals'], random);
+      if (mitStatistik) aktiviereStatistik(s);
+      // 6 volle Runden (12x pass) reichen, um Kampf/Rundenende mehrfach durchzuspielen.
+      for (let i = 0; i < 6 && s.phase !== 'ended'; i++) {
+        s = passBoth(s);
+      }
+      return s;
+    };
+    const ohne = bauePartie(false);
+    const mit = bauePartie(true);
+    expect(mit.winner).toEqual(ohne.winner);
+    expect(mit.round).toEqual(ohne.round);
+    expect(mit.players[0].base).toEqual(ohne.players[0].base);
+    expect(mit.players[1].base).toEqual(ohne.players[1].base);
+    expect(mit.uidCounter).toEqual(ohne.uidCounter);
+    // board-Vergleich ohne die (bei "mit" zusätzlich gesetzten) letzterSchaden-Felder,
+    // die nur Telemetrie sind und keine Regelwirkung haben.
+    const strip = (b: GameState['board']) =>
+      b.map((row) => row.map((c) => (c ? { ...c, letzterSchaden: undefined } : null)));
+    expect(strip(mit.board)).toEqual(strip(ohne.board));
+  });
+});
+
+describe('Telemetrie-Sidecar: exakte Zählerwerte', () => {
+  it('Wucht-Überschuss zählt als schadenBasis + wuchtSchaden, Dornen als dornenSchaden', () => {
+    const s = emptyState();
+    aktiviereStatistik(s);
+    const kranfuehrer = put(s, 0, 0, 'kranfuehrer'); // 4/4, wucht
+    kranfuehrer.spawnRound = 0; // nicht "flink" für diesen Test
+    const gecko = put(s, 1, 0, 'gecko'); // 1/3, dornen 1
+    gecko.spawnRound = 0;
+
+    const next = passBoth(s);
+
+    // gecko: 3 HP, nimmt 4 Schaden -> stirbt, Überschuss 1 trifft die Basis.
+    expect(next.stats!.proKarte[0]['kranfuehrer'].schadenKreatur).toBe(4);
+    expect(next.stats!.proKarte[0]['kranfuehrer'].schadenBasis).toBe(1);
+    expect(next.stats!.proSpieler[0].wuchtSchaden).toBe(1);
+    expect(next.players[1].base).toBe(data.config.baseHealth - 1);
+
+    // gecko stirbt durch den Kampfangriff des kranfuehrer (kills-Attribution).
+    expect(next.stats!.proKarte[1]['gecko'].gestorben).toBe(1);
+    expect(next.stats!.proKarte[0]['kranfuehrer'].kills).toBe(1);
+
+    // gecko selbst greift zurück (1 Schaden) UND hat dornen (1 Schaden) - beides
+    // an kranfuehrer, gezählt über schadenKreatur (gecko) bzw. dornenSchaden (Spieler 1).
+    expect(next.stats!.proKarte[1]['gecko'].schadenKreatur).toBe(1);
+    expect(next.stats!.proSpieler[1].dornenSchaden).toBe(1);
+  });
+
+  it('Gift-Zermürbung: Tod wird als giftZerstoerungen dem Gegner gutgeschrieben', () => {
+    const s = emptyState();
+    aktiviereStatistik(s);
+    const gecko = put(s, 1, 0, 'gecko', { exhausted: true, spawnRound: 0 }); // 1/3
+    gecko.poison = 5; // stirbt sicher an der Gift-Zermürbung
+
+    const next = passBoth(s);
+
+    expect(next.stats!.proKarte[1]['gecko'].gestorben).toBe(1);
+    expect(next.stats!.proSpieler[0].giftZerstoerungen).toBe(1);
+    // Poison-Herkunft ist nicht eindeutig einer Karte zuordenbar -> kein Kill-Eintrag.
+    expect(next.stats!.proKarte[0]['gecko']).toBeUndefined();
+  });
+
+  it('Heilung über das Legacy-Keyword heilt_nachbarn wird gezählt', () => {
+    const s = emptyState();
+    aktiviereStatistik(s);
+    const feldscherin = put(s, 0, 1, 'feldscherin', { spawnRound: 0 });
+    feldscherin.exhausted = true;
+    const verwundeter = put(s, 0, 0, 'ritter', { spawnRound: 0 }); // Nachbar in Lane 0
+    verwundeter.exhausted = true;
+    verwundeter.currentHealth = 1; // beschädigt, max ist 4
+
+    const next = passBoth(s);
+
+    expect(next.stats!.proKarte[0]['feldscherin'].geheilt).toBe(1);
+    expect(next.stats!.proSpieler[0].heilung).toBe(1);
+  });
+
+  it('Rettung (rettungUsed) zählt als verhindert/verhinderterSchaden', () => {
+    const s = emptyState();
+    aktiviereStatistik(s);
+    const hund = put(s, 0, 0, 'der_alte_hund', { spawnRound: 0 }); // 1/4, rettung survive_1hp
+    hund.exhausted = true;
+    const angreifer = put(s, 1, 0, 'brachiosaurus', { spawnRound: 0 }); // 6/9, würde 6 Schaden machen
+
+    const next = passBoth(s);
+
+    // Hund lebt mit 1 HP weiter (Rettung ausgelöst).
+    const hundImFeld = next.board[0][0];
+    expect(hundImFeld?.currentHealth).toBe(1);
+    // 4 HP - 6 Schaden = -2 -> verhindert = 1 - (-2) = 3.
+    expect(next.stats!.proKarte[0]['der_alte_hund'].verhindert).toBe(3);
+    expect(next.stats!.proSpieler[0].verhinderterSchaden).toBe(3);
+  });
+
+  it('Wachstum wird als wachstumAtk/wachstumHp beim Rundenbeginn gezählt', () => {
+    const s = emptyState();
+    aktiviereStatistik(s);
+    put(s, 0, 0, 'lehrling'); // Wachstum +0/+1 pro Runde
+    s.board[0][0]!.exhausted = true;
+
+    // Kampf (kein Effekt, keine Gegner) + Rundenende + neue Runde -> onRoundStartAbilities.
+    const next = passBoth(s);
+
+    expect(next.stats!.proSpieler[0].wachstumHp).toBe(1);
+    expect(next.stats!.proSpieler[0].wachstumAtk).toBe(0);
+  });
+
+  it('gespielte Karten werden gezählt', () => {
+    const s = emptyState();
+    aktiviereStatistik(s);
+    s.players[0].hand = ['rekrut'];
+
+    const next = applyAction(s, 0, { type: 'playCreature', handIndex: 0, lane: 0 }, data);
+
+    expect(next.stats!.proKarte[0]['rekrut'].gespielt).toBe(1);
+  });
+
+  it('flinkAngriffe zählt Angriffe im Ausspiel-Kreis (spawnRound === round)', () => {
+    const s = emptyState();
+    aktiviereStatistik(s);
+    put(s, 0, 0, 'ratte'); // flink, spawnRound = state.round per Default
+
+    const next = passBoth(s);
+
+    expect(next.stats!.proSpieler[0].flinkAngriffe).toBe(1);
+    expect(next.stats!.proKarte[0]['ratte'].schadenBasis).toBe(2);
+  });
+});

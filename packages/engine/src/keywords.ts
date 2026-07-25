@@ -2,6 +2,7 @@
 // Karten referenzieren Keywords nur per Name; die Semantik lebt zentral hier.
 // Ein neues Keyword = ein neuer Eintrag in KEYWORDS (plus ggf. ein Hook-Aufruf).
 
+import { zaehleKarte, zaehleSpieler } from './stats.js';
 import type { Creature, GameState, PlayerIndex } from './types.js';
 
 export interface AuraBonus {
@@ -109,12 +110,16 @@ export const KEYWORDS: Record<string, KeywordDef> = {
       'Am Rundenende: Heilt verbündete Kreaturen in benachbarten Lanes um 1 (nie über das Maximum).',
     onRoundEnd: (state, owner, lane) => {
       const messages: string[] = [];
+      const healer = state.board[owner][lane];
       for (const nLane of [lane - 1, lane + 1]) {
         const target = state.board[owner]?.[nLane];
         if (!target) continue;
         if (target.currentHealth < target.lastMaxHealth) {
           target.currentHealth += 1;
-          const healer = state.board[owner][lane];
+          if (healer) {
+            zaehleKarte(state, owner, healer.cardId, 'geheilt', 1);
+            zaehleSpieler(state, owner, 'heilung', 1);
+          }
           messages.push(`${healer?.name ?? 'Heiler'} heilt ${target.name} um 1.`);
         }
       }

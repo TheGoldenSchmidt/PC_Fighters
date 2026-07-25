@@ -14,6 +14,7 @@ import {
   otherPlayer
 } from './internal.js';
 import type { DeathInfo } from './internal.js';
+import { zaehleKarte, zaehleSpieler } from './stats.js';
 import type { Ability, Creature, GameState, PlayerIndex, Scope, TokenDef } from './types.js';
 
 /** Anzeige-Infos je Primitiv (wird u. a. an den Client relayed). */
@@ -85,6 +86,7 @@ function draw(state: GameState, player: PlayerIndex, n: number): void {
     const card = state.players[player].deck.shift();
     if (!card) return;
     state.players[player].hand.push(card);
+    zaehleSpieler(state, player, 'kartenGezogen');
   }
 }
 
@@ -132,6 +134,8 @@ export function onPlayAbilities(state: GameState, owner: PlayerIndex, lane: numb
         if (tLane >= 0) {
           const target = state.board[enemy][tLane]!;
           target.currentHealth -= ab.x;
+          target.letzterSchaden = { art: 'effekt', quelle: c.cardId, owner };
+          zaehleKarte(state, owner, c.cardId, 'schadenKreatur', ab.x);
           log(state, `${c.name}: Sturzflug trifft ${target.name} für ${ab.x}.`, {
             kind: 'spell',
             lane: tLane,
@@ -140,6 +144,7 @@ export function onPlayAbilities(state: GameState, owner: PlayerIndex, lane: numb
           });
         } else {
           state.players[enemy].base -= ab.x;
+          zaehleKarte(state, owner, c.cardId, 'schadenBasis', ab.x);
           log(state, `${c.name}: Sturzflug trifft die gegnerische Basis für ${ab.x}.`);
         }
         break;
@@ -264,21 +269,27 @@ function applyExperiment(
   }
   if (ab.schadenProMarker) {
     const enemy = otherPlayer(owner);
-    let total = markers * ab.schadenProMarker;
+    const gesamt = markers * ab.schadenProMarker;
+    let total = gesamt;
     const liveLanes: number[] = [];
     for (let j = 0; j < state.board[enemy].length; j++) if (state.board[enemy][j]) liveLanes.push(j);
     if (liveLanes.length === 0) {
       state.players[enemy].base -= total;
+      zaehleKarte(state, owner, c.cardId, 'schadenBasis', total);
     } else {
       let i = 0;
       while (total > 0) {
         const t = state.board[enemy][liveLanes[i % liveLanes.length]];
-        if (t) t.currentHealth -= 1;
+        if (t) {
+          t.currentHealth -= 1;
+          t.letzterSchaden = { art: 'effekt', quelle: c.cardId, owner };
+        }
         total -= 1;
         i += 1;
       }
+      zaehleKarte(state, owner, c.cardId, 'schadenKreatur', gesamt);
     }
-    log(state, `${c.name}: Experiment verteilt ${markers * ab.schadenProMarker} Schaden.`);
+    log(state, `${c.name}: Experiment verteilt ${gesamt} Schaden.`);
   }
   state.players[owner].knowledge = 0;
 }
@@ -330,11 +341,15 @@ export function onRoundStartAbilities(state: GameState): void {
             if (target) {
               target.permAttackBonus += atk;
               target.permHealthBonus += hp;
+              zaehleSpieler(state, owner, 'wachstumAtk', atk);
+              zaehleSpieler(state, owner, 'wachstumHp', hp);
               log(state, `${c.name}: ${target.name} wächst um +${atk}/+${hp}.`);
             }
           } else {
             c.permAttackBonus += atk;
             c.permHealthBonus += hp;
+            zaehleSpieler(state, owner, 'wachstumAtk', atk);
+            zaehleSpieler(state, owner, 'wachstumHp', hp);
           }
         } else if (ab.kind === 'lernen' && ab.proRunde) {
           draw(state, owner, ab.n);
@@ -391,7 +406,11 @@ function applyHeilung(
     if (!matchesScope(state.factionTree, ab.scope, source.faction, t.faction)) continue;
     const max = getMaxHealth(state, owner, tLane);
     if (t.currentHealth < max) {
+      const vorher = t.currentHealth;
       t.currentHealth = Math.min(max, t.currentHealth + amount);
+      const geheilt = t.currentHealth - vorher;
+      zaehleKarte(state, owner, source.cardId, 'geheilt', geheilt);
+      zaehleSpieler(state, owner, 'heilung', geheilt);
       log(state, `${source.name} heilt ${t.name} um ${amount}.`);
     }
   }
@@ -448,6 +467,9 @@ export function resolvePoison(state: GameState): void {
     for (const c of state.board[owner]) {
       if (!c || c.poison <= 0) continue;
       c.currentHealth -= c.poison;
+      // Poison-Herkunft ist nicht mehr eindeutig einer Karte zuordenbar (Marken
+      // stapeln über mehrere Runden/Angreifer) – daher ohne quelle/owner.
+      c.letzterSchaden = { art: 'gift' };
       log(state, `Gift: ${c.name} nimmt ${c.poison} Schaden.`);
     }
   }
@@ -470,7 +492,12 @@ export function applyHinrichten(
     if (!e || isUnremovable(e) || e.currentHealth <= 0) continue;
     if (e.currentHealth <= maxHp) {
       e.currentHealth = 0;
-      log(state, `${state.board[attackerOwner][attackerLane]?.name}: Hinrichten zerstört ${e.name}.`);
+      const attackerCard = state.board[attackerOwner][attackerLane];
+      if (attackerCard) {
+        e.letzterSchaden = { art: 'hinrichten', quelle: attackerCard.cardId, owner: attackerOwner };
+        zaehleSpieler(state, attackerOwner, 'hinrichtungen');
+      }
+      log(state, `${attackerCard?.name}: Hinrichten zerstört ${e.name}.`);
       return;
     }
   }

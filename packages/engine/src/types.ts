@@ -330,6 +330,56 @@ export interface Creature {
   rettungUsed: boolean;
   /** Schadensübernahme (`nachbar` schadensuebernahme) bereits verbraucht? */
   schutzUsed: boolean;
+  /**
+   * Telemetrie-only: letzte Schadensquelle. Hat KEINE Regelwirkung – wird nur
+   * gelesen, um einen Tod in der Backtest-Statistik (stats.ts) der richtigen
+   * Ursache/Karte zuzuordnen (z. B. "Giftzerstörungen", "Kills je Karte").
+   */
+  letzterSchaden?: SchadensUrsache;
+}
+
+// ---- Telemetrie (Backtest-Sidecar) --------------------------------------
+// Rein additive Statistik über eine Partie. NICHT regelwirksam: `state.stats`
+// bleibt ohne einen expliziten `aktiviereStatistik()`-Aufruf (stats.ts) immer
+// `undefined`, und `buildClientView` liefert es nie aus – Server/Client sehen
+// also keinen Unterschied. Nur das Backtest-Harness aktiviert und liest es.
+
+export interface SchadensUrsache {
+  art: 'kampf' | 'gift' | 'hinrichten' | 'effekt' | 'dornen';
+  /** cardId der verursachenden Karte, falls eindeutig zuordenbar. */
+  quelle?: string;
+  /** Besitzer der verursachenden Karte. */
+  owner?: PlayerIndex;
+}
+
+export interface KartenStatistik {
+  gespielt: number;
+  schadenKreatur: number;
+  schadenBasis: number;
+  kills: number;
+  gestorben: number;
+  geheilt: number;
+  verhindert: number;
+}
+
+export interface SpielerStatistik {
+  giftZerstoerungen: number;
+  flinkAngriffe: number;
+  heilung: number;
+  verhinderterSchaden: number;
+  dornenSchaden: number;
+  wuchtSchaden: number;
+  hinrichtungen: number;
+  wachstumAtk: number;
+  wachstumHp: number;
+  energieVerfallen: number;
+  kartenGezogen: number;
+}
+
+export interface MatchStatistik {
+  /** proKarte[spieler][cardId] – nur Karten, die tatsächlich vorkamen. */
+  proKarte: [Record<string, KartenStatistik>, Record<string, KartenStatistik>];
+  proSpieler: [SpielerStatistik, SpielerStatistik];
 }
 
 export interface PlayerState {
@@ -414,6 +464,8 @@ export interface GameState {
    * bisher immer geloggt – Server/Client sehen daher keinen Unterschied.
    */
   logModus?: 'voll' | 'aus';
+  /** Telemetrie-Sidecar für Backtests (siehe stats.ts). Wird nie an den Client ausgeliefert. */
+  stats?: MatchStatistik;
 }
 
 export type PlayerAction =

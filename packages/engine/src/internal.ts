@@ -4,6 +4,7 @@
 
 import { matchesScope } from './factions.js';
 import { KEYWORDS } from './keywords.js';
+import { zaehleKarte, zaehleSpieler } from './stats.js';
 import type { Ability, Creature, GameState, LogEvent, PlayerIndex, Scope, TokenDef } from './types.js';
 
 /** Fehlerhafte/unerlaubte Aktion eines Spielers (Meldung ist für den Client gedacht). */
@@ -200,19 +201,29 @@ export interface DeathInfo {
 }
 
 /** Todes-Rettung (einmal pro Spiel): fängt currentHealth ≤ 0 ab. */
-function tryRettung(creature: Creature, maxHealth: number): boolean {
+function tryRettung(
+  state: GameState,
+  owner: PlayerIndex,
+  creature: Creature,
+  maxHealth: number
+): boolean {
   if (creature.rettungUsed) return false;
   const rescue = creature.abilities.find(
     (a): a is Extract<Ability, { kind: 'rettung' }> => a.kind === 'rettung'
   );
   if (!rescue) return false;
   creature.rettungUsed = true;
+  // Telemetrie: verhinderter Schaden = wie weit currentHealth unter 0 lag
+  // (mindestens 1, da currentHealth <= 0 hier gilt).
+  const verhindert = 1 - creature.currentHealth;
   if (rescue.mode === 'full_heal') {
     creature.currentHealth = maxHealth;
     creature.poison = 0; // Häutung entfernt Gift
   } else {
     creature.currentHealth = 1; // survive_1hp / revive_1hp
   }
+  zaehleKarte(state, owner, creature.cardId, 'verhindert', verhindert);
+  zaehleSpieler(state, owner, 'verhinderterSchaden', verhindert);
   return true;
 }
 
@@ -229,11 +240,33 @@ function trySchutz(state: GameState, owner: PlayerIndex, lane: number): boolean 
     if (!ab) continue;
     if (!matchesScope(state.factionTree, ab.scope, protector.faction, dying.faction)) continue;
     protector.schutzUsed = true;
+    const verhindert = 1 - dying.currentHealth;
     protector.currentHealth = 0; // opfert sich
     dying.currentHealth = 1; // gerettet
+    zaehleKarte(state, owner, protector.cardId, 'verhindert', verhindert);
+    zaehleSpieler(state, owner, 'verhinderterSchaden', verhindert);
     return true;
   }
   return false;
+}
+
+/**
+ * Telemetrie: ordnet einen Tod seiner Ursache zu (Karten-Kill + ggf.
+ * Giftzerstörung als Spieler-Statistik). Liest nur `c.letzterSchaden`
+ * (keine Regelwirkung, siehe types.ts). No-Op, solange state.stats fehlt.
+ */
+function verarbeiteTodesstatistik(state: GameState, owner: PlayerIndex, c: Creature): void {
+  zaehleKarte(state, owner, c.cardId, 'gestorben');
+  const ursache = c.letzterSchaden;
+  if (!ursache) return;
+  if (ursache.art === 'gift') {
+    // Gift-Herkunft ist über mehrere Runden/Quellen oft nicht mehr eindeutig
+    // einer Karte zuordenbar – wird deshalb nur der gegnerischen Seite gezählt.
+    zaehleSpieler(state, otherPlayer(owner), 'giftZerstoerungen');
+  }
+  if (ursache.owner != null && ursache.quelle) {
+    zaehleKarte(state, ursache.owner, ursache.quelle, 'kills');
+  }
 }
 
 /**
@@ -257,7 +290,7 @@ export function recalcBoard(state: GameState): DeathInfo[] {
         }
         c.lastMaxHealth = max;
         if (c.currentHealth <= 0) {
-          if (tryRettung(c, max)) {
+          if (tryRettung(state, owner, c, max)) {
             changed = true; // gerettet – Auren neu rechnen
             continue;
           }
@@ -267,6 +300,7 @@ export function recalcBoard(state: GameState): DeathInfo[] {
           }
           state.board[owner][lane] = null;
           deaths.push({ owner, lane, name: c.name, faction: c.faction, creature: c });
+          verarbeiteTodesstatistik(state, owner, c);
           changed = true; // Auren der toten Kreatur fallen weg → neu rechnen
         }
       }

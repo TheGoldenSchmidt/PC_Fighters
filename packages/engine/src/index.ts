@@ -15,6 +15,7 @@ export {
   roundEnergy
 } from './game.js';
 export { buildFactionTree, matchesScope, topOf } from './factions.js';
+export { aktiviereStatistik, leereStatistik, zaehleKarte, zaehleSpieler } from './stats.js';
 export { DataError, DeckError, validateDeck, validateGameData } from './schema.js';
 export { loadGameData } from './loadData.js';
 export { buildVisualCatalog } from './visualCatalog.js';

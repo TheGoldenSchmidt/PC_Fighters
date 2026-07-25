@@ -25,6 +25,7 @@ import {
   recalcBoard
 } from './internal.js';
 import { hasKeyword, KEYWORDS } from './keywords.js';
+import { zaehleKarte, zaehleSpieler } from './stats.js';
 import type {
   CardDef,
   ClientView,
@@ -114,6 +115,7 @@ function drawCards(state: GameState, player: PlayerIndex, amount: number): void 
     const card = p.deck.shift();
     if (!card) return; // leeres Deck: es wird einfach nicht mehr gezogen
     p.hand.push(card);
+    zaehleSpieler(state, player, 'kartenGezogen');
   }
 }
 
@@ -168,7 +170,11 @@ function startRound(state: GameState): void {
     drawCards(state, 0, state.config.cardsDrawnPerTurn);
     drawCards(state, 1, state.config.cardsDrawnPerTurn);
   }
-  // 2. Energie: start + (Runde-1)*perRound, optional gedeckelt – Rest verfällt
+  // 2. Energie: start + (Runde-1)*perRound, optional gedeckelt – Rest verfällt.
+  // Telemetrie: die noch übrige Energie aus der vorigen Runde wird gerade
+  // überschrieben (Runde 1: immer 0, da PlayerState mit energy:0 startet).
+  zaehleSpieler(state, 0, 'energieVerfallen', state.players[0].energy);
+  zaehleSpieler(state, 1, 'energieVerfallen', state.players[1].energy);
   const energy = roundEnergy(state.config, state.round);
   state.players[0].energy = energy;
   state.players[1].energy = energy;
@@ -262,8 +268,12 @@ function creatureStrike(
   lane: number
 ): void {
   const defenderHealthBefore = defender.currentHealth;
+  const defenderIdx = otherPlayer(attackerIdx);
   defender.currentHealth -= atk;
+  defender.letzterSchaden = { art: 'kampf', quelle: attacker.cardId, owner: attackerIdx };
   attacker.attackedThisRound = true;
+  zaehleKarte(state, attackerIdx, attacker.cardId, 'schadenKreatur', atk);
+  if (attacker.spawnRound === state.round) zaehleSpieler(state, attackerIdx, 'flinkAngriffe');
   log(state, `Lane ${lane + 1}: ${attacker.name} trifft ${defender.name} für ${atk}.`, {
     kind: 'attack',
     lane,
@@ -274,6 +284,7 @@ function creatureStrike(
   // Alt-Keyword Gift (Sofort-Tod) …
   if (hasKeyword(attacker, 'poison') && defender.currentHealth > 0) {
     defender.currentHealth = 0;
+    defender.letzterSchaden = { art: 'gift', quelle: attacker.cardId, owner: attackerIdx };
     log(state, `Lane ${lane + 1}: Gift! ${defender.name} stirbt sofort.`);
   }
   // … neue Gift-Marken (Zermürbung). Mehrere gift-Einträge stapeln.
@@ -283,7 +294,9 @@ function creatureStrike(
   if (hasAbility(attacker, 'wucht')) {
     const overflow = Math.max(0, atk - defenderHealthBefore);
     if (overflow > 0) {
-      state.players[otherPlayer(attackerIdx)].base -= overflow;
+      state.players[defenderIdx].base -= overflow;
+      zaehleKarte(state, attackerIdx, attacker.cardId, 'schadenBasis', overflow);
+      zaehleSpieler(state, attackerIdx, 'wuchtSchaden', overflow);
       log(state, `Lane ${lane + 1}: Wucht! ${overflow} Überschuss trifft die Basis.`);
     }
   }
@@ -291,6 +304,8 @@ function creatureStrike(
   const dornenX = getAbilities(defender, 'dornen').reduce((sum, d) => sum + d.x, 0);
   if (dornenX > 0) {
     attacker.currentHealth -= dornenX;
+    attacker.letzterSchaden = { art: 'dornen', quelle: defender.cardId, owner: defenderIdx };
+    zaehleSpieler(state, defenderIdx, 'dornenSchaden', dornenX);
     log(state, `Lane ${lane + 1}: Dornen! ${defender.name} verletzt ${attacker.name} um ${dornenX}.`);
   }
 }
@@ -327,6 +342,8 @@ function resolveCombat(state: GameState): void {
       const dmg = getEffectiveAttack(state, 0, lane) + soloBasisschaden(a);
       a.attackedThisRound = true;
       state.players[1].base -= dmg;
+      zaehleKarte(state, 0, a.cardId, 'schadenBasis', dmg);
+      if (a.spawnRound === state.round) zaehleSpieler(state, 0, 'flinkAngriffe');
       log(state, `Lane ${lane + 1}: ${a.name} trifft die gegnerische Basis für ${dmg}.`, {
         kind: 'attack',
         lane,
@@ -339,6 +356,8 @@ function resolveCombat(state: GameState): void {
       const dmg = getEffectiveAttack(state, 1, lane) + soloBasisschaden(b);
       b.attackedThisRound = true;
       state.players[0].base -= dmg;
+      zaehleKarte(state, 1, b.cardId, 'schadenBasis', dmg);
+      if (b.spawnRound === state.round) zaehleSpieler(state, 1, 'flinkAngriffe');
       log(state, `Lane ${lane + 1}: ${b.name} trifft die gegnerische Basis für ${dmg}.`, {
         kind: 'attack',
         lane,
@@ -450,6 +469,7 @@ function playPhaseAction(state: GameState, player: PlayerIndex, action: PlayerAc
   p.energy -= card.cost;
   p.hand.splice(action.handIndex, 1);
   state.consecutivePasses = 0;
+  zaehleKarte(state, player, card.id, 'gespielt');
   logDeaths(state);
   state.active = otherPlayer(player);
 }
