@@ -12,6 +12,7 @@
 // ist bereits ein Browser vorinstalliert (kein Download nötig).
 
 import { spawn } from 'node:child_process';
+import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
@@ -20,16 +21,28 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
 const CLIENT = join(ROOT, 'packages', 'client');
 const OUT = join(CLIENT, 'public', 'assets', 'cards');
+const CARDS_DIR = join(ROOT, 'packages', 'engine', 'src', 'data', 'cards');
 const PORT = 5174;
 const CHROMIUM = process.env.CHROMIUM_PATH || '/opt/pw-browsers/chromium';
 
-// Nur Karten OHNE gemalte Kunst: die 3 vorhandenen PNGs (rekrut/schildwache/
-// feldscherin) bleiben erhalten.
-const CARDS = [
-  'ratte', 'wolf', 'schlange', 'adler', 'baer', 'alphawolf',
-  'bannertraeger', 'ritter', 'kommandantin',
-  'schildwall', 'mobilmachung', 'hetzjagd', 'wilder_instinkt'
-];
+// Karten mit von Hand geliefertem Artwork (gemalt oder KI-generiert, z. B.
+// per ChatGPT) – NIE per Skript überschreiben. Neue Id hier eintragen,
+// sobald ihr PNG manuell unter packages/client/public/assets/cards/ abgelegt
+// wurde; siehe scripts/list-missing-art.mjs für Karten, die noch kein
+// Artwork haben.
+const MANUAL_ART = new Set(['rekrut', 'schildwache', 'feldscherin']);
+
+function allCardIds() {
+  const ids = [];
+  for (const file of readdirSync(CARDS_DIR)) {
+    if (!file.endsWith('.json')) continue;
+    const data = JSON.parse(readFileSync(join(CARDS_DIR, file), 'utf8'));
+    for (const card of data) ids.push(card.id);
+  }
+  return ids;
+}
+
+const CARDS = allCardIds().filter((id) => !MANUAL_ART.has(id));
 
 async function waitForServer(url, tries = 60) {
   for (let i = 0; i < tries; i++) {
