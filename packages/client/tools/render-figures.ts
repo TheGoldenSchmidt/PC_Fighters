@@ -9,7 +9,20 @@
 // Figur → dafür kleine Embleme aus Grundkörpern.
 
 import * as THREE from 'three';
+import type { Animations, Visual } from '@pcf/engine';
 import { createFigure, type Figure } from '../src/figures3d';
+
+// Daten-Figuren (data/figures/*.json) direkt aus der Engine laden – Vite bündelt
+// die JSONs mit. So rendert das Tool jede Figur, die auch das Spiel kennt, ohne
+// dass hier eine Liste gepflegt werden muss.
+import defaultClipsJson from '../../engine/src/data/animations.json';
+const figureModules = import.meta.glob('../../engine/src/data/figures/*.json', {
+  eager: true
+}) as Record<string, { default: { cardId: string; visual: Visual; animations?: Animations } }>;
+const dataFigures = new Map(
+  Object.values(figureModules).map((m) => [m.default.cardId, m.default])
+);
+const defaultClips = defaultClipsJson as unknown as Animations;
 
 const params = new URLSearchParams(location.search);
 const card = params.get('card') ?? 'rekrut';
@@ -109,7 +122,19 @@ const CREATURES = new Set([
 
 let figs: Figure[] = [];
 let root: THREE.Object3D;
-if (CREATURES.has(card)) {
+const dataFig = dataFigures.get(card);
+if (dataFig) {
+  // Daten-Figur: identischer Aufbau wie im Spiel (visual + eigene/Default-Klips).
+  const f = createFigure(
+    card,
+    1,
+    5,
+    { visual: dataFig.visual, animations: dataFig.animations },
+    defaultClips
+  );
+  figs = [f];
+  root = f.root;
+} else if (CREATURES.has(card)) {
   const f = createFigure(card, 1, 5);
   figs = [f];
   root = f.root;

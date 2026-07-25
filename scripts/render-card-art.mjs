@@ -11,7 +11,7 @@
 // Chromium wird aus PLAYWRIGHT_BROWSERS_PATH bzw. CHROMIUM_PATH genommen; hier
 // ist bereits ein Browser vorinstalliert (kein Download nötig).
 
-import { spawn } from 'node:child_process';
+import { spawn, execSync } from 'node:child_process';
 import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -42,7 +42,12 @@ function allCardIds() {
   return ids;
 }
 
-const CARDS = allCardIds().filter((id) => !MANUAL_ART.has(id));
+// Optional: nur bestimmte Karten rendern (node scripts/render-card-art.mjs pferd eisbaer).
+// Ohne Argumente werden alle Karten außer MANUAL_ART gerendert.
+const onlyIds = process.argv.slice(2);
+const CARDS = allCardIds().filter(
+  (id) => !MANUAL_ART.has(id) && (onlyIds.length === 0 || onlyIds.includes(id))
+);
 
 async function waitForServer(url, tries = 60) {
   for (let i = 0; i < tries; i++) {
@@ -57,8 +62,29 @@ async function waitForServer(url, tries = 60) {
   throw new Error(`Vite-Server unter ${url} nicht erreichbar.`);
 }
 
+// Playwright robust auflösen: lokal installiert ODER global (`npm root -g`) –
+// gleiche Logik wie .claude/skills/figuren-werkstatt/scripts/snap.mjs.
+async function loadChromium() {
+  const candidates = ['playwright'];
+  try {
+    const globalRoot = execSync('npm root -g', { encoding: 'utf8' }).trim();
+    if (globalRoot) candidates.push(`${globalRoot}/playwright/index.mjs`);
+  } catch {
+    /* npm evtl. nicht im PATH – dann bleibt nur der lokale Versuch */
+  }
+  for (const spec of candidates) {
+    try {
+      const mod = await import(spec);
+      return mod.chromium;
+    } catch {
+      /* nächster Kandidat */
+    }
+  }
+  throw new Error('Playwright nicht auffindbar (lokal oder global installieren).');
+}
+
 async function main() {
-  const { chromium } = await import('playwright');
+  const chromium = await loadChromium();
 
   // Vite-Dev-Server für den Client starten (liefert tools/render-figures.html).
   const vite = spawn(

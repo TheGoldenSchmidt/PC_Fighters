@@ -95,6 +95,26 @@ zweiten anzulegen.
   **verifizieren**, dass beide Änderungssets tatsächlich in der Datei stehen
   (Stichprobe je Linse), bevor die nächste Montage gebaut wird.
 
+- **Bibliotheks-Fragmente nicht blind übernehmen – Konnektivität rechnerisch
+  prüfen.** Ein Zahlenfehler in `PARTS.md` (Kindgelenk-Versatz mit voller
+  Segmenthöhe statt `h/2`) wurde beim Pferd wörtlich mitkopiert und erzeugte über
+  drei Runden systematisch eine Lücke an jedem Gelenk – die Montage ließ das nur
+  erahnen, im interaktiven Viewer fiel es sofort auf („Körperteile hängen nicht
+  zusammen"). → Vor Abgabe jede Kette **rechnerisch** prüfen (kleines Skript, das
+  die `CardFigure.ts`-Transformsemantik nachbildet und Segment-Ende gegen
+  Kindgelenk-Weltposition rechnet; Erwartung: Abstand 0). Entpuppt sich ein
+  Fragment als fehlerhaft, `PARTS.md` **sofort korrigieren** statt den Fehler
+  weiterzukopieren.
+
+- **Montage-GUT ist noch keine Viewer-Abnahme.** Der Kritiker urteilt aus 6
+  Standbildern; der Nutzer inspiziert interaktiv in 3D (drehen, zoomen, Klips).
+  Gelenk-Lücken, schwebende Teile und verzerrte Posen, die in den festen
+  Kamerawinkeln kaschiert sind, fallen dort sofort auf (bewiesen am Pferd: Montage
+  dreimal „freigabereif", Viewer-Urteil „sehr unzufrieden"). → Silhouetten in allen
+  drei Ansichten aktiv auf herausragende/abgelöste Teile absuchen (Beispiel
+  `backRidge`: Box länger als die Rumpf-Rundung = schwebender Strich) und bei
+  Figuren mit Gelenkketten die finale Abnahme immer über den Viewer einholen.
+
 ---
 
 ## Best Practices (aus Erfolgen gelernt)
@@ -122,7 +142,12 @@ zweiten anzulegen.
   wie ein umgefärbter Wolf). Farbe/Detail-Akzente reichen zur Abgrenzung nicht. →
   Hat die Art eine **ikonische Haltung**, diese bauen statt der generischen Standpose:
   die sitzende Putzhaltung machte den Getigerten sofort unverkennbar zur Katze. Pose >
-  Textur bei der Unterscheidbarkeit.
+  Textur bei der Unterscheidbarkeit. **Aber nur stabile Haltungen** (sitzend, kauernd,
+  kniend) taugen als Ruhepose – eine **dynamische Aktions-Pose** (aufbäumend,
+  springend, mitten im Schlag) als Ruhepose einzufrieren wirkt „komisch", zwingt die
+  Gelenkketten in Extremwinkel und nimmt dem Angriff seine Steigerung (bewiesen am
+  Pferd: aufbäumende Ruhepose → Nutzer-Ablehnung; ruhiger Stand + Aufbäumen im
+  `attack`-Klip → Freigabe).
 
 ### Schwanz / Anhänge
 
@@ -149,7 +174,10 @@ Regel für jede animierbare Gliedmaße (Arm, Bein, Flügel, Kiefer):
   (bewiesen am Pfandsammler-Arm: `oberarmR`/`unterarmR` hatten eigene `rot`). Ruhepose-
   Beugung gehört auf die **Gelenk-`group`s**; das Segment bleibt reiner Versatz, so
   positioniert, dass sein **Ende genau am Elterngelenk** sitzt (Zylinderhöhe `h` →
-  Segment `pos [0, -h/2, 0]` vom Gelenk, kein `rot`). So gibt es keine Lücke.
+  Segment `pos [0, -h/2, 0]` vom Gelenk, kein `rot`). Dasselbe abwärts: das
+  **Kindgelenk** sitzt `h/2` unter der Segment-**Mitte** (nicht die volle Höhe –
+  klassische Lückenquelle, siehe Fallstrick „Bibliotheks-Fragmente"). So gibt es
+  keine Lücke.
 - **Wurf-/Schlagrichtung prüfen:** Die Figur blickt nach **+z**. Ein **positives**
   `rot.x` auf einem hängenden Arm schwenkt ihn nach **hinten (−z)**; für einen Wurf/
   Schlag **nach vorn (+z)** muss der Release **negativ** `rot.x` sein. Immer gegen-

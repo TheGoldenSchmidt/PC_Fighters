@@ -30,6 +30,15 @@ Spezialist (falls nötig) übernimmt. Labele deine Änderungen also klar nach Li
   zu klein? (Hebel ist `visual.height` + schlanke Proportionen.)
 - Proportionen von Rumpf/Gliedmaßen; Durchdringungen, schwebende/verrutschte Teile;
   Rückseite (`hinten`) sauber?
+- **Konnektivität aktiv absuchen** – der Nutzer prüft später interaktiv in 3D, wo
+  jede Lücke sofort auffällt: alle drei Ansichten gezielt nach Gelenk-Lücken,
+  frei schwebenden Teilen und Teilen absuchen, die als loser Strich über die
+  Silhouette hinausragen (bewiesener Fall: eine Rückenlinien-Box, die länger als
+  die Rumpf-Rundung war, wirkte wie ein abgelöster schwebender Strich). Bei einem
+  verdächtigen Teil die Figur-JSON lesen und das Teil **beim Namen nennen** samt
+  konkretem Zahlen-Fix – das erspart dem Handler die Suche.
+- **Ruhepose stabil?** Ein eingefrorener Action-Moment (aufbäumend, springend) als
+  Ruhepose ist ein Linse-A-Fehler – Drama gehört in den `attack`-Klip.
 - Palette: Fraktionsstimmung (Menschen kühl / Tiere warm), genug Kontrast, nicht matschig?
 
 **Linse B – Gesicht · Kopf** (Handler: Spezialist `figuren-gesicht`)

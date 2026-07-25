@@ -1,0 +1,132 @@
+{
+  "cardId": "pferd",
+  "visual": {
+    "detailLevel": "mid",
+    "height": 0.95,
+    "palette": {
+      "main": "#a9622f",
+      "mane": "#3d2b22",
+      "shade": "#c78a52",
+      "eyeWhite": "#ffffff",
+      "eyeDark": "#241a12"
+    },
+    "parts": [
+      { "id": "body", "shape": "ico", "size": 0.4, "pos": [0, 1.2, -0.05], "scale": [0.92, 1.0, 1.55], "rot": [-0.05, 0, 0], "color": "main" },
+      { "id": "belly", "shape": "ico", "size": 0.34, "pos": [0, 1.0, 0.0], "scale": [0.78, 0.62, 1.4], "rot": [-0.05, 0, 0], "color": "shade" },
+      { "id": "chestBulge", "shape": "ico", "size": 0.2, "pos": [0, 1.1, 0.55], "scale": [1.05, 0.95, 0.8], "color": "main" },
+      { "id": "backRidge", "shape": "box", "size": [0.06, 0.07, 1.05], "pos": [0, 1.54, -0.05], "color": "mane" },
+      { "id": "shoulderCapL", "shape": "ico", "size": 0.14, "pos": [-0.34, 1.02, 0.5], "color": "main" },
+      { "id": "shoulderCapR", "shape": "ico", "size": 0.14, "pos": [0.34, 1.02, 0.5], "color": "main" },
+      { "id": "hipCapL", "shape": "ico", "size": 0.16, "pos": [-0.28, 1.0, -0.62], "color": "main" },
+      { "id": "hipCapR", "shape": "ico", "size": 0.16, "pos": [0.28, 1.0, -0.62], "color": "main" },
+
+      { "id": "neckBase", "shape": "group", "pos": [0, 1.45, 0.55], "rot": [0.8, 0, 0] },
+      { "id": "neck", "shape": "cyl", "size": [0.17, 0.22, 0.55], "pos": [0, 0.275, 0], "parent": "neckBase", "color": "main" },
+      { "id": "headBase", "shape": "group", "pos": [0, 0.275, 0], "parent": "neck", "rot": [-0.1, 0, 0] },
+      { "id": "head", "shape": "ico", "size": 0.2, "pos": [0, 0.06, 0.1], "parent": "headBase", "color": "main" },
+
+      { "id": "cheekL", "shape": "ico", "size": 0.09, "pos": [-0.12, -0.02, 0.1], "parent": "head", "scale": [1, 1, 0.8], "color": "shade" },
+      { "id": "cheekR", "shape": "ico", "size": 0.09, "pos": [0.12, -0.02, 0.1], "parent": "head", "scale": [1, 1, 0.8], "color": "shade" },
+      { "id": "blaze", "shape": "box", "size": [0.035, 0.16, 0.02], "pos": [0, 0.07, 0.21], "parent": "head", "color": "shade" },
+      { "id": "snout", "shape": "cone", "size": [0.09, 0.36], "pos": [0, 0.06, 0.3], "parent": "head", "rot": [1.0, 0, 0], "color": "main" },
+      { "id": "jawLower", "shape": "ico", "size": 0.075, "pos": [0, -0.03, 0.25], "parent": "head", "scale": [1, 0.5, 1.15], "color": "main" },
+      { "id": "muzzleDark", "shape": "ico", "size": 0.075, "pos": [0, 0.12, 0.51], "parent": "head", "color": "mane" },
+      { "id": "nostrilL", "shape": "ico", "size": 0.02, "pos": [-0.035, 0.13, 0.54], "parent": "head", "color": "eyeDark" },
+      { "id": "nostrilR", "shape": "ico", "size": 0.02, "pos": [0.035, 0.13, 0.54], "parent": "head", "color": "eyeDark" },
+
+      { "id": "eyeSocketL", "shape": "ico", "size": 0.055, "pos": [-0.15, 0.06, 0.12], "parent": "head", "scale": [1, 1.2, 0.6], "color": "eyeDark" },
+      { "id": "eyeSocketR", "shape": "ico", "size": 0.055, "pos": [0.15, 0.06, 0.12], "parent": "head", "scale": [1, 1.2, 0.6], "color": "eyeDark" },
+      { "id": "eyeWhiteL", "shape": "ico", "size": 0.045, "pos": [-0.16, 0.065, 0.145], "parent": "head", "scale": [1.3, 0.9, 0.5], "color": "eyeWhite" },
+      { "id": "eyeWhiteR", "shape": "ico", "size": 0.045, "pos": [0.16, 0.065, 0.145], "parent": "head", "scale": [1.3, 0.9, 0.5], "color": "eyeWhite" },
+      { "id": "pupilL", "shape": "ico", "size": 0.022, "pos": [-0.165, 0.065, 0.16], "parent": "head", "color": "eyeDark" },
+      { "id": "pupilR", "shape": "ico", "size": 0.022, "pos": [0.165, 0.065, 0.16], "parent": "head", "color": "eyeDark" },
+      { "id": "lidLineL", "shape": "box", "size": [0.07, 0.012, 0.02], "pos": [-0.16, 0.09, 0.14], "parent": "head", "rot": [0, 0, 0.1], "color": "eyeDark" },
+      { "id": "lidLineR", "shape": "box", "size": [0.07, 0.012, 0.02], "pos": [0.16, 0.09, 0.14], "parent": "head", "rot": [0, 0, -0.1], "color": "eyeDark" },
+
+      { "id": "earL", "shape": "cone", "size": [0.055, 0.24], "pos": [-0.09, 0.16, -0.02], "parent": "head", "rot": [-0.15, 0, 0.3], "color": "main" },
+      { "id": "earR", "shape": "cone", "size": [0.055, 0.24], "pos": [0.09, 0.16, -0.02], "parent": "head", "rot": [-0.15, 0, -0.3], "color": "main" },
+      { "id": "earInnerL", "shape": "cone", "size": [0.03, 0.14], "pos": [0, 0.04, 0.03], "parent": "earL", "color": "shade" },
+      { "id": "earInnerR", "shape": "cone", "size": [0.03, 0.14], "pos": [0, 0.04, 0.03], "parent": "earR", "color": "shade" },
+      { "id": "forelock", "shape": "cone", "size": [0.045, 0.16], "pos": [0, 0.19, 0.02], "parent": "head", "rot": [2.7, 0, 0], "color": "mane" },
+
+      { "id": "maneA", "shape": "cone", "size": [0.095, 0.3], "pos": [0, -0.19, -0.19], "parent": "neck", "rot": [-1.3, 0, 0.4], "color": "mane" },
+      { "id": "maneB", "shape": "cone", "size": [0.075, 0.2], "pos": [-0.045, -0.1, -0.205], "parent": "neck", "rot": [-0.95, 0, -0.22], "color": "mane" },
+      { "id": "maneC", "shape": "cone", "size": [0.09, 0.32], "pos": [0.03, 0.0, -0.21], "parent": "neck", "rot": [-1.35, 0, 0.35], "color": "mane" },
+      { "id": "maneD", "shape": "cone", "size": [0.065, 0.18], "pos": [-0.04, 0.09, -0.2], "parent": "neck", "rot": [-0.9, 0, -0.45], "color": "mane" },
+      { "id": "maneE", "shape": "cone", "size": [0.085, 0.26], "pos": [0.025, 0.17, -0.195], "parent": "neck", "rot": [-1.2, 0, 0.28], "color": "mane" },
+      { "id": "maneF", "shape": "cone", "size": [0.05, 0.15], "pos": [0, 0.06, -0.13], "parent": "headBase", "rot": [-1.05, 0, -0.3], "color": "mane" },
+      { "id": "maneG", "shape": "cone", "size": [0.07, 0.22], "pos": [-0.02, 0.24, -0.175], "parent": "neck", "rot": [-1.15, 0, -0.4], "color": "mane" },
+      { "id": "maneH", "shape": "cone", "size": [0.06, 0.19], "pos": [0.015, -0.03, -0.2], "parent": "neck", "rot": [-1.1, 0, 0.5], "color": "mane" },
+
+      { "id": "shoulderL", "shape": "group", "pos": [-0.34, 1.0, 0.55], "rot": [0.05, 0, 0.05] },
+      { "id": "upperFrontLegL", "shape": "cyl", "size": [0.075, 0.065, 0.45], "pos": [0, -0.225, 0], "parent": "shoulderL", "color": "main" },
+      { "id": "kneeL", "shape": "group", "pos": [0, -0.225, 0], "parent": "upperFrontLegL", "rot": [0.1, 0, 0] },
+      { "id": "lowerFrontLegL", "shape": "cyl", "size": [0.06, 0.05, 0.42], "pos": [0, -0.21, 0], "parent": "kneeL", "color": "mane" },
+      { "id": "fetlockL", "shape": "group", "pos": [0, -0.21, 0], "parent": "lowerFrontLegL", "rot": [-0.08, 0, 0] },
+      { "id": "hoofFrontL", "shape": "ico", "size": 0.07, "pos": [0, -0.08, 0.02], "parent": "fetlockL", "scale": [1, 0.5, 1.3], "color": "mane" },
+
+      { "id": "shoulderR", "shape": "group", "pos": [0.34, 1.0, 0.55], "rot": [0.05, 0, -0.05] },
+      { "id": "upperFrontLegR", "shape": "cyl", "size": [0.075, 0.065, 0.45], "pos": [0, -0.225, 0], "parent": "shoulderR", "color": "main" },
+      { "id": "kneeR", "shape": "group", "pos": [0, -0.225, 0], "parent": "upperFrontLegR", "rot": [0.1, 0, 0] },
+      { "id": "lowerFrontLegR", "shape": "cyl", "size": [0.06, 0.05, 0.42], "pos": [0, -0.21, 0], "parent": "kneeR", "color": "mane" },
+      { "id": "fetlockR", "shape": "group", "pos": [0, -0.21, 0], "parent": "lowerFrontLegR", "rot": [-0.08, 0, 0] },
+      { "id": "hoofFrontR", "shape": "ico", "size": 0.07, "pos": [0, -0.08, 0.02], "parent": "fetlockR", "scale": [1, 0.5, 1.3], "color": "mane" },
+
+      { "id": "hipL", "shape": "group", "pos": [-0.28, 1.0, -0.65], "rot": [0.08, 0, 0.04] },
+      { "id": "upperHindLegL", "shape": "cyl", "size": [0.085, 0.07, 0.46], "pos": [0, -0.23, 0], "parent": "hipL", "color": "main" },
+      { "id": "hockL", "shape": "group", "pos": [0, -0.23, 0], "parent": "upperHindLegL", "rot": [0.15, 0, 0] },
+      { "id": "lowerHindLegL", "shape": "cyl", "size": [0.065, 0.055, 0.42], "pos": [0, -0.21, 0], "parent": "hockL", "color": "mane" },
+      { "id": "fetlockHindL", "shape": "group", "pos": [0, -0.21, 0], "parent": "lowerHindLegL", "rot": [-0.12, 0, 0] },
+      { "id": "hoofBackL", "shape": "ico", "size": 0.08, "pos": [0, -0.08, 0.02], "parent": "fetlockHindL", "scale": [1, 0.5, 1.25], "color": "mane" },
+
+      { "id": "hipR", "shape": "group", "pos": [0.28, 1.0, -0.65], "rot": [0.08, 0, -0.04] },
+      { "id": "upperHindLegR", "shape": "cyl", "size": [0.085, 0.07, 0.46], "pos": [0, -0.23, 0], "parent": "hipR", "color": "main" },
+      { "id": "hockR", "shape": "group", "pos": [0, -0.23, 0], "parent": "upperHindLegR", "rot": [0.15, 0, 0] },
+      { "id": "lowerHindLegR", "shape": "cyl", "size": [0.065, 0.055, 0.42], "pos": [0, -0.21, 0], "parent": "hockR", "color": "mane" },
+      { "id": "fetlockHindR", "shape": "group", "pos": [0, -0.21, 0], "parent": "lowerHindLegR", "rot": [-0.12, 0, 0] },
+      { "id": "hoofBackR", "shape": "ico", "size": 0.08, "pos": [0, -0.08, 0.02], "parent": "fetlockHindR", "scale": [1, 0.5, 1.25], "color": "mane" },
+
+      { "id": "tailBase", "shape": "cone", "size": [0.23, 0.6], "pos": [0, 0.85, -0.64], "rot": [3.2, 0, 0], "color": "mane" },
+      { "id": "tailFluffBaseL", "shape": "ico", "size": 0.14, "pos": [-0.1, 0.06, 0.01], "parent": "tailBase", "color": "mane" },
+      { "id": "tailFluffBaseR", "shape": "ico", "size": 0.14, "pos": [0.1, 0.06, 0.01], "parent": "tailBase", "color": "mane" },
+      { "id": "tailMid", "shape": "cone", "size": [0.19, 0.55], "pos": [0, 0.3, 0], "parent": "tailBase", "rot": [-0.15, 0, 0.08], "color": "mane" },
+      { "id": "tailFluffMidL", "shape": "ico", "size": 0.13, "pos": [-0.09, 0.08, 0.01], "parent": "tailMid", "color": "mane" },
+      { "id": "tailFluffMidR", "shape": "ico", "size": 0.13, "pos": [0.09, 0.08, 0.01], "parent": "tailMid", "color": "mane" },
+      { "id": "tailTip", "shape": "cone", "size": [0.14, 0.4], "pos": [0, 0.275, 0], "parent": "tailMid", "rot": [-0.15, 0, -0.1], "color": "mane" },
+      { "id": "tailFluffL", "shape": "ico", "size": 0.12, "pos": [-0.07, 0.16, 0], "parent": "tailTip", "color": "mane" },
+      { "id": "tailFluffR", "shape": "ico", "size": 0.12, "pos": [0.07, 0.16, 0], "parent": "tailTip", "color": "mane" },
+      { "id": "tailFluffC", "shape": "ico", "size": 0.13, "pos": [0, 0.22, 0.02], "parent": "tailTip", "color": "mane" },
+      { "id": "tailFluffTipEnd", "shape": "ico", "size": 0.1, "pos": [0, 0.3, 0.04], "parent": "tailTip", "color": "mane" }
+    ]
+  },
+  "animations": {
+    "idle": {
+      "duration": 3.0,
+      "loop": true,
+      "tracks": [
+        { "part": "body", "prop": "pos.y", "keys": [[0, 0], [1.5, 0.02], [3.0, 0]] },
+        { "part": "body", "prop": "scale", "keys": [[0, 1], [1.5, 1.015], [3.0, 1]] },
+        { "part": "headBase", "prop": "rot.x", "keys": [[0, 0], [1.5, 0.06], [3.0, 0]] },
+        { "part": "tailBase", "prop": "rot.z", "keys": [[0, -0.18], [0.75, 0.18], [1.5, -0.18], [2.25, 0.18], [3.0, -0.18]] },
+        { "part": "earL", "prop": "rot.z", "keys": [[0, 0], [0.8, 0.08], [1.6, 0], [2.4, -0.05], [3.0, 0]] },
+        { "part": "earR", "prop": "rot.z", "keys": [[0, 0], [0.8, -0.06], [1.6, 0], [2.4, 0.08], [3.0, 0]] },
+        { "part": "hipL", "prop": "rot.z", "keys": [[0, 0], [1.5, 0.03], [3.0, 0]] }
+      ]
+    },
+    "attack": {
+      "duration": 0.7,
+      "tracks": [
+        { "part": "root", "prop": "pos.y", "keys": [[0, 0], [0.28, 0.22], [0.45, 0.08], [0.7, 0]] },
+        { "part": "root", "prop": "pos.z", "keys": [[0, 0], [0.28, 0.05], [0.45, 0.4], [0.7, 0]] },
+        { "part": "root", "prop": "rot.x", "keys": [[0, 0], [0.28, 0.32], [0.45, -0.12], [0.7, 0]] },
+        { "part": "shoulderL", "prop": "rot.x", "keys": [[0, 0], [0.28, -1.85], [0.45, -0.4], [0.7, 0]] },
+        { "part": "shoulderR", "prop": "rot.x", "keys": [[0, 0], [0.28, -1.8], [0.45, -0.35], [0.7, 0]] },
+        { "part": "kneeL", "prop": "rot.x", "keys": [[0, 0], [0.28, 0.35], [0.45, -0.3], [0.7, 0]] },
+        { "part": "kneeR", "prop": "rot.x", "keys": [[0, 0], [0.28, 0.3], [0.45, -0.25], [0.7, 0]] },
+        { "part": "headBase", "prop": "rot.x", "keys": [[0, 0], [0.28, -0.3], [0.45, 0.2], [0.7, 0]] },
+        { "part": "tailBase", "prop": "rot.x", "keys": [[0, 0], [0.35, -0.25], [0.7, 0]] },
+        { "part": "maneC", "prop": "rot.z", "keys": [[0, 0], [0.3, 0.3], [0.5, -0.2], [0.7, 0]] }
+      ]
+    }
+  }
+}

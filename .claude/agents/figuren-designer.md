@@ -74,7 +74,24 @@ Flügel, Kiefer) als **Kette mit Gelenk-Pivots**:
 - **Keine `rot` auf den Segmenten** – ein Segment dreht um seinen Mittelpunkt und
   löst sich vom Gelenk (Lücke). Ruhepose-Beugung auf die Gelenk-`group`s legen; das
   Segment ist reiner Versatz mit Ende am Gelenk (Zylinderhöhe `h` → `pos [0,-h/2,0]`).
+- **Jeder Ketten-Versatz ist `h/2`, nie die volle Höhe** – auch abwärts: das
+  Kindgelenk (`ellbogenR`, `knieR`) sitzt `h/2` unter der Segment-**Mitte**. Volle
+  Höhe = h/2-Lücke an jedem Gelenk (bewiesener Fehler beim Pferd).
+- **Konnektivität rechnerisch prüfen:** vor Abgabe ein kleines Skript laufen lassen,
+  das die `CardFigure.ts`-Transformsemantik nachbildet (`pos` relativ zum Parent,
+  Euler-XYZ) und für jede Kette Segment-Ende gegen Kindgelenk-Weltposition rechnet –
+  Erwartung: Abstand 0. Zusätzlich Anbau-Teile (Mähne, Schweif, Ohren) auf Kontakt
+  zum Trägerteil prüfen: nichts schwebt, nichts ragt als loses Teil über die
+  Silhouette hinaus.
 - **Requisiten (Werkzeug, Flasche, Waffe) an die Hand parenten.**
+
+## Ruhepose: stabil statt dramatisch
+Die Ruhepose ist das, was der Spieler 95 % der Zeit sieht – sie muss **in sich stabil**
+sein: stehend, sitzend, kauernd, kniend. **Dynamische Aktions-Posen** (aufbäumend,
+springend, mitten im Schlag) niemals als Ruhepose einfrieren – das wirkt „komisch",
+zwingt Gelenkketten in Extremwinkel und nimmt dem Angriff seine Steigerung. Die
+dramatische Bewegung gehört in den `attack`-Klip (bewiesen am Pferd: aufbäumende
+Ruhepose abgelehnt, ruhiger Stand + Aufbäumen im Angriff freigegeben).
 
 ## Größe steuern – der häufigste Fehler
 „Zu groß" ist fast nie ein Höhen-, sondern ein Proportions-Problem. Der Client-Auto-Fit
@@ -135,6 +152,11 @@ Kritik-Runde (Designer → Server-Neustart → Montage → Kritiker):
       Gelenk-`group`s (sonst Lücke)?
 - [ ] Bewegliche Gliedmaßen als **Gelenk-Kette** (leere `group`-Pivots), Requisit an
       die Hand geparentet?
+- [ ] **Ketten-Konnektivität rechnerisch verifiziert** (Segment-Ende == Kindgelenk,
+      Abstand 0; Kindgelenk-Versatz `h/2`, nie volle Höhe)?
+- [ ] **Keine schwebenden/überstehenden Teile** (Mähne/Schweif/Deko liegen am
+      Trägerteil an; keine Box ragt über die Rumpf-Rundung hinaus)?
+- [ ] **Ruhepose stabil** (kein eingefrorener Action-Moment – Drama in den `attack`)?
 - [ ] Wurf/Schlag: Release-Vorzeichen korrekt – **nach vorn (+z) = negatives `rot.x`**;
       Armschwung und Projektil-Bogen in dieselbe Richtung?
 - [ ] Gesicht **mehrteilig** (Sklera+Pupille, abgesetzter Kiefer, Ohr-Innenteil);

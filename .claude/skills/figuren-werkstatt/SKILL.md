@@ -120,6 +120,12 @@ liest; ein frischer Agent verliert den Kontext. Nach den Änderungen zurück zu 
 
 ### 7. Abnahme
 - Dem Nutzer das **finale Montage-PNG** zeigen und die Kritiker-Teil-Urteile zusammenfassen.
+- **Die echte Abnahme passiert im interaktiven Viewer**, nicht auf Standbildern:
+  Montage-GUT hat schon Figuren passieren lassen, die der Nutzer beim Drehen in 3D
+  ablehnte (Gelenk-Lücken, schwebende Teile, verzerrte Pose). Auf Wunsch des Nutzers
+  – oder von selbst bei Figuren mit Gelenkketten – den Figuren-Viewer neu bauen
+  (`node tools/figuren-viewer/build-viewer.mjs`) und das Artifact aktualisieren,
+  damit interaktiv geprüft werden kann.
 - **Auf Freigabe warten.**
 
 ### 8. Lektionen vorschlagen, dann committen

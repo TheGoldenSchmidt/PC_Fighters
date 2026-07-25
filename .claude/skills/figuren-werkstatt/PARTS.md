@@ -28,15 +28,24 @@ Gelenkpunkt (die drehen), Segmente = versetzte `cyl`-Kinder **ohne eigene `rot`*
 ```json
 { "id": "schulterR", "shape": "group", "pos": [0.34, 1.42, 0.05] },
 { "id": "oberarmR", "shape": "cyl", "size": [0.09, 0.08, 0.42], "pos": [0, -0.21, 0], "parent": "schulterR", "color": "main" },
-{ "id": "ellbogenR", "shape": "group", "pos": [0, -0.42, 0], "parent": "oberarmR" },
+{ "id": "ellbogenR", "shape": "group", "pos": [0, -0.21, 0], "parent": "oberarmR" },
 { "id": "unterarmR", "shape": "cyl", "size": [0.08, 0.07, 0.4], "pos": [0, -0.2, 0], "parent": "ellbogenR", "color": "main" },
-{ "id": "handR", "shape": "ico", "size": 0.1, "pos": [0, -0.4, 0], "parent": "unterarmR", "color": "skin" }
+{ "id": "handR", "shape": "ico", "size": 0.1, "pos": [0, -0.2, 0], "parent": "unterarmR", "color": "skin" }
 ```
 
 - **Ruhepose-Beugung** auf die Gelenk-`group`s legen (z. B. `schulterR rot [0.5,0,-0.1]`,
   `ellbogenR rot [0.3,0,0]`), **nie** auf `oberarmR`/`unterarmR`.
-- Segment-`pos` = `[0, -h/2, 0]` (halbe Zylinderhöhe nach unten), damit das obere Ende
-  genau am Elterngelenk sitzt.
+- **JEDER Versatz in der Kette ist `h/2`, nie die volle Höhe** – sowohl das Segment
+  unter seinem Gelenk (`oberarmR pos [0,-h/2,0]` unter `schulterR`) als auch das
+  **Kindgelenk unter dem Segment** (`ellbogenR pos [0,-h/2,0]` relativ zu `oberarmR`,
+  denn das Segment-Ende liegt h/2 unter der Segment-**Mitte**). Eine frühere Version
+  dieser Datei hatte hier fälschlich die volle Höhe – das erzeugte systematisch eine
+  h/2-Lücke an jedem Gelenk (bewiesen beim Pferd). Im Zweifel gegen
+  `pfandsammler.json` prüfen, das durchgängig h/2 verwendet.
+- **Konnektivität rechnerisch prüfen:** vor Abgabe für jede Kette die Weltposition
+  des Segment-Endes gegen die des Kindgelenks rechnen (kleines Skript, das die
+  `CardFigure.ts`-Transformsemantik nachbildet: `pos` relativ zum Parent, Euler-XYZ).
+  Erwartung: Abstand 0.
 - Linker Arm: `id`→`...L`, `pos.x` spiegeln, `rot.z` vorzeichen-spiegeln.
 
 ## 2. Gelenk-Bein-Kette (zweibeinig; Golden-Referenz: `pfandsammler`)
@@ -46,10 +55,13 @@ Gleiches Prinzip vertikal. Für Menschen/aufrechte Figuren.
 ```json
 { "id": "huefteR", "shape": "group", "pos": [0.16, 0.92, 0] },
 { "id": "oberschenkelR", "shape": "cyl", "size": [0.12, 0.1, 0.46], "pos": [0, -0.23, 0], "parent": "huefteR", "color": "pants" },
-{ "id": "knieR", "shape": "group", "pos": [0, -0.46, 0], "parent": "oberschenkelR" },
+{ "id": "knieR", "shape": "group", "pos": [0, -0.23, 0], "parent": "oberschenkelR" },
 { "id": "unterschenkelR", "shape": "cyl", "size": [0.1, 0.08, 0.44], "pos": [0, -0.22, 0], "parent": "knieR", "color": "pants" },
-{ "id": "fussR", "shape": "box", "size": [0.13, 0.08, 0.24], "pos": [0, -0.4, 0.06], "parent": "unterschenkelR", "color": "shoe" }
+{ "id": "fussR", "shape": "box", "size": [0.13, 0.08, 0.24], "pos": [0, -0.22, 0.06], "parent": "unterschenkelR", "color": "shoe" }
 ```
+
+(Auch hier gilt die h/2-Regel von Fragment 1: Kindgelenk/Endstück sitzt `h/2` unter
+der Segment-Mitte, nicht die volle Segmenthöhe.)
 
 ## 3. Vierbeiner-Grundgerüst (Quadruped; Golden-Referenz: `wolf`)
 
