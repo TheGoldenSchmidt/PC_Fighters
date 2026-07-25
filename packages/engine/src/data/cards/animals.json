@@ -107,6 +107,32 @@
     },
     "text": "Eine verbündete Kreatur erhält +2 Angriff bis zum Rundenende."
   },
+  {
+    "id": "pferd",
+    "name": "Pferd",
+    "faction": "animals",
+    "type": "creature",
+    "cost": 3,
+    "attack": 3,
+    "health": 3,
+    "keywords": [
+      "flink"
+    ],
+    "text": "Flink: Ist beim Ausspielen nicht erschöpft.",
+    "projectile": "🐎"
+  },
+  {
+    "id": "eisbaer",
+    "name": "Eisbär",
+    "faction": "animals",
+    "type": "creature",
+    "cost": 6,
+    "attack": 5,
+    "health": 7,
+    "keywords": [],
+    "text": "Ein Koloss aus Eis und Muskeln.",
+    "projectile": "❄️"
+  },
 
   {
     "id": "streunerkatze",

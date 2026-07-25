@@ -70,7 +70,30 @@ zweiten anzulegen.
 - **Kleine Kontrast-Teile verschwinden auf ihrem Nachbarn.** Fangzähne in `cream`
   direkt vor `cream`-Wangen sind nicht lesbar. → Detail-Akzente (Zähne, Krallen,
   Augen) brauchen eine **eigene Kontrastfarbe** und Platzierung an einer
-  Silhouetten-Kante, wo sie über den Nachbarn hinausragen.
+  Silhouetten-Kante, wo sie über den Nachbarn hinausragen. Kontrast heißt dabei
+  **Helligkeitssprung**, nicht nur „andere Farbe": weiße Sklera (`#ffffff`) auf
+  cremeweißem Fell (`#e8e4dc`) blieb unlesbar (bewiesen am Eisbären) – erst eine
+  **dunkle Augenhöhle hinter** der Sklera machte das Auge lesbar. Bei hellen Figuren
+  helle Detail-Teile immer mit einem dunklen Gegenstück hinterlegen.
+
+- **Animations-Tracks sind Offsets auf den Ruhewert, keine Absolutwerte.**
+  `AnimationPlayer.ts` setzt jeden Frame zuerst auf den `visual.parts`-Basiswert
+  zurück und addiert dann den Track-Wert (`addAxis`: `target.x += v`). Ändert ein
+  Spezialist den Ruhewert (`rot`/`pos`) eines Teils, das in `animations` vorkommt,
+  verschiebt sich der komplette Track mit – die Animation kann unlesbar werden, ohne
+  dass jemand `animations` angefasst hat. Bewiesen am Eisbären: der Gesicht-Spezialist
+  öffnete `jawLower` im Ruhezustand (0.15→0.38), danach stand das Maul im Standbild
+  fast so offen wie im Angriff und Linse C kippte von GUT auf ÜBERARBEITEN. → **Regel:**
+  Wer einen Ruhewert ändert, prüft im selben Zug die Tracks desselben Teils (oder
+  meldet die Verschiebung explizit an den Animations-Spezialisten weiter).
+
+- **Spezialisten wirklich sequenziell fahren.** Laufen Basis-Designer und ein
+  Spezialist (oder zwei Spezialisten) versehentlich **parallel** auf derselben Datei,
+  ist das ein Lost-Update-Risiko: der später schreibende Agent kann den anderen
+  überschreiben, auch wenn die Scopes disjunkt sind. → Wie in SKILL.md Schritt 6
+  beschrieben nacheinander laufen lassen; passiert es doch parallel, hinterher
+  **verifizieren**, dass beide Änderungssets tatsächlich in der Datei stehen
+  (Stichprobe je Linse), bevor die nächste Montage gebaut wird.
 
 ---
 
@@ -167,6 +190,15 @@ Regel für jede animierbare Gliedmaße (Arm, Bein, Flügel, Kiefer):
 - **Animation aus mehreren Frames beurteilen**, nicht aus einem Standbild – der
   Montage-Streifen (`snap.mjs`) zeigt den Angriff in 3 Phasen (Ausholen, Kontakt,
   Rückkehr). Ein einzelner mittlerer Frame verbirgt Ruckler und Farb-Washes.
+
+### Signature-Merkmal vs. Animations-Lesbarkeit
+
+- Ein Merkmal, das schon im Standbild sichtbar sein soll (z. B. ein brüllendes Maul),
+  darf die Animation nicht vorwegnehmen – sonst gibt es im Angriff nichts mehr zu
+  steigern und die Aktion wirkt wie eine Fortsetzung der Ruhepose (siehe auch
+  „Animation muss andere Bausteine/Achsen bewegen" oben). Balance am Eisbären: Ruhepose
+  **leicht** angedeutet (`jawLower` Ruhewinkel 0.12), die volle Ausprägung liefert erst
+  der Angriffs-Klip (Öffnung bis ~0.77 beim Kontakt).
 
 ### Effizienz (Runden/Token sparen bei gleicher/besserer Qualität)
 

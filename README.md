@@ -118,6 +118,8 @@ Wichtig:
 
 **Bild für eine Karte:** Lege einfach ein PNG mit dem Namen der Karten-id in den Ordner `packages/client/public/assets/cards/` – z. B. `veteranin.png`. Fertig, kein Code nötig. Ohne Bild zeigt die Karte ein Symbol.
 
+`npm run list-missing-art` zeigt alle Karten ohne Bild, gruppiert nach Fraktion, inkl. Name/Typ/Text – praktisch als Grundlage für Prompts (z. B. bei ChatGPT). Kommt das Bild von Hand (gemalt oder KI-generiert) statt aus `scripts/render-card-art.mjs`, die Karten-id zusätzlich in die `MANUAL_ART`-Liste am Kopf dieses Skripts eintragen, sonst überschreibt ein erneuter Render-Lauf das Bild wieder.
+
 ---
 
 ## 3. Regeln ändern
