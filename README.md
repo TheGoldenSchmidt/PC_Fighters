@@ -107,14 +107,15 @@ Wichtig:
 | Keyword | Bedeutung |
 |---|---|
 | `flink` | Kreatur ist beim Ausspielen nicht erschöpft und kämpft sofort mit. |
-| `rudel` | +1 Angriff, solange eine andere verbündete Animal-Kreatur auf dem Feld ist. |
-| `gift` | Fügt diese Kreatur einer anderen Kreatur Schaden zu, stirbt diese sofort. |
 | `fliegend` | Darf nach der Kampfphase in eine freie eigene Lane wechseln. |
-| `schild_nachbarn` | Verbündete in direkt benachbarten Lanes erhalten +0/+1. |
-| `banner_nachbarn` | Verbündete in direkt benachbarten Lanes erhalten +1/+0. |
-| `aura_alle` | Alle anderen Verbündeten erhalten +1/+1. |
-| `alpha_aura` | Andere verbündete Animal-Kreaturen erhalten +1/+0. |
-| `heilt_nachbarn` | Heilt am Rundenende Verbündete in Nachbar-Lanes um 1. |
+
+Alles Parametrisierbare (Auren, Gift, Heilung, Skalierung nach Anzahl
+Verbündeter, Kampfboni, …) ist kein Keyword mehr, sondern eine **Fähigkeit**
+(`"abilities": [...]` auf der Karte, z. B. `{ "kind": "gift", "staerke": 2 }`
+oder `{ "kind": "aura", "scope": "any", "buff": { "atk": 1, "hp": 1 },
+"timing": "dauerhaft" }`). Die vollständige Liste mit Erklärungstext steht in
+`packages/engine/src/abilities.ts` (`ABILITIES`-Registry), die Parameter je
+Primitiv im `Ability`-Union-Typ in `packages/engine/src/types.ts`.
 
 **Bild für eine Karte:** Lege einfach ein PNG mit dem Namen der Karten-id in den Ordner `packages/client/public/assets/cards/` – z. B. `veteranin.png`. Fertig, kein Code nötig. Ohne Bild zeigt die Karte ein Symbol.
 

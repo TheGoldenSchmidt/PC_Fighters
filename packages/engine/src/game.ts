@@ -25,7 +25,7 @@ import {
   otherPlayer,
   recalcBoard
 } from './internal.js';
-import { hasKeyword, KEYWORDS } from './keywords.js';
+import { hasKeyword } from './keywords.js';
 import { zaehleKarte, zaehleSpieler } from './stats.js';
 import type {
   CardDef,
@@ -198,19 +198,6 @@ function startRound(state: GameState): void {
 }
 
 function endRound(state: GameState): void {
-  // Rundenende-Effekte: Alt-Keywords (z. B. heilt_nachbarn) …
-  for (const owner of [0, 1] as PlayerIndex[]) {
-    state.board[owner].forEach((creature, lane) => {
-      if (!creature) return;
-      for (const kw of creature.keywords) {
-        const hook = KEYWORDS[kw]?.onRoundEnd;
-        if (hook) {
-          for (const msg of hook(state, owner, lane)) log(state, msg);
-        }
-      }
-    });
-  }
-  // … und neue Fähigkeiten (heilung, ueberstunden).
   onRoundEndAbilities(state);
   // Temporäre Buffs entfernen, Erschöpfung aufheben, Rundenzustand zurücksetzen.
   for (const row of state.board) {
@@ -302,13 +289,7 @@ function creatureStrike(
     damage: atk,
     toBase: false
   });
-  // Alt-Keyword Gift (Sofort-Tod) …
-  if (hasKeyword(attacker, 'poison') && defender.currentHealth > 0) {
-    defender.currentHealth = 0;
-    defender.letzterSchaden = { art: 'gift', quelle: attacker.cardId, owner: attackerIdx };
-    log(state, `Lane ${lane + 1}: Gift! ${defender.name} stirbt sofort.`);
-  }
-  // … neue Gift-Marken (Zermürbung). Mehrere gift-Einträge stapeln.
+  // Gift-Marken (Zermürbung, siehe resolvePoison). Mehrere gift-Einträge stapeln.
   const giftStaerke = getAbilities(attacker, 'gift').reduce((sum, g) => sum + g.staerke, 0);
   if (giftStaerke > 0) defender.poison += giftStaerke;
   // Wucht: Überschussschaden trifft die gegnerische Basis.

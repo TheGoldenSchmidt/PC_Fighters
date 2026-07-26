@@ -76,10 +76,12 @@ describe('Server: Raum, Beitritt, Aktionen, gefilterte Sicht', () => {
     code = created.code as string;
     expect(code).toMatch(/^\d{4}$/);
     expect(created.token).toBeTruthy();
-    // Keyword-Erklärungen für die Detailansicht werden mitgeliefert:
+    // Keyword-Erklärungen für die Detailansicht werden mitgeliefert (seit
+    // Phase 7b nur noch die zwei reinen Regel-Flags flink/fliegend – alle
+    // anderen Alt-Keywords sind Ability-Primitive geworden, siehe abilities).
     const keywords = created.keywords as Record<string, { label: string; description: string }>;
-    expect(keywords.gift.description).toContain('stirbt');
     expect(keywords.flink.label).toBeTruthy();
+    expect(keywords.fliegend.description).toContain('Lane');
   });
 
   it('Spieler B tritt bei, beide erhalten den Startzustand', async () => {

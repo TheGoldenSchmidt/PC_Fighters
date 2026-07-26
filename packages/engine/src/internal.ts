@@ -49,17 +49,6 @@ function sourceContribution(
   let attack = 0;
   let health = 0;
 
-  // Alt-Keyword-Auren (schild_nachbarn, aura_alle, …) – unverändert.
-  for (const kw of source.keywords) {
-    const aura = KEYWORDS[kw]?.aura;
-    if (!aura) continue;
-    const bonus = aura(state, owner, sourceLane, targetLane);
-    if (bonus) {
-      attack += bonus.attack;
-      health += bonus.health;
-    }
-  }
-
   for (const ab of source.abilities) {
     const hook = KLASSE_A_HOOKS[ab.kind]?.beitragAura;
     if (!hook) continue;
@@ -111,15 +100,11 @@ function selfAbilityBonus(state: GameState, owner: PlayerIndex, lane: number): B
   return { attack, health };
 }
 
-/** Effektiver Angriff inkl. Alt-Keywords (rudel), Fähigkeiten, Buffs und Auren. */
+/** Effektiver Angriff inkl. Fähigkeiten, Buffs und Auren. */
 export function getEffectiveAttack(state: GameState, owner: PlayerIndex, lane: number): number {
   const c = state.board[owner][lane];
   if (!c) return 0;
   let attack = c.baseAttack + c.permAttackBonus + c.tempAttackBonus;
-  for (const kw of c.keywords) {
-    const bonus = KEYWORDS[kw]?.selfAttackBonus;
-    if (bonus) attack += bonus(state, owner, lane);
-  }
   attack += selfAbilityBonus(state, owner, lane).attack;
   attack += auraBonus(state, owner, lane).attack;
   return Math.max(0, attack);
