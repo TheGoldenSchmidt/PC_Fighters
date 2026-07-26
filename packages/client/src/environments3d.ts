@@ -378,6 +378,8 @@ function createHoehle(): EnvironmentRec {
   const placed: Placed[] = [];
   const add = (v: Visual, d: PlacementDesc, m: Motion = {}) => addPlaced(group, placed, v, d, m);
   add(hoehlenBogen(3.1), { zone: 'back', nx: 0, depth: 5.4 });
+  add(hoehlenKristall(0.68), { zone: 'back', nx: -0.72, depth: 4.55 }, { pulse: 0.025 });
+  add(hoehlenKristall(0.58), { zone: 'back', nx: 0.73, depth: 4.8 }, { pulse: 0.03 });
   for (const zone of ['left', 'right'] as const) {
     add(stalagmit(1.25), { zone, u: 0.04, out: 0.45 });
     add(hoehlenKristall(0.72), { zone, u: 0.24, out: 0.75 }, { pulse: 0.025 });
@@ -446,6 +448,9 @@ function createStadt(): EnvironmentRec {
   const placed: Placed[] = [];
   const add = (v: Visual, d: PlacementDesc, m: Motion = {}) => addPlaced(group, placed, v, d, m);
   [-0.9, -0.46, 0, 0.46, 0.9].forEach((nx, i) => add(haus(2.4 + (i % 3) * 0.45, i === 1 || i === 4), { zone: 'back', nx, depth: 6.2 + (i % 2) * 0.7 }));
+  add(laterne(0.92), { zone: 'back', nx: -0.82, depth: 4.5 }, { yaw: 0.12 });
+  add(absperrung(0.36), { zone: 'back', nx: -0.34, depth: 4.35 }, { yaw: 0.08 });
+  add(auto(0.5, true), { zone: 'back', nx: 0.67, depth: 4.55 }, { yaw: -0.28 });
   for (const zone of ['left', 'right'] as const) {
     const towardField = zone === 'left' ? 0.16 : Math.PI - 0.16;
     add(laterne(1.4), { zone, u: 0.1, out: 0.48 }, { yaw: towardField });
@@ -506,7 +511,7 @@ function createMond(): EnvironmentRec {
   const group = new THREE.Group();
   const placed: Placed[] = [];
   const add = (v: Visual, d: PlacementDesc, m: Motion = {}) => addPlaced(group, placed, v, d, m);
-  add(erde(1.25), { zone: 'back', nx: 0.64, depth: 8.5 }, { lift: 2.15, spin: 0.025 });
+  add(erde(1.25), { zone: 'back', nx: 0.64, depth: 8.5 }, { lift: 0.75, spin: 0.025 });
   add(landefaehre(2.2), { zone: 'back', nx: -0.72, depth: 5.8 }, { yaw: 0.22 });
   for (const zone of ['left', 'right'] as const) {
     add(krater(0.18), { zone, u: 0.05, out: 0.55 });
@@ -567,8 +572,9 @@ function createMars(): EnvironmentRec {
   const group = new THREE.Group();
   const placed: Placed[] = [];
   const add = (v: Visual, d: PlacementDesc, m: Motion = {}) => addPlaced(group, placed, v, d, m);
-  add(marsbogen(2.85), { zone: 'back', nx: 0.2, depth: 6.4 }, { yaw: -0.08 });
+  add(marsbogen(2.25), { zone: 'back', nx: 0.2, depth: 6.4 }, { yaw: -0.08 });
   add(rover(1.05), { zone: 'back', nx: -0.72, depth: 4.9 }, { yaw: 0.45 });
+  add(staubwirbel(0.46), { zone: 'back', nx: -0.26, depth: 4.45 }, { spin: 0.42, pulse: 0.025 });
   for (const zone of ['left', 'right'] as const) {
     add(marsspitze(1.25), { zone, u: 0.05, out: 0.5 });
     add(staubwirbel(0.72), { zone, u: 0.28, out: 0.9 }, { spin: zone === 'left' ? 0.55 : -0.55, pulse: 0.025 });
@@ -625,7 +631,9 @@ function createC137(): EnvironmentRec {
   const group = new THREE.Group();
   const placed: Placed[] = [];
   const add = (v: Visual, d: PlacementDesc, m: Motion = {}) => addPlaced(group, placed, v, d, m);
-  add(portal(2.45), { zone: 'back', nx: 0, depth: 6 }, { lift: 0.5, spin: 0.08, pulse: 0.045 });
+  add(portal(1.82), { zone: 'back', nx: 0, depth: 6 }, { lift: 0.12, pulse: 0.045 });
+  add(tentakel(0.92), { zone: 'back', nx: -0.72, depth: 5.25 }, { sway: 0.08, roll: -0.08 });
+  add(fremdkristall(0.76), { zone: 'back', nx: 0.72, depth: 5.35 }, { pulse: 0.04 });
   add(schrott(0.55), { zone: 'back', nx: -0.55, depth: 4.7 }, { lift: 2.9, bob: 0.22, spin: -0.18 });
   add(schrott(0.4), { zone: 'back', nx: 0.58, depth: 5 }, { lift: 3.6, bob: 0.16, spin: 0.24, roll: 0.4 });
   for (const zone of ['left', 'right'] as const) {

@@ -246,7 +246,7 @@ const DEFAULT_ARENA_STYLE: ArenaRenderStyle = {
 
 const ARENA_STYLES: Record<EnvironmentKind, ArenaRenderStyle> = {
   wald: { floorOpacity: 0.38, gridOpacity: 0.045, pathOpacity: 0.13, glowOpacity: 0.1, fogNear: 16, fogFar: 40, exposure: 1.08 },
-  hoehle: { floorOpacity: 0.5, gridOpacity: 0.025, pathOpacity: 0.11, glowOpacity: 0.18, fogNear: 13, fogFar: 34, exposure: 1.02 },
+  hoehle: { floorOpacity: 0.5, gridOpacity: 0.025, pathOpacity: 0.11, glowOpacity: 0.18, fogNear: 13, fogFar: 34, exposure: 1.12 },
   stadt: { floorOpacity: 0.44, gridOpacity: 0.2, pathOpacity: 0.2, glowOpacity: 0.2, fogNear: 20, fogFar: 50, exposure: 1.16 },
   mond: { floorOpacity: 0.48, gridOpacity: 0.055, pathOpacity: 0.12, glowOpacity: 0.13, fogNear: 23, fogFar: 58, exposure: 1.22 },
   mars: { floorOpacity: 0.5, gridOpacity: 0.035, pathOpacity: 0.1, glowOpacity: 0.15, fogNear: 17, fogFar: 43, exposure: 1.12 },
