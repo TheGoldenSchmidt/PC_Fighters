@@ -119,7 +119,8 @@ export type Effect =
   | { kind: 'buffHealth'; amount: number; target: 'friendlyCreature' }
   | { kind: 'buffAttackTemp'; amount: number; target: 'friendlyCreature' }
   | { kind: 'summon'; count: number; token: TokenDef }
-  | { kind: 'moveCreature'; target: 'friendlyCreature' }
+  // tempAtkBonus: die bewegte Kreatur erhält zusätzlich bis zum Rundenende +X ATK (Hetzjagd).
+  | { kind: 'moveCreature'; target: 'friendlyCreature'; tempAtkBonus?: number }
   // Alle gegnerischen Kreaturen verlieren `amount` ATK bis zum Rundenende (Generalstreik).
   | { kind: 'debuff'; amount: number }
   // Verbraucht bis zu `max` Wissen aus dem eigenen Pool; verteilt
@@ -142,7 +143,8 @@ export type Ability =
   // (fängt einen tödlichen Treffer für einen Nachbarn im scope ab – einmal pro Spiel).
   | { kind: 'nachbar'; effect: 'schild' | 'banner' | 'schadensuebernahme'; scope: Scope; amount: number }
   // Heilung am Rundenende: Nachbarn oder ganzer scope; optional mehr bei niedriger Basis.
-  | { kind: 'heilung'; scope: Scope; reichweite: 'nachbarn' | 'scope'; amount: number; mehrWennBasisUnter?: { schwelle: number; amount: number } }
+  // maxTargets: begrenzt die Anzahl geheilter Kreaturen (Board-Reihenfolge, niedrigste Lane zuerst).
+  | { kind: 'heilung'; scope: Scope; reichweite: 'nachbarn' | 'scope'; amount: number; mehrWennBasisUnter?: { schwelle: number; amount: number }; maxTargets?: number }
   // Rundenwachstum, dauerhaft stapelnd, zu Beginn deiner Runde (ersetzt schicht).
   // maxTriggers: löst insgesamt höchstens so oft aus (spielweiter Zähler).
   | { kind: 'wachstum'; per_round: Stat; ziel?: 'selbst' | 'verbuendeter'; scope?: Scope; maxTriggers?: number }
@@ -150,22 +152,26 @@ export type Ability =
   // wirkt nur auf den ERSTEN Wachstumstrigger einer Runde statt auf jeden.
   | { kind: 'verstaerker'; ziel: 'wachstum'; scope: Scope; faktor: number; firstOnlyPerRound?: boolean }
   // Todes-Rettung, einmal pro Spiel (ersetzt zaeh/neun_leben/haeutung).
-  | { kind: 'rettung'; mode: 'survive_1hp' | 'revive_1hp' | 'full_heal' }
+  // bonusWennAusgeloest: dauerhafter Stat-Bonus, NUR wenn die Rettung tatsächlich auslöst.
+  | { kind: 'rettung'; mode: 'survive_1hp' | 'revive_1hp' | 'full_heal'; bonusWennAusgeloest?: Stat }
   // Einmalig +X/+Y, wenn die Karte eine volle Runde überlebt.
   | { kind: 'ueberstunden'; bonus: Stat }
   // Ausrüstung: gibt genau einer anderen Karte gleicher Sub-Fraktion +X ATK
   // (springt beim Tod des Trägers automatisch weiter — dynamisch berechnet).
   | { kind: 'werkzeug'; atk: number }
   // Bonus abhängig von der eigenen Basis-HP (Schwellen- oder Pro-fehlende-HP-Modus).
-  | { kind: 'improvisation'; scope: Scope; mode: 'schwelle' | 'pro_fehlende_hp'; bonus: Stat; schwelle?: number; proHp?: number }
+  // cap: begrenzt den pro_fehlende_hp-Multiplikator (Schwellen-Modus ist ohnehin 0/1).
+  | { kind: 'improvisation'; scope: Scope; mode: 'schwelle' | 'pro_fehlende_hp'; bonus: Stat; schwelle?: number; proHp?: number; cap?: number }
   // Dauerhaft +X/+Y, wenn eine Kreatur stirbt (trigger any/own/enemy).
-  | { kind: 'sammeln'; bonus: Stat; trigger: 'any' | 'own' | 'enemy' }
+  // firstPerRound: löst höchstens einmal je Runde aus; maxTriggers: spielweiter Deckel.
+  | { kind: 'sammeln'; bonus: Stat; trigger: 'any' | 'own' | 'enemy'; firstPerRound?: boolean; maxTriggers?: number }
   // Ziehe n Karten (beim Ausspielen; proRunde = jede Runde).
   | { kind: 'lernen'; n: number; proRunde?: boolean }
   // Erzeugt x Wissens-Marker im spielerweiten Pool (proRunde = jede Runde).
   | { kind: 'wissen'; x: number; proRunde?: boolean }
   // Verbraucht Wissens-Marker; Schaden auf Gegner und/oder Selbst-Buff je Marker.
-  | { kind: 'experiment'; schadenProMarker?: number; proMarker?: Stat }
+  // max: verbraucht höchstens so viele Marker (Default: den ganzen Pool).
+  | { kind: 'experiment'; schadenProMarker?: number; proMarker?: Stat; max?: number }
   // Bonus/Effekt, solange die Karte allein in ihrer Lane steht (solo).
   | { kind: 'neugier'; bonus?: Stat; basisschaden?: number }
   // Senkt ATK eines/aller Gegner (oder setzt Gift), beim Ausspielen.

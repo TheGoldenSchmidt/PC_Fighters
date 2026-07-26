@@ -180,7 +180,7 @@ describe('bewerteZustand', () => {
 describe('waehleAktion: Policy-Verhalten', () => {
   it('nimmt eine sofort verfügbare Lethal-Aktion (Experimentelle Formel auf die leere Basis)', () => {
     const s = emptyState();
-    // experimentelle_formel: schadenProMarker 1, gegnerisches Feld ist leer -> trifft die Basis.
+    // experimentelle_formel: spendKnowledge, gegnerisches Feld ist leer -> trifft die Basis.
     s.players[0].hand = ['rekrut', 'experimentelle_formel'];
     s.players[0].knowledge = 2;
     s.players[1].base = 2;
@@ -200,10 +200,10 @@ describe('waehleAktion: Policy-Verhalten', () => {
 
   it('verheizt eine wertvolle Kreatur nicht in einem klar schlechten Tausch, wenn eine sichere Lane frei ist', () => {
     const s = emptyState();
-    put(s, 1, 0, 'baer'); // 4/5, unopponiert
-    s.players[0].hand = ['ratte', 'ritter']; // ritter würde gegen baer sterben, ohne ihn zu töten
+    put(s, 1, 0, 'brachiosaurus'); // 6/9, unopponiert
+    s.players[0].hand = ['ratte', 'ritter']; // ritter würde gegen brachiosaurus sterben, ohne ihn zu töten
     const gewaehlt = waehleAktion(s, 0, data, BOT_PROFILE.ausgewogen, createSeededRandom(5));
-    // Der Ritter darf nicht in Lane 0 (gegen den Bären) geopfert werden.
+    // Der Ritter darf nicht in Lane 0 (gegen den Brachiosaurus) geopfert werden.
     expect(gewaehlt).not.toEqual({ type: 'playCreature', handIndex: 1, lane: 0 });
   });
 

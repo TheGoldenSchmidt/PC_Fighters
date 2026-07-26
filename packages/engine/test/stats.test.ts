@@ -145,12 +145,13 @@ describe('Telemetrie-Sidecar: exakte Zählerwerte', () => {
     aktiviereStatistik(s);
     const kranfuehrer = put(s, 0, 0, 'kranfuehrer'); // 4/4, wucht
     kranfuehrer.spawnRound = 0; // nicht "flink" für diesen Test
-    const gecko = put(s, 1, 0, 'gecko'); // 1/3, dornen 1
+    const gecko = put(s, 1, 0, 'gecko'); // 1/4, dornen 1
     gecko.spawnRound = 0;
+    gecko.currentHealth = 3; // 1 HP vorgeschädigt, damit Wucht exakt 1 Überschuss erzeugt
 
     const next = passBoth(s);
 
-    // gecko: 3 HP, nimmt 4 Schaden -> stirbt, Überschuss 1 trifft die Basis.
+    // gecko: 3 verbleibende HP, nimmt 4 Schaden -> stirbt, Überschuss 1 trifft die Basis.
     expect(next.stats!.proKarte[0]['kranfuehrer'].schadenKreatur).toBe(4);
     expect(next.stats!.proKarte[0]['kranfuehrer'].schadenBasis).toBe(1);
     expect(next.stats!.proSpieler[0].wuchtSchaden).toBe(1);

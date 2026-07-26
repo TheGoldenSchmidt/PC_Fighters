@@ -74,7 +74,7 @@ export const EFFECTS: { [K in Effect['kind']]: EffectResolver<K> } = {
     }
   },
 
-  moveCreature(ctx) {
+  moveCreature(ctx, effect) {
     const { creature, lane } = requireFriendlyCreature(ctx, ctx.action.targetLane);
     const to = ctx.action.toLane;
     if (to === undefined || to < 0 || to >= ctx.state.config.lanes) {
@@ -88,6 +88,7 @@ export const EFFECTS: { [K in Effect['kind']]: EffectResolver<K> } = {
     }
     ctx.state.board[ctx.player][to] = creature;
     ctx.state.board[ctx.player][lane] = null;
+    if (effect.tempAtkBonus) creature.tempAttackBonus += effect.tempAtkBonus;
     log(ctx.state, `${ctx.card.name}: ${creature.name} wechselt in Lane ${to + 1}.`, {
       kind: 'spell',
       lane: to,

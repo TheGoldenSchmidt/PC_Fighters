@@ -62,7 +62,8 @@ function improvisationMultiplier(
     return ab.schwelle != null && base <= ab.schwelle ? 1 : 0;
   }
   const fehlend = Math.max(0, state.config.baseHealth - base);
-  return Math.floor(fehlend / (ab.proHp ?? 1));
+  const mult = Math.floor(fehlend / (ab.proHp ?? 1));
+  return ab.cap != null ? Math.min(mult, ab.cap) : mult;
 }
 
 /** Lane der einen Karte, an die ein `werkzeug` seinen Bonus vergibt (niedrigste Lane, gleiche Sub-Fraktion). */

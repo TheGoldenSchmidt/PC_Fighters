@@ -440,7 +440,7 @@ function applyExperiment(
 ): void {
   const c = state.board[owner][lane];
   if (!c) return;
-  const markers = state.players[owner].knowledge;
+  const markers = ab.max != null ? Math.min(state.players[owner].knowledge, ab.max) : state.players[owner].knowledge;
   if (markers <= 0) return;
 
   if (ab.proMarker) {
@@ -472,7 +472,7 @@ function applyExperiment(
     }
     log(state, `${c.name}: Experiment verteilt ${gesamt} Schaden.`);
   }
-  state.players[owner].knowledge = 0;
+  state.players[owner].knowledge -= markers;
 }
 
 // ---------------------------------------------------------------- Rundenbeginn
@@ -553,7 +553,9 @@ function applyHeilung(
       ? [lane - 1, lane + 1]
       : state.board[owner].map((_, i) => i);
 
+  let geheiltAnzahl = 0;
   for (const tLane of targetLanes) {
+    if (ab.maxTargets != null && geheiltAnzahl >= ab.maxTargets) break;
     const t = state.board[owner]?.[tLane];
     if (!t) continue;
     if (!matchesScope(state.factionTree, ab.scope, source.faction, t.faction)) continue;
@@ -565,6 +567,7 @@ function applyHeilung(
       zaehleKarte(state, owner, source.cardId, 'geheilt', geheilt);
       zaehleSpieler(state, owner, 'heilung', geheilt);
       log(state, `${source.name} heilt ${t.name} um ${amount}.`);
+      geheiltAnzahl += 1;
     }
   }
 }
@@ -593,20 +596,28 @@ export function onDeathTriggers(state: GameState, deaths: DeathInfo[]): void {
   }
 
   // sammeln: lebende Kreaturen reagieren auf jeden Tod (trigger-abhängig);
-  // mehrere sammeln-Einträge auf derselben Karte stapeln.
+  // mehrere sammeln-Einträge auf derselben Karte stapeln. firstPerRound (rundenZaehler,
+  // in endRound geleert) und maxTriggers (zaehler, spielweit) begrenzen optional.
   for (const d of deaths) {
     for (const owner of [0, 1] as PlayerIndex[]) {
       for (const c of state.board[owner]) {
         if (!c) continue;
-        for (const sm of getAbilities(c, 'sammeln')) {
+        c.abilities.forEach((ab, i) => {
+          if (ab.kind !== 'sammeln') return;
           const isOwn = d.owner === owner;
           const match =
-            sm.trigger === 'any' || (sm.trigger === 'own' && isOwn) || (sm.trigger === 'enemy' && !isOwn);
-          if (match) {
-            c.permAttackBonus += sm.bonus.atk;
-            c.permHealthBonus += sm.bonus.hp;
-          }
-        }
+            ab.trigger === 'any' || (ab.trigger === 'own' && isOwn) || (ab.trigger === 'enemy' && !isOwn);
+          if (!match) return;
+          const rundenKey = `${i}:sammeln`;
+          if (ab.firstPerRound && c.rundenZaehler[rundenKey]) return;
+          const spielKey = `${i}:sammeln`;
+          const bisher = c.zaehler[spielKey] ?? 0;
+          if (ab.maxTriggers != null && bisher >= ab.maxTriggers) return;
+          if (ab.firstPerRound) c.rundenZaehler[rundenKey] = 1;
+          if (ab.maxTriggers != null) c.zaehler[spielKey] = bisher + 1;
+          c.permAttackBonus += ab.bonus.atk;
+          c.permHealthBonus += ab.bonus.hp;
+        });
       }
     }
   }

@@ -149,6 +149,10 @@ function tryRettung(
   } else {
     creature.currentHealth = 1; // survive_1hp / revive_1hp
   }
+  if (rescue.bonusWennAusgeloest) {
+    creature.permAttackBonus += rescue.bonusWennAusgeloest.atk;
+    creature.permHealthBonus += rescue.bonusWennAusgeloest.hp;
+  }
   zaehleKarte(state, owner, creature.cardId, 'verhindert', verhindert);
   zaehleSpieler(state, owner, 'verhinderterSchaden', verhindert);
   return true;

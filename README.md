@@ -130,13 +130,16 @@ Die Datei `packages/engine/src/data/config.json` enthält alle Spielregeln als Z
 | Wert | Bedeutung |
 |---|---|
 | `lanes` | Anzahl der Kampfbahnen (Standard 3 – bei 4 zeigt das Spiel wirklich 4 Lanes!) |
-| `baseHealth` | Lebenspunkte jeder Basis |
-| `deckSize` | Karten pro Deck (ist das Deck durch neue Karten größer, wird nach dem Mischen auf diese Zahl gekürzt) |
-| `startingHand` | Handkarten zu Spielbeginn |
+| `baseHealth` | Lebenspunkte jeder Basis (V2: 15) |
+| `startingHand` | Handkarten zu Spielbeginn (V2: 4) |
 | `cardsDrawnPerTurn` | Karten, die jede Runde gezogen werden |
-| `energyCap` | Maximale Energie (Energie = Rundenzahl, aber nie mehr als das) |
-| `roundLimit` | Nach dieser Runde gewinnt, wer mehr Basis-Leben hat |
-| `maxCopiesPerCard` | Wie oft jede Karte im Deck steckt (★-Karten immer nur 1×) |
+| `energy.start` / `energy.perRound` | Energie in Runde 1 bzw. Zuwachs pro Runde danach (V2: 1 / 1) |
+| `energy.cap` | Maximale Energie, oder `null` für unbegrenzt |
+| `deckbuilding.size` | Karten pro Deck (V2: 20) |
+| `deckbuilding.maxCopies` | Wie oft eine normale Karte im Deck stecken darf (V2: 3) |
+| `deckbuilding.maxCopiesSignature` | Wie oft eine ★-Signature-Karte im Deck stecken darf (V2: 2) |
+| `zermuerbung.abRunde` / `.schaden` / `.steigerung` | Ab dieser Runde verlieren beide Basen am Rundenende `schaden` Leben, danach je weitere Runde zusätzlich `steigerung` mehr – das ist der reguläre Weg, wie lange Partien enden (V2 will explizit „kein Rundenlimit", siehe `docs/regelwerk-v2.md` §1/§7) |
+| `roundLimit` | Technische Notbremse weit über der Zermürbung (aktuell 30) – wird im Normalspiel nie erreicht; jeder Treffer ist ein Bug-Report |
 
 Zahl ändern, speichern, Server neu starten – fertig.
 

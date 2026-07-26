@@ -43,6 +43,10 @@ function aktionskartenZuege(
     case 'summon':
       // Kein explizites Ziel – braucht nur mindestens eine freie Lane.
       return freieLanes(state, player).length > 0 ? [{ type: 'playAction', handIndex }] : [];
+    case 'debuff':
+    case 'spendKnowledge':
+      // Kein explizites Ziel – wirkt spielerweit (alle Gegner bzw. der eigene Wissens-Pool).
+      return [{ type: 'playAction', handIndex }];
     case 'moveCreature': {
       // Jede eigene besetzte Lane → jede eigene freie Lane.
       const out: PlayerAction[] = [];

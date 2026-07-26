@@ -97,7 +97,8 @@ export const effectSchema = z.discriminatedUnion('kind', [
   }),
   z.object({
     kind: z.literal('moveCreature'),
-    target: z.literal('friendlyCreature')
+    target: z.literal('friendlyCreature'),
+    tempAtkBonus: z.number().int().min(1).optional()
   }),
   z.object({
     kind: z.literal('debuff'),
@@ -125,17 +126,17 @@ export const abilitySchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('skalierung'), scope: scopeSchema, per: statSchema, cap: z.number().int().min(0).optional(), includeSelf: z.boolean().optional() }).strict(),
   z.object({ kind: z.literal('aura'), scope: scopeSchema, buff: statSchema, timing: z.enum(['dauerhaft', 'einmal_beim_ausspielen']) }).strict(),
   z.object({ kind: z.literal('nachbar'), effect: z.enum(['schild', 'banner', 'schadensuebernahme']), scope: scopeSchema, amount: z.number().int() }).strict(),
-  z.object({ kind: z.literal('heilung'), scope: scopeSchema, reichweite: z.enum(['nachbarn', 'scope']), amount: z.number().int().min(1), mehrWennBasisUnter: z.object({ schwelle: z.number().int(), amount: z.number().int().min(1) }).strict().optional() }).strict(),
+  z.object({ kind: z.literal('heilung'), scope: scopeSchema, reichweite: z.enum(['nachbarn', 'scope']), amount: z.number().int().min(1), mehrWennBasisUnter: z.object({ schwelle: z.number().int(), amount: z.number().int().min(1) }).strict().optional(), maxTargets: z.number().int().min(1).optional() }).strict(),
   z.object({ kind: z.literal('wachstum'), per_round: statSchema, ziel: z.enum(['selbst', 'verbuendeter']).optional(), scope: scopeSchema.optional(), maxTriggers: z.number().int().min(1).optional() }).strict(),
   z.object({ kind: z.literal('verstaerker'), ziel: z.literal('wachstum'), scope: scopeSchema, faktor: z.number().int().min(1), firstOnlyPerRound: z.boolean().optional() }).strict(),
-  z.object({ kind: z.literal('rettung'), mode: z.enum(['survive_1hp', 'revive_1hp', 'full_heal']) }).strict(),
+  z.object({ kind: z.literal('rettung'), mode: z.enum(['survive_1hp', 'revive_1hp', 'full_heal']), bonusWennAusgeloest: statSchema.optional() }).strict(),
   z.object({ kind: z.literal('ueberstunden'), bonus: statSchema }).strict(),
   z.object({ kind: z.literal('werkzeug'), atk: z.number().int().min(1) }).strict(),
-  z.object({ kind: z.literal('improvisation'), scope: scopeSchema, mode: z.enum(['schwelle', 'pro_fehlende_hp']), bonus: statSchema, schwelle: z.number().int().optional(), proHp: z.number().int().min(1).optional() }).strict(),
-  z.object({ kind: z.literal('sammeln'), bonus: statSchema, trigger: z.enum(['any', 'own', 'enemy']) }).strict(),
+  z.object({ kind: z.literal('improvisation'), scope: scopeSchema, mode: z.enum(['schwelle', 'pro_fehlende_hp']), bonus: statSchema, schwelle: z.number().int().optional(), proHp: z.number().int().min(1).optional(), cap: z.number().int().min(1).optional() }).strict(),
+  z.object({ kind: z.literal('sammeln'), bonus: statSchema, trigger: z.enum(['any', 'own', 'enemy']), firstPerRound: z.boolean().optional(), maxTriggers: z.number().int().min(1).optional() }).strict(),
   z.object({ kind: z.literal('lernen'), n: z.number().int().min(1), proRunde: z.boolean().optional() }).strict(),
   z.object({ kind: z.literal('wissen'), x: z.number().int().min(1), proRunde: z.boolean().optional() }).strict(),
-  z.object({ kind: z.literal('experiment'), schadenProMarker: z.number().int().min(1).optional(), proMarker: statSchema.optional() }).strict(),
+  z.object({ kind: z.literal('experiment'), schadenProMarker: z.number().int().min(1).optional(), proMarker: statSchema.optional(), max: z.number().int().min(1).optional() }).strict(),
   z.object({ kind: z.literal('neugier'), bonus: statSchema.optional(), basisschaden: z.number().int().min(1).optional() }).strict(),
   z.object({ kind: z.literal('umverteilung'), menge: z.number().int().min(1), schwelle: z.number().int().optional(), ziel: z.enum(['einer', 'alle']), art: z.enum(['atk', 'gift']).optional(), dauer: z.enum(['dauerhaft', 'runde']).optional() }).strict(),
   z.object({ kind: z.literal('kaltbluetig'), bonus: statSchema }).strict(),

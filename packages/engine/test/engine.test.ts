@@ -112,12 +112,12 @@ function passBoth(state: GameState): GameState {
 describe('Kampflogik', () => {
   it('kampfbereite Kreaturen schaden sich gleichzeitig', () => {
     const s = emptyState();
-    put(s, 0, 0, 'ritter'); // 4/4
-    put(s, 1, 0, 'wolf'); // 3/2 (rudel inaktiv: allein)
+    put(s, 0, 0, 'ritter'); // 4/5
+    put(s, 1, 0, 'wolf'); // 2/3 (rudel inaktiv: allein)
     const after = passBoth(s);
-    // Wolf (3 ATK) trifft Ritter → 4-3=1 Leben; Ritter (4 ATK) tötet Wolf.
+    // Wolf (2 ATK) trifft Ritter → 5-2=3 Leben; Ritter (4 ATK) tötet Wolf (3 HP).
     expect(after.board[1][0]).toBeNull();
-    expect(after.board[0][0]?.currentHealth).toBe(1);
+    expect(after.board[0][0]?.currentHealth).toBe(3);
   });
 
   it('erschöpfte Kreaturen greifen nicht an, verteidigen aber', () => {
@@ -208,11 +208,11 @@ describe('Keyword rudel', () => {
   it('+1 Angriff nur mit anderem verbündeten Animal', () => {
     const s = emptyState();
     put(s, 1, 0, 'wolf');
-    expect(getEffectiveAttack(s, 1, 0)).toBe(3); // allein: kein Bonus
+    expect(getEffectiveAttack(s, 1, 0)).toBe(2); // allein: kein Bonus
     put(s, 1, 2, 'ratte');
-    expect(getEffectiveAttack(s, 1, 0)).toBe(4); // Rudel aktiv
+    expect(getEffectiveAttack(s, 1, 0)).toBe(3); // Rudel aktiv
     s.board[1][2] = null;
-    expect(getEffectiveAttack(s, 1, 0)).toBe(3); // Bonus dynamisch weg
+    expect(getEffectiveAttack(s, 1, 0)).toBe(2); // Bonus dynamisch weg
   });
 });
 
@@ -232,24 +232,24 @@ describe('Auren', () => {
 
   it('schild_nachbarn: bereits erlittener Schaden wird nicht doppelt bestraft', () => {
     const s = emptyState();
-    const wache = put(s, 0, 0, 'schildwache'); // 1/3
-    put(s, 0, 1, 'kommandantin'); // aura_alle: +1/+1 → Wache 2/4
-    wache.currentHealth -= 1; // Wache auf 3/4
-    s.board[0][1] = null; // Aura fällt weg → Maximum wieder 3
+    const wache = put(s, 0, 0, 'schildwache'); // 1/4
+    put(s, 0, 1, 'kommandantin'); // aura_alle: +1/+1 → Wache 2/5
+    wache.currentHealth -= 1; // Wache auf 4/5
+    s.board[0][1] = null; // Aura fällt weg → Maximum wieder 4
     recalcBoard(s);
-    // aktuelles Leben (3) liegt nicht über dem neuen Maximum (3) → bleibt 3
-    expect(s.board[0][0]?.currentHealth).toBe(3);
+    // aktuelles Leben (4) liegt nicht über dem neuen Maximum (4) → bleibt 4
+    expect(s.board[0][0]?.currentHealth).toBe(4);
   });
 
   it('aura_alle (Kommandantin): +1/+1 für alle anderen Verbündeten', () => {
     const s = emptyState();
     put(s, 0, 0, 'rekrut'); // 2/1
-    put(s, 0, 2, 'kommandantin'); // 3/5
+    put(s, 0, 2, 'kommandantin'); // 3/6
     expect(getEffectiveAttack(s, 0, 0)).toBe(3);
     expect(getMaxHealth(s, 0, 0)).toBe(2);
     // Die Kommandantin bufft sich nicht selbst:
     expect(getEffectiveAttack(s, 0, 2)).toBe(3);
-    expect(getMaxHealth(s, 0, 2)).toBe(5);
+    expect(getMaxHealth(s, 0, 2)).toBe(6);
   });
 
   it('alpha_aura bufft nur andere Animals', () => {
@@ -372,11 +372,11 @@ describe('Fraktionsbaum', () => {
 describe('Neue Fähigkeiten – Skalierung & Auren', () => {
   it('skalierung wächst mit Anzahl und schrumpft dynamisch beim Sterben', () => {
     const s = emptyState();
-    put(s, 0, 0, 'flugblatt_verteiler'); // 1/2, +1 ATK je weiterem Sozi (cap 3)
+    put(s, 0, 0, 'basisdemokratie'); // 1/5, +1 ATK je weiterem Menschen (cap 2)
     expect(getEffectiveAttack(s, 0, 0)).toBe(1);
-    put(s, 0, 1, 'solidaritaetskasse'); // Sozi
-    put(s, 0, 2, 'basisdemokratie'); // Sozi
-    expect(getEffectiveAttack(s, 0, 0)).toBe(3); // +2 (zwei weitere Sozis)
+    put(s, 0, 1, 'rekrut');
+    put(s, 0, 2, 'ritter');
+    expect(getEffectiveAttack(s, 0, 0)).toBe(3); // +2 (zwei weitere Menschen)
     s.board[0][2] = null; // einer stirbt
     recalcBoard(s);
     expect(getEffectiveAttack(s, 0, 0)).toBe(2); // dynamisch zurück auf +1
@@ -394,7 +394,9 @@ describe('Neue Fähigkeiten – Skalierung & Auren', () => {
 
   it('skalierung includeSelf zählt sich selbst mit', () => {
     const s = emptyState();
-    put(s, 0, 0, 'basisdemokratie'); // 1/6, +1 ATK je Sozi inkl. sich selbst
+    const c = put(s, 0, 0, 'basisdemokratie');
+    c.abilities = [{ kind: 'skalierung', scope: 'same_top', per: { atk: 1, hp: 0 }, includeSelf: true }];
+    recalcBoard(s);
     expect(getEffectiveAttack(s, 0, 0)).toBe(2); // allein: self zählt
   });
 
@@ -410,8 +412,8 @@ describe('Neue Fähigkeiten – Skalierung & Auren', () => {
 
   it('neugier gilt nur allein in der Lane', () => {
     const s = emptyState();
-    put(s, 0, 0, 'hauskater'); // 2/2, neugier +2 ATK solo
-    expect(getEffectiveAttack(s, 0, 0)).toBe(4);
+    put(s, 0, 0, 'hauskater'); // 2/2, Pirsch +1 ATK solo
+    expect(getEffectiveAttack(s, 0, 0)).toBe(3);
     put(s, 1, 0, 'moewe'); // Gegner in der Lane
     expect(getEffectiveAttack(s, 0, 0)).toBe(2);
   });
@@ -429,11 +431,11 @@ describe('Neue Fähigkeiten – Kampf', () => {
 
   it('dornen: der Angreifer nimmt Schaden', () => {
     const s = emptyState();
-    put(s, 0, 0, 'ritter'); // 4/4, greift an
-    put(s, 1, 0, 'gecko', { exhausted: true }); // 1/3 Dornen 1
+    put(s, 0, 0, 'ritter'); // 4/5, greift an
+    put(s, 1, 0, 'gecko', { exhausted: true }); // 1/4 Dornen 1
     const after = passBoth(s);
     expect(after.board[1][0]).toBeNull(); // Gecko stirbt (4 Schaden)
-    expect(after.board[0][0]?.currentHealth).toBe(3); // Ritter nimmt 1 Dornen-Schaden
+    expect(after.board[0][0]?.currentHealth).toBe(4); // Ritter nimmt 1 Dornen-Schaden
   });
 
   it('gift: Marken machen selbst keinen Schaden, sammeln sich aber an (V2: Tod erst ab 3 Marken)', () => {
@@ -457,7 +459,8 @@ describe('Neue Fähigkeiten – Kampf', () => {
 
   it('hinrichten überspringt urgewalt und trifft einen anderen schwachen Gegner', () => {
     const s = emptyState();
-    put(s, 0, 0, 'krokodil'); // 5/6, hinrichten ≤2 HP; greift Lane 0 an
+    const krokodil = put(s, 0, 0, 'krokodil'); // 5/5; hinrichten manuell statt hunter, greift Lane 0 an
+    krokodil.abilities = [{ kind: 'hinrichten', maxHp: 2 }];
     put(s, 1, 0, 'die_massen', { exhausted: true }); // 5/7 (>2 HP, kein Ziel), überlebt Kampf
     const brachio = put(s, 1, 1, 'brachiosaurus', { exhausted: true }); // urgewalt
     brachio.currentHealth = 2; // verwundet, aber immun gegen Hinrichten
@@ -499,11 +502,11 @@ describe('Neue Fähigkeiten – Rettung, Trigger & Wachstum', () => {
     expect(getMaxHealth(after, 0, 0)).toBe(2); // Streuner 1 HP + Sammeln 1
   });
 
-  it('beschwoeren beim Ausspielen: Katzenmutter erzeugt zwei Kätzchen', () => {
+  it('beschwoeren beim Ausspielen: Katzenmutter erzeugt ein Kätzchen', () => {
     const s = emptyState();
     s.players[0].hand = ['katzenmutter'];
     const after = applyAction(s, 0, { type: 'playCreature', handIndex: 0, lane: 0 }, data);
-    expect(after.board[0].filter(Boolean)).toHaveLength(3); // Mutter + 2 Kätzchen
+    expect(after.board[0].filter(Boolean)).toHaveLength(2); // Mutter + 1 Kätzchen
     const kitten = after.board[0].find((c) => c?.name === 'Kätzchen');
     expect(kitten?.faction).toBe('katzen'); // Token erbt die Sub-Fraktion
   });
@@ -542,11 +545,11 @@ describe('Neue Fähigkeiten – Rettung, Trigger & Wachstum', () => {
 
   it('ueberstunden löst nur einmal aus', () => {
     let s = emptyState();
-    put(s, 0, 0, 'schichtwechsel'); // 3/4, ueberstunden +2/+2
+    put(s, 0, 0, 'schichtwechsel'); // 3/3, ueberstunden +2/+1
     s = passBoth(s);
     s = passBoth(s);
     s = passBoth(s);
-    expect(getMaxHealth(s, 0, 0)).toBe(6); // 4 + 2, nicht +4
+    expect(getMaxHealth(s, 0, 0)).toBe(4); // 3 + 1, nicht +2
     expect(s.board[0][0]?.ueberstundenDone).toBe(true);
   });
 });
@@ -647,17 +650,17 @@ describe('Balancing V2 Phase 1: Determinismus, Bugfixes, Log-Schalter', () => {
     expect(gC.players[0].deck).not.toEqual(gA.players[0].deck);
   });
 
-  it('Bugfix: Basisschaden aus einer onPlay-Fähigkeit beendet die Partie sofort in der Play-Phase', () => {
+  it('Bugfix: Basisschaden aus einem Aktionskarten-Effekt beendet die Partie sofort in der Play-Phase', () => {
     // Vorher prüfte nur resolveCombat() checkBaseDestroyed; Basisschaden aus
-    // onPlayAbilities (hier: experiment.schadenProMarker bei leerem Gegnerfeld)
-    // konnte die Basis auf ≤0 senken, ohne dass die Partie endete.
+    // einem Effekt in der Play-Phase (hier: spendKnowledge bei leerem
+    // Gegnerfeld) konnte die Basis auf ≤0 senken, ohne dass die Partie endete.
     // (Sturzflug ist seit Phase 6/V2 auf denselben-Lane-Treffer beschränkt und
     // hat keinen Basis-Fallback mehr, kann diesen Fall also nicht mehr auslösen.)
     const s = emptyState();
     s.players[1].base = 3;
     s.players[0].knowledge = 3;
-    s.players[0].hand = ['experimentelle_formel']; // schadenProMarker 1, gegnerisches Feld ist leer → Basis
-    const after = applyAction(s, 0, { type: 'playCreature', handIndex: 0, lane: 0 }, data);
+    s.players[0].hand = ['experimentelle_formel']; // spendKnowledge, gegnerisches Feld ist leer → Basis
+    const after = applyAction(s, 0, { type: 'playAction', handIndex: 0 }, data);
     expect(after.players[1].base).toBe(0);
     expect(after.phase).toBe('ended');
     expect(after.winner).toBe(0);
@@ -665,23 +668,23 @@ describe('Balancing V2 Phase 1: Determinismus, Bugfixes, Log-Schalter', () => {
 
   it('Bugfix: kaltbluetig-Bonus kehrt in der Folgerunde zurück (attackedThisRound wird zurückgesetzt)', () => {
     const s = emptyState();
-    put(s, 0, 0, 'koenig_der_kobras'); // 3/5, kaltbluetig +0/+2 solange nicht angegriffen
-    expect(getMaxHealth(s, 0, 0)).toBe(7); // Bonus aktiv (noch nie angegriffen)
+    put(s, 0, 0, 'koenig_der_kobras'); // 3/5, kaltbluetig +0/+1 solange nicht angegriffen
+    expect(getMaxHealth(s, 0, 0)).toBe(6); // Bonus aktiv (noch nie angegriffen)
     put(s, 1, 0, 'streunerkatze', { exhausted: true }); // wehrt sich nicht, stirbt
     const after = passBoth(s); // Kobra greift an; Runde endet danach automatisch
     expect(after.board[1][0]).toBeNull();
     // Vorher blieb attackedThisRound für immer true → Bonus wäre dauerhaft weg.
-    expect(getMaxHealth(after, 0, 0)).toBe(7);
+    expect(getMaxHealth(after, 0, 0)).toBe(6);
   });
 
   it('Bugfix: mehrere gleichartige Abilities stapeln (getAbilities statt getAbility)', () => {
     const s = emptyState();
-    put(s, 0, 0, 'ritter'); // 4/4, greift an
-    const gecko = put(s, 1, 0, 'gecko', { exhausted: true }); // 1/3, Dornen 1
+    put(s, 0, 0, 'ritter'); // 4/5, greift an
+    const gecko = put(s, 1, 0, 'gecko', { exhausted: true }); // 1/4, Dornen 1
     gecko.abilities.push({ kind: 'dornen', x: 1 }); // zweite Dornen-Fähigkeit auf derselben Karte
     const after = passBoth(s);
     expect(after.board[1][0]).toBeNull(); // Gecko stirbt (4 Schaden)
-    expect(after.board[0][0]?.currentHealth).toBe(2); // 4 − (1+1) Dornen statt nur 1
+    expect(after.board[0][0]?.currentHealth).toBe(3); // 5 − (1+1) Dornen statt nur 1
   });
 
   it("logModus:'aus' unterdrückt weiteres Loggen, ohne den Spielausgang zu ändern", () => {
@@ -827,11 +830,11 @@ describe('Balancing V2 Phase 6: neue Engine-Primitive', () => {
 
   it('tempHealthBonus fließt in getMaxHealth ein und wird in endRound zurückgesetzt', () => {
     const s = emptyState();
-    const c = put(s, 0, 0, 'ritter'); // 4/4
-    expect(getMaxHealth(s, 0, 0)).toBe(4);
+    const c = put(s, 0, 0, 'ritter'); // 4/5
+    expect(getMaxHealth(s, 0, 0)).toBe(5);
     c.tempHealthBonus = 3;
     recalcBoard(s);
-    expect(getMaxHealth(s, 0, 0)).toBe(7);
+    expect(getMaxHealth(s, 0, 0)).toBe(8);
     const after = passBoth(s);
     expect(after.board[0][0]?.tempHealthBonus).toBe(0);
   });

@@ -8,7 +8,7 @@
     "attack": 2,
     "health": 1,
     "keywords": [],
-    "text": "Ein einfacher Soldat.",
+    "text": "Ein einfacher, effizienter Soldat.",
     "projectile": "🗡️"
   },
   {
@@ -16,13 +16,26 @@
     "name": "Schildwache",
     "faction": "humans",
     "type": "creature",
-    "cost": 1,
+    "cost": 2,
     "attack": 1,
-    "health": 3,
+    "health": 4,
     "keywords": [],
-    "abilities": [{ "kind": "nachbar", "effect": "schild", "scope": "any", "amount": 1 }],
-    "text": "Verbündete Kreaturen in benachbarten Lanes erhalten +0/+1.",
+    "abilities": [{ "kind": "nachbar", "effect": "schild", "scope": "same_top", "amount": 1 }],
+    "text": "Benachbarte verbündete Menschen erhalten +0/+1, solange die Schildwache lebt.",
     "projectile": "🗡️"
+  },
+  {
+    "id": "schildwall",
+    "name": "Schildwall",
+    "faction": "humans",
+    "type": "action",
+    "cost": 1,
+    "effect": {
+      "kind": "buffHealth",
+      "amount": 2,
+      "target": "friendlyCreature"
+    },
+    "text": "Eine verbündete Kreatur erhält dauerhaft +0/+2."
   },
   {
     "id": "feldscherin",
@@ -31,11 +44,29 @@
     "type": "creature",
     "cost": 2,
     "attack": 1,
-    "health": 2,
+    "health": 3,
     "keywords": [],
-    "abilities": [{ "kind": "heilung", "scope": "any", "reichweite": "nachbarn", "amount": 1 }],
-    "text": "Am Rundenende: Heilt verbündete Kreaturen in benachbarten Lanes um 1.",
+    "abilities": [{ "kind": "heilung", "scope": "any", "reichweite": "nachbarn", "amount": 1, "maxTargets": 1 }],
+    "text": "Rundenende: Heile eine benachbarte verbündete Kreatur um 1.",
     "projectile": "✨"
+  },
+  {
+    "id": "mobilmachung",
+    "name": "Mobilmachung",
+    "faction": "humans",
+    "type": "action",
+    "cost": 3,
+    "effect": {
+      "kind": "summon",
+      "count": 2,
+      "token": {
+        "name": "Rekrut-Token",
+        "attack": 1,
+        "health": 1,
+        "keywords": []
+      }
+    },
+    "text": "Beschwöre bis zu zwei 1/1-Rekrut-Token in freie eigene Lanes."
   },
   {
     "id": "bannertraeger",
@@ -44,10 +75,10 @@
     "type": "creature",
     "cost": 3,
     "attack": 2,
-    "health": 3,
+    "health": 4,
     "keywords": [],
-    "abilities": [{ "kind": "nachbar", "effect": "banner", "scope": "any", "amount": 1 }],
-    "text": "Verbündete Kreaturen in benachbarten Lanes erhalten +1/+0.",
+    "abilities": [{ "kind": "nachbar", "effect": "banner", "scope": "same_top", "amount": 1 }],
+    "text": "Benachbarte verbündete Menschen erhalten +1/+0, solange der Bannerträger lebt.",
     "projectile": "🚩"
   },
   {
@@ -57,7 +88,7 @@
     "type": "creature",
     "cost": 4,
     "attack": 4,
-    "health": 4,
+    "health": 5,
     "keywords": [],
     "text": "Stahl auf zwei Beinen.",
     "projectile": "⚔️"
@@ -69,43 +100,12 @@
     "type": "creature",
     "cost": 5,
     "attack": 3,
-    "health": 5,
+    "health": 6,
     "keywords": [],
-    "abilities": [{ "kind": "aura", "scope": "any", "buff": { "atk": 1, "hp": 1 }, "timing": "dauerhaft" }],
+    "abilities": [{ "kind": "aura", "scope": "same_top", "buff": { "atk": 1, "hp": 1 }, "timing": "dauerhaft" }],
     "signature": true,
-    "text": "★ Alle anderen verbündeten Kreaturen erhalten +1/+1.",
+    "text": "★ Andere verbündete Menschen erhalten +1/+1, solange die Kommandantin lebt.",
     "projectile": "⚔️"
-  },
-  {
-    "id": "schildwall",
-    "name": "Schildwall",
-    "faction": "humans",
-    "type": "action",
-    "cost": 1,
-    "effect": {
-      "kind": "buffHealth",
-      "amount": 3,
-      "target": "friendlyCreature"
-    },
-    "text": "Eine verbündete Kreatur erhält dauerhaft +3 Leben."
-  },
-  {
-    "id": "mobilmachung",
-    "name": "Mobilmachung",
-    "faction": "humans",
-    "type": "action",
-    "cost": 2,
-    "effect": {
-      "kind": "summon",
-      "count": 2,
-      "token": {
-        "name": "Rekrut-Token",
-        "attack": 1,
-        "health": 1,
-        "keywords": []
-      }
-    },
-    "text": "Beschwört zwei 1/1-Rekrut-Token in freie eigene Lanes."
   },
 
   {
@@ -116,8 +116,8 @@
     "cost": 1,
     "attack": 1,
     "health": 2,
-    "abilities": [{ "kind": "skalierung", "scope": "same_sub", "per": { "atk": 1, "hp": 0 }, "cap": 3 }],
-    "text": "+1 Angriff je weiterem Sozi (max +3).",
+    "abilities": [{ "kind": "bedingt", "scope": "same_top", "mindestAnzahl": 1, "bonus": { "atk": 1, "hp": 0 } }],
+    "text": "Solange du einen weiteren Menschen kontrollierst, erhält diese Kreatur +1 ATK.",
     "projectile": "📄"
   },
   {
@@ -128,8 +128,8 @@
     "cost": 2,
     "attack": 2,
     "health": 3,
-    "abilities": [{ "kind": "nachbar", "effect": "schadensuebernahme", "scope": "same_sub", "amount": 1 }],
-    "text": "Solidarität: fängt einen tödlichen Treffer für einen Nachbar-Sozi ab.",
+    "abilities": [{ "kind": "nachbar", "effect": "schadensuebernahme", "scope": "same_top", "amount": 1 }],
+    "text": "Verhindert einen tödlichen Treffer für einen benachbarten Menschen (einmal pro Spiel).",
     "projectile": "✊"
   },
   {
@@ -140,8 +140,8 @@
     "cost": 3,
     "attack": 2,
     "health": 4,
-    "abilities": [{ "kind": "heilung", "scope": "same_sub", "reichweite": "scope", "amount": 1 }],
-    "text": "Rundenende: heile alle deine Sozis um 1.",
+    "abilities": [{ "kind": "heilung", "scope": "same_top", "reichweite": "scope", "amount": 1, "maxTargets": 2 }],
+    "text": "Rundenende: Heile bis zu zwei beschädigte Menschen um 1.",
     "projectile": "💰"
   },
   {
@@ -151,9 +151,9 @@
     "type": "creature",
     "cost": 3,
     "attack": 1,
-    "health": 6,
-    "abilities": [{ "kind": "skalierung", "scope": "same_sub", "per": { "atk": 1, "hp": 0 }, "includeSelf": true }],
-    "text": "+1 Angriff je Sozi (inkl. sich selbst).",
+    "health": 5,
+    "abilities": [{ "kind": "skalierung", "scope": "same_top", "per": { "atk": 1, "hp": 0 }, "cap": 2 }],
+    "text": "+1 ATK je weiterem verbündeten Menschen, maximal +2 ATK.",
     "projectile": "🗳️"
   },
   {
@@ -166,23 +166,20 @@
     "health": 5,
     "abilities": [
       { "kind": "aura", "scope": "same_sub", "buff": { "atk": 1, "hp": 1 }, "timing": "dauerhaft" },
-      { "kind": "umverteilung", "menge": 2, "schwelle": 5, "ziel": "einer", "art": "atk", "dauer": "dauerhaft" }
+      { "kind": "umverteilung", "menge": 1, "schwelle": 5, "ziel": "einer", "art": "atk", "dauer": "dauerhaft" }
     ],
     "signature": true,
-    "text": "★ Sozis +1/+1. Beim Ausspielen: ein Gegner mit 5+ ATK verliert 2 ATK.",
+    "text": "★ Andere Sozis erhalten +1/+1. Beim Ausspielen: Eine gegnerische Kreatur mit mindestens 5 ATK verliert dauerhaft 1 ATK.",
     "projectile": "📢"
   },
   {
     "id": "generalstreik",
     "name": "Generalstreik",
     "faction": "sozis",
-    "type": "creature",
-    "cost": 5,
-    "attack": 4,
-    "health": 6,
-    "abilities": [{ "kind": "umverteilung", "menge": 2, "ziel": "alle", "art": "atk", "dauer": "runde" }],
-    "text": "Beim Ausspielen: alle Gegner −2 ATK diese Runde.",
-    "projectile": "🚫"
+    "type": "action",
+    "cost": 4,
+    "effect": { "kind": "debuff", "amount": 2 },
+    "text": "Alle gegnerischen Kreaturen erhalten bis zum Rundenende −2 ATK."
   },
   {
     "id": "die_massen",
@@ -193,10 +190,10 @@
     "attack": 5,
     "health": 7,
     "abilities": [
-      { "kind": "skalierung", "scope": "same_sub", "per": { "atk": 1, "hp": 1 } },
-      { "kind": "wucht" }
+      { "kind": "wucht" },
+      { "kind": "bedingt", "scope": "same_top", "mindestAnzahl": 2, "bonus": { "atk": 1, "hp": 1 } }
     ],
-    "text": "+1/+1 je weiterem Sozi; Wucht (Überschussschaden trifft die Basis).",
+    "text": "Wucht. Solange du mindestens zwei weitere Menschen kontrollierst, erhält diese Kreatur +1/+1.",
     "projectile": "👥"
   },
 
@@ -208,8 +205,8 @@
     "cost": 1,
     "attack": 1,
     "health": 2,
-    "abilities": [{ "kind": "wachstum", "per_round": { "atk": 0, "hp": 1 } }],
-    "text": "Rundenwachstum +0/+1.",
+    "abilities": [{ "kind": "wachstum", "per_round": { "atk": 0, "hp": 1 }, "maxTriggers": 2 }],
+    "text": "Rundenbeginn: +0/+1, maximal zweimal.",
     "projectile": "🔧"
   },
   {
@@ -220,8 +217,8 @@
     "cost": 2,
     "attack": 2,
     "health": 3,
-    "abilities": [{ "kind": "wachstum", "per_round": { "atk": 1, "hp": 0 } }],
-    "text": "Rundenwachstum +1/+0.",
+    "abilities": [{ "kind": "wachstum", "per_round": { "atk": 1, "hp": 0 }, "maxTriggers": 2 }],
+    "text": "Rundenbeginn: +1/+0, maximal zweimal.",
     "projectile": "🔩"
   },
   {
@@ -231,9 +228,9 @@
     "type": "creature",
     "cost": 2,
     "attack": 0,
-    "health": 4,
+    "health": 3,
     "abilities": [{ "kind": "werkzeug", "atk": 2 }],
-    "text": "Gibt einem Arbeiter +2 ATK; springt beim Tod des Trägers weiter.",
+    "text": "Beim Ausspielen: Ein anderer Arbeiter erhält +2 ATK, solange die Werkzeugkiste lebt; stirbt sie, springt der Bonus weiter.",
     "projectile": "🧰"
   },
   {
@@ -243,9 +240,9 @@
     "type": "creature",
     "cost": 3,
     "attack": 3,
-    "health": 4,
-    "abilities": [{ "kind": "ueberstunden", "bonus": { "atk": 2, "hp": 2 } }],
-    "text": "Überstunden: einmalig +2/+2, wenn eine volle Runde überlebt.",
+    "health": 3,
+    "abilities": [{ "kind": "ueberstunden", "bonus": { "atk": 2, "hp": 1 } }],
+    "text": "Hat diese Kreatur seit deinem letzten Rundenbeginn überlebt, erhält sie einmalig dauerhaft +2/+1.",
     "projectile": "🕗"
   },
   {
@@ -255,13 +252,13 @@
     "type": "creature",
     "cost": 4,
     "attack": 3,
-    "health": 4,
+    "health": 5,
     "abilities": [
-      { "kind": "nachbar", "effect": "banner", "scope": "any", "amount": 1 },
+      { "kind": "nachbar", "effect": "banner", "scope": "same_top", "amount": 1 },
       { "kind": "wachstum", "per_round": { "atk": 1, "hp": 1 }, "ziel": "verbuendeter", "scope": "same_sub" }
     ],
     "signature": true,
-    "text": "★ Nachbarn +1 ATK; jede Runde wächst ein anderer Arbeiter um +1/+1.",
+    "text": "★ Benachbarte Menschen erhalten +1 ATK. Rundenbeginn: Ein anderer Arbeiter erhält dauerhaft +1/+1.",
     "projectile": "🚩"
   },
   {
@@ -273,7 +270,7 @@
     "attack": 4,
     "health": 4,
     "abilities": [{ "kind": "wucht" }],
-    "text": "Wucht: Überschussschaden trifft die gegnerische Basis.",
+    "text": "Wucht.",
     "projectile": "🏗️"
   },
   {
@@ -283,9 +280,9 @@
     "type": "creature",
     "cost": 5,
     "attack": 3,
-    "health": 6,
-    "abilities": [{ "kind": "verstaerker", "ziel": "wachstum", "scope": "same_sub", "faktor": 2 }],
-    "text": "Alle Rundenwachstum-Effekte deiner Arbeiter lösen doppelt aus.",
+    "health": 7,
+    "abilities": [{ "kind": "verstaerker", "ziel": "wachstum", "scope": "same_sub", "faktor": 2, "firstOnlyPerRound": true }],
+    "text": "Der erste Wachstumseffekt eines Arbeiters in jeder Runde löst ein zusätzliches Mal aus.",
     "projectile": "📋"
   },
   {
@@ -296,8 +293,8 @@
     "cost": 6,
     "attack": 5,
     "health": 7,
-    "abilities": [{ "kind": "wachstum", "per_round": { "atk": 2, "hp": 0 } }],
-    "text": "Rundenwachstum +2/+0.",
+    "abilities": [{ "kind": "wachstum", "per_round": { "atk": 1, "hp": 0 } }],
+    "text": "Rundenbeginn: dauerhaft +1/+0.",
     "projectile": "🔥"
   },
 
@@ -307,10 +304,10 @@
     "faction": "obdachlose",
     "type": "creature",
     "cost": 1,
-    "attack": 2,
-    "health": 1,
-    "abilities": [{ "kind": "sammeln", "bonus": { "atk": 0, "hp": 1 }, "trigger": "any" }],
-    "text": "Stirbt eine Kreatur, dauerhaft +0/+1.",
+    "attack": 1,
+    "health": 2,
+    "abilities": [{ "kind": "sammeln", "bonus": { "atk": 0, "hp": 1 }, "trigger": "own", "firstPerRound": true, "maxTriggers": 2 }],
+    "text": "Wenn zum ersten Mal in einer Runde eine andere verbündete Kreatur stirbt: dauerhaft +0/+1, maximal zweimal.",
     "projectile": "🥫"
   },
   {
@@ -321,8 +318,8 @@
     "cost": 2,
     "attack": 2,
     "health": 2,
-    "abilities": [{ "kind": "sammeln", "bonus": { "atk": 1, "hp": 0 }, "trigger": "any" }],
-    "text": "Stirbt eine Kreatur, dauerhaft +1/+0.",
+    "abilities": [{ "kind": "sammeln", "bonus": { "atk": 1, "hp": 0 }, "trigger": "any", "firstPerRound": true, "maxTriggers": 2 }],
+    "text": "Wenn zum ersten Mal in einer Runde eine Kreatur stirbt: dauerhaft +1/+0, maximal zweimal.",
     "projectile": "🍾"
   },
   {
@@ -334,7 +331,7 @@
     "attack": 1,
     "health": 4,
     "abilities": [{ "kind": "rettung", "mode": "survive_1hp" }],
-    "text": "Überlebt den ersten tödlichen Treffer bei 1 HP.",
+    "text": "Zäh: überlebt den ersten tödlichen Treffer bei 1 HP.",
     "projectile": "🦴"
   },
   {
@@ -345,9 +342,12 @@
     "cost": 3,
     "attack": 2,
     "health": 5,
-    "abilities": [{ "kind": "improvisation", "scope": "same_sub", "mode": "schwelle", "bonus": { "atk": 2, "hp": 0 }, "schwelle": 7 }],
+    "abilities": [
+      { "kind": "improvisation", "scope": "same_top", "mode": "schwelle", "bonus": { "atk": 1, "hp": 0 }, "schwelle": 7 },
+      { "kind": "improvisation", "scope": "same_sub", "mode": "schwelle", "bonus": { "atk": 0, "hp": 1 }, "schwelle": 7 }
+    ],
     "signature": true,
-    "text": "★ Deine Obdachlosen +2 ATK, solange deine Basis ≤ 7 HP hat.",
+    "text": "★ Solange deine Basis höchstens 7 HP hat, erhalten deine anderen Menschen +1 ATK; deine anderen Obdachlosen erhalten zusätzlich +0/+1.",
     "projectile": "⛺"
   },
   {
@@ -359,7 +359,7 @@
     "attack": 3,
     "health": 3,
     "abilities": [{ "kind": "beschwoeren", "timing": "beim_tod", "count": 1, "token": { "name": "Fund-Token", "attack": 1, "health": 1, "keywords": [] } }],
-    "text": "Beim Tod: erzeuge einen 1/1-Fund-Token.",
+    "text": "Beim Tod: Beschwöre einen 1/1-Fund in eine freie eigene Lane.",
     "projectile": "🔦"
   },
   {
@@ -370,8 +370,8 @@
     "cost": 4,
     "attack": 1,
     "health": 7,
-    "abilities": [{ "kind": "heilung", "scope": "same_sub", "reichweite": "scope", "amount": 1, "mehrWennBasisUnter": { "schwelle": 7, "amount": 2 } }],
-    "text": "Rundenende: heile Obdachlose um 2 (Basis ≤ 7), sonst um 1.",
+    "abilities": [{ "kind": "heilung", "scope": "same_top", "reichweite": "scope", "amount": 1, "maxTargets": 1, "mehrWennBasisUnter": { "schwelle": 7, "amount": 2 } }],
+    "text": "Rundenende: Heile einen beschädigten Menschen um 1; bei höchstens 7 Basis-HP stattdessen um 2.",
     "projectile": "🍲"
   },
   {
@@ -382,11 +382,8 @@
     "cost": 4,
     "attack": 3,
     "health": 5,
-    "abilities": [
-      { "kind": "rettung", "mode": "survive_1hp" },
-      { "kind": "improvisation", "scope": "same_sub", "mode": "schwelle", "bonus": { "atk": 3, "hp": 0 }, "schwelle": 7 }
-    ],
-    "text": "Überlebt einen tödlichen Treffer; Obdachlose +3 ATK bei Basis ≤ 7.",
+    "abilities": [{ "kind": "rettung", "mode": "survive_1hp", "bonusWennAusgeloest": { "atk": 2, "hp": 0 } }],
+    "text": "Zäh. Wenn Zäh ausgelöst wird, erhält diese Kreatur dauerhaft +2 ATK.",
     "projectile": "🔥"
   },
   {
@@ -397,8 +394,11 @@
     "cost": 6,
     "attack": 4,
     "health": 8,
-    "abilities": [{ "kind": "improvisation", "scope": "same_sub", "mode": "pro_fehlende_hp", "bonus": { "atk": 1, "hp": 1 }, "proHp": 3 }],
-    "text": "Obdachlose +1/+1 je 3 fehlende Basis-HP.",
+    "abilities": [
+      { "kind": "wucht" },
+      { "kind": "improvisation", "scope": "same_sub", "mode": "pro_fehlende_hp", "bonus": { "atk": 1, "hp": 1 }, "proHp": 4, "cap": 2 }
+    ],
+    "text": "Wucht. +1/+1 je 4 fehlenden Basis-HP, maximal +2/+2.",
     "projectile": "🐕"
   },
 
@@ -407,11 +407,11 @@
     "name": "Erstsemester",
     "faction": "studenten",
     "type": "creature",
-    "cost": 1,
+    "cost": 2,
     "attack": 1,
     "health": 2,
     "abilities": [{ "kind": "lernen", "n": 1 }],
-    "text": "Beim Ausspielen: ziehe 1 Karte.",
+    "text": "Beim Ausspielen: Ziehe 1 Karte.",
     "projectile": "📚"
   },
   {
@@ -423,7 +423,7 @@
     "attack": 1,
     "health": 3,
     "abilities": [{ "kind": "wissen", "x": 1 }],
-    "text": "Beim Ausspielen: +1 Wissens-Marker.",
+    "text": "Beim Ausspielen: Erhalte 1 Wissen.",
     "projectile": "✏️"
   },
   {
@@ -435,7 +435,7 @@
     "attack": 3,
     "health": 1,
     "abilities": [{ "kind": "ueberstunden", "bonus": { "atk": 0, "hp": 2 } }],
-    "text": "Überstunden: einmalig +0/+2, wenn eine volle Runde überlebt.",
+    "text": "Hat diese Kreatur seit deinem letzten Rundenbeginn überlebt, erhält sie einmalig dauerhaft +0/+2.",
     "projectile": "☕"
   },
   {
@@ -446,21 +446,18 @@
     "cost": 3,
     "attack": 2,
     "health": 4,
-    "abilities": [{ "kind": "skalierung", "scope": "same_sub", "per": { "atk": 1, "hp": 1 } }],
-    "text": "+1/+1 je weiterem Studenten.",
+    "abilities": [{ "kind": "synergie", "scope": "same_top", "bonus": { "atk": 1, "hp": 1 } }],
+    "text": "Wenn du in derselben Runde bereits einen anderen Menschen ausgespielt hast, kommt Gruppenarbeit mit +1/+1 ins Spiel.",
     "projectile": "📎"
   },
   {
     "id": "experimentelle_formel",
     "name": "Experimentelle Formel",
     "faction": "studenten",
-    "type": "creature",
-    "cost": 3,
-    "attack": 2,
-    "health": 3,
-    "abilities": [{ "kind": "experiment", "schadenProMarker": 1 }],
-    "text": "Beim Ausspielen: verbrauche alle Wissens-Marker, verteile so viel Schaden auf Gegner.",
-    "projectile": "⚗️"
+    "type": "action",
+    "cost": 2,
+    "effect": { "kind": "spendKnowledge", "max": 3, "damagePerMarker": 1 },
+    "text": "Gib bis zu 3 Wissen aus. Verteile entsprechend viel Schaden auf gegnerische Kreaturen."
   },
   {
     "id": "bibliothekar",
@@ -471,12 +468,11 @@
     "attack": 2,
     "health": 5,
     "abilities": [
-      { "kind": "lernen", "n": 1, "proRunde": true },
-      { "kind": "wissen", "x": 1, "proRunde": true },
+      { "kind": "wahl", "optionA": { "art": "ziehen", "n": 1 }, "optionB": { "art": "wissen", "x": 1 }, "regel": "handKlein" },
       { "kind": "aura", "scope": "same_sub", "buff": { "atk": 1, "hp": 0 }, "timing": "dauerhaft" }
     ],
     "signature": true,
-    "text": "★ Jede Runde: ziehe 1 Karte und +1 Wissen. Studenten +1 ATK.",
+    "text": "★ Rundenbeginn: Wähle – Ziehe 1 Karte oder erhalte 1 Wissen. Andere Studenten erhalten +1 ATK.",
     "projectile": "📖"
   },
   {
@@ -487,8 +483,8 @@
     "cost": 5,
     "attack": 3,
     "health": 6,
-    "abilities": [{ "kind": "experiment", "proMarker": { "atk": 1, "hp": 1 } }],
-    "text": "Beim Ausspielen: +1/+1 je Wissens-Marker (verbraucht alle).",
+    "abilities": [{ "kind": "experiment", "proMarker": { "atk": 1, "hp": 1 }, "max": 3 }],
+    "text": "Beim Ausspielen: Gib bis zu 3 Wissen aus; diese Kreatur erhält je Marker dauerhaft +1/+1.",
     "projectile": "🎓"
   },
   {
@@ -498,12 +494,12 @@
     "type": "creature",
     "cost": 6,
     "attack": 4,
-    "health": 6,
+    "health": 7,
     "abilities": [
       { "kind": "lernen", "n": 2 },
-      { "kind": "wissen", "x": 2 }
+      { "kind": "wissen", "x": 1 }
     ],
-    "text": "Beim Ausspielen: ziehe 2 Karten und +2 Wissen.",
+    "text": "Beim Ausspielen: Ziehe 2 Karten und erhalte 1 Wissen.",
     "projectile": "🏛️"
   }
 ]
