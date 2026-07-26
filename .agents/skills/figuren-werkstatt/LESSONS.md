@@ -45,6 +45,12 @@ zweiten anzulegen.
   /opt/pw-browsers/chromium`, Import aus dem globalen `playwright`). Browser-MCP
   (`mcp__Claude_Browser`) nur als Alternative, wenn vorhanden.
 
+- **Einzelklips lassen sich nach dem Tod nicht erneut vergleichen.** Ein alter
+  `death`-Zustand hält Figur und Schatten unsichtbar oder blockiert den nächsten
+  Tod-Klip. → **Vor jedem Live-Viewer-Klip die Figur in einen neutralen Idle-
+  Zustand zurücksetzen**, damit Einzug, Angriff, Treffer und Tod beliebig oft
+  reproduzierbar bleiben.
+
 ### Bauqualität
 
 - **„Zu groß" ist fast nie ein Höhen-, sondern ein Proportions-/`visual.height`-
@@ -101,3 +107,7 @@ zweiten anzulegen.
 - **Animation aus mehreren Frames beurteilen**, nicht aus einem Standbild – der
   Montage-Streifen (`snap.mjs`) zeigt den Angriff in 3 Phasen (Ausholen, Kontakt,
   Rückkehr). Ein einzelner mittlerer Frame verbirgt Ruckler und Farb-Washes.
+- **Kontaktpose leicht aus der Kameraachse drehen.** Frontal in die Kamera
+  geführte Waffen, Schnäbel oder Kiefer verdecken sich im entscheidenden Frame
+  selbst. → Angriff und Zielteil seitlich versetzen oder leicht eindrehen, bis
+  die Silhouette in der Kontaktphase klar lesbar bleibt.

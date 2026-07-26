@@ -6,14 +6,17 @@ import { MulliganScreen } from './MulliganScreen';
 import { StartScreen } from './StartScreen';
 import { useGame } from './useGame';
 
-// Entwickler-Vorschau: /?figure=<cardId> zeigt eine einzelne Figur (nur DEV).
+// Figuren-Werkstatt: /?viewer=figures öffnet den Katalog, ?figure=<cardId>
+// springt direkt zu einer Figur und bleibt mit snap.mjs rückwärtskompatibel.
 // Stabil pro Seitenaufruf – daher vor allen Hooks; die Reihenfolge bleibt gleich.
-const previewCardId = import.meta.env.DEV
-  ? new URLSearchParams(window.location.search).get('figure')
-  : null;
+const previewParams = import.meta.env.DEV ? new URLSearchParams(window.location.search) : null;
+const previewCardId = previewParams?.get('figure') ?? null;
+const showFigureViewer = Boolean(
+  import.meta.env.DEV && (previewCardId || previewParams?.get('viewer') === 'figures')
+);
 
 export function App() {
-  if (previewCardId) return <FigurePreview cardId={previewCardId} />;
+  if (showFigureViewer) return <FigurePreview cardId={previewCardId} />;
   return <Game />;
 }
 

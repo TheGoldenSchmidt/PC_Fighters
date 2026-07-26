@@ -37,6 +37,8 @@ export interface Figure {
   playAttack(): void;
   playHit(): void;
   playDeath(): void;
+  /** Vorschau-/Wiederverwendungszustand: laufende Klips beenden und Idle herstellen. */
+  reset(): void;
   setExhausted(on: boolean): void;
   setWalking(on: boolean): void;
   /** true, sobald die Sterbeanimation vollständig durchgelaufen ist. */
@@ -524,9 +526,20 @@ function createDataFigure(
   let spawnT0 = -1;
   let deathT0 = -1;
 
+  function resetState() {
+    spawnT0 = -1;
+    deathT0 = -1;
+    player.reset();
+    (shadow.material as THREE.MeshBasicMaterial).opacity = blobBase;
+    (ring.material as THREE.MeshBasicMaterial).opacity = 0;
+    ring.scale.setScalar(1);
+  }
+
   return {
     root,
+    reset: resetState,
     playSpawn() {
+      resetState();
       spawnT0 = performance.now();
       player.play('entrance');
     },
@@ -648,9 +661,29 @@ export function createFigure(
     }
   }
 
+  function resetState() {
+    spawnT0 = -1;
+    attackT0 = -1;
+    hitT0 = -1;
+    deathT0 = -1;
+    pose.position.set(0, 0, 0);
+    pose.rotation.set(0, 0, 0);
+    pose.scale.setScalar(1);
+    rig.node.position.z = 0;
+    for (const e of mats) {
+      e.m.opacity = 1;
+      e.m.emissive.copy(e.emissive);
+    }
+    (shadow.material as THREE.MeshBasicMaterial).opacity = blobBase;
+    (ring.material as THREE.MeshBasicMaterial).opacity = 0;
+    ring.scale.setScalar(1);
+  }
+
   return {
     root,
+    reset: resetState,
     playSpawn() {
+      resetState();
       spawnT0 = performance.now();
     },
     playAttack() {
