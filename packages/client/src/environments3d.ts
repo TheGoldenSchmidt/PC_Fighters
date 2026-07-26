@@ -506,7 +506,7 @@ function createMond(): EnvironmentRec {
   const group = new THREE.Group();
   const placed: Placed[] = [];
   const add = (v: Visual, d: PlacementDesc, m: Motion = {}) => addPlaced(group, placed, v, d, m);
-  add(erde(1.25), { zone: 'back', nx: 0.64, depth: 8.5 }, { lift: 5.2, spin: 0.025 });
+  add(erde(1.25), { zone: 'back', nx: 0.64, depth: 8.5 }, { lift: 2.15, spin: 0.025 });
   add(landefaehre(2.2), { zone: 'back', nx: -0.72, depth: 5.8 }, { yaw: 0.22 });
   for (const zone of ['left', 'right'] as const) {
     add(krater(0.18), { zone, u: 0.05, out: 0.55 });
