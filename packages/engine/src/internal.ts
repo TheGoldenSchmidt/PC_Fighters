@@ -2,10 +2,17 @@
 // Auren/Skalierungen werden nie gespeichert, sondern immer dynamisch aus dem Feld
 // berechnet: verschwindet die Quelle, verschwindet automatisch auch der Bonus.
 
+import { countScope, isSoloInLane, KLASSE_A_HOOKS } from './abilityHooks.js';
 import { matchesScope } from './factions.js';
 import { KEYWORDS } from './keywords.js';
 import { zaehleKarte, zaehleSpieler } from './stats.js';
-import type { Ability, Creature, GameState, LogEvent, PlayerIndex, Scope, TokenDef } from './types.js';
+import type { Ability, Creature, GameState, LogEvent, PlayerIndex, TokenDef } from './types.js';
+
+// Re-Export für Rückwärtskompatibilität (countScope/isSoloInLane lebten bis
+// zum Ability-Registry-Umbau in dieser Datei; abilityHooks.ts ist jetzt die
+// Quelle, weil dort auch die Klasse-A-Registry liegt – siehe deren Kommentar
+// zum Zirkelimport-Grund).
+export { countScope, isSoloInLane };
 
 /** Fehlerhafte/unerlaubte Aktion eines Spielers (Meldung ist für den Client gedacht). */
 export class GameRuleError extends Error {
@@ -24,60 +31,12 @@ interface Bonus {
   health: number;
 }
 
-/** Zählt verbündete Kreaturen im scope (optional inkl. sich selbst). */
-export function countScope(
-  state: GameState,
-  owner: PlayerIndex,
-  lane: number,
-  scope: Scope,
-  includeSelf: boolean
-): number {
-  const self = state.board[owner][lane];
-  if (!self) return 0;
-  let n = 0;
-  state.board[owner].forEach((c, i) => {
-    if (!c) return;
-    if (i === lane) {
-      if (includeSelf) n += 1;
-      return;
-    }
-    if (matchesScope(state.factionTree, scope, self.faction, c.faction)) n += 1;
-  });
-  return n;
-}
-
-/** "solo": keine andere Kreatur in derselben Lane – weder eigene noch gegnerische. */
-export function isSoloInLane(state: GameState, owner: PlayerIndex, lane: number): boolean {
-  return !state.board[otherPlayer(owner)][lane];
-}
-
-/** Multiplikator für `improvisation` je nach Basis-HP des Besitzers. */
-function improvisationMultiplier(
-  state: GameState,
-  owner: PlayerIndex,
-  ab: Extract<Ability, { kind: 'improvisation' }>
-): number {
-  const base = state.players[owner].base;
-  if (ab.mode === 'schwelle') {
-    return ab.schwelle != null && base <= ab.schwelle ? 1 : 0;
-  }
-  const fehlend = Math.max(0, state.config.baseHealth - base);
-  return Math.floor(fehlend / (ab.proHp ?? 1));
-}
-
-/** Lane der einen Karte, an die ein `werkzeug` seinen Bonus vergibt (niedrigste Lane, gleiche Sub-Fraktion). */
-function werkzeugTargetLane(state: GameState, owner: PlayerIndex, sourceLane: number): number {
-  const src = state.board[owner][sourceLane];
-  if (!src) return -1;
-  for (let j = 0; j < state.board[owner].length; j++) {
-    if (j === sourceLane) continue;
-    const c = state.board[owner][j];
-    if (c && matchesScope(state.factionTree, 'same_sub', src.faction, c.faction)) return j;
-  }
-  return -1;
-}
-
-/** Beitrag EINER Quell-Kreatur (deren Auren/werkzeug/improvisation) an eine Ziel-Lane. */
+/**
+ * Beitrag EINER Quell-Kreatur (deren Auren/werkzeug/improvisation) an eine
+ * Ziel-Lane. Dispatcht über KLASSE_A_HOOKS (abilityHooks.ts) statt eines
+ * manuellen if/else-if pro `kind` – ein neues Primitiv braucht dadurch nur
+ * noch einen Registry-Eintrag, keine Änderung an dieser Schleife.
+ */
 function sourceContribution(
   state: GameState,
   owner: PlayerIndex,
@@ -101,31 +60,22 @@ function sourceContribution(
     }
   }
 
-  const tree = state.factionTree;
   for (const ab of source.abilities) {
-    if (ab.kind === 'aura' && ab.timing === 'dauerhaft') {
-      if (sourceLane !== targetLane && matchesScope(tree, ab.scope, source.faction, target.faction)) {
-        attack += ab.buff.atk;
-        health += ab.buff.hp;
-      }
-    } else if (ab.kind === 'nachbar' && (ab.effect === 'schild' || ab.effect === 'banner')) {
-      const neighbor = Math.abs(sourceLane - targetLane) === 1;
-      if (neighbor && matchesScope(tree, ab.scope, source.faction, target.faction)) {
-        if (ab.effect === 'banner') attack += ab.amount;
-        else health += ab.amount;
-      }
-    } else if (ab.kind === 'improvisation') {
-      // Wirkt auch auf sich selbst (kein Ausschluss der Quell-Lane).
-      if (matchesScope(tree, ab.scope, source.faction, target.faction)) {
-        const mult = improvisationMultiplier(state, owner, ab);
-        attack += ab.bonus.atk * mult;
-        health += ab.bonus.hp * mult;
-      }
-    } else if (ab.kind === 'werkzeug') {
-      if (sourceLane !== targetLane && targetLane === werkzeugTargetLane(state, owner, sourceLane)) {
-        attack += ab.atk;
-      }
-    }
+    const hook = KLASSE_A_HOOKS[ab.kind]?.beitragAura;
+    if (!hook) continue;
+    // TypeScript kann die Ability-Union hier nicht anhand von `ab.kind` auf
+    // den zur Registry-Kind passenden Zweig einengen (Lookup über ein
+    // generisches Record) – der Aufbau von KLASSE_A_HOOKS stellt sicher,
+    // dass jeder Hook nur für sein eigenes `kind` registriert ist.
+    const bonus = (hook as (s: GameState, o: PlayerIndex, sl: number, tl: number, a: Ability) => Bonus)(
+      state,
+      owner,
+      sourceLane,
+      targetLane,
+      ab
+    );
+    attack += bonus.attack;
+    health += bonus.health;
   }
   return { attack, health };
 }
@@ -142,29 +92,21 @@ function auraBonus(state: GameState, owner: PlayerIndex, lane: number): Bonus {
   return { attack, health };
 }
 
-/** Selbst-Boni einer Kreatur (skalierung, neugier, kaltbluetig). */
+/**
+ * Selbst-Boni einer Kreatur (skalierung, neugier, kaltbluetig). Dispatcht
+ * über KLASSE_A_HOOKS wie sourceContribution oben.
+ */
 function selfAbilityBonus(state: GameState, owner: PlayerIndex, lane: number): Bonus {
   const c = state.board[owner][lane];
   if (!c) return { attack: 0, health: 0 };
   let attack = 0;
   let health = 0;
   for (const ab of c.abilities) {
-    if (ab.kind === 'skalierung') {
-      const count = countScope(state, owner, lane, ab.scope, ab.includeSelf ?? false);
-      const eff = ab.cap != null ? Math.min(count, ab.cap) : count;
-      attack += ab.per.atk * eff;
-      health += ab.per.hp * eff;
-    } else if (ab.kind === 'neugier' && ab.bonus) {
-      if (isSoloInLane(state, owner, lane)) {
-        attack += ab.bonus.atk;
-        health += ab.bonus.hp;
-      }
-    } else if (ab.kind === 'kaltbluetig') {
-      if (!c.attackedThisRound) {
-        attack += ab.bonus.atk;
-        health += ab.bonus.hp;
-      }
-    }
+    const hook = KLASSE_A_HOOKS[ab.kind]?.beitragSelbst;
+    if (!hook) continue;
+    const bonus = (hook as (s: GameState, o: PlayerIndex, l: number, a: Ability) => Bonus)(state, owner, lane, ab);
+    attack += bonus.attack;
+    health += bonus.health;
   }
   return { attack, health };
 }
