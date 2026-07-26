@@ -106,6 +106,13 @@ liest; ein frischer Agent verliert den Kontext. Nach den Änderungen zurück zu 
 
 ### 7. Abnahme
 - Dem Nutzer das **finale Montage-PNG** zeigen und die Kritiker-Teil-Urteile zusammenfassen.
+- Zusätzlich den **Figuren-Live-Viewer** bereitstellen: Server und Vite-Client laufen
+  lassen und den direkten Link
+  `http://localhost:<clientPort>/?viewer=figures&figure=<cardId>` nennen. Der Viewer
+  verwendet dieselbe Render-/Animations-Pipeline wie das Schlachtfeld und bietet
+  Idle, Einzug, Angriff, Treffer und Tod sowie freie Drehung und Figurenwechsel.
+  Nach einem Daten-Neustart kann der Katalog im Viewer über „Neu laden" aktualisiert
+  werden. Der Viewer ergänzt die Montage, ersetzt sie aber nicht.
 - **Auf Freigabe warten.**
 
 ### 8. Lektionen vorschlagen, dann committen

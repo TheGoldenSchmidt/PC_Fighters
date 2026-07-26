@@ -11,6 +11,8 @@ export interface AnimationPlayer {
   update(nowMs: number): void;
   /** Klip auslösen (idle läuft automatisch als Loop). */
   play(name: string): void;
+  /** Alle Einzel-Klips beenden und die Figur lebendig in den Idle zurücksetzen. */
+  reset(): void;
   isDeathFinished(nowMs: number): boolean;
 }
 
@@ -98,6 +100,11 @@ export function createAnimationPlayer(
   }
 
   return {
+    reset() {
+      dead = false;
+      oneShots = [];
+      idleStart = performance.now() / 1000;
+    },
     play(name) {
       const clip = clips[name];
       if (!clip) return;
