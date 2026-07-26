@@ -32,10 +32,10 @@
     "cost": 1,
     "effect": {
       "kind": "buffHealth",
-      "amount": 2,
+      "amount": 3,
       "target": "friendlyCreature"
     },
-    "text": "Eine verbündete Kreatur erhält dauerhaft +0/+2."
+    "text": "Eine verbündete Kreatur erhält dauerhaft +0/+3."
   },
   {
     "id": "feldscherin",
@@ -203,7 +203,7 @@
     "faction": "arbeiter",
     "type": "creature",
     "cost": 1,
-    "attack": 1,
+    "attack": 2,
     "health": 2,
     "abilities": [{ "kind": "wachstum", "per_round": { "atk": 0, "hp": 1 }, "maxTriggers": 2 }],
     "text": "Rundenbeginn: +0/+1, maximal zweimal.",
@@ -215,7 +215,7 @@
     "faction": "arbeiter",
     "type": "creature",
     "cost": 2,
-    "attack": 2,
+    "attack": 3,
     "health": 3,
     "abilities": [{ "kind": "wachstum", "per_round": { "atk": 1, "hp": 0 }, "maxTriggers": 2 }],
     "text": "Rundenbeginn: +1/+0, maximal zweimal.",
@@ -239,7 +239,7 @@
     "faction": "arbeiter",
     "type": "creature",
     "cost": 3,
-    "attack": 3,
+    "attack": 4,
     "health": 3,
     "abilities": [{ "kind": "ueberstunden", "bonus": { "atk": 2, "hp": 1 } }],
     "text": "Hat diese Kreatur seit deinem letzten Rundenbeginn überlebt, erhält sie einmalig dauerhaft +2/+1.",
@@ -408,7 +408,7 @@
     "faction": "studenten",
     "type": "creature",
     "cost": 2,
-    "attack": 1,
+    "attack": 2,
     "health": 2,
     "abilities": [{ "kind": "lernen", "n": 1 }],
     "text": "Beim Ausspielen: Ziehe 1 Karte.",
@@ -420,7 +420,7 @@
     "faction": "studenten",
     "type": "creature",
     "cost": 2,
-    "attack": 1,
+    "attack": 3,
     "health": 3,
     "abilities": [{ "kind": "wissen", "x": 1 }],
     "text": "Beim Ausspielen: Erhalte 1 Wissen.",
@@ -444,7 +444,7 @@
     "faction": "studenten",
     "type": "creature",
     "cost": 3,
-    "attack": 2,
+    "attack": 3,
     "health": 4,
     "abilities": [{ "kind": "synergie", "scope": "same_top", "bonus": { "atk": 1, "hp": 1 } }],
     "text": "Wenn du in derselben Runde bereits einen anderen Menschen ausgespielt hast, kommt Gruppenarbeit mit +1/+1 ins Spiel.",
@@ -456,7 +456,7 @@
     "faction": "studenten",
     "type": "action",
     "cost": 2,
-    "effect": { "kind": "spendKnowledge", "max": 3, "damagePerMarker": 1 },
+    "effect": { "kind": "spendKnowledge", "max": 3, "damagePerMarker": 2 },
     "text": "Gib bis zu 3 Wissen aus. Verteile entsprechend viel Schaden auf gegnerische Kreaturen."
   },
   {
@@ -492,8 +492,8 @@
     "name": "Die Fakultät",
     "faction": "studenten",
     "type": "creature",
-    "cost": 6,
-    "attack": 4,
+    "cost": 5,
+    "attack": 5,
     "health": 7,
     "abilities": [
       { "kind": "lernen", "n": 2 },

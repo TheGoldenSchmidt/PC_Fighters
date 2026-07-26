@@ -94,11 +94,23 @@ describe('Server: Raum, Beitritt, Aktionen, gefilterte Sicht', () => {
 
     expect(stateA.you).toBe(0);
     expect(stateB.you).toBe(1);
-    expect(stateA.round).toBe(1);
+    expect(stateA.phase).toBe('mulligan');
+    expect(stateA.round).toBe(0);
     expect(stateA.hand).toHaveLength(4);
     expect(stateB.hand).toHaveLength(4);
     // Gegnerische Hand nur als Anzahl:
     expect(stateA.players[1].handCount).toBe(4);
+
+    a.send({ type: 'action', action: { type: 'mulligan', handIndices: [] } });
+    const waitingA = (await a.next('state')).view as ClientView;
+    await b.next('state');
+    expect(waitingA.players[0].mulliganDone).toBe(true);
+    expect(waitingA.players[1].mulliganDone).toBe(false);
+    b.send({ type: 'action', action: { type: 'mulligan', handIndices: [] } });
+    const readyA = (await a.next('state')).view as ClientView;
+    const readyB = (await b.next('state')).view as ClientView;
+    expect(readyA.phase).toBe('play');
+    expect(readyB.round).toBe(1);
   });
 
   it('ein dritter Spieler kann nicht beitreten', async () => {
@@ -168,7 +180,7 @@ describe('Server: Raum, Beitritt, Aktionen, gefilterte Sicht', () => {
     await c2b.next('rejoined');
     const view = (await c2b.next('state')).view as ClientView;
     expect(view.you).toBe(1);
-    expect(view.round).toBeGreaterThanOrEqual(1);
+    expect(view.round).toBeGreaterThanOrEqual(0);
 
     c1.ws.close();
     c2b.ws.close();
@@ -212,6 +224,31 @@ describe('Server: Raum, Beitritt, Aktionen, gefilterte Sicht', () => {
     c.ws.close();
   });
 
+  it('/info liefert Karten, Deckbauregeln und Prebuilds', async () => {
+    const info = await fetch(`http://127.0.0.1:${server.port}/info`).then((r) => r.json()) as Record<string, unknown>;
+    expect(Array.isArray(info.cards)).toBe(true);
+    expect(info.deckbuilding).toBeTruthy();
+    expect(Object.keys(info.decks as object)).toContain('h1_solidaritaet');
+  });
+
+  it('Preset-Decks werden serverseitig aufgelöst; manipulierte Custom-Decks werden abgelehnt', async () => {
+    const host = await connect(server.port);
+    host.send({ type: 'create', deckSelection: { kind: 'preset', id: 'h1_solidaritaet' } });
+    const created = await host.next('created');
+    const guest = await connect(server.port);
+    guest.send({ type: 'join', code: created.code, deckSelection: { kind: 'preset', id: 'a1_rudeljaeger' } });
+    await guest.next('joined');
+    const hostView = (await host.next('state')).view as ClientView;
+    expect(hostView.players[0].deckName).toContain('Solidarität');
+    expect(hostView.players[1].deckName).toContain('Rudeljäger');
+
+    const bad = await connect(server.port);
+    bad.send({ type: 'create', deckSelection: { kind: 'custom', deck: { name: 'Cheat', cards: [{ cardId: 'wolf', count: 99 }] } } });
+    const err = await bad.next('error');
+    expect(String(err.message)).toContain('Deck ungültig');
+    host.ws.close(); guest.ws.close(); bad.ws.close();
+  });
+
   it('Testmodus: beide Hände starten mit den Figuren-Karten und viel Energie', async () => {
     const data = loadGameData();
     const figureCardIds = data.cards
@@ -229,6 +266,11 @@ describe('Server: Raum, Beitritt, Aktionen, gefilterte Sicht', () => {
     const joined = await c2.next('joined');
     expect(joined.testMode).toBe(true);
 
+    await c1.next('state');
+    await c2.next('state');
+    c1.send({ type: 'action', action: { type: 'mulligan', handIndices: [] } });
+    await c1.next('state'); await c2.next('state');
+    c2.send({ type: 'action', action: { type: 'mulligan', handIndices: [] } });
     const state1 = (await c1.next('state')).view as ClientView;
     const state2 = (await c2.next('state')).view as ClientView;
     expect(state1.hand.map((c) => c.id).sort()).toEqual([...figureCardIds].sort());

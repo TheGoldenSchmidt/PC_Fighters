@@ -58,6 +58,37 @@ export const BOT_PROFILE: Record<string, BotProfil> = {
   }
 };
 
+/**
+ * Kartenblinder Mulligan für die Vierer-Starthand. Er bevorzugt eine Kurve
+ * für Runde 1–3 und tauscht teure Karten sowie überzählige Duplikate.
+ */
+export function waehleMulligan(
+  state: GameState,
+  player: PlayerIndex,
+  data: GameData,
+  random: () => number = Math.random
+): Extract<PlayerAction, { type: 'mulligan' }> {
+  const hand = state.players[player].hand;
+  let best = -Infinity;
+  const candidates: number[][] = [];
+  for (let mask = 0; mask < 1 << hand.length; mask++) {
+    const kept = hand.map((id, i) => ({ id, i, card: data.cardsById[id] })).filter((_, i) => (mask & (1 << i)) === 0);
+    const counts = new Map<string, number>();
+    let score = 0;
+    for (const { id, card } of kept) {
+      const n = (counts.get(id) ?? 0) + 1; counts.set(id, n);
+      score += card.cost === 1 ? 4 : card.cost === 2 ? 3 : card.cost === 3 ? 1.5 : card.cost === 0 ? 1 : -1;
+      if (n > 1) score -= 1.25;
+    }
+    if (kept.some(({ card }) => card.type === 'creature')) score += 1;
+    if ([1, 2, 3].every((cost) => kept.some(({ card }) => card.cost === cost))) score += 2;
+    const discard = hand.map((_, i) => i).filter((i) => (mask & (1 << i)) !== 0);
+    if (score > best) { best = score; candidates.length = 0; candidates.push(discard); }
+    else if (score === best) candidates.push(discard);
+  }
+  return { type: 'mulligan', handIndices: candidates[Math.floor(random() * candidates.length)] };
+}
+
 const SIEG_WERT = 1_000_000_000;
 
 /** Grober Wert einer Kreatur (für die Kampf-Prognose): Angriff + aktuelles Leben. */

@@ -15,9 +15,9 @@ export {
   roundEnergy
 } from './game.js';
 export { buildFactionTree, matchesScope, topOf } from './factions.js';
-export { aktiviereStatistik, leereStatistik, zaehleKarte, zaehleSpieler } from './stats.js';
+export { aktiviereStatistik, finalisiereStatistik, leereStatistik, markiereLegaleHandkarten, registriereEnergie, zaehleKarte, zaehleSpieler } from './stats.js';
 export { legaleAktionen } from './legal.js';
-export { BOT_PROFILE, bewerteZustand, kampfprognose, waehleAktion } from './bot.js';
+export { BOT_PROFILE, bewerteZustand, kampfprognose, waehleAktion, waehleMulligan } from './bot.js';
 export type { BotGewichte, BotProfil } from './bot.js';
 export { spielePartie } from './simulate.js';
 export type { PartieErgebnis, PartieOptionen } from './simulate.js';

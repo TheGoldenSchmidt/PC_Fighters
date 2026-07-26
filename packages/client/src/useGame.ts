@@ -2,7 +2,7 @@
 // Wiederverbinden mit Raum-Code + Token, und der komplette UI-Zustand.
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { ClientView, PlayerAction, Topic, VisualCatalog } from '@pcf/engine';
+import type { ClientView, DeckSelection, PlayerAction, Topic, VisualCatalog } from '@pcf/engine';
 import { toInfoUrl, toWsUrl } from './config';
 
 export type ConnectionStatus = 'idle' | 'connecting' | 'connected' | 'reconnecting';
@@ -168,26 +168,26 @@ export function useGame() {
   );
 
   const createGame = useCallback(
-    (serverInput: string, faction: string, topicId: string, testMode = false) => {
+    (serverInput: string, deckSelection: DeckSelection, topicId: string, testMode = false) => {
       const url = toWsUrl(serverInput);
       session.current = { url, code: '', token: '' };
       patch({ serverAddress: serverInput.trim() });
       loadCatalog(serverInput);
       open(url, (socket) =>
-        socket.send(JSON.stringify({ type: 'create', faction, topic: topicId, testMode }))
+        socket.send(JSON.stringify({ type: 'create', deckSelection, topic: topicId, testMode }))
       );
     },
     [open, loadCatalog]
   );
 
   const joinGame = useCallback(
-    (serverInput: string, code: string, faction: string) => {
+    (serverInput: string, code: string, deckSelection: DeckSelection) => {
       const url = toWsUrl(serverInput);
       session.current = { url, code: '', token: '' };
       patch({ serverAddress: serverInput.trim() });
       loadCatalog(serverInput);
       open(url, (socket) =>
-        socket.send(JSON.stringify({ type: 'join', code: code.trim(), faction }))
+        socket.send(JSON.stringify({ type: 'join', code: code.trim(), deckSelection }))
       );
     },
     [open, loadCatalog]

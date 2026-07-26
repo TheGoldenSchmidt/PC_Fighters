@@ -10,6 +10,8 @@ import {
   buildClientView,
   createGame,
   createSeededRandom,
+  ladeDecks,
+  spielePartie,
   loadGameData
 } from '../src/index.js';
 import { recalcBoard } from '../src/internal.js';
@@ -26,6 +28,7 @@ function player(faction: string): PlayerState {
     energy: 10,
     knowledge: 0,
     flyDone: false,
+    mulliganDone: false,
     gespieltDieseRunde: []
   };
 }
@@ -95,6 +98,10 @@ function put(
 
 /** Beide Spieler passen → Kampfphase läuft, danach Rundenende/Flugphase. */
 function passBoth(state: GameState): GameState {
+  if (state.phase === 'mulligan') {
+    state = applyAction(state, 0, { type: 'mulligan', handIndices: [] }, data);
+    state = applyAction(state, 1, { type: 'mulligan', handIndices: [] }, data);
+  }
   const afterFirst = applyAction(state, state.active, { type: 'pass' }, data);
   return applyAction(afterFirst, afterFirst.active, { type: 'pass' }, data);
 }
@@ -201,16 +208,16 @@ describe('Telemetrie-Sidecar: exakte Zählerwerte', () => {
     aktiviereStatistik(s);
     const hund = put(s, 0, 0, 'der_alte_hund', { spawnRound: 0 }); // 1/4, rettung survive_1hp
     hund.exhausted = true;
-    const angreifer = put(s, 1, 0, 'brachiosaurus', { spawnRound: 0 }); // 5/9, würde 5 Schaden machen
+    const angreifer = put(s, 1, 0, 'brachiosaurus', { spawnRound: 0 }); // 4/8, würde 4 Schaden machen
 
     const next = passBoth(s);
 
     // Hund lebt mit 1 HP weiter (Rettung ausgelöst).
     const hundImFeld = next.board[0][0];
     expect(hundImFeld?.currentHealth).toBe(1);
-    // 4 HP - 5 Schaden = -1 -> verhindert = 1 - (-1) = 2.
-    expect(next.stats!.proKarte[0]['der_alte_hund'].verhindert).toBe(2);
-    expect(next.stats!.proSpieler[0].verhinderterSchaden).toBe(2);
+    // 4 HP - 4 Schaden = 0 -> Rettung setzt auf 1, also 1 Schaden verhindert.
+    expect(next.stats!.proKarte[0]['der_alte_hund'].verhindert).toBe(1);
+    expect(next.stats!.proSpieler[0].verhinderterSchaden).toBe(1);
   });
 
   it('Wachstum wird als wachstumAtk/wachstumHp beim Rundenbeginn gezählt', () => {
@@ -245,5 +252,20 @@ describe('Telemetrie-Sidecar: exakte Zählerwerte', () => {
 
     expect(next.stats!.proSpieler[0].flinkAngriffe).toBe(1);
     expect(next.stats!.proKarte[0]['ratte'].schadenBasis).toBe(2);
+  });
+
+  it('vollständige Simulation erfasst Mulligan, Energie je Runde, Endhand und Karteninstanzen', () => {
+    const decks = ladeDecks(data);
+    const result = spielePartie(data, decks.h1_solidaritaet, decks.a1_rudeljaeger, { saat: 77 });
+    for (const side of [0, 1] as const) {
+      const p = result.stats.proSpieler[side];
+      expect(p.anfangshand).toHaveLength(data.config.startingHand);
+      expect(p.kartenGezogen).toBeGreaterThanOrEqual(data.config.startingHand);
+      expect(p.energieJeRunde).toHaveLength(result.runden);
+      expect(p.endhand).toEqual(result.endState.players[side].hand);
+    }
+    expect(Object.keys(result.stats.instanzen).length).toBe(data.config.deckbuilding.size * 2);
+    const kartenwerte = Object.values(result.stats.proKarte[0]);
+    expect(kartenwerte.some((k) => k.mulliganAngeboten > 0)).toBe(true);
   });
 });

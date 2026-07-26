@@ -18,7 +18,7 @@
 
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
-import type { ClientView, PlayerIndex, Topic, VisualCatalog } from '@pcf/engine';
+import type { ClientView, EnvironmentKind, PlayerIndex, Topic, VisualCatalog } from '@pcf/engine';
 import { createFigure, type Figure } from './figures3d';
 import { createEnvironment, type EnvironmentRec, type FieldMetrics } from './environments3d';
 
@@ -68,6 +68,8 @@ interface FigureRec {
   attackStart: number;
   /** Welt-Versatz zum Gegner beim Zulauf (Spitzenwert, wird per Hüllkurve skaliert). */
   approach: THREE.Vector3;
+  /** Tatsächliche Modellbreite nach Auto-Fit, für breite Tiere/Dinos. */
+  width: number;
 }
 
 // Angriffs-Zulauf: die Figur tritt vor dem Schlag ein Stück auf den Gegner zu
@@ -129,7 +131,10 @@ interface World {
   renderer: THREE.WebGLRenderer;
   scene: THREE.Scene;
   camera: THREE.PerspectiveCamera;
+  /** Erweiterte WebGL-Bühne inklusive seitlicher Kulissenflügel. */
   container: HTMLElement;
+  /** Das unveränderte DOM-Lane-Raster für Slot-Anker und Bedienung. */
+  layoutRoot: HTMLElement;
   figures: Map<number, FigureRec>;
   orbs: Orb[];
   spellFx: SpellFx[];
@@ -193,16 +198,18 @@ function groundPoint(world: World, px: number, py: number, out: THREE.Vector3): 
 function slotAnchor(
   world: World,
   side: PlayerIndex,
-  lane: number
+  lane: number,
+  modelWidth = NOMINAL_HEIGHT
 ): { pos: THREE.Vector3; scale: number } | null {
-  const el = world.container.querySelector<HTMLElement>(`[data-slot="${side}-${lane}"]`);
+  const el = world.layoutRoot.querySelector<HTMLElement>(`[data-slot="${side}-${lane}"]`);
   if (!el) return null;
   const rect = el.getBoundingClientRect();
   const cRect = world.container.getBoundingClientRect();
   if (rect.width === 0 || rect.height === 0) return null;
   const px = rect.left - cRect.left + rect.width / 2;
-  // Fußpunkt im unteren Slot-Drittel, damit die Figur im Slot steht
-  const py = rect.top - cRect.top + rect.height * 0.8;
+  // Füße nahe der unteren Slotkante verankern. Der kleine Bodenabstand hält
+  // Namensschild/Stats frei, ohne die Figur optisch schweben zu lassen.
+  const py = rect.top - cRect.top + rect.height * 0.86;
   const pos = groundPoint(world, px, py, new THREE.Vector3());
   // Skala: Welt-Einheiten pro CSS-Pixel in dieser Kameratiefe. Die Figur
   // soll gut die halbe Slot-Höhe einnehmen – der Rest ist Luft für
@@ -211,9 +218,40 @@ function slotAnchor(
   const worldPerPx =
     (2 * dist * Math.tan(THREE.MathUtils.degToRad(world.camera.fov / 2))) /
     (world.container.clientHeight || 1);
-  const scale = (Math.min(rect.height * 0.68, rect.width * 0.78) * worldPerPx) / NOMINAL_HEIGHT;
+  const heightScale = (rect.height * 0.64 * worldPerPx) / NOMINAL_HEIGHT;
+  const widthScale = (rect.width * 0.7 * worldPerPx) / Math.max(modelWidth, 0.1);
+  const scale = Math.min(heightScale, widthScale);
   return { pos, scale };
 }
+
+interface ArenaRenderStyle {
+  floorOpacity: number;
+  gridOpacity: number;
+  pathOpacity: number;
+  glowOpacity: number;
+  fogNear: number;
+  fogFar: number;
+  exposure: number;
+}
+
+const DEFAULT_ARENA_STYLE: ArenaRenderStyle = {
+  floorOpacity: 0.34,
+  gridOpacity: 0.1,
+  pathOpacity: 0.16,
+  glowOpacity: 0.14,
+  fogNear: 18,
+  fogFar: 46,
+  exposure: 1.1
+};
+
+const ARENA_STYLES: Record<EnvironmentKind, ArenaRenderStyle> = {
+  wald: { floorOpacity: 0.38, gridOpacity: 0.045, pathOpacity: 0.13, glowOpacity: 0.1, fogNear: 16, fogFar: 40, exposure: 1.08 },
+  hoehle: { floorOpacity: 0.5, gridOpacity: 0.025, pathOpacity: 0.11, glowOpacity: 0.18, fogNear: 13, fogFar: 34, exposure: 1.02 },
+  stadt: { floorOpacity: 0.44, gridOpacity: 0.2, pathOpacity: 0.2, glowOpacity: 0.2, fogNear: 20, fogFar: 50, exposure: 1.16 },
+  mond: { floorOpacity: 0.48, gridOpacity: 0.055, pathOpacity: 0.12, glowOpacity: 0.13, fogNear: 23, fogFar: 58, exposure: 1.22 },
+  mars: { floorOpacity: 0.5, gridOpacity: 0.035, pathOpacity: 0.1, glowOpacity: 0.15, fogNear: 17, fogFar: 43, exposure: 1.12 },
+  c137: { floorOpacity: 0.42, gridOpacity: 0.14, pathOpacity: 0.24, glowOpacity: 0.26, fogNear: 16, fogFar: 42, exposure: 1.2 }
+};
 
 /** Geschossfarbe aus dem Projektil-Emoji der Karte ableiten. */
 function orbColor(emoji: string): number {
@@ -244,7 +282,8 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
   useEffect(() => {
     const canvas = canvasRef.current;
     const container = canvas?.parentElement;
-    if (!canvas || !container) return;
+    const layoutRoot = container?.parentElement;
+    if (!canvas || !container || !layoutRoot) return;
 
     let renderer: THREE.WebGLRenderer;
     try {
@@ -383,6 +422,7 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
       scene,
       camera,
       container,
+      layoutRoot,
       figures: new Map(),
       orbs: [],
       spellFx: [],
@@ -420,7 +460,7 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
 
       // Figuren zu ihren Slot-Ankern führen (Lane-Wechsel = sichtbares Laufen)
       for (const [uid, rec] of world.figures) {
-        const anchor = slotAnchor(world, rec.side, rec.lane);
+        const anchor = slotAnchor(world, rec.side, rec.lane, rec.width);
         if (anchor) {
           const root = rec.fig.root;
           if (!rec.placed) {
@@ -460,13 +500,18 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
       const opp: PlayerIndex = world.me === 0 ? 1 : 0;
       const a0 = slotAnchor(world, world.me, 0);
       const aN = slotAnchor(world, world.me, Math.max(0, world.lanes - 1));
-      const aF = slotAnchor(world, opp, 0) ?? slotAnchor(world, opp, Math.max(0, world.lanes - 1));
-      const haveField = !!(a0 && aN && aF);
-      const leftX = haveField ? Math.min(a0!.pos.x, aN!.pos.x) : 0;
-      const rightX = haveField ? Math.max(a0!.pos.x, aN!.pos.x) : 0;
+      const f0 = slotAnchor(world, opp, 0);
+      const fN = slotAnchor(world, opp, Math.max(0, world.lanes - 1));
+      const haveField = !!(a0 && aN && f0 && fN);
+      const anchors = haveField ? [a0!, aN!, f0!, fN!] : [];
+      const leftX = haveField ? Math.min(...anchors.map((a) => a.pos.x)) : 0;
+      const rightX = haveField ? Math.max(...anchors.map((a) => a.pos.x)) : 0;
       const laneStep = haveField
         ? world.lanes > 1
-          ? (rightX - leftX) / (world.lanes - 1)
+          ? Math.max(
+              Math.abs(aN!.pos.x - a0!.pos.x),
+              Math.abs(fN!.pos.x - f0!.pos.x)
+            ) / (world.lanes - 1)
           : Math.max(rightX - leftX, 2.0)
         : 2.0;
 
@@ -497,8 +542,8 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
           world.environment.layout({
             leftX,
             rightX,
-            nearZ: a0!.pos.z,
-            farZ: aF!.pos.z,
+            nearZ: Math.max(a0!.pos.z, aN!.pos.z),
+            farZ: Math.min(f0!.pos.z, fN!.pos.z),
             laneStep,
             scale: a0!.scale
           });
@@ -607,15 +652,29 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
     const lane = safeColor(topic?.colors.lane, 0x1d2940);
     const border = safeColor(topic?.colors.laneBorder, 0x45619c);
     const accent = safeColor(topic?.colors.accent, 0x63c9f8);
-    (world.ground.floor.material as THREE.MeshStandardMaterial).color.copy(lane);
-    (world.ground.grid.material as THREE.Material as THREE.LineBasicMaterial).color.copy(border);
-    (world.ground.glow.material as THREE.MeshBasicMaterial).color.copy(accent);
+    const style = topic?.environment ? ARENA_STYLES[topic.environment] : DEFAULT_ARENA_STYLE;
+    const floorMat = world.ground.floor.material as THREE.MeshStandardMaterial;
+    const gridMat = world.ground.grid.material as THREE.LineBasicMaterial;
+    const glowMat = world.ground.glow.material as THREE.MeshBasicMaterial;
+    floorMat.color.copy(lane);
+    floorMat.opacity = style.floorOpacity;
+    gridMat.color.copy(border);
+    gridMat.opacity = style.gridOpacity;
+    glowMat.color.copy(accent);
+    glowMat.opacity = style.glowOpacity;
+    world.renderer.toneMappingExposure = style.exposure;
     // Lane-Wege in der Akzentfarbe (heller Pfad auf dem dunklen Boden)
     for (const strip of world.lanePaths) {
-      (strip.material as THREE.MeshBasicMaterial).color.copy(accent);
+      const material = strip.material as THREE.MeshBasicMaterial;
+      material.color.copy(accent);
+      material.opacity = style.pathOpacity;
     }
     // Nebelfarbe dunkel aus der Lane-Farbe ableiten → weicher Horizont
-    if (world.scene.fog) world.scene.fog.color.copy(lane.clone().multiplyScalar(0.4));
+    if (world.scene.fog instanceof THREE.Fog) {
+      world.scene.fog.color.copy(lane.clone().multiplyScalar(0.4));
+      world.scene.fog.near = style.fogNear;
+      world.scene.fog.far = style.fogFar;
+    }
   }, [topic]);
 
   // ---- Prozedurale 3D-Umgebung (Deko) je nach Schauplatz auf-/abbauen ----
@@ -660,7 +719,8 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
             cat?.defaultClips,
             { realShadows: world.realShadows }
           );
-          rec = { fig, side, lane, health: c.health, onBoard: true, dying: false, placed: false, attackStart: 0, approach: new THREE.Vector3() };
+          const width = new THREE.Box3().setFromObject(fig.root).getSize(new THREE.Vector3()).x;
+          rec = { fig, side, lane, health: c.health, onBoard: true, dying: false, placed: false, attackStart: 0, approach: new THREE.Vector3(), width };
           world.figures.set(c.uid, rec);
           world.scene.add(fig.root);
           if (!world.firstSync) fig.playSpawn();
@@ -824,5 +884,9 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
     if (world.seenSpells.size > 200) world.seenSpells.clear();
   }, [fx, me]);
 
-  return <canvas ref={canvasRef} className="battlefield3d" aria-hidden />;
+  return (
+    <div className="battlefield3d-shell" aria-hidden>
+      <canvas ref={canvasRef} className="battlefield3d" />
+    </div>
+  );
 }

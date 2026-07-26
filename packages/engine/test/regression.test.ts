@@ -24,32 +24,30 @@ const decks = ladeDecks(data);
 const profil: BotProfil = { ...BOT_PROFILE.ausgewogen, epsilonBand: 0 };
 
 /** deckA, deckB, Saat, erwarteter Hash `sieger:runden:basisA:basisB:uidCounter`. */
-// Neu erzeugt in Phase 9 (Korridor-Iteration): Brachiosaurus 6→5 ATK,
-// Triceratops Dornen 2→1, Krähe/Möwe/Taubenschwarm je +1 HP. Eine engere
-// Zermürbung (abRunde 13→10, schaden 1→2) wurde im selben Zug ausprobiert,
-// aber wieder verworfen (siehe Phase-9-Commit) – config.json bleibt bei den
-// Phase-6-Werten, nur die Kartendaten ändern sich in dieser Tabelle.
+// Neu erzeugt nach Einführung des Mulligans und der anschließenden
+// Korridor-Iteration. Decklisten und Mechaniken blieben unverändert; angepasst
+// wurden ausschließlich numerische Kartenwerte.
 const GOLDEN_MASTER: [string, string, number, string][] = [
-  ['a1_rudeljaeger', 'a2_luftangriff', 5000, '0:8:15:-1:19'],
-  ['a1_rudeljaeger', 'a3_gift_urgewalt', 5001, '1:11:-5:8:23'],
-  ['a1_rudeljaeger', 'a4_urzeitliches_rudel', 5002, '0:7:10:0:12'],
-  ['a1_rudeljaeger', 'h1_solidaritaet', 5003, '0:11:15:0:22'],
-  ['a1_rudeljaeger', 'h2_schicht', 5004, '0:5:15:-1:8'],
-  ['a1_rudeljaeger', 'h3_campus', 5005, '1:13:0:5:25'],
-  ['a2_luftangriff', 'a3_gift_urgewalt', 5006, '1:9:-2:12:18'],
-  ['a2_luftangriff', 'a4_urzeitliches_rudel', 5007, '1:8:-2:11:18'],
-  ['a2_luftangriff', 'h1_solidaritaet', 5008, '1:10:-4:14:19'],
-  ['a2_luftangriff', 'h2_schicht', 5009, '1:16:0:2:29'],
-  ['a2_luftangriff', 'h3_campus', 5010, '1:13:0:11:25'],
-  ['a3_gift_urgewalt', 'a4_urzeitliches_rudel', 5011, '1:13:-3:15:28'],
-  ['a3_gift_urgewalt', 'h1_solidaritaet', 5012, '0:15:1:-2:29'],
-  ['a3_gift_urgewalt', 'h2_schicht', 5013, '0:14:11:0:28'],
-  ['a3_gift_urgewalt', 'h3_campus', 5014, '0:11:15:-2:19'],
-  ['a4_urzeitliches_rudel', 'h1_solidaritaet', 5015, '0:9:9:-3:15'],
-  ['a4_urzeitliches_rudel', 'h2_schicht', 5016, '0:10:15:-2:20'],
-  ['a4_urzeitliches_rudel', 'h3_campus', 5017, '0:14:14:-2:28'],
-  ['h1_solidaritaet', 'h2_schicht', 5018, '0:13:15:-2:26'],
-  ['h1_solidaritaet', 'h3_campus', 5019, '0:9:15:-4:12']
+  ['a1_rudeljaeger', 'a2_luftangriff', 5000, '0:12:13:-1:28'],
+  ['a1_rudeljaeger', 'a3_gift_urgewalt', 5001, '1:12:-2:8:25'],
+  ['a1_rudeljaeger', 'a4_urzeitliches_rudel', 5002, '1:11:-1:3:25'],
+  ['a1_rudeljaeger', 'h1_solidaritaet', 5003, '0:9:15:0:21'],
+  ['a1_rudeljaeger', 'h2_schicht', 5004, '0:15:2:-2:34'],
+  ['a1_rudeljaeger', 'h3_campus', 5005, '1:14:0:4:29'],
+  ['a2_luftangriff', 'a3_gift_urgewalt', 5006, '1:15:-2:8:33'],
+  ['a2_luftangriff', 'a4_urzeitliches_rudel', 5007, '1:12:0:1:27'],
+  ['a2_luftangriff', 'h1_solidaritaet', 5008, '1:9:0:9:19'],
+  ['a2_luftangriff', 'h2_schicht', 5009, 'draw:16:-2:-1:35'],
+  ['a2_luftangriff', 'h3_campus', 5010, '1:15:-1:1:29'],
+  ['a3_gift_urgewalt', 'a4_urzeitliches_rudel', 5011, '1:8:-2:11:14'],
+  ['a3_gift_urgewalt', 'h1_solidaritaet', 5012, '0:12:10:-3:21'],
+  ['a3_gift_urgewalt', 'h2_schicht', 5013, '1:13:0:8:23'],
+  ['a3_gift_urgewalt', 'h3_campus', 5014, '1:13:0:8:23'],
+  ['a4_urzeitliches_rudel', 'h1_solidaritaet', 5015, '1:12:-4:1:24'],
+  ['a4_urzeitliches_rudel', 'h2_schicht', 5016, '0:11:15:-1:22'],
+  ['a4_urzeitliches_rudel', 'h3_campus', 5017, '0:14:5:0:29'],
+  ['h1_solidaritaet', 'h2_schicht', 5018, '1:11:0:12:21'],
+  ['h1_solidaritaet', 'h3_campus', 5019, '1:13:0:8:19']
 ];
 
 describe('Golden Master: Partie-Simulation bleibt bei Refactors unverändert', () => {

@@ -4,10 +4,11 @@
 // genutzt – eine einzige Simulationsschleife, damit beide garantiert
 // dasselbe Verhalten treiben.
 
-import { BOT_PROFILE, waehleAktion } from './bot.js';
+import { BOT_PROFILE, waehleAktion, waehleMulligan } from './bot.js';
 import { applyAction, createGame } from './game.js';
 import { createSeededRandom } from './rng.js';
-import { aktiviereStatistik } from './stats.js';
+import { aktiviereStatistik, finalisiereStatistik, markiereLegaleHandkarten } from './stats.js';
+import { legaleAktionen } from './legal.js';
 import type { BotProfil } from './bot.js';
 import type { DeckList, GameData, GameState, MatchStatistik, PlayerIndex } from './types.js';
 
@@ -48,11 +49,17 @@ export function spielePartie(
   aktiviereStatistik(s);
   s.logModus = 'aus'; // Massensimulation: Log-Wachstum ist der dominante Klon-Kostenfaktor.
   const startspieler = s.startingPlayer;
+  s = applyAction(s, 0, waehleMulligan(s, 0, data, random), data, random);
+  s = applyAction(s, 1, waehleMulligan(s, 1, data, random), data, random);
 
   const maxSchritte = opts.maxSchritte ?? 2000;
   let schritte = 0;
   while (s.phase !== 'ended' && schritte < maxSchritte) {
     const profil = s.active === 0 ? profilA : profilB;
+    const legal = legaleAktionen(s, s.active, data);
+    markiereLegaleHandkarten(s, s.active, legal.flatMap((a) =>
+      a.type === 'playCreature' || a.type === 'playAction' ? [a.handIndex] : []
+    ));
     const aktion = waehleAktion(s, s.active, data, profil, random);
     s = applyAction(s, s.active, aktion, data);
     schritte += 1;
@@ -60,6 +67,7 @@ export function spielePartie(
   if (s.phase !== 'ended') {
     throw new Error(`Partie terminierte nicht nach ${maxSchritte} Schritten (Saat ${opts.saat}).`);
   }
+  finalisiereStatistik(s);
 
   return {
     gewinner: s.winner as PlayerIndex | 'draw',

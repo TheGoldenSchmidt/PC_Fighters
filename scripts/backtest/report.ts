@@ -48,6 +48,13 @@ export interface KartenKennzahl {
   gestorben: number;
   geheilt: number;
   verhindert: number;
+  auraAusloesungen: number;
+  wachstumAusloesungen: number;
+  giftZerstoerungen: number;
+  flinkAngriffe: number;
+  mulliganKeepRate: number | null;
+  endhandNieLegal: number;
+  endhandNichtGewaehlt: number;
 }
 
 export interface BotSensitivitaet {
@@ -96,6 +103,11 @@ function ampel(ok: boolean): string {
 /** Prüft, ob ein Punktschätzer + sein KI komplett innerhalb eines Korridors liegt (konservativ: nur außerhalb, wenn das GANZE KI außerhalb ist). */
 function imKorridorMitKi(kiUnten: number, kiOben: number, min: number, max: number): boolean {
   return kiOben >= min && kiUnten <= max;
+}
+
+function ampelKi(wert: number, kiUnten: number, kiOben: number, min: number, max: number): string {
+  if (wert >= min && wert <= max) return '🟢';
+  return imKorridorMitKi(kiUnten, kiOben, min, max) ? '🟡' : '🔴';
 }
 
 /**
@@ -240,9 +252,8 @@ export function erzeugeReport(ergebnis: BacktestErgebnis, korridore: Korridore):
       for (const [fraktion, { sieg, gesamt }] of fraktionen) {
         const wr = sieg / gesamt;
         const [u, o] = wilsonKi(sieg, gesamt);
-        const ok = imKorridorMitKi(u, o, korridore.gesamtWinrateOberfraktion.min, korridore.gesamtWinrateOberfraktion.max);
         push(
-          `| Gesamt-Winrate ${fraktion} (95 %-KI) | ${pct(wr)} [${pct(u)}, ${pct(o)}] | ${pct(korridore.gesamtWinrateOberfraktion.min)}–${pct(korridore.gesamtWinrateOberfraktion.max)} | ${ampel(ok)} |`
+          `| Gesamt-Winrate ${fraktion} (95 %-KI) | ${pct(wr)} [${pct(u)}, ${pct(o)}] | ${pct(korridore.gesamtWinrateOberfraktion.min)}–${pct(korridore.gesamtWinrateOberfraktion.max)} | ${ampelKi(wr, u, o, korridore.gesamtWinrateOberfraktion.min, korridore.gesamtWinrateOberfraktion.max)} |`
         );
       }
     }
@@ -267,9 +278,8 @@ export function erzeugeReport(ergebnis: BacktestErgebnis, korridore: Korridore):
   for (const [deck, { sieg, gesamt }] of [...deckStats].sort()) {
     const wr = sieg / gesamt;
     const [u, o] = wilsonKi(sieg, gesamt);
-    const ok = imKorridorMitKi(u, o, korridore.deckWinrateGegenTestfeld.min, korridore.deckWinrateGegenTestfeld.max);
     push(
-      `| ${deck} | ${ergebnis.deckFraktion[deck] ?? '?'} | ${gesamt} | ${sieg} | ${pct(wr)} | [${pct(u)}, ${pct(o)}] | ${ampel(ok)} |`
+      `| ${deck} | ${ergebnis.deckFraktion[deck] ?? '?'} | ${gesamt} | ${sieg} | ${pct(wr)} | [${pct(u)}, ${pct(o)}] | ${ampelKi(wr, u, o, korridore.deckWinrateGegenTestfeld.min, korridore.deckWinrateGegenTestfeld.max)} |`
     );
   }
   push();
@@ -323,21 +333,20 @@ export function erzeugeReport(ergebnis: BacktestErgebnis, korridore: Korridore):
   push(`## Karten-Kennzahlen`);
   push();
   push(
-    '| Karte | Fraktion | Deck-Präsenz | Ausspielrate | gespielt | Schaden (Kreatur/Basis) | Kills | Tode | Geheilt | Verhindert | Hinweis |'
+    '| Karte | Fraktion | Deck-Präsenz | Keep | Ausspielrate | gespielt | Schaden (Kreatur/Basis) | Kills/Tode | Aura/Wachstum/Gift/Flink | Endhand nie legal/nicht gewählt | Hinweis |'
   );
-  push('|---|---|---|---|---|---|---|---|---|---|---|');
+    push('|---|---|---|---|---|---|---|---|---|---|---|---|');
   for (const k of [...ergebnis.karten].sort((a, b) => a.faction.localeCompare(b.faction) || a.name.localeCompare(b.name))) {
     const hinweise: string[] = [];
     if (k.deckPraesenzAnteil > korridore.einzelkartePraesenzInDecksDerOberfraktion.maxAnteil) hinweise.push('Präsenz hoch');
     if (k.ausspielrateAnteil < korridore.einzelkarteAusspielrate.minAnteil) hinweise.push('Ausspielrate niedrig');
+    if (k.mulliganKeepRate != null && k.mulliganKeepRate > korridore.einzelkarteMulliganKeepRate.maxAnteil) hinweise.push('Keep-Rate hoch');
     push(
-      `| ${k.name} | ${k.faction} | ${pct(k.deckPraesenzAnteil)} | ${pct(k.ausspielrateAnteil)} | ${k.gespielt} | ${k.schadenKreatur}/${k.schadenBasis} | ${k.kills} | ${k.gestorben} | ${k.geheilt} | ${k.verhindert} | ${hinweise.join(', ') || '–'} |`
+      `| ${k.name} | ${k.faction} | ${pct(k.deckPraesenzAnteil)} | ${k.mulliganKeepRate == null ? '–' : pct(k.mulliganKeepRate)} | ${pct(k.ausspielrateAnteil)} | ${k.gespielt} | ${k.schadenKreatur}/${k.schadenBasis} | ${k.kills}/${k.gestorben} | ${k.auraAusloesungen}/${k.wachstumAusloesungen}/${k.giftZerstoerungen}/${k.flinkAngriffe} | ${k.endhandNieLegal}/${k.endhandNichtGewaehlt} | ${hinweise.join(', ') || '–'} |`
     );
   }
   push();
-  push(
-    `> Mulligan-Keep-Rate (${pct(korridore.einzelkarteMulliganKeepRate.maxAnteil)}-Grenze) ist **nicht messbar**: die Engine kennt keinen Mulligan-Mechanismus (kein \`PlayerAction\`-Typ dafür).`
-  );
+  push(`> Keep-Raten beziehen sich auf das deterministische Bot-Mulligan; „nie legal“ und „nicht gewählt“ zählen physische Kartenkopien der Endhand.`);
   push();
 
   push(`## Priorität für den ersten Test (aus Regelwerk V2 §7)`);

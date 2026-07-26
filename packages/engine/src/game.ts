@@ -26,7 +26,7 @@ import {
   recalcBoard
 } from './internal.js';
 import { hasKeyword } from './keywords.js';
-import { zaehleKarte, zaehleSpieler } from './stats.js';
+import { registriereAusspielen, registriereEnergie, registriereMulligan, registriereZug, zaehleKarte, zaehleSpieler } from './stats.js';
 import type {
   CardDef,
   ClientView,
@@ -118,6 +118,7 @@ function drawCards(state: GameState, player: PlayerIndex, amount: number): void 
     const card = p.deck.shift();
     if (!card) return; // leeres Deck: es wird einfach nicht mehr gezogen
     p.hand.push(card);
+    registriereZug(state, player);
     zaehleSpieler(state, player, 'kartenGezogen');
   }
 }
@@ -131,12 +132,14 @@ export function createGame(
 ): GameState {
   const makePlayer = (faction: string, deck: DeckList | null): PlayerState => ({
     faction,
+    deckName: deck?.name,
     deck: deck ? buildDeckFromList(data, deck, random) : buildDeck(data, faction, random),
     hand: [],
     base: data.config.baseHealth,
     energy: 0,
     knowledge: 0,
     flyDone: false,
+    mulliganDone: false,
     gespieltDieseRunde: []
   });
 
@@ -144,7 +147,7 @@ export function createGame(
     config: data.config,
     factionTree: buildFactionTree(data.factions),
     round: 0,
-    phase: 'play',
+    phase: 'mulligan',
     startingPlayer: random() < 0.5 ? 0 : 1,
     active: 0,
     consecutivePasses: 0,
@@ -160,8 +163,40 @@ export function createGame(
 
   drawCards(state, 0, data.config.startingHand);
   drawCards(state, 1, data.config.startingHand);
-  startRound(state);
   return state;
+}
+
+/** Einmaliger Mulligan: erst Ersatz ziehen, dann abgelegte Karten zurückmischen. */
+function mulliganAction(
+  state: GameState,
+  player: PlayerIndex,
+  action: Extract<PlayerAction, { type: 'mulligan' }>,
+  random: () => number
+): void {
+  if (state.phase !== 'mulligan') throw new GameRuleError('Der Mulligan ist bereits vorbei.');
+  const p = state.players[player];
+  if (p.mulliganDone) throw new GameRuleError('Du hast deinen Mulligan bereits bestätigt.');
+  const indices = [...new Set(action.handIndices)].sort((a, b) => b - a);
+  if (indices.some((i) => !Number.isInteger(i) || i < 0 || i >= p.hand.length)) {
+    throw new GameRuleError('Ungültige Kartenauswahl für den Mulligan.');
+  }
+  const zurueckInstanzen = registriereMulligan(state, player, indices);
+  const zurueck: string[] = [];
+  for (const i of indices) zurueck.push(p.hand.splice(i, 1)[0]);
+  drawCards(state, player, zurueck.length);
+  if (state.stats) {
+    const paare = p.deck.map((card, i) => ({ card, id: state.stats!.deckInstanzen[player][i] }))
+      .concat(zurueck.map((card, i) => ({ card, id: zurueckInstanzen[i] })));
+    const gemischt = shuffle(paare, random);
+    p.deck = gemischt.map((x) => x.card);
+    state.stats.deckInstanzen[player] = gemischt.map((x) => x.id);
+  } else {
+    p.deck = shuffle([...p.deck, ...zurueck], random);
+  }
+  p.mulliganDone = true;
+  log(state, `Spieler ${player + 1} hat den Mulligan bestätigt.`);
+  if (state.players[0].mulliganDone && state.players[1].mulliganDone) startRound(state);
+  else state.active = otherPlayer(player);
 }
 
 // ---------------------------------------------------------------- Rundenablauf
@@ -177,6 +212,8 @@ function startRound(state: GameState): void {
   // 2. Energie: start + (Runde-1)*perRound, optional gedeckelt – Rest verfällt.
   // Telemetrie: die noch übrige Energie aus der vorigen Runde wird gerade
   // überschrieben (Runde 1: immer 0, da PlayerState mit energy:0 startet).
+  registriereEnergie(state, 0);
+  registriereEnergie(state, 1);
   zaehleSpieler(state, 0, 'energieVerfallen', state.players[0].energy);
   zaehleSpieler(state, 1, 'energieVerfallen', state.players[1].energy);
   const energy = roundEnergy(state.config, state.round);
@@ -281,7 +318,10 @@ function creatureStrike(
   defender.letzterSchaden = { art: 'kampf', quelle: attacker.cardId, owner: attackerIdx };
   attacker.attackedThisRound = true;
   zaehleKarte(state, attackerIdx, attacker.cardId, 'schadenKreatur', atk);
-  if (attacker.spawnRound === state.round) zaehleSpieler(state, attackerIdx, 'flinkAngriffe');
+  if (attacker.spawnRound === state.round) {
+    zaehleSpieler(state, attackerIdx, 'flinkAngriffe');
+    zaehleKarte(state, attackerIdx, attacker.cardId, 'flinkAngriffe');
+  }
   log(state, `Lane ${lane + 1}: ${attacker.name} trifft ${defender.name} für ${atk}.`, {
     kind: 'attack',
     lane,
@@ -358,7 +398,10 @@ function resolveCombat(state: GameState): void {
       a.attackedThisRound = true;
       state.players[1].base -= dmg;
       zaehleKarte(state, 0, a.cardId, 'schadenBasis', dmg);
-      if (a.spawnRound === state.round) zaehleSpieler(state, 0, 'flinkAngriffe');
+      if (a.spawnRound === state.round) {
+        zaehleSpieler(state, 0, 'flinkAngriffe');
+        zaehleKarte(state, 0, a.cardId, 'flinkAngriffe');
+      }
       log(state, `Lane ${lane + 1}: ${a.name} trifft die gegnerische Basis für ${dmg}.`, {
         kind: 'attack',
         lane,
@@ -372,7 +415,10 @@ function resolveCombat(state: GameState): void {
       b.attackedThisRound = true;
       state.players[0].base -= dmg;
       zaehleKarte(state, 1, b.cardId, 'schadenBasis', dmg);
-      if (b.spawnRound === state.round) zaehleSpieler(state, 1, 'flinkAngriffe');
+      if (b.spawnRound === state.round) {
+        zaehleSpieler(state, 1, 'flinkAngriffe');
+        zaehleKarte(state, 1, b.cardId, 'flinkAngriffe');
+      }
       log(state, `Lane ${lane + 1}: ${b.name} trifft die gegnerische Basis für ${dmg}.`, {
         kind: 'attack',
         lane,
@@ -485,6 +531,7 @@ function playPhaseAction(state: GameState, player: PlayerIndex, action: PlayerAc
   }
 
   p.energy -= card.cost;
+  registriereAusspielen(state, player, action.handIndex);
   p.hand.splice(action.handIndex, 1);
   state.consecutivePasses = 0;
   zaehleKarte(state, player, card.id, 'gespielt');
@@ -547,13 +594,17 @@ export function applyAction(
   state: GameState,
   player: PlayerIndex,
   action: PlayerAction,
-  data: GameData
+  data: GameData,
+  random: () => number = Math.random
 ): GameState {
   if (state.phase === 'ended') {
     throw new GameRuleError('Die Partie ist bereits beendet.');
   }
   const next = structuredClone(state);
-  if (next.phase === 'play') {
+  if (next.phase === 'mulligan') {
+    if (action.type !== 'mulligan') throw new GameRuleError('Bitte zuerst den Mulligan bestätigen.');
+    mulliganAction(next, player, action, random);
+  } else if (next.phase === 'play') {
     playPhaseAction(next, player, action, data);
   } else {
     flyPhaseAction(next, player, action);
@@ -605,11 +656,13 @@ export function buildClientView(state: GameState, player: PlayerIndex, data: Gam
 
   const publicView = (idx: PlayerIndex) => ({
     faction: state.players[idx].faction,
+    deckName: state.players[idx].deckName,
     base: state.players[idx].base,
     energy: state.players[idx].energy,
     deckCount: state.players[idx].deck.length,
     handCount: state.players[idx].hand.length,
-    flyDone: state.players[idx].flyDone
+    flyDone: state.players[idx].flyDone,
+    mulliganDone: state.players[idx].mulliganDone
   });
 
   return {

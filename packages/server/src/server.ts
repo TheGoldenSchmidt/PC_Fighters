@@ -12,11 +12,18 @@ import sirv from 'sirv';
 import {
   applyAction,
   buildClientView,
+  buildFactionTree,
   buildVisualCatalog,
   createGame,
   DataError,
   GameRuleError,
   loadGameData,
+  ladeDecks,
+  topOf,
+  validateDeck,
+  DeckError,
+  type DeckList,
+  type DeckSelection,
   type GameData,
   type GameState,
   type PlayerAction,
@@ -39,6 +46,7 @@ const abilityInfo = Object.fromEntries(
 interface RoomPlayer {
   token: string;
   faction: string;
+  deck: DeckList | null;
   socket: WebSocket | null;
 }
 
@@ -92,7 +100,8 @@ function saveRooms(rooms: Map<string, Room>) {
         testMode: room.testMode,
         players: room.players.map(p => ({
           token: p.token,
-          faction: p.faction
+          faction: p.faction,
+          deck: p.deck
         }))
       };
     });
@@ -112,7 +121,7 @@ function loadRooms(): Map<string, Room> {
         topic: Topic;
         state: GameState | null;
         testMode?: boolean;
-        players: Array<{ token: string; faction: string }>;
+        players: Array<{ token: string; faction: string; deck?: DeckList | null }>;
       }>;
       for (const item of parsed) {
         map.set(item.code, {
@@ -123,6 +132,7 @@ function loadRooms(): Map<string, Room> {
           players: item.players.map(p => ({
             token: p.token,
             faction: p.faction,
+            deck: p.deck ?? null,
             socket: null
           }))
         });
@@ -229,7 +239,10 @@ export function startServer(port: number): Promise<RunningServer> {
           topics: data!.topics,
           // Aussehen/Animation als OPAKE Daten – der Server interpretiert sie nie,
           // er reicht sie nur weiter (wie factions/keywords). Der Client rendert.
-          visuals: buildVisualCatalog(data!)
+          visuals: buildVisualCatalog(data!),
+          cards: data!.cards,
+          deckbuilding: data!.config.deckbuilding,
+          decks: ladeDecks(data!)
         })
       );
       return;
@@ -311,6 +324,32 @@ export function startServer(port: number): Promise<RunningServer> {
       return faction;
     }
 
+    function resolveDeck(selection: unknown, legacyFaction: unknown): { faction: string; deck: DeckList | null } {
+      const d = requireData();
+      if (!selection || typeof selection !== 'object') {
+        return { faction: validFaction(legacyFaction), deck: null };
+      }
+      const value = selection as DeckSelection;
+      let deck: DeckList;
+      if (value.kind === 'preset') {
+        const preset = ladeDecks(d)[value.id];
+        if (!preset) throw new GameRuleError(`Unbekanntes Prebuild-Deck "${value.id}".`);
+        deck = preset;
+      } else if (value.kind === 'custom') {
+        try {
+          deck = validateDeck(value.deck, d);
+        } catch (e) {
+          if (e instanceof DeckError) throw new GameRuleError(e.message);
+          throw e;
+        }
+      } else {
+        throw new GameRuleError('Ungültige Deckauswahl.');
+      }
+      const first = d.cardsById[deck.cards[0]?.cardId];
+      if (!first) throw new GameRuleError('Das Deck enthält keine gültige Karte.');
+      return { faction: topOf(buildFactionTree(d.factions), first.faction), deck };
+    }
+
     /** Thema auflösen; ohne Angabe gilt das erste Thema aus topics.json. */
     function validTopic(topicId: unknown): Topic {
       const d = requireData();
@@ -335,11 +374,11 @@ export function startServer(port: number): Promise<RunningServer> {
     function handleMessage(msg: Record<string, unknown>): void {
       switch (msg.type) {
         case 'create': {
-          const faction = validFaction(msg.faction);
+          const { faction, deck } = resolveDeck(msg.deckSelection, msg.faction);
           const topic = validTopic(msg.topic);
           const room: Room = {
             code: newRoomCode(),
-            players: [{ token: randomBytes(12).toString('hex'), faction, socket: null }],
+            players: [{ token: randomBytes(12).toString('hex'), faction, deck, socket: null }],
             state: null,
             topic,
             testMode: Boolean(msg.testMode)
@@ -362,7 +401,7 @@ export function startServer(port: number): Promise<RunningServer> {
         }
 
         case 'join': {
-          const faction = validFaction(msg.faction);
+          const { faction, deck } = resolveDeck(msg.deckSelection, msg.faction);
           const room = rooms.get(String(msg.code));
           if (!room) {
             throw new GameRuleError('Diesen Raum-Code gibt es nicht. Tippfehler?');
@@ -373,6 +412,7 @@ export function startServer(port: number): Promise<RunningServer> {
           room.players.push({
             token: randomBytes(12).toString('hex'),
             faction,
+            deck,
             socket: null
           });
           attach(room, 1);
@@ -390,7 +430,9 @@ export function startServer(port: number): Promise<RunningServer> {
           const d = requireData();
           room.state = createGame(
             room.testMode ? testGameData(d) : d,
-            [room.players[0].faction, faction]
+            [room.players[0].faction, faction],
+            Math.random,
+            [room.players[0].deck, deck]
           );
           if (room.testMode) {
             // Beide Hände direkt mit allen Figuren-Karten füllen, damit sich

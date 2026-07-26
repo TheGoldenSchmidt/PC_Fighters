@@ -58,6 +58,11 @@ export interface DeckList {
   cards: DeckEntry[];
 }
 
+/** Vom Client gewählte Deckquelle. Presets werden serverseitig aufgelöst. */
+export type DeckSelection =
+  | { kind: 'preset'; id: string }
+  | { kind: 'custom'; deck: DeckList };
+
 export interface Faction {
   id: string;
   name: string;
@@ -83,7 +88,7 @@ export interface Stat {
 }
 
 /** Prozedurale 3D-Umgebung eines Schauplatzes (rein optisch, lane-frei). */
-export type EnvironmentKind = 'wald' | 'hoehle' | 'stadt';
+export type EnvironmentKind = 'wald' | 'hoehle' | 'stadt' | 'mond' | 'mars' | 'c137';
 
 /** Schauplatz einer Partie – rein optisch, wird vom Raum-Ersteller gewählt. */
 export interface Topic {
@@ -422,6 +427,15 @@ export interface KartenStatistik {
   gestorben: number;
   geheilt: number;
   verhindert: number;
+  auraAusloesungen: number;
+  wachstumAusloesungen: number;
+  giftZerstoerungen: number;
+  flinkAngriffe: number;
+  mulliganAngeboten: number;
+  mulliganBehalten: number;
+  legaleGelegenheiten: number;
+  endhandNieLegal: number;
+  endhandNichtGewaehlt: number;
 }
 
 export interface SpielerStatistik {
@@ -436,16 +450,36 @@ export interface SpielerStatistik {
   wachstumHp: number;
   energieVerfallen: number;
   kartenGezogen: number;
+  energieJeRunde: { runde: number; ungenutzt: number }[];
+  anfangshand: string[];
+  mulliganGetauscht: string[];
+  mulliganBehalten: string[];
+  endhand: string[];
+}
+
+export interface KartenInstanzStatistik {
+  id: number;
+  cardId: string;
+  owner: PlayerIndex;
+  legalGesehen: boolean;
+  ausgespielt: boolean;
 }
 
 export interface MatchStatistik {
   /** proKarte[spieler][cardId] – nur Karten, die tatsächlich vorkamen. */
   proKarte: [Record<string, KartenStatistik>, Record<string, KartenStatistik>];
   proSpieler: [SpielerStatistik, SpielerStatistik];
+  /** Interne Zuordnung physischer Kartenkopien; nur während einer Simulation. */
+  instanzen: Record<number, KartenInstanzStatistik>;
+  deckInstanzen: [number[], number[]];
+  handInstanzen: [number[], number[]];
+  naechsteInstanz: number;
 }
 
 export interface PlayerState {
   faction: string;
+  /** Öffentlicher Anzeigename, niemals die gegnerische Deckliste. */
+  deckName?: string;
   deck: string[];
   hand: string[];
   base: number;
@@ -454,6 +488,8 @@ export interface PlayerState {
   knowledge: number;
   /** Flug-Phase: Spieler hat "Fertig" gedrückt (oder hat keine fliegenden Kreaturen). */
   flyDone: boolean;
+  /** Vor Runde 1: dieser Spieler hat seinen einmaligen Mulligan bestätigt. */
+  mulliganDone: boolean;
   /**
    * Fraktionen der in DIESER Runde bereits gespielten Karten (für `synergie` –
    * Hooks bekommen nur `GameState`, keine `GameData`, daher Fraktion statt
@@ -462,7 +498,7 @@ export interface PlayerState {
   gespieltDieseRunde: string[];
 }
 
-export type Phase = 'play' | 'fly' | 'ended';
+export type Phase = 'mulligan' | 'play' | 'fly' | 'ended';
 
 /**
  * Strukturierte Kampf-Ereignisse am Log-Eintrag – die UI spielt sie als
@@ -537,6 +573,7 @@ export interface GameState {
 }
 
 export type PlayerAction =
+  | { type: 'mulligan'; handIndices: number[] }
   | { type: 'playCreature'; handIndex: number; lane: number }
   | { type: 'playAction'; handIndex: number; targetLane?: number; toLane?: number }
   | { type: 'pass' }
@@ -568,11 +605,13 @@ export interface CreatureView {
 
 export interface PlayerPublicView {
   faction: string;
+  deckName?: string;
   base: number;
   energy: number;
   deckCount: number;
   handCount: number;
   flyDone: boolean;
+  mulliganDone: boolean;
 }
 
 export interface ClientView {

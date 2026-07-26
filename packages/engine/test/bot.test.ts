@@ -26,6 +26,7 @@ function player(faction: string): PlayerState {
     energy: 10,
     knowledge: 0,
     flyDone: false,
+    mulliganDone: false,
     gespieltDieseRunde: []
   };
 }
@@ -200,10 +201,10 @@ describe('waehleAktion: Policy-Verhalten', () => {
 
   it('verheizt eine wertvolle Kreatur nicht in einem klar schlechten Tausch, wenn eine sichere Lane frei ist', () => {
     const s = emptyState();
-    put(s, 1, 0, 'brachiosaurus'); // 6/9, unopponiert
-    s.players[0].hand = ['ratte', 'ritter']; // ritter würde gegen brachiosaurus sterben, ohne ihn zu töten
+    put(s, 1, 0, 'tyrannosaurus_rex'); // 6/5, unopponiert
+    s.players[0].hand = ['ratte', 'ritter']; // Ritter würde gegen den T-Rex sterben, ohne ihn zu töten
     const gewaehlt = waehleAktion(s, 0, data, BOT_PROFILE.ausgewogen, createSeededRandom(5));
-    // Der Ritter darf nicht in Lane 0 (gegen den Brachiosaurus) geopfert werden.
+    // Der Ritter darf nicht in Lane 0 (gegen den T-Rex) geopfert werden.
     expect(gewaehlt).not.toEqual({ type: 'playCreature', handIndex: 1, lane: 0 });
   });
 

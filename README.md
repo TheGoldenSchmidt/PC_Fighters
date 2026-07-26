@@ -62,6 +62,22 @@ Auch hier erscheint eine „Network"-Adresse, z. B. `http://192.168.178.66:5173`
 
 ---
 
+### Deckwahl und Mulligan
+
+Vor einer Partie wählst du zuerst **Humans** oder **Animals** und danach eines der sieben fertigen Decks oder ein lokal gespeichertes eigenes Deck. Eigene Decks lassen sich im Deckeditor filtern, kopieren sowie als JSON importieren und exportieren. Sie werden nur in diesem Browser gespeichert. Nach dem Beitritt tauschen beide Spieler im Mulligan optional beliebig viele Karten; Runde 1 beginnt erst nach beiden Bestätigungen.
+
+### Balancing-Backtest
+
+Ein vollständiger sitzplatzgespiegelter Lauf mit 100 Partien je Matchup wird so gestartet:
+
+```
+npm run backtest -- --spiele 50
+```
+
+`--spiele 50` bedeutet 50 Partien **je Sitzordnung und Matchup**, also 100 je Matchup. Jeder Lauf erzeugt unter `backtest-results/<Zeitstempel>/` automatisch `report.md`, `summary.json` und `matches.jsonl`. Ein eigener Ausgabeordner ist mit `--out backtest-results/mein-lauf` möglich; sowohl `--spiele 50` als auch `--spiele=50` werden akzeptiert.
+
+---
+
 ## 2. Eine neue Karte hinzufügen
 
 Alle Karten liegen als einfache Textdateien hier:

@@ -36,6 +36,7 @@ function player(faction: string): PlayerState {
     energy: 10,
     knowledge: 0,
     flyDone: false,
+    mulliganDone: false,
     gespieltDieseRunde: []
   };
 }
@@ -105,6 +106,10 @@ function put(
 
 /** Beide Spieler passen → Kampfphase läuft, danach Rundenende/Flugphase. */
 function passBoth(state: GameState): GameState {
+  if (state.phase === 'mulligan') {
+    state = applyAction(state, 0, { type: 'mulligan', handIndices: [] }, data);
+    state = applyAction(state, 1, { type: 'mulligan', handIndices: [] }, data);
+  }
   const afterFirst = applyAction(state, state.active, { type: 'pass' }, data);
   return applyAction(afterFirst, afterFirst.active, { type: 'pass' }, data);
 }
@@ -333,13 +338,31 @@ describe('Ausspielen & Energie', () => {
     }
   });
 
-  it('createGame: Starthand, Basisleben und Runde 1 mit 1 Energie', () => {
-    const g = createGame(data, ['humans', 'animals'], () => 0.42);
+  it('createGame: Starthand, Mulligan und danach Runde 1 mit 1 Energie', () => {
+    let g = createGame(data, ['humans', 'animals'], () => 0.42);
+    expect(g.phase).toBe('mulligan');
+    expect(g.round).toBe(0);
+    g = applyAction(g, 0, { type: 'mulligan', handIndices: [] }, data, () => 0.42);
+    g = applyAction(g, 1, { type: 'mulligan', handIndices: [] }, data, () => 0.42);
     expect(g.round).toBe(1);
     expect(g.players[0].hand).toHaveLength(data.config.startingHand);
     expect(g.players[0].base).toBe(data.config.baseHealth);
     expect(g.players[0].energy).toBe(1);
     expect(g.players[0].deck).toHaveLength(data.config.deckbuilding.size - data.config.startingHand);
+  });
+
+  it('Mulligan zieht Ersatz vor dem Zurückmischen und wartet auf beide Spieler', () => {
+    let g = createGame(data, ['humans', 'animals'], () => 0.42);
+    g.players[0].hand = ['rekrut', 'feldscherin', 'generalstreik', 'die_massen'];
+    g.players[0].deck = ['flugblatt_verteiler', 'streikposten', 'basisdemokratie', 'schrottsammlerin', ...g.players[0].deck];
+    g = applyAction(g, 0, { type: 'mulligan', handIndices: [0, 1, 2, 3] }, data, () => 0);
+    expect(g.phase).toBe('mulligan');
+    expect(g.players[0].hand).toEqual(['flugblatt_verteiler', 'streikposten', 'basisdemokratie', 'schrottsammlerin']);
+    expect(g.players[0].mulliganDone).toBe(true);
+    expect(g.players[1].mulliganDone).toBe(false);
+    g = applyAction(g, 1, { type: 'mulligan', handIndices: [] }, data, () => 0);
+    expect(g.phase).toBe('play');
+    expect(g.round).toBe(1);
   });
 });
 
@@ -444,7 +467,7 @@ describe('Neue Fähigkeiten – Kampf', () => {
     put(s, 1, 0, 'brachiosaurus', { exhausted: true }); // 6/9, wehrt sich nicht
     const after = passBoth(s);
     // Nur der Kampf-Treffer (2) mindert das Leben; Gift zählt Marken statt direkt zu schaden.
-    expect(after.board[1][0]?.currentHealth).toBe(7);
+    expect(after.board[1][0]?.currentHealth).toBe(6);
     expect(after.board[1][0]?.poison).toBe(2);
   });
 
@@ -657,7 +680,7 @@ describe('Balancing V2 Phase 1: Determinismus, Bugfixes, Log-Schalter', () => {
     // (Sturzflug ist seit Phase 6/V2 auf denselben-Lane-Treffer beschränkt und
     // hat keinen Basis-Fallback mehr, kann diesen Fall also nicht mehr auslösen.)
     const s = emptyState();
-    s.players[1].base = 3;
+    s.players[1].base = 6;
     s.players[0].knowledge = 3;
     s.players[0].hand = ['experimentelle_formel']; // spendKnowledge, gegnerisches Feld ist leer → Basis
     const after = applyAction(s, 0, { type: 'playAction', handIndex: 0 }, data);
@@ -669,12 +692,12 @@ describe('Balancing V2 Phase 1: Determinismus, Bugfixes, Log-Schalter', () => {
   it('Bugfix: kaltbluetig-Bonus kehrt in der Folgerunde zurück (attackedThisRound wird zurückgesetzt)', () => {
     const s = emptyState();
     put(s, 0, 0, 'koenig_der_kobras'); // 3/5, kaltbluetig +0/+1 solange nicht angegriffen
-    expect(getMaxHealth(s, 0, 0)).toBe(6); // Bonus aktiv (noch nie angegriffen)
+    expect(getMaxHealth(s, 0, 0)).toBe(5); // Bonus aktiv (noch nie angegriffen)
     put(s, 1, 0, 'streunerkatze', { exhausted: true }); // wehrt sich nicht, stirbt
     const after = passBoth(s); // Kobra greift an; Runde endet danach automatisch
     expect(after.board[1][0]).toBeNull();
     // Vorher blieb attackedThisRound für immer true → Bonus wäre dauerhaft weg.
-    expect(getMaxHealth(after, 0, 0)).toBe(6);
+    expect(getMaxHealth(after, 0, 0)).toBe(5);
   });
 
   it('Bugfix: mehrere gleichartige Abilities stapeln (getAbilities statt getAbility)', () => {
@@ -725,7 +748,7 @@ describe('Balancing V2 Phase 6: neue Engine-Primitive', () => {
     const opfer = put(s, 1, 0, 'brachiosaurus', { exhausted: true }); // 6/9, wehrt sich nicht
     opfer.poison = 1; // vergiftet -> Hunter-Bonus greift
     const after = passBoth(s);
-    expect(after.board[1][0]?.currentHealth).toBe(2); // 9 - (4 + 3 Hunter-Bonus)
+    expect(after.board[1][0]?.currentHealth).toBe(1); // 8 - (4 + 3 Hunter-Bonus)
   });
 
   it('hunter: kein Bonus gegen ein ungiftiges Ziel', () => {
@@ -734,7 +757,7 @@ describe('Balancing V2 Phase 6: neue Engine-Primitive', () => {
     jaeger.abilities = [{ kind: 'hunter', bonusAtk: 3 }];
     put(s, 1, 0, 'brachiosaurus', { exhausted: true }); // 6/9, kein Gift
     const after = passBoth(s);
-    expect(after.board[1][0]?.currentHealth).toBe(5); // 9 - 4, kein Bonus
+    expect(after.board[1][0]?.currentHealth).toBe(4); // 8 - 4, kein Bonus
   });
 
   it('shedding: heilt proaktiv bei Erreichen der Schwelle, entfernt optional Gift, löst nur einmal pro Spiel aus', () => {

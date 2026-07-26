@@ -17,8 +17,8 @@
 //   --schnell            Kurzlauf (spiele=10, zufalls-basis=10) für schnelle Checks
 //   --out=datei.md       Report zusätzlich in eine Datei schreiben
 
-import { readFileSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   BOT_PROFILE,
@@ -40,10 +40,12 @@ const korridoreJson = JSON.parse(readFileSync(join(HIER, 'korridore.json'), 'utf
 function parseArgs(argv: string[]) {
   const flags = new Set<string>();
   const werte: Record<string, string> = {};
-  for (const arg of argv) {
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
     const m = /^--([a-zA-Z-]+)(?:=(.*))?$/.exec(arg);
     if (!m) continue;
     if (m[2] !== undefined) werte[m[1]] = m[2];
+    else if (argv[i + 1] && !argv[i + 1].startsWith('--')) werte[m[1]] = argv[++i];
     else flags.add(m[1]);
   }
   return { flags, werte };
@@ -58,6 +60,37 @@ const profileVergleich = flags.has('profile-vergleich');
 const zufallsBasisSpiele = Number(werte['zufalls-basis'] ?? (schnell ? 10 : 30));
 const streng = flags.has('streng');
 const outDatei = werte['out'];
+
+interface RohPartie {
+  saat: number;
+  decksNachSitz: [string, string];
+  gewinner: string | 'draw';
+  gewinnerOberfraktion: string | null;
+  startspieler: number;
+  startspielerDeck: string;
+  endrunde: number;
+  amRundenlimit: boolean;
+  basisHp: [number, number];
+  spieler: unknown[];
+  proKarte: unknown[];
+}
+
+function rohPartie(r: import('../../packages/engine/src/index.js').PartieErgebnis, saat: number, decks: [string, string], fraktionen: [string, string]): RohPartie {
+  const winner = r.gewinner === 'draw' ? 'draw' : decks[r.gewinner];
+  return {
+    saat,
+    decksNachSitz: decks,
+    gewinner: winner,
+    gewinnerOberfraktion: r.gewinner === 'draw' ? null : fraktionen[r.gewinner],
+    startspieler: r.startspieler,
+    startspielerDeck: decks[r.startspieler],
+    endrunde: r.runden,
+    amRundenlimit: r.amRundenlimit,
+    basisHp: [r.endState.players[0].base, r.endState.players[1].base],
+    spieler: r.stats.proSpieler,
+    proKarte: r.stats.proKarte
+  };
+}
 
 if (!(profilName in BOT_PROFILE)) {
   console.error(`Unbekanntes Bot-Profil "${profilName}". Verfügbar: ${Object.keys(BOT_PROFILE).join(', ')}`);
@@ -86,7 +119,7 @@ function spieleMatchup(
   profilA: BotProfil,
   profilB: BotProfil,
   saatBasis: number
-): MatchupErgebnis & { proKarte: [Record<string, number>, Record<string, number>][]; kartenStats: import('../../packages/engine/src/index.js').PartieErgebnis['stats'][] } {
+): MatchupErgebnis & { proKarte: [Record<string, number>, Record<string, number>][]; kartenStats: import('../../packages/engine/src/index.js').PartieErgebnis['stats'][]; rohPartien: RohPartie[] } {
   const ergebnis: MatchupErgebnis = {
     deckA: deckAId,
     deckB: deckBId,
@@ -101,6 +134,7 @@ function spieleMatchup(
   };
   const abRunde = data.config.zermuerbung?.abRunde ?? Infinity;
   const statsListe: import('../../packages/engine/src/index.js').PartieErgebnis['stats'][] = [];
+  const rohPartien: RohPartie[] = [];
 
   for (let g = 0; g < spiele; g++) {
     // Sitzplatz-Spiegelung: dieselbe Saat für "A auf Platz 0" und "A auf Platz 1".
@@ -121,6 +155,7 @@ function spieleMatchup(
       ergebnis.unentschieden += 1;
     }
     statsListe.push(r1.stats);
+    rohPartien.push(rohPartie(r1, saat, [deckAId, deckBId], [deckA.faction ?? '?', deckB.faction ?? '?']));
 
     const r2 = spielePartie(data, deckB, deckA, { saat, profilA: profilB, profilB: profilA });
     ergebnis.spiele += 1;
@@ -137,10 +172,11 @@ function spieleMatchup(
       ergebnis.unentschieden += 1;
     }
     // Für Kartenstatistik: proKarte[0] gehört immer zu deckA, proKarte[1] zu deckB.
-    statsListe.push({ proKarte: [r2.stats.proKarte[1], r2.stats.proKarte[0]], proSpieler: [r2.stats.proSpieler[1], r2.stats.proSpieler[0]] });
+    statsListe.push({ ...r2.stats, proKarte: [r2.stats.proKarte[1], r2.stats.proKarte[0]], proSpieler: [r2.stats.proSpieler[1], r2.stats.proSpieler[0]] });
+    rohPartien.push(rohPartie(r2, saat, [deckBId, deckAId], [deckB.faction ?? '?', deckA.faction ?? '?']));
   }
 
-  return { ...ergebnis, proKarte: [], kartenStats: statsListe };
+  return { ...ergebnis, proKarte: [], kartenStats: statsListe, rohPartien };
 }
 
 async function main() {
@@ -164,6 +200,7 @@ async function main() {
   const profilHaupt = BOT_PROFILE[profilName];
   const matchups: MatchupErgebnis[] = [];
   const kartenStatsGesamt: import('../../packages/engine/src/index.js').PartieErgebnis['stats'][] = [];
+  const rohPartien: RohPartie[] = [];
   // Für die Ausspielrate: pro Karte, wie oft war sie im Spiel (im Deck einer
   // Partie) und wie oft wurde sie tatsächlich gespielt.
   const kartenImSpiel = new Map<string, number>();
@@ -190,8 +227,10 @@ async function main() {
         profilHaupt,
         saatBasis
       );
-      matchups.push(lauf);
-      kartenStatsGesamt.push(...lauf.kartenStats);
+      const { kartenStats, rohPartien: laufRohPartien, proKarte: _proKarte, ...matchup } = lauf;
+      matchups.push(matchup);
+      kartenStatsGesamt.push(...kartenStats);
+      rohPartien.push(...laufRohPartien);
 
       // Deck-Zusammensetzung für die Ausspielrate erfassen (jede Partie zählt
       // für jede enthaltene Karte als "im Spiel").
@@ -243,7 +282,7 @@ async function main() {
   // Kartenaggregation: Summe über alle Partien und beide Seiten, gruppiert nach Karte.
   const kartenAggregat = new Map<
     string,
-    { schadenKreatur: number; schadenBasis: number; kills: number; gestorben: number; geheilt: number; verhindert: number; gespielt: number }
+    { schadenKreatur: number; schadenBasis: number; kills: number; gestorben: number; geheilt: number; verhindert: number; gespielt: number; auraAusloesungen: number; wachstumAusloesungen: number; giftZerstoerungen: number; flinkAngriffe: number; mulliganAngeboten: number; mulliganBehalten: number; endhandNieLegal: number; endhandNichtGewaehlt: number }
   >();
   for (const stats of kartenStatsGesamt) {
     for (const seite of [0, 1] as const) {
@@ -255,7 +294,15 @@ async function main() {
           gestorben: 0,
           geheilt: 0,
           verhindert: 0,
-          gespielt: 0
+          gespielt: 0,
+          auraAusloesungen: 0,
+          wachstumAusloesungen: 0,
+          giftZerstoerungen: 0,
+          flinkAngriffe: 0,
+          mulliganAngeboten: 0,
+          mulliganBehalten: 0,
+          endhandNieLegal: 0,
+          endhandNichtGewaehlt: 0
         };
         acc.schadenKreatur += k.schadenKreatur;
         acc.schadenBasis += k.schadenBasis;
@@ -264,6 +311,14 @@ async function main() {
         acc.geheilt += k.geheilt;
         acc.verhindert += k.verhindert;
         acc.gespielt += k.gespielt;
+        acc.auraAusloesungen += k.auraAusloesungen;
+        acc.wachstumAusloesungen += k.wachstumAusloesungen;
+        acc.giftZerstoerungen += k.giftZerstoerungen;
+        acc.flinkAngriffe += k.flinkAngriffe;
+        acc.mulliganAngeboten += k.mulliganAngeboten;
+        acc.mulliganBehalten += k.mulliganBehalten;
+        acc.endhandNieLegal += k.endhandNieLegal;
+        acc.endhandNichtGewaehlt += k.endhandNichtGewaehlt;
         kartenAggregat.set(cardId, acc);
       }
     }
@@ -273,7 +328,9 @@ async function main() {
   // simulationsabhängig): Anteil der Testdecks DERSELBEN Oberfraktion wie die
   // Karte, die sie mindestens einmal enthalten.
   const factionTree = buildFactionTree(data.factions);
-  const karten: KartenKennzahl[] = [...kartenAggregat.entries()].map(([cardId, acc]) => {
+  const karten: KartenKennzahl[] = [...kartenAggregat.entries()]
+    .filter(([cardId]) => !cardId.startsWith('token:'))
+    .map(([cardId, acc]) => {
     const card = data.cardsById[cardId];
     const name = card?.name ?? cardId;
     const faction = card?.faction ?? '?';
@@ -298,7 +355,14 @@ async function main() {
       kills: acc.kills,
       gestorben: acc.gestorben,
       geheilt: acc.geheilt,
-      verhindert: acc.verhindert
+      verhindert: acc.verhindert,
+      auraAusloesungen: acc.auraAusloesungen,
+      wachstumAusloesungen: acc.wachstumAusloesungen,
+      giftZerstoerungen: acc.giftZerstoerungen,
+      flinkAngriffe: acc.flinkAngriffe,
+      mulliganKeepRate: acc.mulliganAngeboten > 0 ? acc.mulliganBehalten / acc.mulliganAngeboten : null,
+      endhandNieLegal: acc.endhandNieLegal,
+      endhandNichtGewaehlt: acc.endhandNichtGewaehlt
     };
   });
 
@@ -316,13 +380,23 @@ async function main() {
 
   const korridore = korridoreJson as unknown as Korridore;
   const report = erzeugeReport(ergebnis, korridore);
-  console.log(report);
-  if (outDatei) {
-    writeFileSync(outDatei, report, 'utf8');
-    console.error(`Report zusätzlich geschrieben nach ${outDatei}`);
-  }
+  if (flags.has('stdout')) console.log(report);
+  const stamp = ergebnis.erzeugtAm.replace(/[:.]/g, '-');
+  const outputDir = resolve(outDatei && !outDatei.toLowerCase().endsWith('.md')
+    ? outDatei
+    : outDatei ? dirname(outDatei) : join('backtest-results', stamp));
+  const reportPath = resolve(outDatei?.toLowerCase().endsWith('.md') ? outDatei : join(outputDir, 'report.md'));
+  const summaryPath = join(outputDir, 'summary.json');
+  const matchesPath = join(outputDir, 'matches.jsonl');
+  mkdirSync(outputDir, { recursive: true });
+  writeFileSync(reportPath, report, 'utf8');
+  writeFileSync(summaryPath, JSON.stringify(ergebnis, null, 2), 'utf8');
+  writeFileSync(matchesPath, rohPartien.map((p) => JSON.stringify(p)).join('\n') + '\n', 'utf8');
+  console.error(`Report:   ${reportPath}`);
+  console.error(`Kurzdata: ${summaryPath}`);
+  console.error(`Partien:  ${matchesPath}`);
 
-  console.error(`Fertig in ${((Date.now() - start) / 1000).toFixed(1)} s.`);
+  console.error(`Fertig: ${rohPartien.length} Hauptpartien in ${((Date.now() - start) / 1000).toFixed(1)} s.`);
 
   if (streng) {
     const verletzungen = sammleVerletzungen(ergebnis, korridore);

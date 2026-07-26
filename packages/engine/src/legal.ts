@@ -98,6 +98,7 @@ function legaleFlugAktionen(state: GameState, player: PlayerIndex): PlayerAction
  * jeder Aufrufer (Bot, Backtest) diese Invariante ohnehin selbst hält.
  */
 export function legaleAktionen(state: GameState, player: PlayerIndex, data: GameData): PlayerAction[] {
+  if (state.phase === 'mulligan') return [{ type: 'mulligan', handIndices: [] }];
   return state.phase === 'fly'
     ? legaleFlugAktionen(state, player)
     : legaleSpielAktionen(state, player, data);

@@ -194,6 +194,9 @@ function verarbeiteTodesstatistik(state: GameState, owner: PlayerIndex, c: Creat
     // Gift-Herkunft ist über mehrere Runden/Quellen oft nicht mehr eindeutig
     // einer Karte zuordenbar – wird deshalb nur der gegnerischen Seite gezählt.
     zaehleSpieler(state, otherPlayer(owner), 'giftZerstoerungen');
+    if (ursache.owner != null && ursache.quelle) {
+      zaehleKarte(state, ursache.owner, ursache.quelle, 'giftZerstoerungen');
+    }
   }
   if (ursache.owner != null && ursache.quelle) {
     zaehleKarte(state, ursache.owner, ursache.quelle, 'kills');

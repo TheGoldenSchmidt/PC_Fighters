@@ -4,6 +4,9 @@ dist/
 .DS_Store
 .vite/
 
+# Rechnerbezogene Claude-Berechtigungen
+.claude/settings.local.json
+
 # Scratch / throwaway test bots
 _tmp_*.mjs
 
@@ -12,3 +15,4 @@ rooms_persist.json
 
 # Generierte Backtest-Reports (npm run backtest -- --out=...) – Rohdaten, nicht versioniert
 backtest-report*.md
+backtest-results/

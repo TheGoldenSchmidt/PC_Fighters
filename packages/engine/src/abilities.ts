@@ -196,6 +196,7 @@ function applyWachstum(
       target.permHealthBonus += hp;
       zaehleSpieler(state, owner, 'wachstumAtk', atk);
       zaehleSpieler(state, owner, 'wachstumHp', hp);
+      zaehleKarte(state, owner, c.cardId, 'wachstumAusloesungen');
       log(state, `${c.name}: ${target.name} wächst um +${atk}/+${hp}.`);
     }
   } else {
@@ -203,6 +204,7 @@ function applyWachstum(
     c.permHealthBonus += hp;
     zaehleSpieler(state, owner, 'wachstumAtk', atk);
     zaehleSpieler(state, owner, 'wachstumHp', hp);
+    zaehleKarte(state, owner, c.cardId, 'wachstumAusloesungen');
   }
 }
 
@@ -326,6 +328,8 @@ const KLASSE_B_HOOKS: { [K in Ability['kind']]?: KlasseBHooks<K> } = {
   },
   aura: {
     onPlay: (state, owner, lane, ab) => {
+      const source = state.board[owner][lane];
+      if (source) zaehleKarte(state, owner, source.cardId, 'auraAusloesungen');
       if (ab.timing === 'einmal_beim_ausspielen') pulseAura(state, owner, lane, ab);
     }
   },

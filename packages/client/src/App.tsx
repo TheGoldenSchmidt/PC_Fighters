@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { FigurePreview } from './FigurePreview';
 import { GameScreen } from './GameScreen';
 import { LobbyScreen } from './LobbyScreen';
+import { MulliganScreen } from './MulliganScreen';
 import { StartScreen } from './StartScreen';
 import { useGame } from './useGame';
 
@@ -53,7 +54,10 @@ function Game() {
           onCancel={leaveGame}
         />
       )}
-      {state.screen === 'game' && state.view && (
+      {state.screen === 'game' && state.view?.phase === 'mulligan' && (
+        <MulliganScreen view={state.view} onAction={sendAction} onLeave={leaveGame} />
+      )}
+      {state.screen === 'game' && state.view && state.view.phase !== 'mulligan' && (
         <GameScreen
           view={state.view}
           topic={state.topic}
