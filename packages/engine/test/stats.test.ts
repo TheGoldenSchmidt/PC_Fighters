@@ -201,16 +201,16 @@ describe('Telemetrie-Sidecar: exakte Zählerwerte', () => {
     aktiviereStatistik(s);
     const hund = put(s, 0, 0, 'der_alte_hund', { spawnRound: 0 }); // 1/4, rettung survive_1hp
     hund.exhausted = true;
-    const angreifer = put(s, 1, 0, 'brachiosaurus', { spawnRound: 0 }); // 6/9, würde 6 Schaden machen
+    const angreifer = put(s, 1, 0, 'brachiosaurus', { spawnRound: 0 }); // 5/9, würde 5 Schaden machen
 
     const next = passBoth(s);
 
     // Hund lebt mit 1 HP weiter (Rettung ausgelöst).
     const hundImFeld = next.board[0][0];
     expect(hundImFeld?.currentHealth).toBe(1);
-    // 4 HP - 6 Schaden = -2 -> verhindert = 1 - (-2) = 3.
-    expect(next.stats!.proKarte[0]['der_alte_hund'].verhindert).toBe(3);
-    expect(next.stats!.proSpieler[0].verhinderterSchaden).toBe(3);
+    // 4 HP - 5 Schaden = -1 -> verhindert = 1 - (-1) = 2.
+    expect(next.stats!.proKarte[0]['der_alte_hund'].verhindert).toBe(2);
+    expect(next.stats!.proSpieler[0].verhinderterSchaden).toBe(2);
   });
 
   it('Wachstum wird als wachstumAtk/wachstumHp beim Rundenbeginn gezählt', () => {

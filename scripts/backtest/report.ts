@@ -27,6 +27,8 @@ export interface MatchupErgebnis {
   unentschieden: number;
   rundenSumme: number;
   amRundenlimit: number;
+  /** Partien, die mindestens die Zermürbungs-Startrunde (config.zermuerbung.abRunde) erreicht haben. */
+  erreichtZermuerbung: number;
   /** Siege des jeweils startenden Spielers (für den Startspieler-Vorteil). */
   siegeStartspieler: number;
 }
@@ -128,6 +130,11 @@ export function sammleVerletzungen(ergebnis: BacktestErgebnis, korridore: Korrid
   if (anteilNotbremse > korridore.anteilPartienErreichenNotbremse.max) {
     verletzungen.push(`Anteil Partien an der Notbremse ${pct(anteilNotbremse)} > ${pct(korridore.anteilPartienErreichenNotbremse.max)}.`);
   }
+  const gesamtZermuerbung = ergebnis.matchups.reduce((s, m) => s + m.erreichtZermuerbung, 0);
+  const anteilZermuerbung = gesamtZermuerbung / gesamtSpiele;
+  if (anteilZermuerbung > korridore.anteilPartienErreichenZermuerbung.max) {
+    verletzungen.push(`Anteil Partien erreichen Zermürbung ${pct(anteilZermuerbung)} > ${pct(korridore.anteilPartienErreichenZermuerbung.max)}.`);
+  }
   for (const [deck, stat] of (function* (): Generator<[string, { sieg: number; gesamt: number }]> {
     const map = new Map<string, { sieg: number; gesamt: number }>();
     for (const m of ergebnis.matchups) {
@@ -164,6 +171,7 @@ export function erzeugeReport(ergebnis: BacktestErgebnis, korridore: Korridore):
   const gesamtSpiele = ergebnis.matchups.reduce((s, m) => s + m.spiele, 0);
   const gesamtRunden = ergebnis.matchups.reduce((s, m) => s + m.rundenSumme, 0);
   const gesamtRundenlimit = ergebnis.matchups.reduce((s, m) => s + m.amRundenlimit, 0);
+  const gesamtZermuerbung = ergebnis.matchups.reduce((s, m) => s + m.erreichtZermuerbung, 0);
   const gesamtStartspielerSiege = ergebnis.matchups.reduce((s, m) => s + m.siegeStartspieler, 0);
   const gesamtEntschieden = ergebnis.matchups.reduce((s, m) => s + m.siegeA + m.siegeB, 0);
 
@@ -178,14 +186,8 @@ export function erzeugeReport(ergebnis: BacktestErgebnis, korridore: Korridore):
   );
   push(`- Durchschnittliche Spieldauer: **${(gesamtRunden / gesamtSpiele).toFixed(2)} Runden**`);
   push(`- Startspieler-Vorteil: **${pct(gesamtStartspielerSiege / gesamtEntschieden)}**`);
-  push(`- Partien am technischen Rundenlimit ("Notbremse", V1-Baseline ohne Zermürbungs-Mechanik – siehe Hinweis unten): **${pct(gesamtRundenlimit / gesamtSpiele)}**`);
-  push();
-  push(
-    '> **Hinweis (Phase 4, V1-Baseline):** Dieser Lauf läuft bewusst noch auf den aktuellen V1-Regeln – die ' +
-      'Zermürbungs-Mechanik aus Regelwerk V2 (löst das Rundenlimit als reguläre Terminierung ab) existiert erst ' +
-      'ab Phase 6. Bis dahin zeigt "Notbremse" faktisch dasselbe wie "Partien am Rundenlimit" und ist die einzige ' +
-      'Terminierungsart neben Basiszerstörung.'
-  );
+  push(`- Partien, die die Zermürbungs-Startrunde erreichen (reguläre lange Terminierung): **${pct(gesamtZermuerbung / gesamtSpiele)}**`);
+  push(`- Partien am technischen Rundenlimit ("Notbremse" – sollte praktisch nie erreicht werden): **${pct(gesamtRundenlimit / gesamtSpiele)}**`);
   push();
 
   push(`## Zielkorridore (Regelwerk V2 §7)`);
@@ -211,8 +213,10 @@ export function erzeugeReport(ergebnis: BacktestErgebnis, korridore: Korridore):
     push(
       `| Anteil Partien an der Notbremse (roundLimit) | ${pct(anteilNotbremse)} | ≤ ${pct(korridore.anteilPartienErreichenNotbremse.max)} | ${ampel(ok)} |`
     );
+    const anteilZermuerbung = gesamtZermuerbung / gesamtSpiele;
+    const okZermuerbung = anteilZermuerbung <= korridore.anteilPartienErreichenZermuerbung.max;
     push(
-      `| Anteil Partien erreichen Zermürbung | *nicht messbar – Mechanik existiert erst ab Phase 6* | ≤ ${pct(korridore.anteilPartienErreichenZermuerbung.max)} | ⚪ |`
+      `| Anteil Partien erreichen Zermürbung | ${pct(anteilZermuerbung)} | ≤ ${pct(korridore.anteilPartienErreichenZermuerbung.max)} | ${ampel(okZermuerbung)} |`
     );
   }
   {

@@ -24,30 +24,30 @@ const decks = ladeDecks(data);
 const profil: BotProfil = { ...BOT_PROFILE.ausgewogen, epsilonBand: 0 };
 
 /** deckA, deckB, Saat, erwarteter Hash `sieger:runden:basisA:basisB:uidCounter`. */
-// Neu erzeugt in Phase 8 (V2-Kartendaten + V2-Testdecks): alle 20 Zeilen
-// ändern sich zwangsläufig – Kartenwerte, Fähigkeiten und die 7 Testdecks
-// selbst wurden komplett auf die V2-Tabellen aus docs/regelwerk-v2.md §5
-// umgeschrieben (vorher liefen hier noch vorläufige Phase-4-Decks aus dem
-// Ist-Kartenpool). Siehe den Phase-8-Commit für die Kartenliste.
+// Neu erzeugt in Phase 9 (Korridor-Iteration): Brachiosaurus 6→5 ATK,
+// Triceratops Dornen 2→1, Krähe/Möwe/Taubenschwarm je +1 HP. Eine engere
+// Zermürbung (abRunde 13→10, schaden 1→2) wurde im selben Zug ausprobiert,
+// aber wieder verworfen (siehe Phase-9-Commit) – config.json bleibt bei den
+// Phase-6-Werten, nur die Kartendaten ändern sich in dieser Tabelle.
 const GOLDEN_MASTER: [string, string, number, string][] = [
-  ['a1_rudeljaeger', 'a2_luftangriff', 5000, '0:8:15:-2:19'],
+  ['a1_rudeljaeger', 'a2_luftangriff', 5000, '0:8:15:-1:19'],
   ['a1_rudeljaeger', 'a3_gift_urgewalt', 5001, '1:11:-5:8:23'],
   ['a1_rudeljaeger', 'a4_urzeitliches_rudel', 5002, '0:7:10:0:12'],
   ['a1_rudeljaeger', 'h1_solidaritaet', 5003, '0:11:15:0:22'],
   ['a1_rudeljaeger', 'h2_schicht', 5004, '0:5:15:-1:8'],
   ['a1_rudeljaeger', 'h3_campus', 5005, '1:13:0:5:25'],
-  ['a2_luftangriff', 'a3_gift_urgewalt', 5006, '1:9:-3:15:17'],
-  ['a2_luftangriff', 'a4_urzeitliches_rudel', 5007, '1:8:-4:11:18'],
-  ['a2_luftangriff', 'h1_solidaritaet', 5008, '1:13:-1:10:26'],
-  ['a2_luftangriff', 'h2_schicht', 5009, '1:16:0:3:33'],
-  ['a2_luftangriff', 'h3_campus', 5010, '1:11:-1:14:21'],
-  ['a3_gift_urgewalt', 'a4_urzeitliches_rudel', 5011, '1:12:0:15:26'],
-  ['a3_gift_urgewalt', 'h1_solidaritaet', 5012, '0:14:8:-1:27'],
-  ['a3_gift_urgewalt', 'h2_schicht', 5013, '0:11:12:-3:20'],
-  ['a3_gift_urgewalt', 'h3_campus', 5014, '0:11:15:-3:19'],
-  ['a4_urzeitliches_rudel', 'h1_solidaritaet', 5015, '0:8:9:-1:11'],
+  ['a2_luftangriff', 'a3_gift_urgewalt', 5006, '1:9:-2:12:18'],
+  ['a2_luftangriff', 'a4_urzeitliches_rudel', 5007, '1:8:-2:11:18'],
+  ['a2_luftangriff', 'h1_solidaritaet', 5008, '1:10:-4:14:19'],
+  ['a2_luftangriff', 'h2_schicht', 5009, '1:16:0:2:29'],
+  ['a2_luftangriff', 'h3_campus', 5010, '1:13:0:11:25'],
+  ['a3_gift_urgewalt', 'a4_urzeitliches_rudel', 5011, '1:13:-3:15:28'],
+  ['a3_gift_urgewalt', 'h1_solidaritaet', 5012, '0:15:1:-2:29'],
+  ['a3_gift_urgewalt', 'h2_schicht', 5013, '0:14:11:0:28'],
+  ['a3_gift_urgewalt', 'h3_campus', 5014, '0:11:15:-2:19'],
+  ['a4_urzeitliches_rudel', 'h1_solidaritaet', 5015, '0:9:9:-3:15'],
   ['a4_urzeitliches_rudel', 'h2_schicht', 5016, '0:10:15:-2:20'],
-  ['a4_urzeitliches_rudel', 'h3_campus', 5017, '0:12:15:-1:27'],
+  ['a4_urzeitliches_rudel', 'h3_campus', 5017, '0:14:14:-2:28'],
   ['h1_solidaritaet', 'h2_schicht', 5018, '0:13:15:-2:26'],
   ['h1_solidaritaet', 'h3_campus', 5019, '0:9:15:-4:12']
 ];

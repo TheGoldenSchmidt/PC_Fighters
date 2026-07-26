@@ -251,7 +251,7 @@
     "type": "creature",
     "cost": 2,
     "attack": 2,
-    "health": 2,
+    "health": 3,
     "keywords": ["fliegend"],
     "abilities": [{ "kind": "bedingt", "scope": "same_sub", "mindestAnzahl": 1, "bonus": { "atk": 1, "hp": 0 } }],
     "text": "Fliegend. Solange du einen weiteren Vogel kontrollierst, +1 ATK.",
@@ -264,7 +264,7 @@
     "type": "creature",
     "cost": 2,
     "attack": 3,
-    "health": 1,
+    "health": 2,
     "keywords": ["fliegend"],
     "text": "Fliegend.",
     "projectile": "🪶"
@@ -276,7 +276,7 @@
     "type": "creature",
     "cost": 3,
     "attack": 3,
-    "health": 2,
+    "health": 3,
     "keywords": ["fliegend"],
     "abilities": [{ "kind": "beschwoeren", "timing": "beim_ausspielen", "count": 1, "token": { "name": "Taube", "attack": 1, "health": 1, "keywords": ["fliegend"] } }],
     "text": "Fliegend. Beim Ausspielen: Beschwöre eine 1/1-Taube mit Fliegend in eine freie Lane.",
@@ -474,8 +474,8 @@
     "cost": 4,
     "attack": 3,
     "health": 6,
-    "abilities": [{ "kind": "dornen", "x": 2 }],
-    "text": "Dornen 2.",
+    "abilities": [{ "kind": "dornen", "x": 1 }],
+    "text": "Dornen 1.",
     "projectile": "🦕"
   },
   {
@@ -539,7 +539,7 @@
     "faction": "dinos",
     "type": "creature",
     "cost": 7,
-    "attack": 6,
+    "attack": 5,
     "health": 9,
     "abilities": [
       { "kind": "wucht" },

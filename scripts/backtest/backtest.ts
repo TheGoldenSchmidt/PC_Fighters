@@ -96,8 +96,10 @@ function spieleMatchup(
     unentschieden: 0,
     rundenSumme: 0,
     amRundenlimit: 0,
+    erreichtZermuerbung: 0,
     siegeStartspieler: 0
   };
+  const abRunde = data.config.zermuerbung?.abRunde ?? Infinity;
   const statsListe: import('../../packages/engine/src/index.js').PartieErgebnis['stats'][] = [];
 
   for (let g = 0; g < spiele; g++) {
@@ -108,6 +110,7 @@ function spieleMatchup(
     ergebnis.spiele += 1;
     ergebnis.rundenSumme += r1.runden;
     if (r1.amRundenlimit) ergebnis.amRundenlimit += 1;
+    if (r1.runden >= abRunde) ergebnis.erreichtZermuerbung += 1;
     if (r1.gewinner === 0) {
       ergebnis.siegeA += 1;
       if (r1.startspieler === 0) ergebnis.siegeStartspieler += 1;
@@ -123,6 +126,7 @@ function spieleMatchup(
     ergebnis.spiele += 1;
     ergebnis.rundenSumme += r2.runden;
     if (r2.amRundenlimit) ergebnis.amRundenlimit += 1;
+    if (r2.runden >= abRunde) ergebnis.erreichtZermuerbung += 1;
     if (r2.gewinner === 0) {
       ergebnis.siegeB += 1;
       if (r2.startspieler === 0) ergebnis.siegeStartspieler += 1;
