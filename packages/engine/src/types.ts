@@ -35,6 +35,8 @@ export interface DeckEntry {
 }
 
 export interface DeckList {
+  /** Optional: Anzeigename (rein informativ, z. B. für Backtest-Reports). */
+  name?: string;
   /** Optional: Oberfraktion des Decks (rein informativ). */
   faction?: string;
   cards: DeckEntry[];

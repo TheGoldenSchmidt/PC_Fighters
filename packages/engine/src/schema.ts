@@ -475,6 +475,7 @@ export function validateGameData(raw: {
 // ---------------------------------------------------------------- Deckbau
 
 export const deckSchema = z.object({
+  name: z.string().min(1).optional(),
   faction: z.string().min(1).optional(),
   cards: z
     .array(

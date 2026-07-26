@@ -6,8 +6,8 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { DataError, validateGameData } from './schema.js';
-import type { GameData } from './types.js';
+import { DataError, validateDeck, validateGameData } from './schema.js';
+import type { DeckList, GameData } from './types.js';
 
 const DATA_DIR = join(dirname(fileURLToPath(import.meta.url)), 'data');
 
@@ -60,4 +60,26 @@ export function loadGameData(dataDir: string = DATA_DIR): GameData {
     ...validated,
     cardsById: Object.fromEntries(validated.cards.map((c) => [c.id, c]))
   };
+}
+
+/**
+ * Lädt und validiert alle Deck-Dateien aus data/decks/*.json (Backtest,
+ * künftiger Deck-Editor). Schlüssel im Ergebnis = Dateiname ohne ".json".
+ * Der Ordner darf fehlen – dann ein leeres Ergebnis (keine Pflicht-Daten).
+ */
+export function ladeDecks(data: GameData, dataDir: string = DATA_DIR): Record<string, DeckList> {
+  const decksDir = join(dataDir, 'decks');
+  let files: string[] = [];
+  try {
+    files = readdirSync(decksDir).filter((f) => f.endsWith('.json'));
+  } catch {
+    return {};
+  }
+  const decks: Record<string, DeckList> = {};
+  for (const file of files) {
+    const id = file.replace(/\.json$/, '');
+    const raw = readJson(`decks/${file}`, join(decksDir, file));
+    decks[id] = validateDeck(raw, data); // wirft DeckError bei ungültigem Deck
+  }
+  return decks;
 }

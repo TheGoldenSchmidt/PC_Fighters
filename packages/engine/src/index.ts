@@ -19,7 +19,9 @@ export { aktiviereStatistik, leereStatistik, zaehleKarte, zaehleSpieler } from '
 export { legaleAktionen } from './legal.js';
 export { BOT_PROFILE, bewerteZustand, kampfprognose, waehleAktion } from './bot.js';
 export type { BotGewichte, BotProfil } from './bot.js';
+export { spielePartie } from './simulate.js';
+export type { PartieErgebnis, PartieOptionen } from './simulate.js';
 export { DataError, DeckError, validateDeck, validateGameData } from './schema.js';
-export { loadGameData } from './loadData.js';
+export { ladeDecks, loadGameData } from './loadData.js';
 export { buildVisualCatalog } from './visualCatalog.js';
 export type { VisualCatalog, VisualCatalogEntry } from './visualCatalog.js';
