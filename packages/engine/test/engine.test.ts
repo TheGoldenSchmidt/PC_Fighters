@@ -179,15 +179,18 @@ describe('Themen (Topics)', () => {
   });
 });
 
-describe('Keyword gift', () => {
-  it('tötet das Ziel sofort, auch wenn es mehr Leben hat', () => {
+describe('Gift (Schlange, seit Phase 7a Ability-Primitiv statt Alt-Keyword)', () => {
+  it('fügt Giftmarken hinzu statt sofort zu töten (V2: Tod erst ab GIFT_TOD_SCHWELLE=3 Marken)', () => {
     const s = emptyState();
-    put(s, 1, 0, 'schlange'); // 1/1, gift
+    put(s, 1, 0, 'schlange'); // 1/1, gift 2
     put(s, 0, 0, 'baer'); // 4/5
     const after = passBoth(s);
-    // Schlange macht 1 Schaden → Gift tötet den Bären; Bär tötet die Schlange gleichzeitig.
-    expect(after.board[0][0]).toBeNull();
+    // Schlange stirbt am Gegenschlag des Bären (4 Schaden auf 1 HP). Der Bär
+    // nimmt 1 Kampfschaden + 2 Giftmarken, stirbt aber NICHT mehr sofort
+    // (Alt-Keyword-Verhalten) – die Marken bleiben unter der Todesschwelle.
     expect(after.board[1][0]).toBeNull();
+    expect(after.board[0][0]?.currentHealth).toBe(4);
+    expect(after.board[0][0]?.poison).toBe(2);
   });
 
   it('wirkt nicht, wenn die Schlange erschöpft ist (kein Angriff)', () => {
@@ -195,9 +198,9 @@ describe('Keyword gift', () => {
     put(s, 1, 0, 'schlange', { exhausted: true });
     put(s, 0, 0, 'baer');
     const after = passBoth(s);
-    expect(after.board[0][0]?.currentHealth).toBe(5); // Bär unversehrt? Nein –
-    // Bär greift die erschöpfte Schlange an (sie verteidigt) und tötet sie:
+    // Bär greift die erschöpfte, verteidigende Schlange an und tötet sie:
     expect(after.board[1][0]).toBeNull();
+    expect(after.board[0][0]?.poison).toBe(0); // Schlange hat nicht angegriffen -> kein Gift
   });
 });
 
@@ -323,7 +326,9 @@ describe('Ausspielen & Energie', () => {
     const counts = new Map<string, number>();
     for (const id of deck) counts.set(id, (counts.get(id) ?? 0) + 1);
     for (const [id, n] of counts) {
-      const max = data.cardsById[id].signature ? 1 : data.config.deckbuilding.maxCopies;
+      const max = data.cardsById[id].signature
+        ? (data.config.deckbuilding.maxCopiesSignature ?? 1)
+        : data.config.deckbuilding.maxCopies;
       expect(n).toBeLessThanOrEqual(max);
     }
   });

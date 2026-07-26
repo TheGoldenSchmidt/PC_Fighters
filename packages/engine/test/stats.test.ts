@@ -180,7 +180,7 @@ describe('Telemetrie-Sidecar: exakte Zählerwerte', () => {
     expect(next.stats!.proKarte[0]['gecko']).toBeUndefined();
   });
 
-  it('Heilung über das Legacy-Keyword heilt_nachbarn wird gezählt', () => {
+  it('Heilung über die heilung-Fähigkeit (Feldscherin, seit Phase 7a Ability-Primitiv) wird gezählt', () => {
     const s = emptyState();
     aktiviereStatistik(s);
     const feldscherin = put(s, 0, 1, 'feldscherin', { spawnRound: 0 });

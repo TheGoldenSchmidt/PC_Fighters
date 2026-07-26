@@ -28,9 +28,19 @@ const profil: BotProfil = { ...BOT_PROFILE.ausgewogen, epsilonBand: 0 };
 // statt Schaden pro Marke), Sturzflug ohne Basis-Fallback, Zermürbung,
 // roundLimit 30, maxCopies 3 / maxCopiesSignature 2 ändern das Spielverhalten
 // bewusst gegenüber der Phase-4/5-Baseline.
+//
+// Erneut aktualisiert in Phase 7a (Legacy-Keywords → Ability-Primitive):
+// NUR die drei Matchups mit a3_gift_urgewalt (5001/5012/5013) ändern sich –
+// die Schlange nutzte bisher das Alt-Keyword `gift` (Sofort-Tod bei jedem
+// Kampftreffer) und wechselt jetzt auf die neue `gift`-Fähigkeit (Marken,
+// Tod erst ab GIFT_TOD_SCHWELLE=3, siehe abilities.ts). Das ist die einzige
+// der 7 Alt-Keyword-Migrationen mit echter Verhaltensänderung – die anderen
+// 6 (rudel, schild_nachbarn, banner_nachbarn, aura_alle, alpha_aura,
+// heilt_nachbarn) sind 1:1-Übersetzungen ohne Spielwirkung, siehe die
+// unveränderten übrigen 17 Zeilen dieser Tabelle als Beleg.
 const GOLDEN_MASTER: [string, string, number, string][] = [
   ['a1_rudeljaeger', 'a2_luftangriff', 5000, '0:8:12:-4:18'],
-  ['a1_rudeljaeger', 'a3_gift_urgewalt', 5001, '1:13:-1:5:29'],
+  ['a1_rudeljaeger', 'a3_gift_urgewalt', 5001, '1:13:-1:3:26'],
   ['a1_rudeljaeger', 'a4_urzeitliches_rudel', 5002, '0:6:12:-1:9'],
   ['a1_rudeljaeger', 'h1_solidaritaet', 5003, '0:9:14:-4:19'],
   ['a1_rudeljaeger', 'h2_schicht', 5004, '0:9:11:-2:19'],
@@ -41,8 +51,8 @@ const GOLDEN_MASTER: [string, string, number, string][] = [
   ['a2_luftangriff', 'h2_schicht', 5009, '0:6:11:-2:9'],
   ['a2_luftangriff', 'h3_campus', 5010, '1:12:-1:14:26'],
   ['a3_gift_urgewalt', 'a4_urzeitliches_rudel', 5011, '1:8:0:14:16'],
-  ['a3_gift_urgewalt', 'h1_solidaritaet', 5012, '0:12:14:-1:24'],
-  ['a3_gift_urgewalt', 'h2_schicht', 5013, '0:10:10:-2:20'],
+  ['a3_gift_urgewalt', 'h1_solidaritaet', 5012, '0:12:14:-3:23'],
+  ['a3_gift_urgewalt', 'h2_schicht', 5013, '0:13:6:-5:24'],
   ['a3_gift_urgewalt', 'h3_campus', 5014, '0:11:15:-2:20'],
   ['a4_urzeitliches_rudel', 'h1_solidaritaet', 5015, '0:8:9:0:14'],
   ['a4_urzeitliches_rudel', 'h2_schicht', 5016, '0:11:9:-3:22'],
