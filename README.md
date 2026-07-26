@@ -107,14 +107,15 @@ Wichtig:
 | Keyword | Bedeutung |
 |---|---|
 | `flink` | Kreatur ist beim Ausspielen nicht erschöpft und kämpft sofort mit. |
-| `rudel` | +1 Angriff, solange eine andere verbündete Animal-Kreatur auf dem Feld ist. |
-| `gift` | Fügt diese Kreatur einer anderen Kreatur Schaden zu, stirbt diese sofort. |
 | `fliegend` | Darf nach der Kampfphase in eine freie eigene Lane wechseln. |
-| `schild_nachbarn` | Verbündete in direkt benachbarten Lanes erhalten +0/+1. |
-| `banner_nachbarn` | Verbündete in direkt benachbarten Lanes erhalten +1/+0. |
-| `aura_alle` | Alle anderen Verbündeten erhalten +1/+1. |
-| `alpha_aura` | Andere verbündete Animal-Kreaturen erhalten +1/+0. |
-| `heilt_nachbarn` | Heilt am Rundenende Verbündete in Nachbar-Lanes um 1. |
+
+Alles Parametrisierbare (Auren, Gift, Heilung, Skalierung nach Anzahl
+Verbündeter, Kampfboni, …) ist kein Keyword mehr, sondern eine **Fähigkeit**
+(`"abilities": [...]` auf der Karte, z. B. `{ "kind": "gift", "staerke": 2 }`
+oder `{ "kind": "aura", "scope": "any", "buff": { "atk": 1, "hp": 1 },
+"timing": "dauerhaft" }`). Die vollständige Liste mit Erklärungstext steht in
+`packages/engine/src/abilities.ts` (`ABILITIES`-Registry), die Parameter je
+Primitiv im `Ability`-Union-Typ in `packages/engine/src/types.ts`.
 
 **Bild für eine Karte:** Lege einfach ein PNG mit dem Namen der Karten-id in den Ordner `packages/client/public/assets/cards/` – z. B. `veteranin.png`. Fertig, kein Code nötig. Ohne Bild zeigt die Karte ein Symbol.
 
@@ -129,13 +130,16 @@ Die Datei `packages/engine/src/data/config.json` enthält alle Spielregeln als Z
 | Wert | Bedeutung |
 |---|---|
 | `lanes` | Anzahl der Kampfbahnen (Standard 3 – bei 4 zeigt das Spiel wirklich 4 Lanes!) |
-| `baseHealth` | Lebenspunkte jeder Basis |
-| `deckSize` | Karten pro Deck (ist das Deck durch neue Karten größer, wird nach dem Mischen auf diese Zahl gekürzt) |
-| `startingHand` | Handkarten zu Spielbeginn |
+| `baseHealth` | Lebenspunkte jeder Basis (V2: 15) |
+| `startingHand` | Handkarten zu Spielbeginn (V2: 4) |
 | `cardsDrawnPerTurn` | Karten, die jede Runde gezogen werden |
-| `energyCap` | Maximale Energie (Energie = Rundenzahl, aber nie mehr als das) |
-| `roundLimit` | Nach dieser Runde gewinnt, wer mehr Basis-Leben hat |
-| `maxCopiesPerCard` | Wie oft jede Karte im Deck steckt (★-Karten immer nur 1×) |
+| `energy.start` / `energy.perRound` | Energie in Runde 1 bzw. Zuwachs pro Runde danach (V2: 1 / 1) |
+| `energy.cap` | Maximale Energie, oder `null` für unbegrenzt |
+| `deckbuilding.size` | Karten pro Deck (V2: 20) |
+| `deckbuilding.maxCopies` | Wie oft eine normale Karte im Deck stecken darf (V2: 3) |
+| `deckbuilding.maxCopiesSignature` | Wie oft eine ★-Signature-Karte im Deck stecken darf (V2: 2) |
+| `zermuerbung.abRunde` / `.schaden` / `.steigerung` | Ab dieser Runde verlieren beide Basen am Rundenende `schaden` Leben, danach je weitere Runde zusätzlich `steigerung` mehr – das ist der reguläre Weg, wie lange Partien enden (V2 will explizit „kein Rundenlimit", siehe `docs/regelwerk-v2.md` §1/§7) |
+| `roundLimit` | Technische Notbremse weit über der Zermürbung (aktuell 30) – wird im Normalspiel nie erreicht; jeder Treffer ist ein Bug-Report |
 
 Zahl ändern, speichern, Server neu starten – fertig.
 

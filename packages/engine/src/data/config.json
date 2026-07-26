@@ -3,7 +3,7 @@
   "baseHealth": 15,
   "startingHand": 4,
   "cardsDrawnPerTurn": 1,
-  "roundLimit": 12,
+  "roundLimit": 30,
   "energy": {
     "start": 1,
     "perRound": 1,
@@ -11,7 +11,13 @@
   },
   "deckbuilding": {
     "size": 20,
-    "maxCopies": 2,
+    "maxCopies": 3,
+    "maxCopiesSignature": 2,
     "factionRule": "singleTop"
+  },
+  "zermuerbung": {
+    "abRunde": 13,
+    "schaden": 1,
+    "steigerung": 1
   }
 }

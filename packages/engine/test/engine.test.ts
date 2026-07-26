@@ -4,6 +4,7 @@ import {
   buildDeck,
   buildFactionTree,
   createGame,
+  createSeededRandom,
   getEffectiveAttack,
   getMaxHealth,
   loadGameData,
@@ -14,6 +15,7 @@ import {
   validateGameData
 } from '../src/index.js';
 import { recalcBoard } from '../src/internal.js';
+import { applyShedding, onPlayAbilities, onRoundStartAbilities } from '../src/abilities.js';
 import type {
   Creature,
   CreatureCard,
@@ -33,7 +35,8 @@ function player(faction: string): PlayerState {
     base: data.config.baseHealth,
     energy: 10,
     knowledge: 0,
-    flyDone: false
+    flyDone: false,
+    gespieltDieseRunde: []
   };
 }
 
@@ -80,6 +83,7 @@ function put(
     permHealthBonus: 0,
     permAttackBonus: 0,
     tempAttackBonus: 0,
+    tempHealthBonus: 0,
     currentHealth: card.health,
     lastMaxHealth: card.health,
     exhausted: opts.exhausted ?? false,
@@ -90,7 +94,9 @@ function put(
     spawnRound: state.round,
     ueberstundenDone: false,
     rettungUsed: false,
-    schutzUsed: false
+    schutzUsed: false,
+    zaehler: {},
+    rundenZaehler: {}
   };
   state.board[owner][lane] = c;
   recalcBoard(state);
@@ -106,12 +112,12 @@ function passBoth(state: GameState): GameState {
 describe('Kampflogik', () => {
   it('kampfbereite Kreaturen schaden sich gleichzeitig', () => {
     const s = emptyState();
-    put(s, 0, 0, 'ritter'); // 4/4
-    put(s, 1, 0, 'wolf'); // 3/2 (rudel inaktiv: allein)
+    put(s, 0, 0, 'ritter'); // 4/5
+    put(s, 1, 0, 'wolf'); // 2/3 (rudel inaktiv: allein)
     const after = passBoth(s);
-    // Wolf (3 ATK) trifft Ritter → 4-3=1 Leben; Ritter (4 ATK) tötet Wolf.
+    // Wolf (2 ATK) trifft Ritter → 5-2=3 Leben; Ritter (4 ATK) tötet Wolf (3 HP).
     expect(after.board[1][0]).toBeNull();
-    expect(after.board[0][0]?.currentHealth).toBe(1);
+    expect(after.board[0][0]?.currentHealth).toBe(3);
   });
 
   it('erschöpfte Kreaturen greifen nicht an, verteidigen aber', () => {
@@ -173,15 +179,18 @@ describe('Themen (Topics)', () => {
   });
 });
 
-describe('Keyword gift', () => {
-  it('tötet das Ziel sofort, auch wenn es mehr Leben hat', () => {
+describe('Gift (Schlange, seit Phase 7a Ability-Primitiv statt Alt-Keyword)', () => {
+  it('fügt Giftmarken hinzu statt sofort zu töten (V2: Tod erst ab GIFT_TOD_SCHWELLE=3 Marken)', () => {
     const s = emptyState();
-    put(s, 1, 0, 'schlange'); // 1/1, gift
+    put(s, 1, 0, 'schlange'); // 1/1, gift 2
     put(s, 0, 0, 'baer'); // 4/5
     const after = passBoth(s);
-    // Schlange macht 1 Schaden → Gift tötet den Bären; Bär tötet die Schlange gleichzeitig.
-    expect(after.board[0][0]).toBeNull();
+    // Schlange stirbt am Gegenschlag des Bären (4 Schaden auf 1 HP). Der Bär
+    // nimmt 1 Kampfschaden + 2 Giftmarken, stirbt aber NICHT mehr sofort
+    // (Alt-Keyword-Verhalten) – die Marken bleiben unter der Todesschwelle.
     expect(after.board[1][0]).toBeNull();
+    expect(after.board[0][0]?.currentHealth).toBe(4);
+    expect(after.board[0][0]?.poison).toBe(2);
   });
 
   it('wirkt nicht, wenn die Schlange erschöpft ist (kein Angriff)', () => {
@@ -189,9 +198,9 @@ describe('Keyword gift', () => {
     put(s, 1, 0, 'schlange', { exhausted: true });
     put(s, 0, 0, 'baer');
     const after = passBoth(s);
-    expect(after.board[0][0]?.currentHealth).toBe(5); // Bär unversehrt? Nein –
-    // Bär greift die erschöpfte Schlange an (sie verteidigt) und tötet sie:
+    // Bär greift die erschöpfte, verteidigende Schlange an und tötet sie:
     expect(after.board[1][0]).toBeNull();
+    expect(after.board[0][0]?.poison).toBe(0); // Schlange hat nicht angegriffen -> kein Gift
   });
 });
 
@@ -199,11 +208,11 @@ describe('Keyword rudel', () => {
   it('+1 Angriff nur mit anderem verbündeten Animal', () => {
     const s = emptyState();
     put(s, 1, 0, 'wolf');
-    expect(getEffectiveAttack(s, 1, 0)).toBe(3); // allein: kein Bonus
+    expect(getEffectiveAttack(s, 1, 0)).toBe(2); // allein: kein Bonus
     put(s, 1, 2, 'ratte');
-    expect(getEffectiveAttack(s, 1, 0)).toBe(4); // Rudel aktiv
+    expect(getEffectiveAttack(s, 1, 0)).toBe(3); // Rudel aktiv
     s.board[1][2] = null;
-    expect(getEffectiveAttack(s, 1, 0)).toBe(3); // Bonus dynamisch weg
+    expect(getEffectiveAttack(s, 1, 0)).toBe(2); // Bonus dynamisch weg
   });
 });
 
@@ -223,24 +232,24 @@ describe('Auren', () => {
 
   it('schild_nachbarn: bereits erlittener Schaden wird nicht doppelt bestraft', () => {
     const s = emptyState();
-    const wache = put(s, 0, 0, 'schildwache'); // 1/3
-    put(s, 0, 1, 'kommandantin'); // aura_alle: +1/+1 → Wache 2/4
-    wache.currentHealth -= 1; // Wache auf 3/4
-    s.board[0][1] = null; // Aura fällt weg → Maximum wieder 3
+    const wache = put(s, 0, 0, 'schildwache'); // 1/4
+    put(s, 0, 1, 'kommandantin'); // aura_alle: +1/+1 → Wache 2/5
+    wache.currentHealth -= 1; // Wache auf 4/5
+    s.board[0][1] = null; // Aura fällt weg → Maximum wieder 4
     recalcBoard(s);
-    // aktuelles Leben (3) liegt nicht über dem neuen Maximum (3) → bleibt 3
-    expect(s.board[0][0]?.currentHealth).toBe(3);
+    // aktuelles Leben (4) liegt nicht über dem neuen Maximum (4) → bleibt 4
+    expect(s.board[0][0]?.currentHealth).toBe(4);
   });
 
   it('aura_alle (Kommandantin): +1/+1 für alle anderen Verbündeten', () => {
     const s = emptyState();
     put(s, 0, 0, 'rekrut'); // 2/1
-    put(s, 0, 2, 'kommandantin'); // 3/5
+    put(s, 0, 2, 'kommandantin'); // 3/6
     expect(getEffectiveAttack(s, 0, 0)).toBe(3);
     expect(getMaxHealth(s, 0, 0)).toBe(2);
     // Die Kommandantin bufft sich nicht selbst:
     expect(getEffectiveAttack(s, 0, 2)).toBe(3);
-    expect(getMaxHealth(s, 0, 2)).toBe(5);
+    expect(getMaxHealth(s, 0, 2)).toBe(6);
   });
 
   it('alpha_aura bufft nur andere Animals', () => {
@@ -317,7 +326,9 @@ describe('Ausspielen & Energie', () => {
     const counts = new Map<string, number>();
     for (const id of deck) counts.set(id, (counts.get(id) ?? 0) + 1);
     for (const [id, n] of counts) {
-      const max = data.cardsById[id].signature ? 1 : data.config.deckbuilding.maxCopies;
+      const max = data.cardsById[id].signature
+        ? (data.config.deckbuilding.maxCopiesSignature ?? 1)
+        : data.config.deckbuilding.maxCopies;
       expect(n).toBeLessThanOrEqual(max);
     }
   });
@@ -361,11 +372,11 @@ describe('Fraktionsbaum', () => {
 describe('Neue Fähigkeiten – Skalierung & Auren', () => {
   it('skalierung wächst mit Anzahl und schrumpft dynamisch beim Sterben', () => {
     const s = emptyState();
-    put(s, 0, 0, 'flugblatt_verteiler'); // 1/2, +1 ATK je weiterem Sozi (cap 3)
+    put(s, 0, 0, 'basisdemokratie'); // 1/5, +1 ATK je weiterem Menschen (cap 2)
     expect(getEffectiveAttack(s, 0, 0)).toBe(1);
-    put(s, 0, 1, 'solidaritaetskasse'); // Sozi
-    put(s, 0, 2, 'basisdemokratie'); // Sozi
-    expect(getEffectiveAttack(s, 0, 0)).toBe(3); // +2 (zwei weitere Sozis)
+    put(s, 0, 1, 'rekrut');
+    put(s, 0, 2, 'ritter');
+    expect(getEffectiveAttack(s, 0, 0)).toBe(3); // +2 (zwei weitere Menschen)
     s.board[0][2] = null; // einer stirbt
     recalcBoard(s);
     expect(getEffectiveAttack(s, 0, 0)).toBe(2); // dynamisch zurück auf +1
@@ -383,7 +394,9 @@ describe('Neue Fähigkeiten – Skalierung & Auren', () => {
 
   it('skalierung includeSelf zählt sich selbst mit', () => {
     const s = emptyState();
-    put(s, 0, 0, 'basisdemokratie'); // 1/6, +1 ATK je Sozi inkl. sich selbst
+    const c = put(s, 0, 0, 'basisdemokratie');
+    c.abilities = [{ kind: 'skalierung', scope: 'same_top', per: { atk: 1, hp: 0 }, includeSelf: true }];
+    recalcBoard(s);
     expect(getEffectiveAttack(s, 0, 0)).toBe(2); // allein: self zählt
   });
 
@@ -399,8 +412,8 @@ describe('Neue Fähigkeiten – Skalierung & Auren', () => {
 
   it('neugier gilt nur allein in der Lane', () => {
     const s = emptyState();
-    put(s, 0, 0, 'hauskater'); // 2/2, neugier +2 ATK solo
-    expect(getEffectiveAttack(s, 0, 0)).toBe(4);
+    put(s, 0, 0, 'hauskater'); // 2/2, Pirsch +1 ATK solo
+    expect(getEffectiveAttack(s, 0, 0)).toBe(3);
     put(s, 1, 0, 'moewe'); // Gegner in der Lane
     expect(getEffectiveAttack(s, 0, 0)).toBe(2);
   });
@@ -418,26 +431,36 @@ describe('Neue Fähigkeiten – Kampf', () => {
 
   it('dornen: der Angreifer nimmt Schaden', () => {
     const s = emptyState();
-    put(s, 0, 0, 'ritter'); // 4/4, greift an
-    put(s, 1, 0, 'gecko', { exhausted: true }); // 1/3 Dornen 1
+    put(s, 0, 0, 'ritter'); // 4/5, greift an
+    put(s, 1, 0, 'gecko', { exhausted: true }); // 1/4 Dornen 1
     const after = passBoth(s);
     expect(after.board[1][0]).toBeNull(); // Gecko stirbt (4 Schaden)
-    expect(after.board[0][0]?.currentHealth).toBe(3); // Ritter nimmt 1 Dornen-Schaden
+    expect(after.board[0][0]?.currentHealth).toBe(4); // Ritter nimmt 1 Dornen-Schaden
   });
 
-  it('gift: Marken machen Schaden am Kampfende und bleiben bestehen', () => {
+  it('gift: Marken machen selbst keinen Schaden, sammeln sich aber an (V2: Tod erst ab 3 Marken)', () => {
     const s = emptyState();
     put(s, 0, 0, 'klapperschlange'); // 2/3 Gift 2
     put(s, 1, 0, 'brachiosaurus', { exhausted: true }); // 6/9, wehrt sich nicht
     const after = passBoth(s);
-    // Treffer 2 + Gift 2 = 4 Schaden auf 9 HP → 5; Marken bleiben 2
-    expect(after.board[1][0]?.currentHealth).toBe(5);
+    // Nur der Kampf-Treffer (2) mindert das Leben; Gift zählt Marken statt direkt zu schaden.
+    expect(after.board[1][0]?.currentHealth).toBe(7);
     expect(after.board[1][0]?.poison).toBe(2);
+  });
+
+  it('gift: bei 3 Marken stirbt die Kreatur sofort (GIFT_TOD_SCHWELLE)', () => {
+    const s = emptyState();
+    put(s, 0, 0, 'klapperschlange'); // 2/3 Gift 2
+    const opfer = put(s, 1, 0, 'brachiosaurus', { exhausted: true }); // 6/9, wehrt sich nicht
+    opfer.poison = 1; // + 2 aus dem Kampf = 3 -> Tod
+    const after = passBoth(s);
+    expect(after.board[1][0]).toBeNull();
   });
 
   it('hinrichten überspringt urgewalt und trifft einen anderen schwachen Gegner', () => {
     const s = emptyState();
-    put(s, 0, 0, 'krokodil'); // 5/6, hinrichten ≤2 HP; greift Lane 0 an
+    const krokodil = put(s, 0, 0, 'krokodil'); // 5/5; hinrichten manuell statt hunter, greift Lane 0 an
+    krokodil.abilities = [{ kind: 'hinrichten', maxHp: 2 }];
     put(s, 1, 0, 'die_massen', { exhausted: true }); // 5/7 (>2 HP, kein Ziel), überlebt Kampf
     const brachio = put(s, 1, 1, 'brachiosaurus', { exhausted: true }); // urgewalt
     brachio.currentHealth = 2; // verwundet, aber immun gegen Hinrichten
@@ -479,11 +502,11 @@ describe('Neue Fähigkeiten – Rettung, Trigger & Wachstum', () => {
     expect(getMaxHealth(after, 0, 0)).toBe(2); // Streuner 1 HP + Sammeln 1
   });
 
-  it('beschwoeren beim Ausspielen: Katzenmutter erzeugt zwei Kätzchen', () => {
+  it('beschwoeren beim Ausspielen: Katzenmutter erzeugt ein Kätzchen', () => {
     const s = emptyState();
     s.players[0].hand = ['katzenmutter'];
     const after = applyAction(s, 0, { type: 'playCreature', handIndex: 0, lane: 0 }, data);
-    expect(after.board[0].filter(Boolean)).toHaveLength(3); // Mutter + 2 Kätzchen
+    expect(after.board[0].filter(Boolean)).toHaveLength(2); // Mutter + 1 Kätzchen
     const kitten = after.board[0].find((c) => c?.name === 'Kätzchen');
     expect(kitten?.faction).toBe('katzen'); // Token erbt die Sub-Fraktion
   });
@@ -522,11 +545,11 @@ describe('Neue Fähigkeiten – Rettung, Trigger & Wachstum', () => {
 
   it('ueberstunden löst nur einmal aus', () => {
     let s = emptyState();
-    put(s, 0, 0, 'schichtwechsel'); // 3/4, ueberstunden +2/+2
+    put(s, 0, 0, 'schichtwechsel'); // 3/3, ueberstunden +2/+1
     s = passBoth(s);
     s = passBoth(s);
     s = passBoth(s);
-    expect(getMaxHealth(s, 0, 0)).toBe(6); // 4 + 2, nicht +4
+    expect(getMaxHealth(s, 0, 0)).toBe(4); // 3 + 1, nicht +2
     expect(s.board[0][0]?.ueberstundenDone).toBe(true);
   });
 });
@@ -558,13 +581,13 @@ describe('Deckbau-Regeln (Zod)', () => {
 
   it('lehnt zu viele Kopien ab', () => {
     const deck = { cards: [{ cardId: 'streunerkatze', count: 20 }] };
-    expect(() => validateDeck(deck, data)).toThrow(/Zu viele Kopien von "Streunerkatze": 20, erlaubt sind 2/);
+    expect(() => validateDeck(deck, data)).toThrow(/Zu viele Kopien von "Streunerkatze": 20, erlaubt sind 3/);
   });
 
-  it('lehnt Signaturkarten über 1 ab', () => {
+  it('lehnt Signaturkarten über maxCopiesSignature (2) ab', () => {
     const deck = {
       cards: [
-        { cardId: 'luchs', count: 2 },
+        { cardId: 'luchs', count: 3 },
         { cardId: 'streunerkatze', count: 2 },
         { cardId: 'getigerter', count: 2 },
         { cardId: 'hauskater', count: 2 },
@@ -576,7 +599,7 @@ describe('Deckbau-Regeln (Zod)', () => {
         { cardId: 'der_schwarm', count: 2 }
       ]
     };
-    expect(() => validateDeck(deck, data)).toThrow(/Zu viele Kopien von "Luchs": 2, erlaubt sind 1/);
+    expect(() => validateDeck(deck, data)).toThrow(/Zu viele Kopien von "Luchs": 3, erlaubt sind 2/);
   });
 
   it('lehnt gemischte Oberfraktionen (singleTop) ab', () => {
@@ -610,5 +633,229 @@ describe('Energie (ungedeckelt)', () => {
     expect(roundEnergy(data.config, 6)).toBe(6);
     expect(roundEnergy(data.config, 7)).toBe(7); // Brachiosaurus (7) ab Runde 7 spielbar
     expect(roundEnergy(data.config, 12)).toBe(12);
+  });
+});
+
+describe('Balancing V2 Phase 1: Determinismus, Bugfixes, Log-Schalter', () => {
+  it('createSeededRandom: gleicher Seed erzeugt exakt dieselbe Partie', () => {
+    const gA = createGame(data, ['humans', 'animals'], createSeededRandom(1234));
+    const gB = createGame(data, ['humans', 'animals'], createSeededRandom(1234));
+    expect(gA.startingPlayer).toBe(gB.startingPlayer);
+    expect(gA.players[0].deck).toEqual(gB.players[0].deck);
+    expect(gA.players[1].deck).toEqual(gB.players[1].deck);
+    expect(gA.players[0].hand).toEqual(gB.players[0].hand);
+    expect(gA.players[1].hand).toEqual(gB.players[1].hand);
+    // Andere Seeds erzeugen (mit überwältigender Wahrscheinlichkeit) andere Decks.
+    const gC = createGame(data, ['humans', 'animals'], createSeededRandom(9999));
+    expect(gC.players[0].deck).not.toEqual(gA.players[0].deck);
+  });
+
+  it('Bugfix: Basisschaden aus einem Aktionskarten-Effekt beendet die Partie sofort in der Play-Phase', () => {
+    // Vorher prüfte nur resolveCombat() checkBaseDestroyed; Basisschaden aus
+    // einem Effekt in der Play-Phase (hier: spendKnowledge bei leerem
+    // Gegnerfeld) konnte die Basis auf ≤0 senken, ohne dass die Partie endete.
+    // (Sturzflug ist seit Phase 6/V2 auf denselben-Lane-Treffer beschränkt und
+    // hat keinen Basis-Fallback mehr, kann diesen Fall also nicht mehr auslösen.)
+    const s = emptyState();
+    s.players[1].base = 3;
+    s.players[0].knowledge = 3;
+    s.players[0].hand = ['experimentelle_formel']; // spendKnowledge, gegnerisches Feld ist leer → Basis
+    const after = applyAction(s, 0, { type: 'playAction', handIndex: 0 }, data);
+    expect(after.players[1].base).toBe(0);
+    expect(after.phase).toBe('ended');
+    expect(after.winner).toBe(0);
+  });
+
+  it('Bugfix: kaltbluetig-Bonus kehrt in der Folgerunde zurück (attackedThisRound wird zurückgesetzt)', () => {
+    const s = emptyState();
+    put(s, 0, 0, 'koenig_der_kobras'); // 3/5, kaltbluetig +0/+1 solange nicht angegriffen
+    expect(getMaxHealth(s, 0, 0)).toBe(6); // Bonus aktiv (noch nie angegriffen)
+    put(s, 1, 0, 'streunerkatze', { exhausted: true }); // wehrt sich nicht, stirbt
+    const after = passBoth(s); // Kobra greift an; Runde endet danach automatisch
+    expect(after.board[1][0]).toBeNull();
+    // Vorher blieb attackedThisRound für immer true → Bonus wäre dauerhaft weg.
+    expect(getMaxHealth(after, 0, 0)).toBe(6);
+  });
+
+  it('Bugfix: mehrere gleichartige Abilities stapeln (getAbilities statt getAbility)', () => {
+    const s = emptyState();
+    put(s, 0, 0, 'ritter'); // 4/5, greift an
+    const gecko = put(s, 1, 0, 'gecko', { exhausted: true }); // 1/4, Dornen 1
+    gecko.abilities.push({ kind: 'dornen', x: 1 }); // zweite Dornen-Fähigkeit auf derselben Karte
+    const after = passBoth(s);
+    expect(after.board[1][0]).toBeNull(); // Gecko stirbt (4 Schaden)
+    expect(after.board[0][0]?.currentHealth).toBe(3); // 5 − (1+1) Dornen statt nur 1
+  });
+
+  it("logModus:'aus' unterdrückt weiteres Loggen, ohne den Spielausgang zu ändern", () => {
+    const seed = 42;
+    let logged = createGame(data, ['humans', 'animals'], createSeededRandom(seed));
+    let silent = createGame(data, ['humans', 'animals'], createSeededRandom(seed));
+    silent.logModus = 'aus';
+    const silentLogLengthAtStart = silent.log.length;
+
+    for (let i = 0; i < 4 && logged.phase !== 'ended'; i++) {
+      logged = passBoth(logged);
+      silent = passBoth(silent);
+    }
+
+    expect(silent.log).toHaveLength(silentLogLengthAtStart); // kein einziger neuer Eintrag
+    expect(logged.winner).toBe(silent.winner);
+    expect(logged.round).toBe(silent.round);
+    expect(logged.players[0].base).toBe(silent.players[0].base);
+    expect(logged.players[1].base).toBe(silent.players[1].base);
+  });
+});
+
+describe('Balancing V2 Phase 6: neue Engine-Primitive', () => {
+  it('bedingt: Bonus nur, solange genug weitere Kreaturen im Wirkungsbereich stehen', () => {
+    const s = emptyState();
+    const c = put(s, 0, 0, 'ritter'); // 4/4
+    c.abilities = [{ kind: 'bedingt', scope: 'any', mindestAnzahl: 1, bonus: { atk: 2, hp: 1 } }];
+    recalcBoard(s);
+    expect(getEffectiveAttack(s, 0, 0)).toBe(4); // allein -> kein Bonus
+    put(s, 0, 1, 'rekrut'); // beliebige zweite eigene Kreatur
+    expect(getEffectiveAttack(s, 0, 0)).toBe(6); // Bedingung erfüllt -> Bonus aktiv
+  });
+
+  it('hunter: Kampfbonus nur gegen ein vergiftetes Ziel', () => {
+    const s = emptyState();
+    const jaeger = put(s, 0, 0, 'ritter'); // 4/4
+    jaeger.abilities = [{ kind: 'hunter', bonusAtk: 3 }];
+    const opfer = put(s, 1, 0, 'brachiosaurus', { exhausted: true }); // 6/9, wehrt sich nicht
+    opfer.poison = 1; // vergiftet -> Hunter-Bonus greift
+    const after = passBoth(s);
+    expect(after.board[1][0]?.currentHealth).toBe(2); // 9 - (4 + 3 Hunter-Bonus)
+  });
+
+  it('hunter: kein Bonus gegen ein ungiftiges Ziel', () => {
+    const s = emptyState();
+    const jaeger = put(s, 0, 0, 'ritter'); // 4/4
+    jaeger.abilities = [{ kind: 'hunter', bonusAtk: 3 }];
+    put(s, 1, 0, 'brachiosaurus', { exhausted: true }); // 6/9, kein Gift
+    const after = passBoth(s);
+    expect(after.board[1][0]?.currentHealth).toBe(5); // 9 - 4, kein Bonus
+  });
+
+  it('shedding: heilt proaktiv bei Erreichen der Schwelle, entfernt optional Gift, löst nur einmal pro Spiel aus', () => {
+    const s = emptyState();
+    const c = put(s, 0, 0, 'brachiosaurus'); // 6/9
+    c.abilities = [{ kind: 'shedding', schwelle: 3, heilung: 4, entferntGift: true }];
+    c.currentHealth = 3;
+    c.poison = 2;
+    applyShedding(s);
+    expect(c.currentHealth).toBe(7); // 3 + 4
+    expect(c.poison).toBe(0);
+
+    c.currentHealth = 1; // erneut unter der Schwelle
+    applyShedding(s);
+    expect(c.currentHealth).toBe(1); // kein zweites Mal in diesem Spiel
+  });
+
+  it('synergie: Bonus nur, wenn der Besitzer diese Runde schon eine passende Karte gespielt hat', () => {
+    const s = emptyState();
+    const c = put(s, 0, 0, 'ritter');
+    c.abilities = [{ kind: 'synergie', scope: 'any', bonus: { atk: 1, hp: 1 } }];
+
+    onPlayAbilities(s, 0, 0); // noch nichts diese Runde gespielt -> kein Bonus
+    expect(c.permAttackBonus).toBe(0);
+
+    s.players[0].gespieltDieseRunde = ['ritter'];
+    onPlayAbilities(s, 0, 0);
+    expect(c.permAttackBonus).toBe(1);
+    expect(c.permHealthBonus).toBe(1);
+  });
+
+  it('wahl (handKlein): bevorzugt Ziehen bei kleiner Hand', () => {
+    const s = emptyState();
+    const c = put(s, 0, 0, 'ritter');
+    c.abilities = [
+      { kind: 'wahl', optionA: { art: 'ziehen', n: 1 }, optionB: { art: 'wissen', x: 2 }, regel: 'handKlein' }
+    ];
+    s.players[0].hand = [];
+    s.players[0].deck = ['rekrut'];
+    onRoundStartAbilities(s);
+    expect(s.players[0].hand).toEqual(['rekrut']);
+    expect(s.players[0].knowledge).toBe(0);
+  });
+
+  it('wahl (wissenKnapp): bevorzugt Wissen, wenn der Pool knapp ist', () => {
+    const s = emptyState();
+    const c = put(s, 0, 0, 'ritter');
+    c.abilities = [
+      { kind: 'wahl', optionA: { art: 'ziehen', n: 1 }, optionB: { art: 'wissen', x: 2 }, regel: 'wissenKnapp' }
+    ];
+    s.players[0].knowledge = 0; // < 2 -> knapp
+    s.players[0].deck = ['rekrut'];
+    onRoundStartAbilities(s);
+    expect(s.players[0].knowledge).toBe(2);
+    expect(s.players[0].hand).toEqual([]);
+  });
+
+  it('wachstum.maxTriggers: löst höchstens so oft aus (spielweiter Zähler)', () => {
+    const s = emptyState();
+    const c = put(s, 0, 0, 'ritter');
+    c.abilities = [{ kind: 'wachstum', per_round: { atk: 0, hp: 1 }, maxTriggers: 2 }];
+    onRoundStartAbilities(s);
+    onRoundStartAbilities(s);
+    onRoundStartAbilities(s); // sollte nicht mehr triggern
+    expect(c.permHealthBonus).toBe(2);
+  });
+
+  it('verstaerker.firstOnlyPerRound: nur der erste Wachstumstrigger einer Runde wird verstärkt; Reset erst in endRound (I2)', () => {
+    const s = emptyState();
+    const wachser1 = put(s, 0, 0, 'ritter');
+    wachser1.abilities = [{ kind: 'wachstum', per_round: { atk: 0, hp: 1 } }];
+    const wachser2 = put(s, 0, 1, 'rekrut');
+    wachser2.abilities = [{ kind: 'wachstum', per_round: { atk: 0, hp: 1 } }];
+    const verstaerker = put(s, 0, 2, 'wolf');
+    verstaerker.abilities = [
+      { kind: 'verstaerker', ziel: 'wachstum', scope: 'any', faktor: 2, firstOnlyPerRound: true }
+    ];
+
+    onRoundStartAbilities(s);
+    expect(wachser1.permHealthBonus).toBe(2); // erster Trigger dieser Runde -> verdoppelt
+    expect(wachser2.permHealthBonus).toBe(1); // zweiter Trigger -> kein Verstärker mehr
+
+    // Ohne endRound bleibt rundenZaehler gesetzt -> derselbe Effekt wie eben.
+    onRoundStartAbilities(s);
+    expect(wachser1.permHealthBonus).toBe(3);
+    expect(wachser2.permHealthBonus).toBe(2);
+
+    // endRound leert rundenZaehler -> in der neuen Runde greift der Verstärker wieder beim ersten Trigger.
+    const after = passBoth(s);
+    expect(after.board[0][0]?.permHealthBonus).toBe(5);
+    expect(after.board[0][1]?.permHealthBonus).toBe(3);
+  });
+
+  it('tempHealthBonus fließt in getMaxHealth ein und wird in endRound zurückgesetzt', () => {
+    const s = emptyState();
+    const c = put(s, 0, 0, 'ritter'); // 4/5
+    expect(getMaxHealth(s, 0, 0)).toBe(5);
+    c.tempHealthBonus = 3;
+    recalcBoard(s);
+    expect(getMaxHealth(s, 0, 0)).toBe(8);
+    const after = passBoth(s);
+    expect(after.board[0][0]?.tempHealthBonus).toBe(0);
+  });
+
+  it('Zermürbung: ab config.zermuerbung.abRunde verlieren beide Basen am Rundenende Leben', () => {
+    const s = emptyState();
+    const z = data.config.zermuerbung!;
+    s.round = z.abRunde;
+    const after = passBoth(s);
+    expect(after.players[0].base).toBe(data.config.baseHealth - z.schaden);
+    expect(after.players[1].base).toBe(data.config.baseHealth - z.schaden);
+  });
+
+  it('I1: Klasse-A-Hooks schreiben nie in zaehler (sonst nicht-idempotente recalcBoard-Fixpunktschleife)', () => {
+    const s = emptyState();
+    const c = put(s, 0, 0, 'ritter');
+    c.abilities = [{ kind: 'bedingt', scope: 'any', mindestAnzahl: 0, bonus: { atk: 1, hp: 1 } }];
+    put(s, 0, 1, 'rekrut');
+    recalcBoard(s);
+    recalcBoard(s);
+    recalcBoard(s);
+    expect(c.zaehler).toEqual({});
   });
 });

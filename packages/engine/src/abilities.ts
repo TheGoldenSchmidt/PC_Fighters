@@ -14,6 +14,7 @@ import {
   otherPlayer
 } from './internal.js';
 import type { DeathInfo } from './internal.js';
+import { zaehleKarte, zaehleSpieler } from './stats.js';
 import type { Ability, Creature, GameState, PlayerIndex, Scope, TokenDef } from './types.js';
 
 /** Anzeige-Infos je Primitiv (wird u. a. an den Client relayed). */
@@ -43,7 +44,12 @@ export const ABILITIES: Record<Ability['kind'], { label: string; description: st
   beschwoeren: { label: 'Beschwören', description: 'Erzeugt Token (beim Ausspielen oder beim Tod).' },
   entwaffnen: { label: 'Entwaffnen', description: 'Ein Gegner verliert angegebene Keywords.' },
   todesfluch: { label: 'Todesfluch', description: 'Beim Tod: der Angreifer verliert ATK.' },
-  hinrichten: { label: 'Hinrichten', description: 'Beim Angriff: zerstört einen schwachen Gegner.' }
+  hinrichten: { label: 'Hinrichten', description: 'Beim Angriff: zerstört einen schwachen Gegner.' },
+  bedingt: { label: 'Bedingter Bonus', description: 'Bonus, solange genug weitere Kreaturen im Wirkungsbereich stehen.' },
+  hunter: { label: 'Jäger', description: 'Kampfbonus gegen ein vergiftetes Ziel.' },
+  shedding: { label: 'Häutung', description: 'Einmal pro Spiel: heilt bei niedrigem Leben und entfernt optional Gift.' },
+  synergie: { label: 'Synergie', description: 'Kommt mit Bonus ins Spiel, wenn diese Runde schon eine passende Karte gespielt wurde.' },
+  wahl: { label: 'Wahl', description: 'Rundenbeginn: automatisch aufgelöste Wahl zwischen zwei Optionen.' }
 };
 
 export const ABILITY_KINDS = Object.keys(ABILITIES) as Ability['kind'][];
@@ -55,6 +61,20 @@ export function getAbility<K extends Ability['kind']>(
   kind: K
 ): Extract<Ability, { kind: K }> | undefined {
   return c.abilities.find((a) => a.kind === kind) as Extract<Ability, { kind: K }> | undefined;
+}
+
+/**
+ * Wie `getAbility`, aber liefert ALLE Vorkommen einer `kind` auf der Karte.
+ * `getAbility` gibt nur das erste zurück – hat eine Karte dieselbe Fähigkeit
+ * mehrfach (z. B. zwei `gift`-Einträge), stapelt sie mit `getAbility` still
+ * nicht. Aufrufer, die Boni/Schaden aus mehreren gleichartigen Fähigkeiten
+ * aufsummieren wollen, iterieren über das Ergebnis dieser Funktion.
+ */
+export function getAbilities<K extends Ability['kind']>(
+  c: Creature,
+  kind: K
+): Extract<Ability, { kind: K }>[] {
+  return c.abilities.filter((a) => a.kind === kind) as Extract<Ability, { kind: K }>[];
 }
 
 export function hasAbility(c: Creature, kind: Ability['kind']): boolean {
@@ -71,6 +91,7 @@ function draw(state: GameState, player: PlayerIndex, n: number): void {
     const card = state.players[player].deck.shift();
     if (!card) return;
     state.players[player].hand.push(card);
+    zaehleSpieler(state, player, 'kartenGezogen');
   }
 }
 
@@ -106,64 +127,243 @@ function pickEnemyLane(state: GameState, enemy: PlayerIndex, preferredLane: numb
 
 // ---------------------------------------------------------------- Beim Ausspielen
 
+/**
+ * Sturzflug (Regelwerk V2): trifft NUR die gegnerische Kreatur in derselben
+ * Lane. Ist die Lane leer, entsteht kein Basisschaden (V1 hatte hier noch
+ * einen Fallback auf die erste belegte Gegner-Lane bzw. die Basis).
+ */
+function applySturzflug(
+  state: GameState,
+  owner: PlayerIndex,
+  lane: number,
+  ab: Extract<Ability, { kind: 'sturzflug' }>
+): void {
+  const c = state.board[owner][lane]!;
+  const enemy = otherPlayer(owner);
+  const target = state.board[enemy][lane];
+  if (target) {
+    target.currentHealth -= ab.x;
+    target.letzterSchaden = { art: 'effekt', quelle: c.cardId, owner };
+    zaehleKarte(state, owner, c.cardId, 'schadenKreatur', ab.x);
+    log(state, `${c.name}: Sturzflug trifft ${target.name} für ${ab.x}.`, {
+      kind: 'spell',
+      lane,
+      effect: 'attackBuff',
+      faction: c.faction
+    });
+  } else {
+    log(state, `${c.name}: Sturzflug trifft ins Leere – die Lane ist frei.`);
+  }
+}
+
+function applyEntwaffnen(
+  state: GameState,
+  owner: PlayerIndex,
+  lane: number,
+  ab: Extract<Ability, { kind: 'entwaffnen' }>
+): void {
+  const c = state.board[owner][lane]!;
+  const enemy = otherPlayer(owner);
+  const tLane = pickEnemyLane(state, enemy, lane);
+  if (tLane >= 0) {
+    const target = state.board[enemy][tLane]!;
+    target.keywords = target.keywords.filter((k) => !ab.entfernt.includes(k));
+    log(state, `${c.name}: ${target.name} verliert ${ab.entfernt.join('/')}.`);
+  }
+}
+
+function applyWachstum(
+  state: GameState,
+  owner: PlayerIndex,
+  lane: number,
+  ab: Extract<Ability, { kind: 'wachstum' }>
+): void {
+  const c = state.board[owner][lane]!;
+  if (ab.maxTriggers != null) {
+    const key = `${c.abilities.indexOf(ab)}:wachstum`;
+    const bisher = c.zaehler[key] ?? 0;
+    if (bisher >= ab.maxTriggers) return;
+    c.zaehler[key] = bisher + 1;
+  }
+  const mult = wachstumMultiplier(state, owner, c);
+  const atk = ab.per_round.atk * mult;
+  const hp = ab.per_round.hp * mult;
+  if (ab.ziel === 'verbuendeter') {
+    const tLane = firstScopeAlly(state, owner, lane, ab.scope ?? 'same_sub');
+    const target = tLane >= 0 ? state.board[owner][tLane] : null;
+    if (target) {
+      target.permAttackBonus += atk;
+      target.permHealthBonus += hp;
+      zaehleSpieler(state, owner, 'wachstumAtk', atk);
+      zaehleSpieler(state, owner, 'wachstumHp', hp);
+      log(state, `${c.name}: ${target.name} wächst um +${atk}/+${hp}.`);
+    }
+  } else {
+    c.permAttackBonus += atk;
+    c.permHealthBonus += hp;
+    zaehleSpieler(state, owner, 'wachstumAtk', atk);
+    zaehleSpieler(state, owner, 'wachstumHp', hp);
+  }
+}
+
+function applyUeberstunden(
+  state: GameState,
+  owner: PlayerIndex,
+  lane: number,
+  ab: Extract<Ability, { kind: 'ueberstunden' }>
+): void {
+  const c = state.board[owner][lane]!;
+  if (c.ueberstundenDone || state.round <= c.spawnRound) return;
+  c.permAttackBonus += ab.bonus.atk;
+  c.permHealthBonus += ab.bonus.hp;
+  c.ueberstundenDone = true;
+  log(state, `${c.name}: Überstunden +${ab.bonus.atk}/+${ab.bonus.hp}.`);
+}
+
+/**
+ * Synergie: kommt mit Bonus ins Spiel, wenn der Besitzer in dieser Runde
+ * schon eine andere Karte im scope gespielt hat (PlayerState.gespieltDieseRunde,
+ * in startRound() geleert, in playPhaseAction NACH den Beim-Ausspielen-
+ * Effekten eingetragen – die eigene Karte zählt sich also nicht selbst).
+ */
+function applySynergie(
+  state: GameState,
+  owner: PlayerIndex,
+  lane: number,
+  ab: Extract<Ability, { kind: 'synergie' }>
+): void {
+  const c = state.board[owner][lane]!;
+  const passt = state.players[owner].gespieltDieseRunde.some((f) =>
+    matchesScope(state.factionTree, ab.scope, c.faction, f)
+  );
+  if (!passt) return;
+  c.permAttackBonus += ab.bonus.atk;
+  c.permHealthBonus += ab.bonus.hp;
+  log(state, `${c.name}: Synergie +${ab.bonus.atk}/+${ab.bonus.hp}.`);
+}
+
+/**
+ * Wahl: deterministisch aufgelöste Rundenbeginn-Entscheidung zwischen zwei
+ * Optionen (kein Spieler-Interaktionstyp – siehe LESSONS/Plan zu Phase 3).
+ * `handKlein` bevorzugt Kartenziehen bei kleiner Hand (< 3), sonst Wissen;
+ * `wissenKnapp` bevorzugt Wissen bei knappem Pool (< 2), sonst Ziehen.
+ */
+function waehleWahlOption(
+  state: GameState,
+  owner: PlayerIndex,
+  ab: Extract<Ability, { kind: 'wahl' }>
+): Extract<Ability, { kind: 'wahl' }>['optionA'] {
+  const p = state.players[owner];
+  const bevorzugtZiehen = ab.regel === 'handKlein' ? p.hand.length < 3 : p.knowledge >= 2;
+  const ziehenOption = ab.optionA.art === 'ziehen' ? ab.optionA : ab.optionB.art === 'ziehen' ? ab.optionB : undefined;
+  const wissenOption = ab.optionA.art === 'wissen' ? ab.optionA : ab.optionB.art === 'wissen' ? ab.optionB : undefined;
+  if (bevorzugtZiehen && ziehenOption) return ziehenOption;
+  if (!bevorzugtZiehen && wissenOption) return wissenOption;
+  return ab.optionA;
+}
+
+function applyWahl(
+  state: GameState,
+  owner: PlayerIndex,
+  lane: number,
+  ab: Extract<Ability, { kind: 'wahl' }>
+): void {
+  const c = state.board[owner][lane]!;
+  const gewaehlt = waehleWahlOption(state, owner, ab);
+  if (gewaehlt.art === 'ziehen') {
+    draw(state, owner, gewaehlt.n);
+    log(state, `${c.name}: Wahl → zieht ${gewaehlt.n} Karte(n).`);
+  } else {
+    state.players[owner].knowledge += gewaehlt.x;
+    log(state, `${c.name}: Wahl → +${gewaehlt.x} Wissen.`);
+  }
+}
+
+interface KlasseBHooks<K extends Ability['kind']> {
+  /** Beim Ausspielen (nach dem Platzieren auf dem Feld). */
+  onPlay?: (state: GameState, owner: PlayerIndex, lane: number, ab: Extract<Ability, { kind: K }>) => void;
+  /** Zu Beginn jeder Runde des Besitzers. */
+  onRoundStart?: (state: GameState, owner: PlayerIndex, lane: number, ab: Extract<Ability, { kind: K }>) => void;
+  /** Am Ende jeder Runde des Besitzers. */
+  onRoundEnd?: (state: GameState, owner: PlayerIndex, lane: number, ab: Extract<Ability, { kind: K }>) => void;
+}
+
+/**
+ * "Klasse B": imperative Zeitpunkt-Hooks für Fähigkeiten, die EINE Kreatur
+ * auf EIN eigenes Ereignis reagieren lässt (Ausspielen/Rundenbeginn/
+ * Rundenende), mit fixer äußerer Iteration (Brett-Reihenfolge). Analog zu
+ * KLASSE_A_HOOKS in abilityHooks.ts, aber hier (statt dort), weil diese
+ * Hooks Helfer aus internal.ts brauchen (log, makeTokenCreature, freeLanes,
+ * getEffectiveAttack, getMaxHealth) – abilityHooks.ts darf internal.ts NICHT
+ * importieren (Zirkelimport, siehe dortiger Kommentar).
+ *
+ * NICHT hier: `sammeln` (reagiert auf JEDEN Tod, nicht nur den eigenen –
+ * zwei verschachtelte Kreatur-Schleifen statt "eine Kreatur, ein Ereignis"),
+ * `todesfluch`/`beschwoeren(beim_tod)` (Beim-Tod-Reihenfolge ist an
+ * onDeathTriggers' Doppel-Schleife gebunden), Gift/Hinrichten/Rettung/
+ * Schutz/Wachstums-Verstärker/Kampf-Interna (kartenübergreifende Ordnung).
+ */
+const KLASSE_B_HOOKS: { [K in Ability['kind']]?: KlasseBHooks<K> } = {
+  sturzflug: { onPlay: applySturzflug },
+  lernen: {
+    onPlay: (state, owner, _lane, ab) => {
+      if (!ab.proRunde) draw(state, owner, ab.n);
+    },
+    onRoundStart: (state, owner, _lane, ab) => {
+      if (ab.proRunde) draw(state, owner, ab.n);
+    }
+  },
+  wissen: {
+    onPlay: (state, owner, lane, ab) => {
+      if (ab.proRunde) return;
+      state.players[owner].knowledge += ab.x;
+      const c = state.board[owner][lane]!;
+      log(state, `${c.name}: +${ab.x} Wissen (Pool: ${state.players[owner].knowledge}).`);
+    },
+    onRoundStart: (state, owner, _lane, ab) => {
+      if (ab.proRunde) state.players[owner].knowledge += ab.x;
+    }
+  },
+  aura: {
+    onPlay: (state, owner, lane, ab) => {
+      if (ab.timing === 'einmal_beim_ausspielen') pulseAura(state, owner, lane, ab);
+    }
+  },
+  umverteilung: { onPlay: applyUmverteilung },
+  beschwoeren: {
+    onPlay: (state, owner, lane, ab) => {
+      if (ab.timing !== 'beim_ausspielen') return;
+      const c = state.board[owner][lane]!;
+      summonTokens(state, owner, ab.count, ab.token, c.faction);
+    }
+  },
+  entwaffnen: { onPlay: applyEntwaffnen },
+  experiment: { onPlay: applyExperiment },
+  synergie: { onPlay: applySynergie },
+  wachstum: { onRoundStart: applyWachstum },
+  wahl: { onRoundStart: applyWahl },
+  heilung: { onRoundEnd: applyHeilung },
+  ueberstunden: { onRoundEnd: applyUeberstunden }
+};
+
+/** Ruft für jede Fähigkeit einer Kreatur den passenden Klasse-B-Hook auf (No-Op, wenn keiner registriert ist). */
+function rufeKlasseBHook(
+  zeitpunkt: 'onPlay' | 'onRoundStart' | 'onRoundEnd',
+  state: GameState,
+  owner: PlayerIndex,
+  lane: number,
+  c: Creature
+): void {
+  for (const ab of c.abilities) {
+    const hook = KLASSE_B_HOOKS[ab.kind]?.[zeitpunkt];
+    if (hook) (hook as (s: GameState, o: PlayerIndex, l: number, a: Ability) => void)(state, owner, lane, ab);
+  }
+}
+
 export function onPlayAbilities(state: GameState, owner: PlayerIndex, lane: number): void {
   const c = state.board[owner][lane];
   if (!c) return;
-  const enemy = otherPlayer(owner);
-
-  for (const ab of c.abilities) {
-    switch (ab.kind) {
-      case 'sturzflug': {
-        const tLane = pickEnemyLane(state, enemy, lane);
-        if (tLane >= 0) {
-          const target = state.board[enemy][tLane]!;
-          target.currentHealth -= ab.x;
-          log(state, `${c.name}: Sturzflug trifft ${target.name} für ${ab.x}.`, {
-            kind: 'spell',
-            lane: tLane,
-            effect: 'attackBuff',
-            faction: c.faction
-          });
-        } else {
-          state.players[enemy].base -= ab.x;
-          log(state, `${c.name}: Sturzflug trifft die gegnerische Basis für ${ab.x}.`);
-        }
-        break;
-      }
-      case 'lernen':
-        if (!ab.proRunde) draw(state, owner, ab.n);
-        break;
-      case 'wissen':
-        if (!ab.proRunde) {
-          state.players[owner].knowledge += ab.x;
-          log(state, `${c.name}: +${ab.x} Wissen (Pool: ${state.players[owner].knowledge}).`);
-        }
-        break;
-      case 'aura':
-        if (ab.timing === 'einmal_beim_ausspielen') pulseAura(state, owner, lane, ab);
-        break;
-      case 'umverteilung':
-        applyUmverteilung(state, owner, lane, ab);
-        break;
-      case 'beschwoeren':
-        if (ab.timing === 'beim_ausspielen') summonTokens(state, owner, ab.count, ab.token, c.faction);
-        break;
-      case 'entwaffnen': {
-        const tLane = pickEnemyLane(state, enemy, lane);
-        if (tLane >= 0) {
-          const target = state.board[enemy][tLane]!;
-          target.keywords = target.keywords.filter((k) => !ab.entfernt.includes(k));
-          log(state, `${c.name}: ${target.name} verliert ${ab.entfernt.join('/')}.`);
-        }
-        break;
-      }
-      case 'experiment':
-        applyExperiment(state, owner, lane, ab);
-        break;
-      default:
-        break;
-    }
-  }
+  rufeKlasseBHook('onPlay', state, owner, lane, c);
 }
 
 function pulseAura(
@@ -240,7 +440,7 @@ function applyExperiment(
 ): void {
   const c = state.board[owner][lane];
   if (!c) return;
-  const markers = state.players[owner].knowledge;
+  const markers = ab.max != null ? Math.min(state.players[owner].knowledge, ab.max) : state.players[owner].knowledge;
   if (markers <= 0) return;
 
   if (ab.proMarker) {
@@ -250,23 +450,29 @@ function applyExperiment(
   }
   if (ab.schadenProMarker) {
     const enemy = otherPlayer(owner);
-    let total = markers * ab.schadenProMarker;
+    const gesamt = markers * ab.schadenProMarker;
+    let total = gesamt;
     const liveLanes: number[] = [];
     for (let j = 0; j < state.board[enemy].length; j++) if (state.board[enemy][j]) liveLanes.push(j);
     if (liveLanes.length === 0) {
       state.players[enemy].base -= total;
+      zaehleKarte(state, owner, c.cardId, 'schadenBasis', total);
     } else {
       let i = 0;
       while (total > 0) {
         const t = state.board[enemy][liveLanes[i % liveLanes.length]];
-        if (t) t.currentHealth -= 1;
+        if (t) {
+          t.currentHealth -= 1;
+          t.letzterSchaden = { art: 'effekt', quelle: c.cardId, owner };
+        }
         total -= 1;
         i += 1;
       }
+      zaehleKarte(state, owner, c.cardId, 'schadenKreatur', gesamt);
     }
-    log(state, `${c.name}: Experiment verteilt ${markers * ab.schadenProMarker} Schaden.`);
+    log(state, `${c.name}: Experiment verteilt ${gesamt} Schaden.`);
   }
-  state.players[owner].knowledge = 0;
+  state.players[owner].knowledge -= markers;
 }
 
 // ---------------------------------------------------------------- Rundenbeginn
@@ -276,11 +482,19 @@ function wachstumMultiplier(state: GameState, owner: PlayerIndex, growing: Creat
   let mult = 1;
   for (const s of state.board[owner]) {
     if (!s) continue;
-    for (const ab of s.abilities) {
-      if (ab.kind === 'verstaerker' && ab.ziel === 'wachstum') {
-        if (matchesScope(state.factionTree, ab.scope, s.faction, growing.faction)) mult *= ab.faktor;
+    s.abilities.forEach((ab, i) => {
+      if (ab.kind !== 'verstaerker' || ab.ziel !== 'wachstum') return;
+      if (!matchesScope(state.factionTree, ab.scope, s.faction, growing.faction)) return;
+      if (ab.firstOnlyPerRound) {
+        // Nur der ERSTE Wachstumstrigger einer Runde bekommt den Bonus (Betriebsrat);
+        // rundenZaehler wird in endRound() geleert. Wachstum läuft in Brett-
+        // Reihenfolge (onRoundStartAbilities), "erster" heißt also: niedrigste Lane zuerst.
+        const key = `${i}:verstaerker`;
+        if (s.rundenZaehler[key]) return;
+        s.rundenZaehler[key] = 1;
       }
-    }
+      mult *= ab.faktor;
+    });
   }
   return mult;
 }
@@ -305,29 +519,7 @@ export function onRoundStartAbilities(state: GameState): void {
   for (const owner of [0, 1] as PlayerIndex[]) {
     state.board[owner].forEach((c, lane) => {
       if (!c) return;
-      for (const ab of c.abilities) {
-        if (ab.kind === 'wachstum') {
-          const mult = wachstumMultiplier(state, owner, c);
-          const atk = ab.per_round.atk * mult;
-          const hp = ab.per_round.hp * mult;
-          if (ab.ziel === 'verbuendeter') {
-            const tLane = firstScopeAlly(state, owner, lane, ab.scope ?? 'same_sub');
-            const target = tLane >= 0 ? state.board[owner][tLane] : null;
-            if (target) {
-              target.permAttackBonus += atk;
-              target.permHealthBonus += hp;
-              log(state, `${c.name}: ${target.name} wächst um +${atk}/+${hp}.`);
-            }
-          } else {
-            c.permAttackBonus += atk;
-            c.permHealthBonus += hp;
-          }
-        } else if (ab.kind === 'lernen' && ab.proRunde) {
-          draw(state, owner, ab.n);
-        } else if (ab.kind === 'wissen' && ab.proRunde) {
-          state.players[owner].knowledge += ab.x;
-        }
-      }
+      rufeKlasseBHook('onRoundStart', state, owner, lane, c);
     });
   }
 }
@@ -338,17 +530,7 @@ export function onRoundEndAbilities(state: GameState): void {
   for (const owner of [0, 1] as PlayerIndex[]) {
     state.board[owner].forEach((c, lane) => {
       if (!c) return;
-      for (const ab of c.abilities) {
-        if (ab.kind === 'heilung') applyHeilung(state, owner, lane, ab);
-        else if (ab.kind === 'ueberstunden') {
-          if (!c.ueberstundenDone && state.round > c.spawnRound) {
-            c.permAttackBonus += ab.bonus.atk;
-            c.permHealthBonus += ab.bonus.hp;
-            c.ueberstundenDone = true;
-            log(state, `${c.name}: Überstunden +${ab.bonus.atk}/+${ab.bonus.hp}.`);
-          }
-        }
-      }
+      rufeKlasseBHook('onRoundEnd', state, owner, lane, c);
     });
   }
 }
@@ -371,14 +553,21 @@ function applyHeilung(
       ? [lane - 1, lane + 1]
       : state.board[owner].map((_, i) => i);
 
+  let geheiltAnzahl = 0;
   for (const tLane of targetLanes) {
+    if (ab.maxTargets != null && geheiltAnzahl >= ab.maxTargets) break;
     const t = state.board[owner]?.[tLane];
     if (!t) continue;
     if (!matchesScope(state.factionTree, ab.scope, source.faction, t.faction)) continue;
     const max = getMaxHealth(state, owner, tLane);
     if (t.currentHealth < max) {
+      const vorher = t.currentHealth;
       t.currentHealth = Math.min(max, t.currentHealth + amount);
+      const geheilt = t.currentHealth - vorher;
+      zaehleKarte(state, owner, source.cardId, 'geheilt', geheilt);
+      zaehleSpieler(state, owner, 'heilung', geheilt);
       log(state, `${source.name} heilt ${t.name} um ${amount}.`);
+      geheiltAnzahl += 1;
     }
   }
 }
@@ -389,8 +578,9 @@ function applyHeilung(
 export function onDeathTriggers(state: GameState, deaths: DeathInfo[]): void {
   for (const d of deaths) {
     const dead = d.creature;
-    const tf = getAbility(dead, 'todesfluch');
-    if (tf) {
+    // Mehrere todesfluch-Einträge auf derselben Karte stapeln (getAbility gäbe
+    // nur den ersten zurück).
+    for (const tf of getAbilities(dead, 'todesfluch')) {
       const enemy = otherPlayer(d.owner);
       const attacker = state.board[enemy][d.lane];
       if (attacker) {
@@ -405,20 +595,29 @@ export function onDeathTriggers(state: GameState, deaths: DeathInfo[]): void {
     }
   }
 
-  // sammeln: lebende Kreaturen reagieren auf jeden Tod (trigger-abhängig).
+  // sammeln: lebende Kreaturen reagieren auf jeden Tod (trigger-abhängig);
+  // mehrere sammeln-Einträge auf derselben Karte stapeln. firstPerRound (rundenZaehler,
+  // in endRound geleert) und maxTriggers (zaehler, spielweit) begrenzen optional.
   for (const d of deaths) {
     for (const owner of [0, 1] as PlayerIndex[]) {
       for (const c of state.board[owner]) {
         if (!c) continue;
-        const sm = getAbility(c, 'sammeln');
-        if (!sm) continue;
-        const isOwn = d.owner === owner;
-        const match =
-          sm.trigger === 'any' || (sm.trigger === 'own' && isOwn) || (sm.trigger === 'enemy' && !isOwn);
-        if (match) {
-          c.permAttackBonus += sm.bonus.atk;
-          c.permHealthBonus += sm.bonus.hp;
-        }
+        c.abilities.forEach((ab, i) => {
+          if (ab.kind !== 'sammeln') return;
+          const isOwn = d.owner === owner;
+          const match =
+            ab.trigger === 'any' || (ab.trigger === 'own' && isOwn) || (ab.trigger === 'enemy' && !isOwn);
+          if (!match) return;
+          const rundenKey = `${i}:sammeln`;
+          if (ab.firstPerRound && c.rundenZaehler[rundenKey]) return;
+          const spielKey = `${i}:sammeln`;
+          const bisher = c.zaehler[spielKey] ?? 0;
+          if (ab.maxTriggers != null && bisher >= ab.maxTriggers) return;
+          if (ab.firstPerRound) c.rundenZaehler[rundenKey] = 1;
+          if (ab.maxTriggers != null) c.zaehler[spielKey] = bisher + 1;
+          c.permAttackBonus += ab.bonus.atk;
+          c.permHealthBonus += ab.bonus.hp;
+        });
       }
     }
   }
@@ -427,13 +626,52 @@ export function onDeathTriggers(state: GameState, deaths: DeathInfo[]): void {
 // ---------------------------------------------------------------- Kampf-Helfer
 
 /** Gift-Zermürbung am Kampfende: jede Marke macht 1 Schaden, Marken bleiben bestehen. */
+/** Ab dieser Anzahl Giftmarken wird eine Kreatur zerstört (Regelwerk V2). */
+export const GIFT_TOD_SCHWELLE = 3;
+
+/**
+ * Gift-Zermürbung am Kampfende (Regelwerk V2): bei ≥GIFT_TOD_SCHWELLE Marken
+ * wird die Kreatur zerstört – kein Schaden mehr pro Marke (V1-Verhalten).
+ * Marken bleiben bei Überleben bestehen (kein Reset).
+ */
 export function resolvePoison(state: GameState): void {
   for (const owner of [0, 1] as PlayerIndex[]) {
     for (const c of state.board[owner]) {
-      if (!c || c.poison <= 0) continue;
-      c.currentHealth -= c.poison;
-      log(state, `Gift: ${c.name} nimmt ${c.poison} Schaden.`);
+      if (!c || c.poison < GIFT_TOD_SCHWELLE) continue;
+      c.currentHealth = 0;
+      // Poison-Herkunft ist nicht mehr eindeutig einer Karte zuordenbar (Marken
+      // stapeln über mehrere Runden/Angreifer) – daher ohne quelle/owner.
+      c.letzterSchaden = { art: 'gift' };
+      log(state, `Gift: ${c.name} wird bei ${c.poison} Giftmarken zerstört.`);
     }
+  }
+}
+
+/**
+ * Häutung (`shedding`): einmal pro Spiel proaktiv heilen, sobald die HP auf
+ * die Schwelle fallen (nicht erst beim Sterben) und optional Gift entfernen.
+ * Läuft AUSSERHALB der recalcBoard-Fixpunktschleife (siehe Kommentar an
+ * Creature.zaehler in types.ts) – Aufrufer: game.ts, vor logDeaths().
+ */
+export function applyShedding(state: GameState): void {
+  for (const owner of [0, 1] as PlayerIndex[]) {
+    state.board[owner].forEach((c, lane) => {
+      if (!c || c.currentHealth <= 0) return;
+      c.abilities.forEach((ab, i) => {
+        if (ab.kind !== 'shedding') return;
+        const key = `${i}:shedding`;
+        if (c.zaehler[key]) return;
+        if (c.currentHealth > ab.schwelle) return;
+        const max = getMaxHealth(state, owner, lane);
+        c.currentHealth = Math.min(max, c.currentHealth + ab.heilung);
+        if (ab.entferntGift) c.poison = 0;
+        c.zaehler[key] = 1;
+        log(
+          state,
+          `${c.name}: Häutung heilt um ${ab.heilung}${ab.entferntGift ? ' und entfernt Gift' : ''}.`
+        );
+      });
+    });
   }
 }
 
@@ -448,10 +686,18 @@ export function applyHinrichten(
   const order = [attackerLane, ...state.board[enemy].map((_, i) => i).filter((i) => i !== attackerLane)];
   for (const j of order) {
     const e = state.board[enemy][j];
-    if (!e || isUnremovable(e)) continue;
+    // currentHealth <= 0: bereits durch eine vorherige (gestapelte) Hinrichten-
+    // Fähigkeit getroffen, aber recalcBoard hat sie noch nicht entfernt – sonst
+    // würde eine zweite Hinrichten-Fähigkeit dasselbe Ziel doppelt loggen.
+    if (!e || isUnremovable(e) || e.currentHealth <= 0) continue;
     if (e.currentHealth <= maxHp) {
       e.currentHealth = 0;
-      log(state, `${state.board[attackerOwner][attackerLane]?.name}: Hinrichten zerstört ${e.name}.`);
+      const attackerCard = state.board[attackerOwner][attackerLane];
+      if (attackerCard) {
+        e.letzterSchaden = { art: 'hinrichten', quelle: attackerCard.cardId, owner: attackerOwner };
+        zaehleSpieler(state, attackerOwner, 'hinrichtungen');
+      }
+      log(state, `${attackerCard?.name}: Hinrichten zerstört ${e.name}.`);
       return;
     }
   }

@@ -3,7 +3,8 @@
 
 import {
   applyHinrichten,
-  getAbility,
+  applyShedding,
+  getAbilities,
   hasAbility,
   onDeathTriggers,
   onPlayAbilities,
@@ -24,7 +25,8 @@ import {
   otherPlayer,
   recalcBoard
 } from './internal.js';
-import { hasKeyword, KEYWORDS } from './keywords.js';
+import { hasKeyword } from './keywords.js';
+import { zaehleKarte, zaehleSpieler } from './stats.js';
 import type {
   CardDef,
   ClientView,
@@ -92,7 +94,9 @@ export function buildDeck(data: GameData, faction: string, random: () => number)
   }
   const deck: string[] = [];
   for (const card of cards) {
-    const copies = card.signature ? 1 : data.config.deckbuilding.maxCopies;
+    const copies = card.signature
+      ? (data.config.deckbuilding.maxCopiesSignature ?? 1)
+      : data.config.deckbuilding.maxCopies;
     for (let i = 0; i < copies; i++) deck.push(card.id);
   }
   return shuffle(deck, random).slice(0, data.config.deckbuilding.size);
@@ -114,6 +118,7 @@ function drawCards(state: GameState, player: PlayerIndex, amount: number): void 
     const card = p.deck.shift();
     if (!card) return; // leeres Deck: es wird einfach nicht mehr gezogen
     p.hand.push(card);
+    zaehleSpieler(state, player, 'kartenGezogen');
   }
 }
 
@@ -131,7 +136,8 @@ export function createGame(
     base: data.config.baseHealth,
     energy: 0,
     knowledge: 0,
-    flyDone: false
+    flyDone: false,
+    gespieltDieseRunde: []
   });
 
   const state: GameState = {
@@ -168,7 +174,11 @@ function startRound(state: GameState): void {
     drawCards(state, 0, state.config.cardsDrawnPerTurn);
     drawCards(state, 1, state.config.cardsDrawnPerTurn);
   }
-  // 2. Energie: start + (Runde-1)*perRound, optional gedeckelt – Rest verfällt
+  // 2. Energie: start + (Runde-1)*perRound, optional gedeckelt – Rest verfällt.
+  // Telemetrie: die noch übrige Energie aus der vorigen Runde wird gerade
+  // überschrieben (Runde 1: immer 0, da PlayerState mit energy:0 startet).
+  zaehleSpieler(state, 0, 'energieVerfallen', state.players[0].energy);
+  zaehleSpieler(state, 1, 'energieVerfallen', state.players[1].energy);
   const energy = roundEnergy(state.config, state.round);
   state.players[0].energy = energy;
   state.players[1].energy = energy;
@@ -178,6 +188,8 @@ function startRound(state: GameState): void {
   state.consecutivePasses = 0;
   state.players[0].flyDone = false;
   state.players[1].flyDone = false;
+  state.players[0].gespieltDieseRunde = [];
+  state.players[1].gespieltDieseRunde = [];
   // Rundenbeginn-Effekte (Rundenwachstum, lernen/wissen pro Runde) – wirkt auf
   // Kreaturen, die aus einer früheren Runde übrig sind (Runde 1: leeres Feld).
   onRoundStartAbilities(state);
@@ -186,30 +198,35 @@ function startRound(state: GameState): void {
 }
 
 function endRound(state: GameState): void {
-  // Rundenende-Effekte: Alt-Keywords (z. B. heilt_nachbarn) …
-  for (const owner of [0, 1] as PlayerIndex[]) {
-    state.board[owner].forEach((creature, lane) => {
-      if (!creature) return;
-      for (const kw of creature.keywords) {
-        const hook = KEYWORDS[kw]?.onRoundEnd;
-        if (hook) {
-          for (const msg of hook(state, owner, lane)) log(state, msg);
-        }
-      }
-    });
-  }
-  // … und neue Fähigkeiten (heilung, ueberstunden).
   onRoundEndAbilities(state);
-  // Temporäre Buffs entfernen, Erschöpfung aufheben
+  // Temporäre Buffs entfernen, Erschöpfung aufheben, Rundenzustand zurücksetzen.
   for (const row of state.board) {
     for (const creature of row) {
       if (!creature) continue;
       creature.tempAttackBonus = 0;
+      creature.tempHealthBonus = 0;
       creature.exhausted = false;
       creature.movedThisFlyPhase = false;
+      // Bugfix: wurde bisher nie zurückgesetzt, wodurch `kaltbluetig` faktisch
+      // "hat noch nie angegriffen" statt "diese Runde nicht angegriffen" prüfte.
+      creature.attackedThisRound = false;
+      creature.rundenZaehler = {};
     }
   }
   logDeaths(state);
+
+  // Zermürbung (Regelwerk V2): ab config.zermuerbung.abRunde verlieren beide
+  // Basen am Rundenende Leben – das ist die REGULÄRE Terminierung für lange
+  // Partien (eine echte Spielentscheidung statt eines harten Abbruchs).
+  // roundLimit bleibt daneben als technische Notbremse bestehen (siehe unten).
+  const z = state.config.zermuerbung;
+  if (z && state.round >= z.abRunde) {
+    const schaden = z.schaden + (state.round - z.abRunde) * z.steigerung;
+    state.players[0].base -= schaden;
+    state.players[1].base -= schaden;
+    log(state, `Zermürbung: beide Basen verlieren ${schaden} Leben.`);
+    if (checkBaseDestroyed(state)) return;
+  }
 
   if (state.round >= state.config.roundLimit) {
     const [a, b] = state.players;
@@ -245,8 +262,8 @@ function checkBaseDestroyed(state: GameState): boolean {
 
 /** Extra Basisschaden von `neugier`, wenn die Kreatur allein in ihrer Lane angreift. */
 function soloBasisschaden(c: Creature): number {
-  const n = getAbility(c, 'neugier');
-  return n?.basisschaden ?? 0;
+  // Summiert über alle neugier-Einträge (eine Karte kann theoretisch mehrere haben).
+  return getAbilities(c, 'neugier').reduce((sum, n) => sum + (n.basisschaden ?? 0), 0);
 }
 
 /** Ein Angriff Kreatur→Kreatur inkl. Gift, Wucht (Überschuss→Basis) und Dornen. */
@@ -259,8 +276,12 @@ function creatureStrike(
   lane: number
 ): void {
   const defenderHealthBefore = defender.currentHealth;
+  const defenderIdx = otherPlayer(attackerIdx);
   defender.currentHealth -= atk;
+  defender.letzterSchaden = { art: 'kampf', quelle: attacker.cardId, owner: attackerIdx };
   attacker.attackedThisRound = true;
+  zaehleKarte(state, attackerIdx, attacker.cardId, 'schadenKreatur', atk);
+  if (attacker.spawnRound === state.round) zaehleSpieler(state, attackerIdx, 'flinkAngriffe');
   log(state, `Lane ${lane + 1}: ${attacker.name} trifft ${defender.name} für ${atk}.`, {
     kind: 'attack',
     lane,
@@ -268,28 +289,35 @@ function creatureStrike(
     damage: atk,
     toBase: false
   });
-  // Alt-Keyword Gift (Sofort-Tod) …
-  if (hasKeyword(attacker, 'poison') && defender.currentHealth > 0) {
-    defender.currentHealth = 0;
-    log(state, `Lane ${lane + 1}: Gift! ${defender.name} stirbt sofort.`);
-  }
-  // … neue Gift-Marken (Zermürbung).
-  const gift = getAbility(attacker, 'gift');
-  if (gift) defender.poison += gift.staerke;
+  // Gift-Marken (Zermürbung, siehe resolvePoison). Mehrere gift-Einträge stapeln.
+  const giftStaerke = getAbilities(attacker, 'gift').reduce((sum, g) => sum + g.staerke, 0);
+  if (giftStaerke > 0) defender.poison += giftStaerke;
   // Wucht: Überschussschaden trifft die gegnerische Basis.
   if (hasAbility(attacker, 'wucht')) {
     const overflow = Math.max(0, atk - defenderHealthBefore);
     if (overflow > 0) {
-      state.players[otherPlayer(attackerIdx)].base -= overflow;
+      state.players[defenderIdx].base -= overflow;
+      zaehleKarte(state, attackerIdx, attacker.cardId, 'schadenBasis', overflow);
+      zaehleSpieler(state, attackerIdx, 'wuchtSchaden', overflow);
       log(state, `Lane ${lane + 1}: Wucht! ${overflow} Überschuss trifft die Basis.`);
     }
   }
-  // Dornen: Verteidiger fügt dem Angreifer Schaden zu.
-  const dornen = getAbility(defender, 'dornen');
-  if (dornen) {
-    attacker.currentHealth -= dornen.x;
-    log(state, `Lane ${lane + 1}: Dornen! ${defender.name} verletzt ${attacker.name} um ${dornen.x}.`);
+  // Dornen: Verteidiger fügt dem Angreifer Schaden zu. Mehrere dornen-Einträge stapeln.
+  const dornenX = getAbilities(defender, 'dornen').reduce((sum, d) => sum + d.x, 0);
+  if (dornenX > 0) {
+    attacker.currentHealth -= dornenX;
+    attacker.letzterSchaden = { art: 'dornen', quelle: defender.cardId, owner: defenderIdx };
+    zaehleSpieler(state, defenderIdx, 'dornenSchaden', dornenX);
+    log(state, `Lane ${lane + 1}: Dornen! ${defender.name} verletzt ${attacker.name} um ${dornenX}.`);
   }
+}
+
+/** Zusätzlicher Kampf-Angriffsbonus, der nur für DIESEN Schlagabtausch gilt (`hunter` gegen vergiftete Ziele). */
+function kampfAngriffsBonus(state: GameState, attackerOwner: PlayerIndex, lane: number): number {
+  const attacker = state.board[attackerOwner][lane];
+  const defender = state.board[otherPlayer(attackerOwner)][lane];
+  if (!attacker || !defender || defender.poison <= 0) return 0;
+  return getAbilities(attacker, 'hunter').reduce((sum, h) => sum + h.bonusAtk, 0);
 }
 
 function resolveCombat(state: GameState): void {
@@ -302,28 +330,35 @@ function resolveCombat(state: GameState): void {
     if (a && b) {
       // Beide Lanes besetzt: kampfbereite Kreaturen schlagen GLEICHZEITIG zu.
       // Erschöpfte Kreaturen greifen nicht an, verteidigen aber normal.
-      const atkA = a.exhausted ? 0 : getEffectiveAttack(state, 0, lane);
-      const atkB = b.exhausted ? 0 : getEffectiveAttack(state, 1, lane);
+      const atkA = a.exhausted ? 0 : getEffectiveAttack(state, 0, lane) + kampfAngriffsBonus(state, 0, lane);
+      const atkB = b.exhausted ? 0 : getEffectiveAttack(state, 1, lane) + kampfAngriffsBonus(state, 1, lane);
       if (atkA === 0 && atkB === 0) continue;
 
-      // Hinrichten (beim Angriff, vor dem Schaden).
+      // Hinrichten (beim Angriff, vor dem Schaden). Mehrere hinrichten-Einträge
+      // auf derselben Karte lösen nacheinander aus (applyHinrichten überspringt
+      // bereits getroffene Ziele, siehe dortiger Kommentar).
       if (atkA > 0) {
-        const h = getAbility(a, 'hinrichten');
-        if (h) applyHinrichten(state, 0, lane, h.maxHp);
+        for (const h of getAbilities(a, 'hinrichten')) applyHinrichten(state, 0, lane, h.maxHp);
       }
       if (atkB > 0) {
-        const h = getAbility(b, 'hinrichten');
-        if (h) applyHinrichten(state, 1, lane, h.maxHp);
+        for (const h of getAbilities(b, 'hinrichten')) applyHinrichten(state, 1, lane, h.maxHp);
       }
 
       if (atkA > 0) creatureStrike(state, a, b, atkA, 0, lane);
       if (atkB > 0) creatureStrike(state, b, a, atkB, 1, lane);
+      // Häutung (`shedding`) VOR logDeaths: proaktive Heilung bei niedrigem
+      // Leben, bevor recalcBoard über Tod/Rettung entscheidet. Läuft bewusst
+      // außerhalb der recalcBoard-Fixpunktschleife (siehe Kommentar an
+      // Creature.zaehler in types.ts).
+      applyShedding(state);
       logDeaths(state);
       if (checkBaseDestroyed(state)) return; // Wucht kann die Basis zerstören
     } else if (a && !b && !a.exhausted) {
       const dmg = getEffectiveAttack(state, 0, lane) + soloBasisschaden(a);
       a.attackedThisRound = true;
       state.players[1].base -= dmg;
+      zaehleKarte(state, 0, a.cardId, 'schadenBasis', dmg);
+      if (a.spawnRound === state.round) zaehleSpieler(state, 0, 'flinkAngriffe');
       log(state, `Lane ${lane + 1}: ${a.name} trifft die gegnerische Basis für ${dmg}.`, {
         kind: 'attack',
         lane,
@@ -336,6 +371,8 @@ function resolveCombat(state: GameState): void {
       const dmg = getEffectiveAttack(state, 1, lane) + soloBasisschaden(b);
       b.attackedThisRound = true;
       state.players[0].base -= dmg;
+      zaehleKarte(state, 1, b.cardId, 'schadenBasis', dmg);
+      if (b.spawnRound === state.round) zaehleSpieler(state, 1, 'flinkAngriffe');
       log(state, `Lane ${lane + 1}: ${b.name} trifft die gegnerische Basis für ${dmg}.`, {
         kind: 'attack',
         lane,
@@ -347,8 +384,11 @@ function resolveCombat(state: GameState): void {
     }
   }
 
-  // Gift-Zermürbung am Ende der Kampfphase (Marken bleiben bestehen).
+  // Gift-Zermürbung am Ende der Kampfphase: bei ≥3 Marken sofortiger Tod
+  // (Marken bleiben sonst bestehen). Häutung VOR logDeaths, damit sie noch
+  // eingreifen kann.
   resolvePoison(state);
+  applyShedding(state);
   logDeaths(state);
 }
 
@@ -447,6 +487,10 @@ function playPhaseAction(state: GameState, player: PlayerIndex, action: PlayerAc
   p.energy -= card.cost;
   p.hand.splice(action.handIndex, 1);
   state.consecutivePasses = 0;
+  zaehleKarte(state, player, card.id, 'gespielt');
+  // Für `synergie`: NACH den Beim-Ausspielen-Effekten dieser Karte eintragen,
+  // damit die eigene Karte sich nicht selbst als "zuvor gespielt" zählt.
+  p.gespieltDieseRunde.push(card.faction);
   logDeaths(state);
   state.active = otherPlayer(player);
 }
@@ -513,6 +557,14 @@ export function applyAction(
     playPhaseAction(next, player, action, data);
   } else {
     flyPhaseAction(next, player, action);
+  }
+  // Sicherheitsnetz: resolveCombat prüft checkBaseDestroyed nur innerhalb der
+  // Kampfphase. Basisschaden AUSSERHALB des Kampfes (z. B. sturzflug/experiment
+  // beim Ausspielen) konnte die Basis bisher auf ≤0 senken, ohne die Partie zu
+  // beenden. Nur aufrufen, wenn noch nicht beendet – sonst würde die bereits
+  // geloggte Sieg-Meldung doppelt erscheinen.
+  if (next.phase !== 'ended') {
+    checkBaseDestroyed(next);
   }
   return next;
 }

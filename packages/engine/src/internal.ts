@@ -2,9 +2,17 @@
 // Auren/Skalierungen werden nie gespeichert, sondern immer dynamisch aus dem Feld
 // berechnet: verschwindet die Quelle, verschwindet automatisch auch der Bonus.
 
+import { countScope, isSoloInLane, KLASSE_A_HOOKS } from './abilityHooks.js';
 import { matchesScope } from './factions.js';
 import { KEYWORDS } from './keywords.js';
-import type { Ability, Creature, GameState, LogEvent, PlayerIndex, Scope, TokenDef } from './types.js';
+import { zaehleKarte, zaehleSpieler } from './stats.js';
+import type { Ability, Creature, GameState, LogEvent, PlayerIndex, TokenDef } from './types.js';
+
+// Re-Export für Rückwärtskompatibilität (countScope/isSoloInLane lebten bis
+// zum Ability-Registry-Umbau in dieser Datei; abilityHooks.ts ist jetzt die
+// Quelle, weil dort auch die Klasse-A-Registry liegt – siehe deren Kommentar
+// zum Zirkelimport-Grund).
+export { countScope, isSoloInLane };
 
 /** Fehlerhafte/unerlaubte Aktion eines Spielers (Meldung ist für den Client gedacht). */
 export class GameRuleError extends Error {
@@ -23,60 +31,12 @@ interface Bonus {
   health: number;
 }
 
-/** Zählt verbündete Kreaturen im scope (optional inkl. sich selbst). */
-export function countScope(
-  state: GameState,
-  owner: PlayerIndex,
-  lane: number,
-  scope: Scope,
-  includeSelf: boolean
-): number {
-  const self = state.board[owner][lane];
-  if (!self) return 0;
-  let n = 0;
-  state.board[owner].forEach((c, i) => {
-    if (!c) return;
-    if (i === lane) {
-      if (includeSelf) n += 1;
-      return;
-    }
-    if (matchesScope(state.factionTree, scope, self.faction, c.faction)) n += 1;
-  });
-  return n;
-}
-
-/** "solo": keine andere Kreatur in derselben Lane – weder eigene noch gegnerische. */
-export function isSoloInLane(state: GameState, owner: PlayerIndex, lane: number): boolean {
-  return !state.board[otherPlayer(owner)][lane];
-}
-
-/** Multiplikator für `improvisation` je nach Basis-HP des Besitzers. */
-function improvisationMultiplier(
-  state: GameState,
-  owner: PlayerIndex,
-  ab: Extract<Ability, { kind: 'improvisation' }>
-): number {
-  const base = state.players[owner].base;
-  if (ab.mode === 'schwelle') {
-    return ab.schwelle != null && base <= ab.schwelle ? 1 : 0;
-  }
-  const fehlend = Math.max(0, state.config.baseHealth - base);
-  return Math.floor(fehlend / (ab.proHp ?? 1));
-}
-
-/** Lane der einen Karte, an die ein `werkzeug` seinen Bonus vergibt (niedrigste Lane, gleiche Sub-Fraktion). */
-function werkzeugTargetLane(state: GameState, owner: PlayerIndex, sourceLane: number): number {
-  const src = state.board[owner][sourceLane];
-  if (!src) return -1;
-  for (let j = 0; j < state.board[owner].length; j++) {
-    if (j === sourceLane) continue;
-    const c = state.board[owner][j];
-    if (c && matchesScope(state.factionTree, 'same_sub', src.faction, c.faction)) return j;
-  }
-  return -1;
-}
-
-/** Beitrag EINER Quell-Kreatur (deren Auren/werkzeug/improvisation) an eine Ziel-Lane. */
+/**
+ * Beitrag EINER Quell-Kreatur (deren Auren/werkzeug/improvisation) an eine
+ * Ziel-Lane. Dispatcht über KLASSE_A_HOOKS (abilityHooks.ts) statt eines
+ * manuellen if/else-if pro `kind` – ein neues Primitiv braucht dadurch nur
+ * noch einen Registry-Eintrag, keine Änderung an dieser Schleife.
+ */
 function sourceContribution(
   state: GameState,
   owner: PlayerIndex,
@@ -89,42 +49,22 @@ function sourceContribution(
   let attack = 0;
   let health = 0;
 
-  // Alt-Keyword-Auren (schild_nachbarn, aura_alle, …) – unverändert.
-  for (const kw of source.keywords) {
-    const aura = KEYWORDS[kw]?.aura;
-    if (!aura) continue;
-    const bonus = aura(state, owner, sourceLane, targetLane);
-    if (bonus) {
-      attack += bonus.attack;
-      health += bonus.health;
-    }
-  }
-
-  const tree = state.factionTree;
   for (const ab of source.abilities) {
-    if (ab.kind === 'aura' && ab.timing === 'dauerhaft') {
-      if (sourceLane !== targetLane && matchesScope(tree, ab.scope, source.faction, target.faction)) {
-        attack += ab.buff.atk;
-        health += ab.buff.hp;
-      }
-    } else if (ab.kind === 'nachbar' && (ab.effect === 'schild' || ab.effect === 'banner')) {
-      const neighbor = Math.abs(sourceLane - targetLane) === 1;
-      if (neighbor && matchesScope(tree, ab.scope, source.faction, target.faction)) {
-        if (ab.effect === 'banner') attack += ab.amount;
-        else health += ab.amount;
-      }
-    } else if (ab.kind === 'improvisation') {
-      // Wirkt auch auf sich selbst (kein Ausschluss der Quell-Lane).
-      if (matchesScope(tree, ab.scope, source.faction, target.faction)) {
-        const mult = improvisationMultiplier(state, owner, ab);
-        attack += ab.bonus.atk * mult;
-        health += ab.bonus.hp * mult;
-      }
-    } else if (ab.kind === 'werkzeug') {
-      if (sourceLane !== targetLane && targetLane === werkzeugTargetLane(state, owner, sourceLane)) {
-        attack += ab.atk;
-      }
-    }
+    const hook = KLASSE_A_HOOKS[ab.kind]?.beitragAura;
+    if (!hook) continue;
+    // TypeScript kann die Ability-Union hier nicht anhand von `ab.kind` auf
+    // den zur Registry-Kind passenden Zweig einengen (Lookup über ein
+    // generisches Record) – der Aufbau von KLASSE_A_HOOKS stellt sicher,
+    // dass jeder Hook nur für sein eigenes `kind` registriert ist.
+    const bonus = (hook as (s: GameState, o: PlayerIndex, sl: number, tl: number, a: Ability) => Bonus)(
+      state,
+      owner,
+      sourceLane,
+      targetLane,
+      ab
+    );
+    attack += bonus.attack;
+    health += bonus.health;
   }
   return { attack, health };
 }
@@ -141,42 +81,30 @@ function auraBonus(state: GameState, owner: PlayerIndex, lane: number): Bonus {
   return { attack, health };
 }
 
-/** Selbst-Boni einer Kreatur (skalierung, neugier, kaltbluetig). */
+/**
+ * Selbst-Boni einer Kreatur (skalierung, neugier, kaltbluetig). Dispatcht
+ * über KLASSE_A_HOOKS wie sourceContribution oben.
+ */
 function selfAbilityBonus(state: GameState, owner: PlayerIndex, lane: number): Bonus {
   const c = state.board[owner][lane];
   if (!c) return { attack: 0, health: 0 };
   let attack = 0;
   let health = 0;
   for (const ab of c.abilities) {
-    if (ab.kind === 'skalierung') {
-      const count = countScope(state, owner, lane, ab.scope, ab.includeSelf ?? false);
-      const eff = ab.cap != null ? Math.min(count, ab.cap) : count;
-      attack += ab.per.atk * eff;
-      health += ab.per.hp * eff;
-    } else if (ab.kind === 'neugier' && ab.bonus) {
-      if (isSoloInLane(state, owner, lane)) {
-        attack += ab.bonus.atk;
-        health += ab.bonus.hp;
-      }
-    } else if (ab.kind === 'kaltbluetig') {
-      if (!c.attackedThisRound) {
-        attack += ab.bonus.atk;
-        health += ab.bonus.hp;
-      }
-    }
+    const hook = KLASSE_A_HOOKS[ab.kind]?.beitragSelbst;
+    if (!hook) continue;
+    const bonus = (hook as (s: GameState, o: PlayerIndex, l: number, a: Ability) => Bonus)(state, owner, lane, ab);
+    attack += bonus.attack;
+    health += bonus.health;
   }
   return { attack, health };
 }
 
-/** Effektiver Angriff inkl. Alt-Keywords (rudel), Fähigkeiten, Buffs und Auren. */
+/** Effektiver Angriff inkl. Fähigkeiten, Buffs und Auren. */
 export function getEffectiveAttack(state: GameState, owner: PlayerIndex, lane: number): number {
   const c = state.board[owner][lane];
   if (!c) return 0;
   let attack = c.baseAttack + c.permAttackBonus + c.tempAttackBonus;
-  for (const kw of c.keywords) {
-    const bonus = KEYWORDS[kw]?.selfAttackBonus;
-    if (bonus) attack += bonus(state, owner, lane);
-  }
   attack += selfAbilityBonus(state, owner, lane).attack;
   attack += auraBonus(state, owner, lane).attack;
   return Math.max(0, attack);
@@ -187,7 +115,7 @@ export function getMaxHealth(state: GameState, owner: PlayerIndex, lane: number)
   const c = state.board[owner][lane];
   if (!c) return 0;
   const bonus = selfAbilityBonus(state, owner, lane).health + auraBonus(state, owner, lane).health;
-  return Math.max(1, c.baseMaxHealth + c.permHealthBonus + bonus);
+  return Math.max(1, c.baseMaxHealth + c.permHealthBonus + c.tempHealthBonus + bonus);
 }
 
 export interface DeathInfo {
@@ -200,19 +128,33 @@ export interface DeathInfo {
 }
 
 /** Todes-Rettung (einmal pro Spiel): fängt currentHealth ≤ 0 ab. */
-function tryRettung(creature: Creature, maxHealth: number): boolean {
+function tryRettung(
+  state: GameState,
+  owner: PlayerIndex,
+  creature: Creature,
+  maxHealth: number
+): boolean {
   if (creature.rettungUsed) return false;
   const rescue = creature.abilities.find(
     (a): a is Extract<Ability, { kind: 'rettung' }> => a.kind === 'rettung'
   );
   if (!rescue) return false;
   creature.rettungUsed = true;
+  // Telemetrie: verhinderter Schaden = wie weit currentHealth unter 0 lag
+  // (mindestens 1, da currentHealth <= 0 hier gilt).
+  const verhindert = 1 - creature.currentHealth;
   if (rescue.mode === 'full_heal') {
     creature.currentHealth = maxHealth;
     creature.poison = 0; // Häutung entfernt Gift
   } else {
     creature.currentHealth = 1; // survive_1hp / revive_1hp
   }
+  if (rescue.bonusWennAusgeloest) {
+    creature.permAttackBonus += rescue.bonusWennAusgeloest.atk;
+    creature.permHealthBonus += rescue.bonusWennAusgeloest.hp;
+  }
+  zaehleKarte(state, owner, creature.cardId, 'verhindert', verhindert);
+  zaehleSpieler(state, owner, 'verhinderterSchaden', verhindert);
   return true;
 }
 
@@ -229,11 +171,33 @@ function trySchutz(state: GameState, owner: PlayerIndex, lane: number): boolean 
     if (!ab) continue;
     if (!matchesScope(state.factionTree, ab.scope, protector.faction, dying.faction)) continue;
     protector.schutzUsed = true;
+    const verhindert = 1 - dying.currentHealth;
     protector.currentHealth = 0; // opfert sich
     dying.currentHealth = 1; // gerettet
+    zaehleKarte(state, owner, protector.cardId, 'verhindert', verhindert);
+    zaehleSpieler(state, owner, 'verhinderterSchaden', verhindert);
     return true;
   }
   return false;
+}
+
+/**
+ * Telemetrie: ordnet einen Tod seiner Ursache zu (Karten-Kill + ggf.
+ * Giftzerstörung als Spieler-Statistik). Liest nur `c.letzterSchaden`
+ * (keine Regelwirkung, siehe types.ts). No-Op, solange state.stats fehlt.
+ */
+function verarbeiteTodesstatistik(state: GameState, owner: PlayerIndex, c: Creature): void {
+  zaehleKarte(state, owner, c.cardId, 'gestorben');
+  const ursache = c.letzterSchaden;
+  if (!ursache) return;
+  if (ursache.art === 'gift') {
+    // Gift-Herkunft ist über mehrere Runden/Quellen oft nicht mehr eindeutig
+    // einer Karte zuordenbar – wird deshalb nur der gegnerischen Seite gezählt.
+    zaehleSpieler(state, otherPlayer(owner), 'giftZerstoerungen');
+  }
+  if (ursache.owner != null && ursache.quelle) {
+    zaehleKarte(state, ursache.owner, ursache.quelle, 'kills');
+  }
 }
 
 /**
@@ -257,7 +221,7 @@ export function recalcBoard(state: GameState): DeathInfo[] {
         }
         c.lastMaxHealth = max;
         if (c.currentHealth <= 0) {
-          if (tryRettung(c, max)) {
+          if (tryRettung(state, owner, c, max)) {
             changed = true; // gerettet – Auren neu rechnen
             continue;
           }
@@ -267,6 +231,7 @@ export function recalcBoard(state: GameState): DeathInfo[] {
           }
           state.board[owner][lane] = null;
           deaths.push({ owner, lane, name: c.name, faction: c.faction, creature: c });
+          verarbeiteTodesstatistik(state, owner, c);
           changed = true; // Auren der toten Kreatur fallen weg → neu rechnen
         }
       }
@@ -302,6 +267,7 @@ export function makeCreature(
     permHealthBonus: 0,
     permAttackBonus: 0,
     tempAttackBonus: 0,
+    tempHealthBonus: 0,
     currentHealth: def.health,
     lastMaxHealth: def.health, // recalcBoard() gleicht Auren direkt danach an
     exhausted: !entersReady,
@@ -312,7 +278,9 @@ export function makeCreature(
     spawnRound: state.round,
     ueberstundenDone: false,
     rettungUsed: false,
-    schutzUsed: false
+    schutzUsed: false,
+    zaehler: {},
+    rundenZaehler: {}
   };
 }
 
@@ -340,5 +308,10 @@ export function freeLanes(state: GameState, owner: PlayerIndex): number[] {
 }
 
 export function log(state: GameState, text: string, event?: LogEvent): void {
+  // Backtest-Massensimulationen schalten das Log per logModus:'aus' ab (der
+  // dominante Performance-Faktor bei structuredClone, siehe rng.ts/Backtest-
+  // Kommentare). state.log.length bleibt dabei 0, die id-Vergabe kollidiert
+  // also nicht, sollte das Log später wieder eingeschaltet werden.
+  if (state.logModus === 'aus') return;
   state.log.push({ id: state.log.length, round: state.round, text, ...(event ? { event } : {}) });
 }

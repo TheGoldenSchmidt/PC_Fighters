@@ -1,0 +1,22 @@
+{
+  "$comment": "Zielkorridore aus docs/regelwerk-v2.md, Abschnitt 7 ('Erste Zielkorridore nach mindestens 100 Bot- oder PvP-Partien je Matchup'). Wird vom Backtest-Report (Phase 4) gegen die gemessenen Kennzahlen geprüft. Mindestens 100 Partien je Matchup vorausgesetzt.",
+  "mindestPartienJeMatchup": 100,
+  "gesamtWinrateOberfraktion": { "min": 0.47, "max": 0.53 },
+  "deckWinrateGegenTestfeld": { "min": 0.45, "max": 0.55 },
+  "startspielerVorteil": { "max": 0.54 },
+  "durchschnittlicheSpieldauerRunden": { "min": 7, "max": 10 },
+  "$comment_rundenlimit": "V2 sagt 'kein Rundenlimit'. Aufgelöst über eine Zermürbungs-Mechanik (echte Terminierung durch Spielentscheidung) statt eines harten Abbruchs; das technische roundLimit bleibt nur als Notbremse. Dieser Korridor misst den Anteil Partien, die die Zermürbungsphase erreichen - das ist gemeint mit 'Partien am Rundenlimit'.",
+  "anteilPartienErreichenZermuerbung": { "max": 0.10 },
+  "anteilPartienErreichenNotbremse": { "max": 0.0 },
+  "einzelkartePraesenzInDecksDerOberfraktion": { "maxAnteil": 0.70, "hinweis": "oberhalb pruefen, kein hartes Limit" },
+  "einzelkarteMulliganKeepRate": { "maxAnteil": 0.80, "hinweis": "oberhalb pruefen" },
+  "einzelkarteAusspielrate": { "minAnteil": 0.20, "hinweis": "unterhalb pruefen" },
+  "prioritaetErsterTest": [
+    "Flink-Aggro gegen langsame Dinos/Reptilien",
+    "Studenten-Kartenvorteil gegen Sozi-Heilung",
+    "Arbeiter-Wachstum mit Vorarbeiter und Betriebsrat",
+    "Obdachlosen-Comeback bei 7 Basis-HP",
+    "Vögel/Katzen-Mobilität und offene Gegenüberlanes",
+    "Giftmarker-Tempo bei drei Markern"
+  ]
+}

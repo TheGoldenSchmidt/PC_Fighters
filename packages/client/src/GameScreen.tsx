@@ -323,7 +323,7 @@ export function GameScreen({
             toBase: g.toBase,
             emoji:
               attackerCreature?.projectile ??
-              (attackerCreature?.keywords.includes('gift') ? '☠️' : '💥')
+              (attackerCreature?.abilities.some((a) => a.kind === 'gift') ? '☠️' : '💥')
           };
         });
         setFx((f) => ({ ...f, activeLane: ev.lane, projectiles }));

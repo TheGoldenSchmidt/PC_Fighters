@@ -6,8 +6,10 @@ import {
   GameRuleError,
   log,
   makeTokenCreature,
+  otherPlayer,
   recalcBoard
 } from './internal.js';
+import { zaehleKarte } from './stats.js';
 import type { ActionCard, Effect, GameState, PlayerAction, PlayerIndex } from './types.js';
 
 type EffectOf<K extends Effect['kind']> = Extract<Effect, { kind: K }>;
@@ -72,7 +74,7 @@ export const EFFECTS: { [K in Effect['kind']]: EffectResolver<K> } = {
     }
   },
 
-  moveCreature(ctx) {
+  moveCreature(ctx, effect) {
     const { creature, lane } = requireFriendlyCreature(ctx, ctx.action.targetLane);
     const to = ctx.action.toLane;
     if (to === undefined || to < 0 || to >= ctx.state.config.lanes) {
@@ -86,12 +88,55 @@ export const EFFECTS: { [K in Effect['kind']]: EffectResolver<K> } = {
     }
     ctx.state.board[ctx.player][to] = creature;
     ctx.state.board[ctx.player][lane] = null;
+    if (effect.tempAtkBonus) creature.tempAttackBonus += effect.tempAtkBonus;
     log(ctx.state, `${ctx.card.name}: ${creature.name} wechselt in Lane ${to + 1}.`, {
       kind: 'spell',
       lane: to,
       effect: 'move',
       faction: ctx.card.faction
     });
+  },
+
+  debuff(ctx, effect) {
+    const enemy = otherPlayer(ctx.player);
+    for (const c of ctx.state.board[enemy]) {
+      if (!c) continue;
+      c.tempAttackBonus -= effect.amount;
+    }
+    log(
+      ctx.state,
+      `${ctx.card.name}: alle gegnerischen Kreaturen verlieren bis zum Rundenende ${effect.amount} ATK.`,
+      { kind: 'spell', lane: 0, effect: 'attackBuff', faction: ctx.card.faction }
+    );
+  },
+
+  spendKnowledge(ctx, effect) {
+    const owner = ctx.player;
+    const enemy = otherPlayer(owner);
+    const markers = Math.min(ctx.state.players[owner].knowledge, effect.max);
+    if (markers <= 0) return;
+    ctx.state.players[owner].knowledge -= markers;
+    const gesamt = markers * effect.damagePerMarker;
+    let rest = gesamt;
+    const liveLanes: number[] = [];
+    for (let j = 0; j < ctx.state.board[enemy].length; j++) if (ctx.state.board[enemy][j]) liveLanes.push(j);
+    if (liveLanes.length === 0) {
+      ctx.state.players[enemy].base -= rest;
+      zaehleKarte(ctx.state, owner, ctx.card.id, 'schadenBasis', rest);
+    } else {
+      let i = 0;
+      while (rest > 0) {
+        const t = ctx.state.board[enemy][liveLanes[i % liveLanes.length]];
+        if (t) {
+          t.currentHealth -= 1;
+          t.letzterSchaden = { art: 'effekt', quelle: ctx.card.id, owner };
+        }
+        rest -= 1;
+        i += 1;
+      }
+      zaehleKarte(ctx.state, owner, ctx.card.id, 'schadenKreatur', gesamt);
+    }
+    log(ctx.state, `${ctx.card.name}: verbraucht ${markers} Wissen, verteilt ${gesamt} Schaden.`);
   }
 };
 

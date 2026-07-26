@@ -15,7 +15,21 @@ export type FactionRule = 'singleTop' | 'singleSub' | 'free';
 export interface DeckbuildingConfig {
   size: number;
   maxCopies: number;
+  /** Kopiengrenze für Signature-Karten (★). Ohne Angabe: 1 (Abwärtskompatibilität). */
+  maxCopiesSignature?: number;
   factionRule: FactionRule;
+}
+
+/**
+ * Zermürbung (Regelwerk V2): ab Runde `abRunde` verlieren beide Basen am
+ * Rundenende Leben – eine echte Spielentscheidung statt eines harten
+ * Rundenlimit-Abbruchs. `roundLimit` bleibt daneben als technische Notbremse
+ * bestehen (im Normalspiel unerreichbar, siehe config.json-Kommentar).
+ */
+export interface ZermuerbungConfig {
+  abRunde: number;
+  schaden: number;
+  steigerung: number;
 }
 
 export interface GameConfig {
@@ -26,6 +40,8 @@ export interface GameConfig {
   roundLimit: number;
   energy: EnergyConfig;
   deckbuilding: DeckbuildingConfig;
+  /** Optional: ohne sie endet eine Partie nur über roundLimit/Basiszerstörung (V1-Verhalten). */
+  zermuerbung?: ZermuerbungConfig;
 }
 
 /** Deck-Datenstruktur (spielergewählt) – für den kommenden Deck-Editor. */
@@ -35,6 +51,8 @@ export interface DeckEntry {
 }
 
 export interface DeckList {
+  /** Optional: Anzeigename (rein informativ, z. B. für Backtest-Reports). */
+  name?: string;
   /** Optional: Oberfraktion des Decks (rein informativ). */
   faction?: string;
   cards: DeckEntry[];
@@ -101,7 +119,14 @@ export type Effect =
   | { kind: 'buffHealth'; amount: number; target: 'friendlyCreature' }
   | { kind: 'buffAttackTemp'; amount: number; target: 'friendlyCreature' }
   | { kind: 'summon'; count: number; token: TokenDef }
-  | { kind: 'moveCreature'; target: 'friendlyCreature' };
+  // tempAtkBonus: die bewegte Kreatur erhält zusätzlich bis zum Rundenende +X ATK (Hetzjagd).
+  | { kind: 'moveCreature'; target: 'friendlyCreature'; tempAtkBonus?: number }
+  // Alle gegnerischen Kreaturen verlieren `amount` ATK bis zum Rundenende (Generalstreik).
+  | { kind: 'debuff'; amount: number }
+  // Verbraucht bis zu `max` Wissen aus dem eigenen Pool; verteilt
+  // `damagePerMarker` Schaden je verbrauchtem Marker auf gegnerische Kreaturen
+  // (reihum wie bei der Ability `experiment`, sonst auf die Basis).
+  | { kind: 'spendKnowledge'; max: number; damagePerMarker: number };
 
 /**
  * Kreatur-Fähigkeiten: parametrisierte, generische Primitive (Daten, keine
@@ -118,30 +143,37 @@ export type Ability =
   // (fängt einen tödlichen Treffer für einen Nachbarn im scope ab – einmal pro Spiel).
   | { kind: 'nachbar'; effect: 'schild' | 'banner' | 'schadensuebernahme'; scope: Scope; amount: number }
   // Heilung am Rundenende: Nachbarn oder ganzer scope; optional mehr bei niedriger Basis.
-  | { kind: 'heilung'; scope: Scope; reichweite: 'nachbarn' | 'scope'; amount: number; mehrWennBasisUnter?: { schwelle: number; amount: number } }
+  // maxTargets: begrenzt die Anzahl geheilter Kreaturen (Board-Reihenfolge, niedrigste Lane zuerst).
+  | { kind: 'heilung'; scope: Scope; reichweite: 'nachbarn' | 'scope'; amount: number; mehrWennBasisUnter?: { schwelle: number; amount: number }; maxTargets?: number }
   // Rundenwachstum, dauerhaft stapelnd, zu Beginn deiner Runde (ersetzt schicht).
-  | { kind: 'wachstum'; per_round: Stat; ziel?: 'selbst' | 'verbuendeter'; scope?: Scope }
-  // Verstärkt Rundenwachstum verbündeter Karten (Betriebsrat).
-  | { kind: 'verstaerker'; ziel: 'wachstum'; scope: Scope; faktor: number }
+  // maxTriggers: löst insgesamt höchstens so oft aus (spielweiter Zähler).
+  | { kind: 'wachstum'; per_round: Stat; ziel?: 'selbst' | 'verbuendeter'; scope?: Scope; maxTriggers?: number }
+  // Verstärkt Rundenwachstum verbündeter Karten (Betriebsrat). firstOnlyPerRound:
+  // wirkt nur auf den ERSTEN Wachstumstrigger einer Runde statt auf jeden.
+  | { kind: 'verstaerker'; ziel: 'wachstum'; scope: Scope; faktor: number; firstOnlyPerRound?: boolean }
   // Todes-Rettung, einmal pro Spiel (ersetzt zaeh/neun_leben/haeutung).
-  | { kind: 'rettung'; mode: 'survive_1hp' | 'revive_1hp' | 'full_heal' }
+  // bonusWennAusgeloest: dauerhafter Stat-Bonus, NUR wenn die Rettung tatsächlich auslöst.
+  | { kind: 'rettung'; mode: 'survive_1hp' | 'revive_1hp' | 'full_heal'; bonusWennAusgeloest?: Stat }
   // Einmalig +X/+Y, wenn die Karte eine volle Runde überlebt.
   | { kind: 'ueberstunden'; bonus: Stat }
   // Ausrüstung: gibt genau einer anderen Karte gleicher Sub-Fraktion +X ATK
   // (springt beim Tod des Trägers automatisch weiter — dynamisch berechnet).
   | { kind: 'werkzeug'; atk: number }
   // Bonus abhängig von der eigenen Basis-HP (Schwellen- oder Pro-fehlende-HP-Modus).
-  | { kind: 'improvisation'; scope: Scope; mode: 'schwelle' | 'pro_fehlende_hp'; bonus: Stat; schwelle?: number; proHp?: number }
+  // cap: begrenzt den pro_fehlende_hp-Multiplikator (Schwellen-Modus ist ohnehin 0/1).
+  | { kind: 'improvisation'; scope: Scope; mode: 'schwelle' | 'pro_fehlende_hp'; bonus: Stat; schwelle?: number; proHp?: number; cap?: number }
   // Dauerhaft +X/+Y, wenn eine Kreatur stirbt (trigger any/own/enemy).
-  | { kind: 'sammeln'; bonus: Stat; trigger: 'any' | 'own' | 'enemy' }
+  // firstPerRound: löst höchstens einmal je Runde aus; maxTriggers: spielweiter Deckel.
+  | { kind: 'sammeln'; bonus: Stat; trigger: 'any' | 'own' | 'enemy'; firstPerRound?: boolean; maxTriggers?: number }
   // Ziehe n Karten (beim Ausspielen; proRunde = jede Runde).
   | { kind: 'lernen'; n: number; proRunde?: boolean }
   // Erzeugt x Wissens-Marker im spielerweiten Pool (proRunde = jede Runde).
   | { kind: 'wissen'; x: number; proRunde?: boolean }
   // Verbraucht Wissens-Marker; Schaden auf Gegner und/oder Selbst-Buff je Marker.
-  | { kind: 'experiment'; schadenProMarker?: number; proMarker?: Stat }
+  // max: verbraucht höchstens so viele Marker (Default: den ganzen Pool).
+  | { kind: 'experiment'; schadenProMarker?: number; proMarker?: Stat; max?: number }
   // Bonus/Effekt, solange die Karte allein in ihrer Lane steht (solo).
-  | { kind: 'neugier'; bonus?: Stat; basisschaden?: number; wucht?: boolean }
+  | { kind: 'neugier'; bonus?: Stat; basisschaden?: number }
   // Senkt ATK eines/aller Gegner (oder setzt Gift), beim Ausspielen.
   | { kind: 'umverteilung'; menge: number; schwelle?: number; ziel: 'einer' | 'alle'; art?: 'atk' | 'gift'; dauer?: 'dauerhaft' | 'runde' }
   // +X/+Y, wenn die Karte in ihrer Runde nicht angreift.
@@ -163,7 +195,24 @@ export type Ability =
   // Beim Tod: der Angreifer (Gegner in derselben Lane) verliert X ATK.
   | { kind: 'todesfluch'; atk: number }
   // Beim Angriff: zerstöre einen Gegner mit ≤ maxHp Leben.
-  | { kind: 'hinrichten'; maxHp: number };
+  | { kind: 'hinrichten'; maxHp: number }
+  // Bonus, solange mindestens `mindestAnzahl` weitere Kreaturen im scope
+  // kontrolliert werden (ersetzt V2s "kollektiv"/"bonus(condition:…)"/"twoOtherHumans").
+  | { kind: 'bedingt'; scope: Scope; mindestAnzahl: number; bonus: Stat }
+  // Kampfbonus gegen ein vergiftetes Ziel, nur für diesen Schlagabtausch.
+  | { kind: 'hunter'; bonusAtk: number }
+  // Einmal pro Spiel: sobald die HP auf `schwelle` oder darunter fallen, sofort
+  // um `heilung` heilen (nie über das Maximum) und optional Gift entfernen.
+  | { kind: 'shedding'; schwelle: number; heilung: number; entferntGift?: boolean }
+  // Kommt mit Bonus ins Spiel, wenn der Besitzer in dieser Runde schon eine
+  // andere Karte im scope gespielt hat (Gruppenarbeit).
+  | { kind: 'synergie'; scope: Scope; bonus: Stat }
+  // Rundenbeginn: automatisch aufgelöste Wahl zwischen zwei Optionen (kein
+  // Spieler-Interaktionstyp – die Engine entscheidet deterministisch nach `regel`).
+  | { kind: 'wahl'; optionA: WahlOption; optionB: WahlOption; regel: 'handKlein' | 'wissenKnapp' };
+
+/** Option einer `wahl`-Fähigkeit (siehe oben). */
+export type WahlOption = { art: 'ziehen'; n: number } | { art: 'wissen'; x: number };
 
 // ---- Aussehen & Animation (reine Daten – interpretiert ausschließlich der
 // Client beim Rendern; die Engine validiert nur die Struktur). ----
@@ -311,6 +360,8 @@ export interface Creature {
   permAttackBonus: number;
   /** Angriffs-Bonus bis zum Rundenende (z. B. "Wilder Instinkt"). */
   tempAttackBonus: number;
+  /** Lebens-Bonus bis zum Rundenende (analog tempAttackBonus). */
+  tempHealthBonus: number;
   currentHealth: number;
   /** Zuletzt berechnetes Maximum – nötig, um Auren-Änderungen sauber anzuwenden. */
   lastMaxHealth: number;
@@ -330,6 +381,67 @@ export interface Creature {
   rettungUsed: boolean;
   /** Schadensübernahme (`nachbar` schadensuebernahme) bereits verbraucht? */
   schutzUsed: boolean;
+  /**
+   * Generische SPIELWEITE Auslöse-Zähler (für `maxTriggers` u. ä.). Schlüssel:
+   * `${abilityIndex}:${kind}` – nicht nur `kind`, damit zwei gleichartige
+   * Fähigkeiten auf derselben Karte getrennt zählen. Wird NIE zurückgesetzt.
+   * WICHTIG: nur von Klasse-B/C-Hooks (Zeitpunkt-Auslöser) schreiben, NIEMALS
+   * von Klasse-A-Hooks (beitragSelbst/beitragAura in abilityHooks.ts) – sonst
+   * wird die recalcBoard-Fixpunktschleife nicht-idempotent.
+   */
+  zaehler: Record<string, number>;
+  /** Wie `zaehler`, aber RUNDENWEISE – wird in jedem endRound() geleert. */
+  rundenZaehler: Record<string, number>;
+  /**
+   * Telemetrie-only: letzte Schadensquelle. Hat KEINE Regelwirkung – wird nur
+   * gelesen, um einen Tod in der Backtest-Statistik (stats.ts) der richtigen
+   * Ursache/Karte zuzuordnen (z. B. "Giftzerstörungen", "Kills je Karte").
+   */
+  letzterSchaden?: SchadensUrsache;
+}
+
+// ---- Telemetrie (Backtest-Sidecar) --------------------------------------
+// Rein additive Statistik über eine Partie. NICHT regelwirksam: `state.stats`
+// bleibt ohne einen expliziten `aktiviereStatistik()`-Aufruf (stats.ts) immer
+// `undefined`, und `buildClientView` liefert es nie aus – Server/Client sehen
+// also keinen Unterschied. Nur das Backtest-Harness aktiviert und liest es.
+
+export interface SchadensUrsache {
+  art: 'kampf' | 'gift' | 'hinrichten' | 'effekt' | 'dornen';
+  /** cardId der verursachenden Karte, falls eindeutig zuordenbar. */
+  quelle?: string;
+  /** Besitzer der verursachenden Karte. */
+  owner?: PlayerIndex;
+}
+
+export interface KartenStatistik {
+  gespielt: number;
+  schadenKreatur: number;
+  schadenBasis: number;
+  kills: number;
+  gestorben: number;
+  geheilt: number;
+  verhindert: number;
+}
+
+export interface SpielerStatistik {
+  giftZerstoerungen: number;
+  flinkAngriffe: number;
+  heilung: number;
+  verhinderterSchaden: number;
+  dornenSchaden: number;
+  wuchtSchaden: number;
+  hinrichtungen: number;
+  wachstumAtk: number;
+  wachstumHp: number;
+  energieVerfallen: number;
+  kartenGezogen: number;
+}
+
+export interface MatchStatistik {
+  /** proKarte[spieler][cardId] – nur Karten, die tatsächlich vorkamen. */
+  proKarte: [Record<string, KartenStatistik>, Record<string, KartenStatistik>];
+  proSpieler: [SpielerStatistik, SpielerStatistik];
 }
 
 export interface PlayerState {
@@ -342,6 +454,12 @@ export interface PlayerState {
   knowledge: number;
   /** Flug-Phase: Spieler hat "Fertig" gedrückt (oder hat keine fliegenden Kreaturen). */
   flyDone: boolean;
+  /**
+   * Fraktionen der in DIESER Runde bereits gespielten Karten (für `synergie` –
+   * Hooks bekommen nur `GameState`, keine `GameData`, daher Fraktion statt
+   * cardId gespeichert). Wird in startRound() geleert.
+   */
+  gespieltDieseRunde: string[];
 }
 
 export type Phase = 'play' | 'fly' | 'ended';
@@ -408,6 +526,14 @@ export interface GameState {
   log: LogEntry[];
   winner: PlayerIndex | 'draw' | null;
   uidCounter: number;
+  /**
+   * Log-Schalter für Massensimulationen (Backtest): 'aus' unterdrückt jeden
+   * `log()`-Aufruf (state.log bleibt leer). Ohne Angabe (undefined) wird wie
+   * bisher immer geloggt – Server/Client sehen daher keinen Unterschied.
+   */
+  logModus?: 'voll' | 'aus';
+  /** Telemetrie-Sidecar für Backtests (siehe stats.ts). Wird nie an den Client ausgeliefert. */
+  stats?: MatchStatistik;
 }
 
 export type PlayerAction =
