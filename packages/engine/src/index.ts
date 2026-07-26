@@ -16,6 +16,9 @@ export {
 } from './game.js';
 export { buildFactionTree, matchesScope, topOf } from './factions.js';
 export { aktiviereStatistik, leereStatistik, zaehleKarte, zaehleSpieler } from './stats.js';
+export { legaleAktionen } from './legal.js';
+export { BOT_PROFILE, bewerteZustand, kampfprognose, waehleAktion } from './bot.js';
+export type { BotGewichte, BotProfil } from './bot.js';
 export { DataError, DeckError, validateDeck, validateGameData } from './schema.js';
 export { loadGameData } from './loadData.js';
 export { buildVisualCatalog } from './visualCatalog.js';
