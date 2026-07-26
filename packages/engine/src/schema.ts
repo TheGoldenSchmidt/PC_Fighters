@@ -30,8 +30,16 @@ export const configSchema = z.object({
   deckbuilding: z.object({
     size: z.number().int().min(1),
     maxCopies: z.number().int().min(1),
+    maxCopiesSignature: z.number().int().min(1).optional(),
     factionRule: z.enum(['singleTop', 'singleSub', 'free'])
-  })
+  }),
+  zermuerbung: z
+    .object({
+      abRunde: z.number().int().min(1),
+      schaden: z.number().int().min(1),
+      steigerung: z.number().int().min(0)
+    })
+    .optional()
 });
 
 export const factionSchema = z.object({
@@ -90,6 +98,15 @@ export const effectSchema = z.discriminatedUnion('kind', [
   z.object({
     kind: z.literal('moveCreature'),
     target: z.literal('friendlyCreature')
+  }),
+  z.object({
+    kind: z.literal('debuff'),
+    amount: z.number().int().min(1)
+  }),
+  z.object({
+    kind: z.literal('spendKnowledge'),
+    max: z.number().int().min(1),
+    damagePerMarker: z.number().int().min(1)
   })
 ]);
 
@@ -97,33 +114,45 @@ export const effectSchema = z.discriminatedUnion('kind', [
 const statSchema = z.object({ atk: z.number().int(), hp: z.number().int() });
 const scopeSchema = z.enum(['same_sub', 'same_top', 'any']);
 
+const wahlOptionSchema = z.discriminatedUnion('art', [
+  z.object({ art: z.literal('ziehen'), n: z.number().int().min(1) }).strict(),
+  z.object({ art: z.literal('wissen'), x: z.number().int().min(1) }).strict()
+]);
+
+// .strict() auf jedem Zweig: unbekannte Zusatzfelder (Tippfehler in Parameter-
+// Namen wie "starke" statt "staerke") werden abgelehnt statt still gestrippt.
 export const abilitySchema = z.discriminatedUnion('kind', [
-  z.object({ kind: z.literal('skalierung'), scope: scopeSchema, per: statSchema, cap: z.number().int().min(0).optional(), includeSelf: z.boolean().optional() }),
-  z.object({ kind: z.literal('aura'), scope: scopeSchema, buff: statSchema, timing: z.enum(['dauerhaft', 'einmal_beim_ausspielen']) }),
-  z.object({ kind: z.literal('nachbar'), effect: z.enum(['schild', 'banner', 'schadensuebernahme']), scope: scopeSchema, amount: z.number().int() }),
-  z.object({ kind: z.literal('heilung'), scope: scopeSchema, reichweite: z.enum(['nachbarn', 'scope']), amount: z.number().int().min(1), mehrWennBasisUnter: z.object({ schwelle: z.number().int(), amount: z.number().int().min(1) }).optional() }),
-  z.object({ kind: z.literal('wachstum'), per_round: statSchema, ziel: z.enum(['selbst', 'verbuendeter']).optional(), scope: scopeSchema.optional() }),
-  z.object({ kind: z.literal('verstaerker'), ziel: z.literal('wachstum'), scope: scopeSchema, faktor: z.number().int().min(1) }),
-  z.object({ kind: z.literal('rettung'), mode: z.enum(['survive_1hp', 'revive_1hp', 'full_heal']) }),
-  z.object({ kind: z.literal('ueberstunden'), bonus: statSchema }),
-  z.object({ kind: z.literal('werkzeug'), atk: z.number().int().min(1) }),
-  z.object({ kind: z.literal('improvisation'), scope: scopeSchema, mode: z.enum(['schwelle', 'pro_fehlende_hp']), bonus: statSchema, schwelle: z.number().int().optional(), proHp: z.number().int().min(1).optional() }),
-  z.object({ kind: z.literal('sammeln'), bonus: statSchema, trigger: z.enum(['any', 'own', 'enemy']) }),
-  z.object({ kind: z.literal('lernen'), n: z.number().int().min(1), proRunde: z.boolean().optional() }),
-  z.object({ kind: z.literal('wissen'), x: z.number().int().min(1), proRunde: z.boolean().optional() }),
-  z.object({ kind: z.literal('experiment'), schadenProMarker: z.number().int().min(1).optional(), proMarker: statSchema.optional() }),
-  z.object({ kind: z.literal('neugier'), bonus: statSchema.optional(), basisschaden: z.number().int().min(1).optional() }),
-  z.object({ kind: z.literal('umverteilung'), menge: z.number().int().min(1), schwelle: z.number().int().optional(), ziel: z.enum(['einer', 'alle']), art: z.enum(['atk', 'gift']).optional(), dauer: z.enum(['dauerhaft', 'runde']).optional() }),
-  z.object({ kind: z.literal('kaltbluetig'), bonus: statSchema }),
-  z.object({ kind: z.literal('dornen'), x: z.number().int().min(1) }),
-  z.object({ kind: z.literal('sturzflug'), x: z.number().int().min(1) }),
-  z.object({ kind: z.literal('wucht') }),
-  z.object({ kind: z.literal('urgewalt') }),
-  z.object({ kind: z.literal('gift'), staerke: z.number().int().min(1) }),
-  z.object({ kind: z.literal('beschwoeren'), timing: z.enum(['beim_ausspielen', 'beim_tod']), count: z.number().int().min(1), token: tokenSchema }),
-  z.object({ kind: z.literal('entwaffnen'), entfernt: z.array(z.string().min(1)).min(1) }),
-  z.object({ kind: z.literal('todesfluch'), atk: z.number().int().min(1) }),
-  z.object({ kind: z.literal('hinrichten'), maxHp: z.number().int().min(1) })
+  z.object({ kind: z.literal('skalierung'), scope: scopeSchema, per: statSchema, cap: z.number().int().min(0).optional(), includeSelf: z.boolean().optional() }).strict(),
+  z.object({ kind: z.literal('aura'), scope: scopeSchema, buff: statSchema, timing: z.enum(['dauerhaft', 'einmal_beim_ausspielen']) }).strict(),
+  z.object({ kind: z.literal('nachbar'), effect: z.enum(['schild', 'banner', 'schadensuebernahme']), scope: scopeSchema, amount: z.number().int() }).strict(),
+  z.object({ kind: z.literal('heilung'), scope: scopeSchema, reichweite: z.enum(['nachbarn', 'scope']), amount: z.number().int().min(1), mehrWennBasisUnter: z.object({ schwelle: z.number().int(), amount: z.number().int().min(1) }).strict().optional() }).strict(),
+  z.object({ kind: z.literal('wachstum'), per_round: statSchema, ziel: z.enum(['selbst', 'verbuendeter']).optional(), scope: scopeSchema.optional(), maxTriggers: z.number().int().min(1).optional() }).strict(),
+  z.object({ kind: z.literal('verstaerker'), ziel: z.literal('wachstum'), scope: scopeSchema, faktor: z.number().int().min(1), firstOnlyPerRound: z.boolean().optional() }).strict(),
+  z.object({ kind: z.literal('rettung'), mode: z.enum(['survive_1hp', 'revive_1hp', 'full_heal']) }).strict(),
+  z.object({ kind: z.literal('ueberstunden'), bonus: statSchema }).strict(),
+  z.object({ kind: z.literal('werkzeug'), atk: z.number().int().min(1) }).strict(),
+  z.object({ kind: z.literal('improvisation'), scope: scopeSchema, mode: z.enum(['schwelle', 'pro_fehlende_hp']), bonus: statSchema, schwelle: z.number().int().optional(), proHp: z.number().int().min(1).optional() }).strict(),
+  z.object({ kind: z.literal('sammeln'), bonus: statSchema, trigger: z.enum(['any', 'own', 'enemy']) }).strict(),
+  z.object({ kind: z.literal('lernen'), n: z.number().int().min(1), proRunde: z.boolean().optional() }).strict(),
+  z.object({ kind: z.literal('wissen'), x: z.number().int().min(1), proRunde: z.boolean().optional() }).strict(),
+  z.object({ kind: z.literal('experiment'), schadenProMarker: z.number().int().min(1).optional(), proMarker: statSchema.optional() }).strict(),
+  z.object({ kind: z.literal('neugier'), bonus: statSchema.optional(), basisschaden: z.number().int().min(1).optional() }).strict(),
+  z.object({ kind: z.literal('umverteilung'), menge: z.number().int().min(1), schwelle: z.number().int().optional(), ziel: z.enum(['einer', 'alle']), art: z.enum(['atk', 'gift']).optional(), dauer: z.enum(['dauerhaft', 'runde']).optional() }).strict(),
+  z.object({ kind: z.literal('kaltbluetig'), bonus: statSchema }).strict(),
+  z.object({ kind: z.literal('dornen'), x: z.number().int().min(1) }).strict(),
+  z.object({ kind: z.literal('sturzflug'), x: z.number().int().min(1) }).strict(),
+  z.object({ kind: z.literal('wucht') }).strict(),
+  z.object({ kind: z.literal('urgewalt') }).strict(),
+  z.object({ kind: z.literal('gift'), staerke: z.number().int().min(1) }).strict(),
+  z.object({ kind: z.literal('beschwoeren'), timing: z.enum(['beim_ausspielen', 'beim_tod']), count: z.number().int().min(1), token: tokenSchema }).strict(),
+  z.object({ kind: z.literal('entwaffnen'), entfernt: z.array(z.string().min(1)).min(1) }).strict(),
+  z.object({ kind: z.literal('todesfluch'), atk: z.number().int().min(1) }).strict(),
+  z.object({ kind: z.literal('hinrichten'), maxHp: z.number().int().min(1) }).strict(),
+  z.object({ kind: z.literal('bedingt'), scope: scopeSchema, mindestAnzahl: z.number().int().min(1), bonus: statSchema }).strict(),
+  z.object({ kind: z.literal('hunter'), bonusAtk: z.number().int().min(1) }).strict(),
+  z.object({ kind: z.literal('shedding'), schwelle: z.number().int().min(1), heilung: z.number().int().min(1), entferntGift: z.boolean().optional() }).strict(),
+  z.object({ kind: z.literal('synergie'), scope: scopeSchema, bonus: statSchema }).strict(),
+  z.object({ kind: z.literal('wahl'), optionA: wahlOptionSchema, optionB: wahlOptionSchema, regel: z.enum(['handKlein', 'wissenKnapp']) }).strict()
 ]);
 
 // ---------------------------------------------------------------- Visuals
@@ -505,7 +534,7 @@ export function validateDeck(deck: unknown, data: GameData): DeckList {
     throw new DeckError(describeZodError(parsed.error));
   }
   const dl = parsed.data;
-  const { size, maxCopies, factionRule } = data.config.deckbuilding;
+  const { size, maxCopies, maxCopiesSignature, factionRule } = data.config.deckbuilding;
   const tree = buildFactionTree(data.factions);
   const problems: string[] = [];
 
@@ -525,7 +554,7 @@ export function validateDeck(deck: unknown, data: GameData): DeckList {
     }
     seen.add(entry.cardId);
     total += entry.count;
-    const max = card.signature ? 1 : maxCopies;
+    const max = card.signature ? (maxCopiesSignature ?? 1) : maxCopies;
     if (entry.count > max) {
       problems.push(`Zu viele Kopien von "${card.name}": ${entry.count}, erlaubt sind ${max}.`);
     }

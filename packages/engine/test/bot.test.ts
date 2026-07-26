@@ -25,7 +25,8 @@ function player(faction: string): PlayerState {
     base: data.config.baseHealth,
     energy: 10,
     knowledge: 0,
-    flyDone: false
+    flyDone: false,
+    gespieltDieseRunde: []
   };
 }
 
@@ -72,6 +73,7 @@ function put(
     permHealthBonus: 0,
     permAttackBonus: 0,
     tempAttackBonus: 0,
+    tempHealthBonus: 0,
     currentHealth: card.health,
     lastMaxHealth: card.health,
     exhausted: opts.exhausted ?? false,
@@ -82,7 +84,9 @@ function put(
     spawnRound: state.round,
     ueberstundenDone: false,
     rettungUsed: false,
-    schutzUsed: false
+    schutzUsed: false,
+    zaehler: {},
+    rundenZaehler: {}
   };
   state.board[owner][lane] = c;
   recalcBoard(state);
@@ -174,9 +178,11 @@ describe('bewerteZustand', () => {
 });
 
 describe('waehleAktion: Policy-Verhalten', () => {
-  it('nimmt eine sofort verfügbare Lethal-Aktion (Sturzflug auf die Basis)', () => {
+  it('nimmt eine sofort verfügbare Lethal-Aktion (Experimentelle Formel auf die leere Basis)', () => {
     const s = emptyState();
-    s.players[0].hand = ['rekrut', 'adler_voegel']; // adler_voegel: sturzflug 3, Basis leer -> Basis-Fallback
+    // experimentelle_formel: schadenProMarker 1, gegnerisches Feld ist leer -> trifft die Basis.
+    s.players[0].hand = ['rekrut', 'experimentelle_formel'];
+    s.players[0].knowledge = 2;
     s.players[1].base = 2;
     const gewaehlt = waehleAktion(s, 0, data, BOT_PROFILE.ausgewogen, createSeededRandom(1));
     const folge = applyAction(s, 0, gewaehlt, data);

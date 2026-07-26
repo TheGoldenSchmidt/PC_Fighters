@@ -3,6 +3,7 @@
 
 import {
   applyHinrichten,
+  applyShedding,
   getAbilities,
   hasAbility,
   onDeathTriggers,
@@ -93,7 +94,9 @@ export function buildDeck(data: GameData, faction: string, random: () => number)
   }
   const deck: string[] = [];
   for (const card of cards) {
-    const copies = card.signature ? 1 : data.config.deckbuilding.maxCopies;
+    const copies = card.signature
+      ? (data.config.deckbuilding.maxCopiesSignature ?? 1)
+      : data.config.deckbuilding.maxCopies;
     for (let i = 0; i < copies; i++) deck.push(card.id);
   }
   return shuffle(deck, random).slice(0, data.config.deckbuilding.size);
@@ -133,7 +136,8 @@ export function createGame(
     base: data.config.baseHealth,
     energy: 0,
     knowledge: 0,
-    flyDone: false
+    flyDone: false,
+    gespieltDieseRunde: []
   });
 
   const state: GameState = {
@@ -184,6 +188,8 @@ function startRound(state: GameState): void {
   state.consecutivePasses = 0;
   state.players[0].flyDone = false;
   state.players[1].flyDone = false;
+  state.players[0].gespieltDieseRunde = [];
+  state.players[1].gespieltDieseRunde = [];
   // Rundenbeginn-Effekte (Rundenwachstum, lernen/wissen pro Runde) – wirkt auf
   // Kreaturen, die aus einer früheren Runde übrig sind (Runde 1: leeres Feld).
   onRoundStartAbilities(state);
@@ -211,14 +217,29 @@ function endRound(state: GameState): void {
     for (const creature of row) {
       if (!creature) continue;
       creature.tempAttackBonus = 0;
+      creature.tempHealthBonus = 0;
       creature.exhausted = false;
       creature.movedThisFlyPhase = false;
       // Bugfix: wurde bisher nie zurückgesetzt, wodurch `kaltbluetig` faktisch
       // "hat noch nie angegriffen" statt "diese Runde nicht angegriffen" prüfte.
       creature.attackedThisRound = false;
+      creature.rundenZaehler = {};
     }
   }
   logDeaths(state);
+
+  // Zermürbung (Regelwerk V2): ab config.zermuerbung.abRunde verlieren beide
+  // Basen am Rundenende Leben – das ist die REGULÄRE Terminierung für lange
+  // Partien (eine echte Spielentscheidung statt eines harten Abbruchs).
+  // roundLimit bleibt daneben als technische Notbremse bestehen (siehe unten).
+  const z = state.config.zermuerbung;
+  if (z && state.round >= z.abRunde) {
+    const schaden = z.schaden + (state.round - z.abRunde) * z.steigerung;
+    state.players[0].base -= schaden;
+    state.players[1].base -= schaden;
+    log(state, `Zermürbung: beide Basen verlieren ${schaden} Leben.`);
+    if (checkBaseDestroyed(state)) return;
+  }
 
   if (state.round >= state.config.roundLimit) {
     const [a, b] = state.players;
@@ -310,6 +331,14 @@ function creatureStrike(
   }
 }
 
+/** Zusätzlicher Kampf-Angriffsbonus, der nur für DIESEN Schlagabtausch gilt (`hunter` gegen vergiftete Ziele). */
+function kampfAngriffsBonus(state: GameState, attackerOwner: PlayerIndex, lane: number): number {
+  const attacker = state.board[attackerOwner][lane];
+  const defender = state.board[otherPlayer(attackerOwner)][lane];
+  if (!attacker || !defender || defender.poison <= 0) return 0;
+  return getAbilities(attacker, 'hunter').reduce((sum, h) => sum + h.bonusAtk, 0);
+}
+
 function resolveCombat(state: GameState): void {
   log(state, '— Kampfphase —');
   for (let lane = 0; lane < state.config.lanes; lane++) {
@@ -320,8 +349,8 @@ function resolveCombat(state: GameState): void {
     if (a && b) {
       // Beide Lanes besetzt: kampfbereite Kreaturen schlagen GLEICHZEITIG zu.
       // Erschöpfte Kreaturen greifen nicht an, verteidigen aber normal.
-      const atkA = a.exhausted ? 0 : getEffectiveAttack(state, 0, lane);
-      const atkB = b.exhausted ? 0 : getEffectiveAttack(state, 1, lane);
+      const atkA = a.exhausted ? 0 : getEffectiveAttack(state, 0, lane) + kampfAngriffsBonus(state, 0, lane);
+      const atkB = b.exhausted ? 0 : getEffectiveAttack(state, 1, lane) + kampfAngriffsBonus(state, 1, lane);
       if (atkA === 0 && atkB === 0) continue;
 
       // Hinrichten (beim Angriff, vor dem Schaden). Mehrere hinrichten-Einträge
@@ -336,6 +365,11 @@ function resolveCombat(state: GameState): void {
 
       if (atkA > 0) creatureStrike(state, a, b, atkA, 0, lane);
       if (atkB > 0) creatureStrike(state, b, a, atkB, 1, lane);
+      // Häutung (`shedding`) VOR logDeaths: proaktive Heilung bei niedrigem
+      // Leben, bevor recalcBoard über Tod/Rettung entscheidet. Läuft bewusst
+      // außerhalb der recalcBoard-Fixpunktschleife (siehe Kommentar an
+      // Creature.zaehler in types.ts).
+      applyShedding(state);
       logDeaths(state);
       if (checkBaseDestroyed(state)) return; // Wucht kann die Basis zerstören
     } else if (a && !b && !a.exhausted) {
@@ -369,8 +403,11 @@ function resolveCombat(state: GameState): void {
     }
   }
 
-  // Gift-Zermürbung am Ende der Kampfphase (Marken bleiben bestehen).
+  // Gift-Zermürbung am Ende der Kampfphase: bei ≥3 Marken sofortiger Tod
+  // (Marken bleiben sonst bestehen). Häutung VOR logDeaths, damit sie noch
+  // eingreifen kann.
   resolvePoison(state);
+  applyShedding(state);
   logDeaths(state);
 }
 
@@ -470,6 +507,9 @@ function playPhaseAction(state: GameState, player: PlayerIndex, action: PlayerAc
   p.hand.splice(action.handIndex, 1);
   state.consecutivePasses = 0;
   zaehleKarte(state, player, card.id, 'gespielt');
+  // Für `synergie`: NACH den Beim-Ausspielen-Effekten dieser Karte eintragen,
+  // damit die eigene Karte sich nicht selbst als "zuvor gespielt" zählt.
+  p.gespieltDieseRunde.push(card.faction);
   logDeaths(state);
   state.active = otherPlayer(player);
 }

@@ -130,7 +130,7 @@ export function getMaxHealth(state: GameState, owner: PlayerIndex, lane: number)
   const c = state.board[owner][lane];
   if (!c) return 0;
   const bonus = selfAbilityBonus(state, owner, lane).health + auraBonus(state, owner, lane).health;
-  return Math.max(1, c.baseMaxHealth + c.permHealthBonus + bonus);
+  return Math.max(1, c.baseMaxHealth + c.permHealthBonus + c.tempHealthBonus + bonus);
 }
 
 export interface DeathInfo {
@@ -278,6 +278,7 @@ export function makeCreature(
     permHealthBonus: 0,
     permAttackBonus: 0,
     tempAttackBonus: 0,
+    tempHealthBonus: 0,
     currentHealth: def.health,
     lastMaxHealth: def.health, // recalcBoard() gleicht Auren direkt danach an
     exhausted: !entersReady,
@@ -288,7 +289,9 @@ export function makeCreature(
     spawnRound: state.round,
     ueberstundenDone: false,
     rettungUsed: false,
-    schutzUsed: false
+    schutzUsed: false,
+    zaehler: {},
+    rundenZaehler: {}
   };
 }
 

@@ -24,27 +24,31 @@ const decks = ladeDecks(data);
 const profil: BotProfil = { ...BOT_PROFILE.ausgewogen, epsilonBand: 0 };
 
 /** deckA, deckB, Saat, erwarteter Hash `sieger:runden:basisA:basisB:uidCounter`. */
+// Neu erzeugt in Phase 6 (V2-Engine-Primitive): Gift-Schwelle (Tod ab 3 Marken
+// statt Schaden pro Marke), Sturzflug ohne Basis-Fallback, Zermürbung,
+// roundLimit 30, maxCopies 3 / maxCopiesSignature 2 ändern das Spielverhalten
+// bewusst gegenüber der Phase-4/5-Baseline.
 const GOLDEN_MASTER: [string, string, number, string][] = [
   ['a1_rudeljaeger', 'a2_luftangriff', 5000, '0:8:12:-4:18'],
-  ['a1_rudeljaeger', 'a3_gift_urgewalt', 5001, '1:12:4:5:28'],
+  ['a1_rudeljaeger', 'a3_gift_urgewalt', 5001, '1:13:-1:5:29'],
   ['a1_rudeljaeger', 'a4_urzeitliches_rudel', 5002, '0:6:12:-1:9'],
   ['a1_rudeljaeger', 'h1_solidaritaet', 5003, '0:9:14:-4:19'],
   ['a1_rudeljaeger', 'h2_schicht', 5004, '0:9:11:-2:19'],
-  ['a1_rudeljaeger', 'h3_campus', 5005, '0:12:15:2:29'],
-  ['a2_luftangriff', 'a3_gift_urgewalt', 5006, '1:9:-1:15:18'],
+  ['a1_rudeljaeger', 'h3_campus', 5005, '0:13:15:-3:29'],
+  ['a2_luftangriff', 'a3_gift_urgewalt', 5006, '1:10:-4:15:20'],
   ['a2_luftangriff', 'a4_urzeitliches_rudel', 5007, '1:8:-1:10:17'],
-  ['a2_luftangriff', 'h1_solidaritaet', 5008, '0:12:15:14:26'],
+  ['a2_luftangriff', 'h1_solidaritaet', 5008, '0:16:9:-3:34'],
   ['a2_luftangriff', 'h2_schicht', 5009, '0:6:11:-2:9'],
   ['a2_luftangriff', 'h3_campus', 5010, '1:12:-1:14:26'],
   ['a3_gift_urgewalt', 'a4_urzeitliches_rudel', 5011, '1:8:0:14:16'],
-  ['a3_gift_urgewalt', 'h1_solidaritaet', 5012, '0:11:15:-1:22'],
-  ['a3_gift_urgewalt', 'h2_schicht', 5013, '0:11:12:-3:23'],
-  ['a3_gift_urgewalt', 'h3_campus', 5014, '0:11:15:-3:20'],
+  ['a3_gift_urgewalt', 'h1_solidaritaet', 5012, '0:12:14:-1:24'],
+  ['a3_gift_urgewalt', 'h2_schicht', 5013, '0:10:10:-2:20'],
+  ['a3_gift_urgewalt', 'h3_campus', 5014, '0:11:15:-2:20'],
   ['a4_urzeitliches_rudel', 'h1_solidaritaet', 5015, '0:8:9:0:14'],
   ['a4_urzeitliches_rudel', 'h2_schicht', 5016, '0:11:9:-3:22'],
   ['a4_urzeitliches_rudel', 'h3_campus', 5017, '0:10:9:-1:20'],
-  ['h1_solidaritaet', 'h2_schicht', 5018, '0:12:12:11:21'],
-  ['h1_solidaritaet', 'h3_campus', 5019, '0:12:15:13:19']
+  ['h1_solidaritaet', 'h2_schicht', 5018, '1:14:-2:10:26'],
+  ['h1_solidaritaet', 'h3_campus', 5019, '1:17:-3:3:31']
 ];
 
 describe('Golden Master: Partie-Simulation bleibt bei Refactors unverändert', () => {

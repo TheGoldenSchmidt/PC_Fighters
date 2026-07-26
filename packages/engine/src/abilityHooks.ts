@@ -147,5 +147,12 @@ export const KLASSE_A_HOOKS: { [K in Ability['kind']]?: KlasseAHooks<K> } = {
       if (c.attackedThisRound) return NULL_BONUS;
       return { attack: ab.bonus.atk, health: ab.bonus.hp };
     }
+  },
+  bedingt: {
+    beitragSelbst: (state, owner, lane, ab) => {
+      const count = countScope(state, owner, lane, ab.scope, false);
+      if (count < ab.mindestAnzahl) return NULL_BONUS;
+      return { attack: ab.bonus.atk, health: ab.bonus.hp };
+    }
   }
 };

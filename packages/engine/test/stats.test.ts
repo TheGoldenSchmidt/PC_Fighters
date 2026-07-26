@@ -25,7 +25,8 @@ function player(faction: string): PlayerState {
     base: data.config.baseHealth,
     energy: 10,
     knowledge: 0,
-    flyDone: false
+    flyDone: false,
+    gespieltDieseRunde: []
   };
 }
 
@@ -72,6 +73,7 @@ function put(
     permHealthBonus: 0,
     permAttackBonus: 0,
     tempAttackBonus: 0,
+    tempHealthBonus: 0,
     currentHealth: card.health,
     lastMaxHealth: card.health,
     exhausted: opts.exhausted ?? false,
@@ -82,7 +84,9 @@ function put(
     spawnRound: opts.spawnRound ?? state.round,
     ueberstundenDone: false,
     rettungUsed: false,
-    schutzUsed: false
+    schutzUsed: false,
+    zaehler: {},
+    rundenZaehler: {}
   };
   state.board[owner][lane] = c;
   recalcBoard(state);

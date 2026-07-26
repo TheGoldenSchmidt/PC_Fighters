@@ -15,6 +15,7 @@ import {
   validateGameData
 } from '../src/index.js';
 import { recalcBoard } from '../src/internal.js';
+import { applyShedding, onPlayAbilities, onRoundStartAbilities } from '../src/abilities.js';
 import type {
   Creature,
   CreatureCard,
@@ -34,7 +35,8 @@ function player(faction: string): PlayerState {
     base: data.config.baseHealth,
     energy: 10,
     knowledge: 0,
-    flyDone: false
+    flyDone: false,
+    gespieltDieseRunde: []
   };
 }
 
@@ -81,6 +83,7 @@ function put(
     permHealthBonus: 0,
     permAttackBonus: 0,
     tempAttackBonus: 0,
+    tempHealthBonus: 0,
     currentHealth: card.health,
     lastMaxHealth: card.health,
     exhausted: opts.exhausted ?? false,
@@ -91,7 +94,9 @@ function put(
     spawnRound: state.round,
     ueberstundenDone: false,
     rettungUsed: false,
-    schutzUsed: false
+    schutzUsed: false,
+    zaehler: {},
+    rundenZaehler: {}
   };
   state.board[owner][lane] = c;
   recalcBoard(state);
@@ -426,14 +431,23 @@ describe('Neue Fähigkeiten – Kampf', () => {
     expect(after.board[0][0]?.currentHealth).toBe(3); // Ritter nimmt 1 Dornen-Schaden
   });
 
-  it('gift: Marken machen Schaden am Kampfende und bleiben bestehen', () => {
+  it('gift: Marken machen selbst keinen Schaden, sammeln sich aber an (V2: Tod erst ab 3 Marken)', () => {
     const s = emptyState();
     put(s, 0, 0, 'klapperschlange'); // 2/3 Gift 2
     put(s, 1, 0, 'brachiosaurus', { exhausted: true }); // 6/9, wehrt sich nicht
     const after = passBoth(s);
-    // Treffer 2 + Gift 2 = 4 Schaden auf 9 HP → 5; Marken bleiben 2
-    expect(after.board[1][0]?.currentHealth).toBe(5);
+    // Nur der Kampf-Treffer (2) mindert das Leben; Gift zählt Marken statt direkt zu schaden.
+    expect(after.board[1][0]?.currentHealth).toBe(7);
     expect(after.board[1][0]?.poison).toBe(2);
+  });
+
+  it('gift: bei 3 Marken stirbt die Kreatur sofort (GIFT_TOD_SCHWELLE)', () => {
+    const s = emptyState();
+    put(s, 0, 0, 'klapperschlange'); // 2/3 Gift 2
+    const opfer = put(s, 1, 0, 'brachiosaurus', { exhausted: true }); // 6/9, wehrt sich nicht
+    opfer.poison = 1; // + 2 aus dem Kampf = 3 -> Tod
+    const after = passBoth(s);
+    expect(after.board[1][0]).toBeNull();
   });
 
   it('hinrichten überspringt urgewalt und trifft einen anderen schwachen Gegner', () => {
@@ -559,13 +573,13 @@ describe('Deckbau-Regeln (Zod)', () => {
 
   it('lehnt zu viele Kopien ab', () => {
     const deck = { cards: [{ cardId: 'streunerkatze', count: 20 }] };
-    expect(() => validateDeck(deck, data)).toThrow(/Zu viele Kopien von "Streunerkatze": 20, erlaubt sind 2/);
+    expect(() => validateDeck(deck, data)).toThrow(/Zu viele Kopien von "Streunerkatze": 20, erlaubt sind 3/);
   });
 
-  it('lehnt Signaturkarten über 1 ab', () => {
+  it('lehnt Signaturkarten über maxCopiesSignature (2) ab', () => {
     const deck = {
       cards: [
-        { cardId: 'luchs', count: 2 },
+        { cardId: 'luchs', count: 3 },
         { cardId: 'streunerkatze', count: 2 },
         { cardId: 'getigerter', count: 2 },
         { cardId: 'hauskater', count: 2 },
@@ -577,7 +591,7 @@ describe('Deckbau-Regeln (Zod)', () => {
         { cardId: 'der_schwarm', count: 2 }
       ]
     };
-    expect(() => validateDeck(deck, data)).toThrow(/Zu viele Kopien von "Luchs": 2, erlaubt sind 1/);
+    expect(() => validateDeck(deck, data)).toThrow(/Zu viele Kopien von "Luchs": 3, erlaubt sind 2/);
   });
 
   it('lehnt gemischte Oberfraktionen (singleTop) ab', () => {
@@ -628,13 +642,16 @@ describe('Balancing V2 Phase 1: Determinismus, Bugfixes, Log-Schalter', () => {
     expect(gC.players[0].deck).not.toEqual(gA.players[0].deck);
   });
 
-  it('Bugfix: Sturzflug-Basisschaden beendet die Partie sofort in der Play-Phase', () => {
+  it('Bugfix: Basisschaden aus einer onPlay-Fähigkeit beendet die Partie sofort in der Play-Phase', () => {
     // Vorher prüfte nur resolveCombat() checkBaseDestroyed; Basisschaden aus
-    // onPlayAbilities (Sturzflug ohne Ziel in der Lane) konnte die Basis auf
-    // ≤0 senken, ohne dass die Partie endete.
+    // onPlayAbilities (hier: experiment.schadenProMarker bei leerem Gegnerfeld)
+    // konnte die Basis auf ≤0 senken, ohne dass die Partie endete.
+    // (Sturzflug ist seit Phase 6/V2 auf denselben-Lane-Treffer beschränkt und
+    // hat keinen Basis-Fallback mehr, kann diesen Fall also nicht mehr auslösen.)
     const s = emptyState();
     s.players[1].base = 3;
-    s.players[0].hand = ['adler_voegel']; // Sturzflug 3, gegnerisches Feld ist leer → Basis
+    s.players[0].knowledge = 3;
+    s.players[0].hand = ['experimentelle_formel']; // schadenProMarker 1, gegnerisches Feld ist leer → Basis
     const after = applyAction(s, 0, { type: 'playCreature', handIndex: 0, lane: 0 }, data);
     expect(after.players[1].base).toBe(0);
     expect(after.phase).toBe('ended');
@@ -679,5 +696,158 @@ describe('Balancing V2 Phase 1: Determinismus, Bugfixes, Log-Schalter', () => {
     expect(logged.round).toBe(silent.round);
     expect(logged.players[0].base).toBe(silent.players[0].base);
     expect(logged.players[1].base).toBe(silent.players[1].base);
+  });
+});
+
+describe('Balancing V2 Phase 6: neue Engine-Primitive', () => {
+  it('bedingt: Bonus nur, solange genug weitere Kreaturen im Wirkungsbereich stehen', () => {
+    const s = emptyState();
+    const c = put(s, 0, 0, 'ritter'); // 4/4
+    c.abilities = [{ kind: 'bedingt', scope: 'any', mindestAnzahl: 1, bonus: { atk: 2, hp: 1 } }];
+    recalcBoard(s);
+    expect(getEffectiveAttack(s, 0, 0)).toBe(4); // allein -> kein Bonus
+    put(s, 0, 1, 'rekrut'); // beliebige zweite eigene Kreatur
+    expect(getEffectiveAttack(s, 0, 0)).toBe(6); // Bedingung erfüllt -> Bonus aktiv
+  });
+
+  it('hunter: Kampfbonus nur gegen ein vergiftetes Ziel', () => {
+    const s = emptyState();
+    const jaeger = put(s, 0, 0, 'ritter'); // 4/4
+    jaeger.abilities = [{ kind: 'hunter', bonusAtk: 3 }];
+    const opfer = put(s, 1, 0, 'brachiosaurus', { exhausted: true }); // 6/9, wehrt sich nicht
+    opfer.poison = 1; // vergiftet -> Hunter-Bonus greift
+    const after = passBoth(s);
+    expect(after.board[1][0]?.currentHealth).toBe(2); // 9 - (4 + 3 Hunter-Bonus)
+  });
+
+  it('hunter: kein Bonus gegen ein ungiftiges Ziel', () => {
+    const s = emptyState();
+    const jaeger = put(s, 0, 0, 'ritter'); // 4/4
+    jaeger.abilities = [{ kind: 'hunter', bonusAtk: 3 }];
+    put(s, 1, 0, 'brachiosaurus', { exhausted: true }); // 6/9, kein Gift
+    const after = passBoth(s);
+    expect(after.board[1][0]?.currentHealth).toBe(5); // 9 - 4, kein Bonus
+  });
+
+  it('shedding: heilt proaktiv bei Erreichen der Schwelle, entfernt optional Gift, löst nur einmal pro Spiel aus', () => {
+    const s = emptyState();
+    const c = put(s, 0, 0, 'brachiosaurus'); // 6/9
+    c.abilities = [{ kind: 'shedding', schwelle: 3, heilung: 4, entferntGift: true }];
+    c.currentHealth = 3;
+    c.poison = 2;
+    applyShedding(s);
+    expect(c.currentHealth).toBe(7); // 3 + 4
+    expect(c.poison).toBe(0);
+
+    c.currentHealth = 1; // erneut unter der Schwelle
+    applyShedding(s);
+    expect(c.currentHealth).toBe(1); // kein zweites Mal in diesem Spiel
+  });
+
+  it('synergie: Bonus nur, wenn der Besitzer diese Runde schon eine passende Karte gespielt hat', () => {
+    const s = emptyState();
+    const c = put(s, 0, 0, 'ritter');
+    c.abilities = [{ kind: 'synergie', scope: 'any', bonus: { atk: 1, hp: 1 } }];
+
+    onPlayAbilities(s, 0, 0); // noch nichts diese Runde gespielt -> kein Bonus
+    expect(c.permAttackBonus).toBe(0);
+
+    s.players[0].gespieltDieseRunde = ['ritter'];
+    onPlayAbilities(s, 0, 0);
+    expect(c.permAttackBonus).toBe(1);
+    expect(c.permHealthBonus).toBe(1);
+  });
+
+  it('wahl (handKlein): bevorzugt Ziehen bei kleiner Hand', () => {
+    const s = emptyState();
+    const c = put(s, 0, 0, 'ritter');
+    c.abilities = [
+      { kind: 'wahl', optionA: { art: 'ziehen', n: 1 }, optionB: { art: 'wissen', x: 2 }, regel: 'handKlein' }
+    ];
+    s.players[0].hand = [];
+    s.players[0].deck = ['rekrut'];
+    onRoundStartAbilities(s);
+    expect(s.players[0].hand).toEqual(['rekrut']);
+    expect(s.players[0].knowledge).toBe(0);
+  });
+
+  it('wahl (wissenKnapp): bevorzugt Wissen, wenn der Pool knapp ist', () => {
+    const s = emptyState();
+    const c = put(s, 0, 0, 'ritter');
+    c.abilities = [
+      { kind: 'wahl', optionA: { art: 'ziehen', n: 1 }, optionB: { art: 'wissen', x: 2 }, regel: 'wissenKnapp' }
+    ];
+    s.players[0].knowledge = 0; // < 2 -> knapp
+    s.players[0].deck = ['rekrut'];
+    onRoundStartAbilities(s);
+    expect(s.players[0].knowledge).toBe(2);
+    expect(s.players[0].hand).toEqual([]);
+  });
+
+  it('wachstum.maxTriggers: löst höchstens so oft aus (spielweiter Zähler)', () => {
+    const s = emptyState();
+    const c = put(s, 0, 0, 'ritter');
+    c.abilities = [{ kind: 'wachstum', per_round: { atk: 0, hp: 1 }, maxTriggers: 2 }];
+    onRoundStartAbilities(s);
+    onRoundStartAbilities(s);
+    onRoundStartAbilities(s); // sollte nicht mehr triggern
+    expect(c.permHealthBonus).toBe(2);
+  });
+
+  it('verstaerker.firstOnlyPerRound: nur der erste Wachstumstrigger einer Runde wird verstärkt; Reset erst in endRound (I2)', () => {
+    const s = emptyState();
+    const wachser1 = put(s, 0, 0, 'ritter');
+    wachser1.abilities = [{ kind: 'wachstum', per_round: { atk: 0, hp: 1 } }];
+    const wachser2 = put(s, 0, 1, 'rekrut');
+    wachser2.abilities = [{ kind: 'wachstum', per_round: { atk: 0, hp: 1 } }];
+    const verstaerker = put(s, 0, 2, 'wolf');
+    verstaerker.abilities = [
+      { kind: 'verstaerker', ziel: 'wachstum', scope: 'any', faktor: 2, firstOnlyPerRound: true }
+    ];
+
+    onRoundStartAbilities(s);
+    expect(wachser1.permHealthBonus).toBe(2); // erster Trigger dieser Runde -> verdoppelt
+    expect(wachser2.permHealthBonus).toBe(1); // zweiter Trigger -> kein Verstärker mehr
+
+    // Ohne endRound bleibt rundenZaehler gesetzt -> derselbe Effekt wie eben.
+    onRoundStartAbilities(s);
+    expect(wachser1.permHealthBonus).toBe(3);
+    expect(wachser2.permHealthBonus).toBe(2);
+
+    // endRound leert rundenZaehler -> in der neuen Runde greift der Verstärker wieder beim ersten Trigger.
+    const after = passBoth(s);
+    expect(after.board[0][0]?.permHealthBonus).toBe(5);
+    expect(after.board[0][1]?.permHealthBonus).toBe(3);
+  });
+
+  it('tempHealthBonus fließt in getMaxHealth ein und wird in endRound zurückgesetzt', () => {
+    const s = emptyState();
+    const c = put(s, 0, 0, 'ritter'); // 4/4
+    expect(getMaxHealth(s, 0, 0)).toBe(4);
+    c.tempHealthBonus = 3;
+    recalcBoard(s);
+    expect(getMaxHealth(s, 0, 0)).toBe(7);
+    const after = passBoth(s);
+    expect(after.board[0][0]?.tempHealthBonus).toBe(0);
+  });
+
+  it('Zermürbung: ab config.zermuerbung.abRunde verlieren beide Basen am Rundenende Leben', () => {
+    const s = emptyState();
+    const z = data.config.zermuerbung!;
+    s.round = z.abRunde;
+    const after = passBoth(s);
+    expect(after.players[0].base).toBe(data.config.baseHealth - z.schaden);
+    expect(after.players[1].base).toBe(data.config.baseHealth - z.schaden);
+  });
+
+  it('I1: Klasse-A-Hooks schreiben nie in zaehler (sonst nicht-idempotente recalcBoard-Fixpunktschleife)', () => {
+    const s = emptyState();
+    const c = put(s, 0, 0, 'ritter');
+    c.abilities = [{ kind: 'bedingt', scope: 'any', mindestAnzahl: 0, bonus: { atk: 1, hp: 1 } }];
+    put(s, 0, 1, 'rekrut');
+    recalcBoard(s);
+    recalcBoard(s);
+    recalcBoard(s);
+    expect(c.zaehler).toEqual({});
   });
 });

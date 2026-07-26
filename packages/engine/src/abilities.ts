@@ -44,7 +44,12 @@ export const ABILITIES: Record<Ability['kind'], { label: string; description: st
   beschwoeren: { label: 'Beschwören', description: 'Erzeugt Token (beim Ausspielen oder beim Tod).' },
   entwaffnen: { label: 'Entwaffnen', description: 'Ein Gegner verliert angegebene Keywords.' },
   todesfluch: { label: 'Todesfluch', description: 'Beim Tod: der Angreifer verliert ATK.' },
-  hinrichten: { label: 'Hinrichten', description: 'Beim Angriff: zerstört einen schwachen Gegner.' }
+  hinrichten: { label: 'Hinrichten', description: 'Beim Angriff: zerstört einen schwachen Gegner.' },
+  bedingt: { label: 'Bedingter Bonus', description: 'Bonus, solange genug weitere Kreaturen im Wirkungsbereich stehen.' },
+  hunter: { label: 'Jäger', description: 'Kampfbonus gegen ein vergiftetes Ziel.' },
+  shedding: { label: 'Häutung', description: 'Einmal pro Spiel: heilt bei niedrigem Leben und entfernt optional Gift.' },
+  synergie: { label: 'Synergie', description: 'Kommt mit Bonus ins Spiel, wenn diese Runde schon eine passende Karte gespielt wurde.' },
+  wahl: { label: 'Wahl', description: 'Rundenbeginn: automatisch aufgelöste Wahl zwischen zwei Optionen.' }
 };
 
 export const ABILITY_KINDS = Object.keys(ABILITIES) as Ability['kind'][];
@@ -122,6 +127,11 @@ function pickEnemyLane(state: GameState, enemy: PlayerIndex, preferredLane: numb
 
 // ---------------------------------------------------------------- Beim Ausspielen
 
+/**
+ * Sturzflug (Regelwerk V2): trifft NUR die gegnerische Kreatur in derselben
+ * Lane. Ist die Lane leer, entsteht kein Basisschaden (V1 hatte hier noch
+ * einen Fallback auf die erste belegte Gegner-Lane bzw. die Basis).
+ */
 function applySturzflug(
   state: GameState,
   owner: PlayerIndex,
@@ -130,22 +140,19 @@ function applySturzflug(
 ): void {
   const c = state.board[owner][lane]!;
   const enemy = otherPlayer(owner);
-  const tLane = pickEnemyLane(state, enemy, lane);
-  if (tLane >= 0) {
-    const target = state.board[enemy][tLane]!;
+  const target = state.board[enemy][lane];
+  if (target) {
     target.currentHealth -= ab.x;
     target.letzterSchaden = { art: 'effekt', quelle: c.cardId, owner };
     zaehleKarte(state, owner, c.cardId, 'schadenKreatur', ab.x);
     log(state, `${c.name}: Sturzflug trifft ${target.name} für ${ab.x}.`, {
       kind: 'spell',
-      lane: tLane,
+      lane,
       effect: 'attackBuff',
       faction: c.faction
     });
   } else {
-    state.players[enemy].base -= ab.x;
-    zaehleKarte(state, owner, c.cardId, 'schadenBasis', ab.x);
-    log(state, `${c.name}: Sturzflug trifft die gegnerische Basis für ${ab.x}.`);
+    log(state, `${c.name}: Sturzflug trifft ins Leere – die Lane ist frei.`);
   }
 }
 
@@ -172,6 +179,12 @@ function applyWachstum(
   ab: Extract<Ability, { kind: 'wachstum' }>
 ): void {
   const c = state.board[owner][lane]!;
+  if (ab.maxTriggers != null) {
+    const key = `${c.abilities.indexOf(ab)}:wachstum`;
+    const bisher = c.zaehler[key] ?? 0;
+    if (bisher >= ab.maxTriggers) return;
+    c.zaehler[key] = bisher + 1;
+  }
   const mult = wachstumMultiplier(state, owner, c);
   const atk = ab.per_round.atk * mult;
   const hp = ab.per_round.hp * mult;
@@ -205,6 +218,65 @@ function applyUeberstunden(
   c.permHealthBonus += ab.bonus.hp;
   c.ueberstundenDone = true;
   log(state, `${c.name}: Überstunden +${ab.bonus.atk}/+${ab.bonus.hp}.`);
+}
+
+/**
+ * Synergie: kommt mit Bonus ins Spiel, wenn der Besitzer in dieser Runde
+ * schon eine andere Karte im scope gespielt hat (PlayerState.gespieltDieseRunde,
+ * in startRound() geleert, in playPhaseAction NACH den Beim-Ausspielen-
+ * Effekten eingetragen – die eigene Karte zählt sich also nicht selbst).
+ */
+function applySynergie(
+  state: GameState,
+  owner: PlayerIndex,
+  lane: number,
+  ab: Extract<Ability, { kind: 'synergie' }>
+): void {
+  const c = state.board[owner][lane]!;
+  const passt = state.players[owner].gespieltDieseRunde.some((f) =>
+    matchesScope(state.factionTree, ab.scope, c.faction, f)
+  );
+  if (!passt) return;
+  c.permAttackBonus += ab.bonus.atk;
+  c.permHealthBonus += ab.bonus.hp;
+  log(state, `${c.name}: Synergie +${ab.bonus.atk}/+${ab.bonus.hp}.`);
+}
+
+/**
+ * Wahl: deterministisch aufgelöste Rundenbeginn-Entscheidung zwischen zwei
+ * Optionen (kein Spieler-Interaktionstyp – siehe LESSONS/Plan zu Phase 3).
+ * `handKlein` bevorzugt Kartenziehen bei kleiner Hand (< 3), sonst Wissen;
+ * `wissenKnapp` bevorzugt Wissen bei knappem Pool (< 2), sonst Ziehen.
+ */
+function waehleWahlOption(
+  state: GameState,
+  owner: PlayerIndex,
+  ab: Extract<Ability, { kind: 'wahl' }>
+): Extract<Ability, { kind: 'wahl' }>['optionA'] {
+  const p = state.players[owner];
+  const bevorzugtZiehen = ab.regel === 'handKlein' ? p.hand.length < 3 : p.knowledge >= 2;
+  const ziehenOption = ab.optionA.art === 'ziehen' ? ab.optionA : ab.optionB.art === 'ziehen' ? ab.optionB : undefined;
+  const wissenOption = ab.optionA.art === 'wissen' ? ab.optionA : ab.optionB.art === 'wissen' ? ab.optionB : undefined;
+  if (bevorzugtZiehen && ziehenOption) return ziehenOption;
+  if (!bevorzugtZiehen && wissenOption) return wissenOption;
+  return ab.optionA;
+}
+
+function applyWahl(
+  state: GameState,
+  owner: PlayerIndex,
+  lane: number,
+  ab: Extract<Ability, { kind: 'wahl' }>
+): void {
+  const c = state.board[owner][lane]!;
+  const gewaehlt = waehleWahlOption(state, owner, ab);
+  if (gewaehlt.art === 'ziehen') {
+    draw(state, owner, gewaehlt.n);
+    log(state, `${c.name}: Wahl → zieht ${gewaehlt.n} Karte(n).`);
+  } else {
+    state.players[owner].knowledge += gewaehlt.x;
+    log(state, `${c.name}: Wahl → +${gewaehlt.x} Wissen.`);
+  }
 }
 
 interface KlasseBHooks<K extends Ability['kind']> {
@@ -267,7 +339,9 @@ const KLASSE_B_HOOKS: { [K in Ability['kind']]?: KlasseBHooks<K> } = {
   },
   entwaffnen: { onPlay: applyEntwaffnen },
   experiment: { onPlay: applyExperiment },
+  synergie: { onPlay: applySynergie },
   wachstum: { onRoundStart: applyWachstum },
+  wahl: { onRoundStart: applyWahl },
   heilung: { onRoundEnd: applyHeilung },
   ueberstunden: { onRoundEnd: applyUeberstunden }
 };
@@ -408,11 +482,19 @@ function wachstumMultiplier(state: GameState, owner: PlayerIndex, growing: Creat
   let mult = 1;
   for (const s of state.board[owner]) {
     if (!s) continue;
-    for (const ab of s.abilities) {
-      if (ab.kind === 'verstaerker' && ab.ziel === 'wachstum') {
-        if (matchesScope(state.factionTree, ab.scope, s.faction, growing.faction)) mult *= ab.faktor;
+    s.abilities.forEach((ab, i) => {
+      if (ab.kind !== 'verstaerker' || ab.ziel !== 'wachstum') return;
+      if (!matchesScope(state.factionTree, ab.scope, s.faction, growing.faction)) return;
+      if (ab.firstOnlyPerRound) {
+        // Nur der ERSTE Wachstumstrigger einer Runde bekommt den Bonus (Betriebsrat);
+        // rundenZaehler wird in endRound() geleert. Wachstum läuft in Brett-
+        // Reihenfolge (onRoundStartAbilities), "erster" heißt also: niedrigste Lane zuerst.
+        const key = `${i}:verstaerker`;
+        if (s.rundenZaehler[key]) return;
+        s.rundenZaehler[key] = 1;
       }
-    }
+      mult *= ab.faktor;
+    });
   }
   return mult;
 }
@@ -533,16 +615,52 @@ export function onDeathTriggers(state: GameState, deaths: DeathInfo[]): void {
 // ---------------------------------------------------------------- Kampf-Helfer
 
 /** Gift-Zermürbung am Kampfende: jede Marke macht 1 Schaden, Marken bleiben bestehen. */
+/** Ab dieser Anzahl Giftmarken wird eine Kreatur zerstört (Regelwerk V2). */
+export const GIFT_TOD_SCHWELLE = 3;
+
+/**
+ * Gift-Zermürbung am Kampfende (Regelwerk V2): bei ≥GIFT_TOD_SCHWELLE Marken
+ * wird die Kreatur zerstört – kein Schaden mehr pro Marke (V1-Verhalten).
+ * Marken bleiben bei Überleben bestehen (kein Reset).
+ */
 export function resolvePoison(state: GameState): void {
   for (const owner of [0, 1] as PlayerIndex[]) {
     for (const c of state.board[owner]) {
-      if (!c || c.poison <= 0) continue;
-      c.currentHealth -= c.poison;
+      if (!c || c.poison < GIFT_TOD_SCHWELLE) continue;
+      c.currentHealth = 0;
       // Poison-Herkunft ist nicht mehr eindeutig einer Karte zuordenbar (Marken
       // stapeln über mehrere Runden/Angreifer) – daher ohne quelle/owner.
       c.letzterSchaden = { art: 'gift' };
-      log(state, `Gift: ${c.name} nimmt ${c.poison} Schaden.`);
+      log(state, `Gift: ${c.name} wird bei ${c.poison} Giftmarken zerstört.`);
     }
+  }
+}
+
+/**
+ * Häutung (`shedding`): einmal pro Spiel proaktiv heilen, sobald die HP auf
+ * die Schwelle fallen (nicht erst beim Sterben) und optional Gift entfernen.
+ * Läuft AUSSERHALB der recalcBoard-Fixpunktschleife (siehe Kommentar an
+ * Creature.zaehler in types.ts) – Aufrufer: game.ts, vor logDeaths().
+ */
+export function applyShedding(state: GameState): void {
+  for (const owner of [0, 1] as PlayerIndex[]) {
+    state.board[owner].forEach((c, lane) => {
+      if (!c || c.currentHealth <= 0) return;
+      c.abilities.forEach((ab, i) => {
+        if (ab.kind !== 'shedding') return;
+        const key = `${i}:shedding`;
+        if (c.zaehler[key]) return;
+        if (c.currentHealth > ab.schwelle) return;
+        const max = getMaxHealth(state, owner, lane);
+        c.currentHealth = Math.min(max, c.currentHealth + ab.heilung);
+        if (ab.entferntGift) c.poison = 0;
+        c.zaehler[key] = 1;
+        log(
+          state,
+          `${c.name}: Häutung heilt um ${ab.heilung}${ab.entferntGift ? ' und entfernt Gift' : ''}.`
+        );
+      });
+    });
   }
 }
 
