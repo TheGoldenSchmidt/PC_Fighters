@@ -300,6 +300,16 @@ function createWald(): EnvironmentRec {
   flank('left');
   flank('right');
 
+  // Baumsaum am fernen Rand: sichtbar innerhalb der erweiterten Bühne, aber
+  // deutlich hinter der gegnerischen Reihe. So bleibt Lane 1 auch bei breiten
+  // Modellen frei, während der Wald nicht nur aus einer grünen Fläche besteht.
+  add(nadelbaumVisual(2.6), { zone: 'back', nx: -1.12, depth: 4.8 }, 0.018);
+  add(laubbaumVisual(2.25), { zone: 'back', nx: -0.68, depth: 6.0 }, 0.02);
+  add(nadelbaumVisual(2.8), { zone: 'back', nx: -0.22, depth: 6.8 }, 0.017);
+  add(laubbaumVisual(2.35), { zone: 'back', nx: 0.28, depth: 6.4 }, 0.02);
+  add(nadelbaumVisual(2.7), { zone: 'back', nx: 0.72, depth: 5.8 }, 0.018);
+  add(laubbaumVisual(2.45), { zone: 'back', nx: 1.12, depth: 4.7 }, 0.02);
+
   return finishEnvironment(group, placed);
 }
 
