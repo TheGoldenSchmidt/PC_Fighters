@@ -225,10 +225,25 @@ describe('Server: Raum, Beitritt, Aktionen, gefilterte Sicht', () => {
   });
 
   it('/info liefert Karten, Deckbauregeln und Prebuilds', async () => {
-    const info = await fetch(`http://127.0.0.1:${server.port}/info`).then((r) => r.json()) as Record<string, unknown>;
+    const response = await fetch(`http://127.0.0.1:${server.port}/info`);
+    const info = await response.json() as Record<string, unknown>;
     expect(Array.isArray(info.cards)).toBe(true);
     expect(info.deckbuilding).toBeTruthy();
     expect(Object.keys(info.decks as object)).toContain('h1_solidaritaet');
+    expect(response.headers.get('cache-control')).toBe('no-store');
+    const visuals = info.visuals as { cards: Record<string, unknown> };
+    expect(Object.keys(visuals.cards)).toEqual(expect.arrayContaining([
+      'ratte',
+      'baer',
+      'uralte_schlange',
+      'spinosaurus',
+      'velociraptor',
+      'ritter',
+      'feldscherin',
+      'kranfuehrer',
+      'schrottsammlerin',
+      'eule'
+    ]));
   });
 
   it('Preset-Decks werden serverseitig aufgelöst; manipulierte Custom-Decks werden abgelehnt', async () => {
