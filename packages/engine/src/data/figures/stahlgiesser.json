@@ -23,10 +23,12 @@
       "hautDunkel": "#7a4d33",
       "augeWeiss": "#f2eadc",
       "augeDunkel": "#20252a",
+      "augenhoehle": "#5a3826",
       "russ": "#2a2622",
       "lippe": "#8a5236",
       "mundInnen": "#3b2423",
-      "handschuh": "#3a2418"
+      "handschuh": "#3a2418",
+      "visierGlas": "#445055"
     },
     "parts": [
       { "id": "huefteL", "shape": "group", "pos": [-0.2, 1.0, 0] },
@@ -97,12 +99,14 @@
       { "id": "ohrInnenL", "shape": "ico", "size": 0.044, "pos": [-0.338, -0.02, 0.03], "parent": "kopfGruppe", "scale": [0.38, 0.9, 0.55], "color": "hautDunkel" },
       { "id": "ohrR", "shape": "ico", "size": 0.085, "pos": [0.32, -0.02, 0], "parent": "kopfGruppe", "scale": [0.5, 0.9, 0.65], "color": "haut" },
       { "id": "ohrInnenR", "shape": "ico", "size": 0.044, "pos": [0.338, -0.02, 0.03], "parent": "kopfGruppe", "scale": [0.38, 0.9, 0.55], "color": "hautDunkel" },
-      { "id": "augeWeissL", "shape": "ico", "size": 0.078, "pos": [-0.112, 0.03, 0.26], "parent": "kopfGruppe", "scale": [1.2, 0.85, 0.5], "color": "augeWeiss" },
-      { "id": "augeWeissR", "shape": "ico", "size": 0.078, "pos": [0.112, 0.03, 0.26], "parent": "kopfGruppe", "scale": [1.2, 0.85, 0.5], "color": "augeWeiss" },
-      { "id": "pupilleL", "shape": "ico", "size": 0.036, "pos": [-0.112, 0.025, 0.3], "parent": "kopfGruppe", "scale": [0.82, 1, 0.5], "color": "augeDunkel" },
-      { "id": "pupilleR", "shape": "ico", "size": 0.036, "pos": [0.112, 0.025, 0.3], "parent": "kopfGruppe", "scale": [0.82, 1, 0.5], "color": "augeDunkel" },
-      { "id": "braueL", "shape": "box", "size": [0.145, 0.03, 0.036], "pos": [-0.112, 0.11, 0.265], "parent": "kopfGruppe", "rot": [0, 0, 0.12], "color": "russ" },
-      { "id": "braueR", "shape": "box", "size": [0.145, 0.03, 0.036], "pos": [0.112, 0.11, 0.265], "parent": "kopfGruppe", "rot": [0, 0, -0.12], "color": "russ" },
+      { "id": "augenhoehleL", "shape": "ico", "size": 0.1, "pos": [-0.112, 0.025, 0.235], "parent": "kopfGruppe", "scale": [1.35, 1.05, 0.4], "color": "augenhoehle" },
+      { "id": "augenhoehleR", "shape": "ico", "size": 0.1, "pos": [0.112, 0.025, 0.235], "parent": "kopfGruppe", "scale": [1.35, 1.05, 0.4], "color": "augenhoehle" },
+      { "id": "augeWeissL", "shape": "ico", "size": 0.078, "pos": [-0.112, 0.03, 0.26], "parent": "kopfGruppe", "scale": [1.2, 0.7, 0.5], "color": "augeWeiss" },
+      { "id": "augeWeissR", "shape": "ico", "size": 0.078, "pos": [0.112, 0.03, 0.26], "parent": "kopfGruppe", "scale": [1.2, 0.7, 0.5], "color": "augeWeiss" },
+      { "id": "pupilleL", "shape": "ico", "size": 0.036, "pos": [-0.112, 0.02, 0.3], "parent": "kopfGruppe", "scale": [0.82, 0.9, 0.5], "color": "augeDunkel" },
+      { "id": "pupilleR", "shape": "ico", "size": 0.036, "pos": [0.112, 0.02, 0.3], "parent": "kopfGruppe", "scale": [0.82, 0.9, 0.5], "color": "augeDunkel" },
+      { "id": "braueL", "shape": "box", "size": [0.15, 0.032, 0.038], "pos": [-0.112, 0.098, 0.265], "parent": "kopfGruppe", "rot": [0, 0, 0.22], "color": "russ" },
+      { "id": "braueR", "shape": "box", "size": [0.15, 0.032, 0.038], "pos": [0.112, 0.098, 0.265], "parent": "kopfGruppe", "rot": [0, 0, -0.22], "color": "russ" },
       { "id": "nase", "shape": "ico", "size": 0.062, "pos": [0, -0.075, 0.3], "parent": "kopfGruppe", "scale": [0.8, 0.72, 0.78], "color": "hautDunkel" },
       { "id": "nasenKontur", "shape": "box", "size": [0.05, 0.017, 0.024], "pos": [0, -0.11, 0.315], "parent": "kopfGruppe", "color": "mundInnen" },
       { "id": "kiefer", "shape": "ico", "size": 0.168, "pos": [0, -0.18, 0.12], "parent": "kopfGruppe", "scale": [1.35, 0.5, 0.9], "color": "haut" },
@@ -115,10 +119,10 @@
       { "id": "helmKuppel", "shape": "sph", "size": 0.34, "pos": [0, 0.27, -0.01], "parent": "kopfGruppe", "scale": [1.06, 0.74, 1.0], "color": "helm", "arc": [0, 6.28319, 0, 1.72] },
       { "id": "helmRand", "shape": "cyl", "size": [0.37, 0.37, 0.07], "pos": [0, 0.21, -0.01], "parent": "kopfGruppe", "color": "helmDunkel" },
       { "id": "helmRippe", "shape": "box", "size": [0.07, 0.16, 0.36], "pos": [0, 0.41, -0.01], "parent": "kopfGruppe", "color": "helmDunkel" },
-      { "id": "visierRahmen", "shape": "box", "size": [0.4, 0.05, 0.32], "pos": [0, 0.46, 0.12], "parent": "kopfGruppe", "rot": [-1.0, 0, 0], "color": "stahl", "metalness": 0.55, "roughness": 0.35 },
-      { "id": "visierGlas", "shape": "box", "size": [0.36, 0.03, 0.28], "pos": [0, 0.02, 0], "parent": "visierRahmen", "color": "visierGold", "transparent": true, "opacity": 0.85, "metalness": 0.3 },
-      { "id": "scharnierL", "shape": "box", "size": [0.05, 0.05, 0.09], "pos": [-0.19, 0.24, 0.08], "parent": "kopfGruppe", "color": "stahl", "metalness": 0.5 },
-      { "id": "scharnierR", "shape": "box", "size": [0.05, 0.05, 0.09], "pos": [0.19, 0.24, 0.08], "parent": "kopfGruppe", "color": "stahl", "metalness": 0.5 }
+      { "id": "visierRahmen", "shape": "box", "size": [0.38, 0.09, 0.24], "pos": [0, 0.33, 0.16], "parent": "kopfGruppe", "rot": [-0.65, 0, 0], "color": "stahl", "metalness": 0.55, "roughness": 0.35 },
+      { "id": "visierGlas", "shape": "box", "size": [0.32, 0.055, 0.17], "pos": [0, -0.003, -0.02], "parent": "visierRahmen", "color": "visierGlas", "transparent": true, "opacity": 0.88, "metalness": 0.3 },
+      { "id": "scharnierL", "shape": "cyl", "size": [0.045, 0.045, 0.13], "pos": [-0.2, 0.235, 0.09], "rot": [0, 0, 1.5708], "parent": "kopfGruppe", "color": "stahl", "metalness": 0.6, "roughness": 0.3 },
+      { "id": "scharnierR", "shape": "cyl", "size": [0.045, 0.045, 0.13], "pos": [0.2, 0.235, 0.09], "rot": [0, 0, 1.5708], "parent": "kopfGruppe", "color": "stahl", "metalness": 0.6, "roughness": 0.3 }
     ]
   },
   "animations": {
@@ -133,7 +137,7 @@
         { "part": "pfannenGruppe", "prop": "rot.z", "keys": [[0, 0], [1.2, 0.04], [2.4, -0.03], [3.0, 0]] },
         { "part": "pfannenGruppe", "prop": "rot.x", "keys": [[0, 0], [1.5, 0.03], [3.0, 0]] },
         { "part": "stahlbad", "prop": "scale", "keys": [[0, 1], [1.2, 1.05], [2.4, 0.97], [3.0, 1]] },
-        { "part": "stahlbad", "prop": "emissive", "keys": [[0, 0.02], [1.2, 0.07], [2.4, 0.03], [3.0, 0.02]] },
+        { "part": "stahlbad", "prop": "emissive", "keys": [[0, 0.2], [1.2, 0.4], [2.4, 0.28], [3.0, 0.2]] },
         { "part": "funkeA", "prop": "opacity", "keys": [[0, 0.9], [1.5, 0.4], [3.0, 0.9]] },
         { "part": "glutWurf", "prop": "opacity", "keys": [[0, 0], [3.0, 0]] }
       ]
@@ -146,7 +150,7 @@
         { "part": "root", "prop": "rot.x", "keys": [[0, -0.1], [0.4, 0.05], [0.9, 0]] },
         { "part": "huefteR", "prop": "rot.x", "keys": [[0, -0.35], [0.35, 0.1], [0.6, 0], [0.9, 0]] },
         { "part": "huefteL", "prop": "rot.x", "keys": [[0, 0.3], [0.35, -0.3], [0.65, 0.05], [0.9, 0]] },
-        { "part": "pfannenGruppe", "prop": "rot.x", "keys": [[0, -0.3], [0.4, 0.15], [0.7, -0.05], [0.9, 0]] },
+        { "part": "pfannenGruppe", "prop": "rot.x", "keys": [[0, -0.25], [0.4, 0.12], [0.7, -0.04], [0.9, 0]] },
         { "part": "schulterR", "prop": "rot.z", "keys": [[0, 0.2], [0.4, -0.1], [0.9, 0]] },
         { "part": "kopfGruppe", "prop": "rot.x", "keys": [[0, 0.1], [0.4, -0.05], [0.9, 0]] }
       ]
@@ -160,9 +164,11 @@
         { "part": "schulter", "prop": "rot.x", "keys": [[0, 0], [0.25, 0.06], [0.4, -0.14], [0.6, -0.06], [0.9, 0]] },
         { "part": "schulterR", "prop": "rot.x", "keys": [[0, 0], [0.25, 0.45], [0.4, -0.7], [0.6, -0.3], [0.9, 0]] },
         { "part": "ellbogenR", "prop": "rot.x", "keys": [[0, 0], [0.25, 0.35], [0.4, -0.55], [0.6, -0.25], [0.9, 0]] },
-        { "part": "pfannenGruppe", "prop": "rot.x", "keys": [[0, 0], [0.25, 0.15], [0.4, -1.0], [0.6, -0.4], [0.9, 0]] },
+        { "part": "pfannenGruppe", "prop": "rot.x", "keys": [[0, 0], [0.25, 0.15], [0.4, -0.78], [0.6, -0.32], [0.9, 0]] },
+        { "part": "pfannenGruppe", "prop": "rot.z", "keys": [[0, 0], [0.25, 0.05], [0.4, 0.13], [0.6, 0.05], [0.9, 0]] },
         { "part": "stahlbad", "prop": "opacity", "keys": [[0, 1], [0.38, 1], [0.42, 0.15], [0.6, 0.15], [0.9, 1]] },
         { "part": "glutWurf", "prop": "opacity", "keys": [[0, 0], [0.38, 0], [0.42, 1], [0.7, 0.8], [0.9, 0]] },
+        { "part": "glutWurf", "prop": "emissive", "keys": [[0, 0], [0.42, 0.5], [0.6, 0.35], [0.9, 0]] },
         { "part": "glutWurf", "prop": "pos.z", "keys": [[0, 0], [0.4, 0], [0.6, 0.55], [0.9, 1.15]] },
         { "part": "glutWurf", "prop": "pos.y", "keys": [[0, 0], [0.4, 0], [0.55, 0.3], [0.75, 0.08], [0.9, -0.25]] },
         { "part": "glutWurf", "prop": "pos.x", "keys": [[0, 0], [0.4, 0], [0.9, 0.2]] },
@@ -176,7 +182,7 @@
         { "part": "root", "prop": "pos.z", "keys": [[0, 0], [0.12, -0.12], [0.4, 0]] },
         { "part": "root", "prop": "rot.x", "keys": [[0, 0], [0.12, 0.15], [0.4, 0]] },
         { "part": "torso", "prop": "rot.x", "keys": [[0, 0], [0.12, 0.18], [0.4, 0]] },
-        { "part": "pfannenGruppe", "prop": "rot.x", "keys": [[0, 0], [0.15, 0.4], [0.4, 0]] },
+        { "part": "pfannenGruppe", "prop": "rot.x", "keys": [[0, 0], [0.15, 0.32], [0.4, 0]] },
         { "part": "pfannenGruppe", "prop": "rot.z", "keys": [[0, 0], [0.15, -0.2], [0.35, 0.1], [0.4, 0]] },
         { "part": "stahlbad", "prop": "scale", "keys": [[0, 1], [0.15, 1.25], [0.4, 1]] },
         { "part": "kopfGruppe", "prop": "rot.x", "keys": [[0, 0], [0.15, 0.12], [0.4, 0]] }
