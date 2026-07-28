@@ -117,14 +117,34 @@ zweiten anzulegen.
   dessen Kopf oder Klinge sichtbar durch den Kontaktbogen führen.
 - **Montagezeitpunkte müssen semantischen Schlüsselbildern folgen.** Globale
   Prozentwerte treffen bei kurzen oder asymmetrischen Angriffen häufig nicht
-  Windup, Kontakt und Rückkehr. → Snap-Zeitpunkte aus den relevanten Keyframes
-  ableiten.
+  Windup, Kontakt und Rückkehr. Auch `Animation starten → warten → Screenshot`
+  ist wegen Render- und Screenshot-Latenz nicht deterministisch. → `windup`,
+  `contact` und `return` als semantische Aufnahmezeitpunkte markieren und den
+  Clip für die Montage exakt an diesen Zeiten auswerten und einfrieren.
 - **Kompakte Vögel zuerst über die Ruhe-Silhouette bauen.** Lange sichtbare Läufe
   und ein schmaler Rumpf wirken trotz Eulengesicht humanoid. → Rumpf breit und
   tief bauen, Beinansätze im Gefieder verbergen und fast nur Krallen zeigen.
+
+### Werkstatt-Schleife / Kosten
+
+- **Eine Angriffsmontage prüft keine vollständige Animation.** Individuelle
+  Einzüge und Todesanimationen können strukturell vorhanden, aber visuell
+  fehlerhaft sein. → Die Standardabnahme zeigt zusätzlich mindestens zwei
+  Einzugs- und zwei Todesphasen.
+- **Bei gleichzeitig roten A/B/C-Linsen zuerst integriert überarbeiten.** Drei
+  sofortige Spezialisten lesen dieselbe Figur mehrfach und können einander
+  unnötig nachlaufen. → Zuerst eine kompakte Gesamtrevision beim bestehenden
+  Designer; Spezialisten nur für danach verbleibende rote Linsen einsetzen.
+- **Unveränderte Ansichten nicht erneut rendern.** Eine reine Animationsänderung
+  verändert Körper, Gesicht und Rundumansichten nicht. → Vorhandene Kacheln
+  wiederverwenden und nur die betroffenen Clips neu aufnehmen.
 
 ### Werkzeug / Viewer
 
 - **Viewer-Statistiken strukturiert auslesen.** Getrennte Label- und
   Wertelemente erzeugen bei einer Fließtext-Suche fälschlich `0 Bausteine`. →
   Zuerst `.figure-stats strong` lesen und den Text-Regex nur als Fallback nutzen.
+- **`localhost` ist gerätebezogen.** Ein Desktop-Link mit `localhost` verweist
+  auf einem Handy auf das Handy selbst. → Für die mobile Abnahme die WLAN-IP
+  des PCs verwenden, Client und Server auf allen Schnittstellen starten und
+  beide Endpunkte über die LAN-Adresse prüfen.
