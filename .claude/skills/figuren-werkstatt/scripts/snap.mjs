@@ -63,9 +63,14 @@ try {
   await page.waitForTimeout(1200);
 
   // Bausteinzahl gegenchecken (Golem-Fallback / veralteter Server = Symptom).
-  const info = await page.evaluate(() => document.body.innerText.slice(0, 200));
-  const partsMatch = info.match(/(\d+)\s+Bausteine/);
-  const parts = partsMatch ? Number(partsMatch[1]) : 0;
+  const parts = await page.evaluate(() => {
+    // Neuer Live-Viewer: Label und Wert sind getrennte Elemente. Der Regex-
+    // Fallback hält das Skript mit der alten kompakten Vorschau kompatibel.
+    const stat = document.querySelector('.figure-stats strong')?.textContent;
+    if (stat && /^\d+$/.test(stat.trim())) return Number(stat);
+    const match = document.body.innerText.match(/(\d+)\s+Bausteine/i);
+    return match ? Number(match[1]) : 0;
+  });
   console.log(`[snap] ${cardId}: ${parts} Bausteine`);
   if (parts === 0) {
     console.log('[snap] WARNUNG: 0 Bausteine – Server neu gestartet? Figur-Datei vorhanden?');
@@ -102,11 +107,19 @@ try {
         ['angriff 3', async () => { h.yaw(0.35); await sleep(600); h.clip('attack', 400); }]
       ];
 
+      // Der Viewer-Canvas ist breit und flach (z. B. 844×406); ihn komplett in eine
+      // hochformatige Kachel zu quetschen verzerrt die Figur und lässt sie winzig
+      // wirken. Deshalb einen mittigen Ausschnitt im Kachel-Seitenverhältnis
+      // herausschneiden – die Figur steht mittig unter dem Kamera-Fokus.
+      const srcH = cv.height;
+      const srcW = Math.min(cv.width, srcH * (tw / th));
+      const srcX = (cv.width - srcW) / 2;
+
       for (let i = 0; i < shots.length; i++) {
         await shots[i][1]();
         const x = (i % cols) * tw;
         const y = ((i / cols) | 0) * th;
-        ctx.drawImage(cv, 0, 0, cv.width, cv.height, x, y, tw, th);
+        ctx.drawImage(cv, srcX, 0, srcW, srcH, x, y, tw, th);
         ctx.fillStyle = '#8fe6b0';
         ctx.font = 'bold 15px sans-serif';
         ctx.fillText(shots[i][0], x + 8, y + 20);
