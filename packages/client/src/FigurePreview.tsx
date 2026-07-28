@@ -56,7 +56,7 @@ export function FigurePreview({ cardId }: { cardId?: string | null }) {
   useEffect(() => {
     let alive = true;
     setError(null);
-    fetch(toInfoUrl(defaultServerHost()))
+    fetch(toInfoUrl(defaultServerHost()), { cache: 'no-store' })
       .then(async (response) => {
         const body = (await response.json()) as InfoResponse;
         if (!response.ok) throw new Error(body.dataError || `Server antwortet mit ${response.status}.`);
@@ -370,7 +370,9 @@ export function FigurePreview({ cardId }: { cardId?: string | null }) {
                   Neu laden
                 </button>
               </div>
-              <div className="figure-model-id">{selectedId || '–'}</div>
+              <div className="figure-model-id">
+                {selectedId || '–'} · {figureCards.length} Modelle
+              </div>
             </div>
 
             <div className="figure-stats" aria-label="Figurendaten">

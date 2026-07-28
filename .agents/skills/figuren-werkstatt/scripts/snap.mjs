@@ -63,9 +63,14 @@ try {
   await page.waitForTimeout(1200);
 
   // Bausteinzahl gegenchecken (Golem-Fallback / veralteter Server = Symptom).
-  const info = await page.evaluate(() => document.body.innerText.slice(0, 200));
-  const partsMatch = info.match(/(\d+)\s+Bausteine/);
-  const parts = partsMatch ? Number(partsMatch[1]) : 0;
+  const parts = await page.evaluate(() => {
+    // Neuer Live-Viewer: Label und Wert sind getrennte Elemente. Der Regex-
+    // Fallback hält das Skript mit der alten kompakten Vorschau kompatibel.
+    const stat = document.querySelector('.figure-stats strong')?.textContent;
+    if (stat && /^\d+$/.test(stat.trim())) return Number(stat);
+    const match = document.body.innerText.match(/(\d+)\s+Bausteine/i);
+    return match ? Number(match[1]) : 0;
+  });
   console.log(`[snap] ${cardId}: ${parts} Bausteine`);
   if (parts === 0) {
     console.log('[snap] WARNUNG: 0 Bausteine – Server neu gestartet? Figur-Datei vorhanden?');

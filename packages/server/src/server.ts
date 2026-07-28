@@ -231,7 +231,11 @@ export function startServer(port: number): Promise<RunningServer> {
         res.end(JSON.stringify({ dataError }));
         return;
       }
-      res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', ...cors });
+      res.writeHead(200, {
+        'content-type': 'application/json; charset=utf-8',
+        'cache-control': 'no-store',
+        ...cors
+      });
       res.end(
         JSON.stringify({
           name: 'Political Correct Fighters',

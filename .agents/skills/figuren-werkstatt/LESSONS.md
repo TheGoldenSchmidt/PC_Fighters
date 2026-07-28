@@ -111,3 +111,20 @@ zweiten anzulegen.
   geführte Waffen, Schnäbel oder Kiefer verdecken sich im entscheidenden Frame
   selbst. → Angriff und Zielteil seitlich versetzen oder leicht eindrehen, bis
   die Silhouette in der Kontaktphase klar lesbar bleibt.
+- **Werkzeug selbst muss die Kontaktpose tragen.** Hochgerissene Arme oder starke
+  Root-Neigung lesen sich schnell als Jubeln beziehungsweise Verbeugen. → Den
+  nicht angreifenden Arm ruhig halten, das Werkzeug seitlich freistellen und
+  dessen Kopf oder Klinge sichtbar durch den Kontaktbogen führen.
+- **Montagezeitpunkte müssen semantischen Schlüsselbildern folgen.** Globale
+  Prozentwerte treffen bei kurzen oder asymmetrischen Angriffen häufig nicht
+  Windup, Kontakt und Rückkehr. → Snap-Zeitpunkte aus den relevanten Keyframes
+  ableiten.
+- **Kompakte Vögel zuerst über die Ruhe-Silhouette bauen.** Lange sichtbare Läufe
+  und ein schmaler Rumpf wirken trotz Eulengesicht humanoid. → Rumpf breit und
+  tief bauen, Beinansätze im Gefieder verbergen und fast nur Krallen zeigen.
+
+### Werkzeug / Viewer
+
+- **Viewer-Statistiken strukturiert auslesen.** Getrennte Label- und
+  Wertelemente erzeugen bei einer Fließtext-Suche fälschlich `0 Bausteine`. →
+  Zuerst `.figure-stats strong` lesen und den Text-Regex nur als Fallback nutzen.
