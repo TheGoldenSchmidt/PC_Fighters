@@ -73,6 +73,18 @@ zweiten anzulegen.
   Augen) brauchen eine **eigene Kontrastfarbe** und Platzierung an einer
   Silhouetten-Kante, wo sie über den Nachbarn hinausragen.
 
+- **Eine weit ausgestreckte Angriffspfote wirkt schnell wie ein schwebendes
+  Einzelteil.** Wird die gesamte Vorderbein-Gruppe von der Schulter wegverschoben,
+  reißt die anatomische Verbindung im Render ab. → Den Schulteransatz am Rumpf
+  verankert lassen und Reichweite über Ober-/Unterarmrotation mit sichtbar
+  durchgehendem Schulter–Ellbogen–Pfoten-Bogen erzeugen.
+
+- **Sehr dunkle Figuren verschmelzen in Seiten- und Rückansicht.** Zu geringe
+  Albedo-Abstände lassen Rumpf und Beine trotz korrekter Geometrie zu einer Fläche
+  werden. → Dunkle Palettenwerte sichtbar staffeln und Kontrastkanten gezielt an
+  Schulter, Flanke und äußeren Läufen platzieren; Glow ist kein Ersatz für
+  Albedo-Kontrast.
+
 ---
 
 ## Best Practices (aus Erfolgen gelernt)
@@ -91,6 +103,14 @@ zweiten anzulegen.
   Mensch ≈ 1, mittelgroßes Tier ~0.6.
 - **Beine sichtbar lassen:** Rumpf hoch genug über den Beinen, sonst wirkt das
   Tier klobig/bärenhaft statt schlank.
+
+### Mehrfigurige Modelle
+
+- **Begleitfiguren dürfen den Auto-Fit nicht zur gleichrangigen Doppelsilhouette
+  aufweiten.** Zwei ähnlich große Körper werden klein gerendert und verlieren ihre
+  Rollenlesbarkeit. → Den Begleiter deutlich kleiner an der Flanke der Hauptfigur
+  platzieren, mit eigenem Kopf lesbar halten und bei Angriffen geschützt ducken
+  lassen.
 
 ### Schwanz / Anhänge
 
