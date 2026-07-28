@@ -6,13 +6,14 @@ import { MulliganScreen } from './MulliganScreen';
 import { StartScreen } from './StartScreen';
 import { useGame } from './useGame';
 
-// Figuren-Werkstatt: /?viewer=figures öffnet den Katalog, ?figure=<cardId>
-// springt direkt zu einer Figur und bleibt mit snap.mjs rückwärtskompatibel.
+// Figuren-Werkstatt: /?viewer=figures öffnet den Katalog auch im Production-Build,
+// ?figure=<cardId> springt direkt zu einer Figur und bleibt mit snap.mjs
+// rückwärtskompatibel.
 // Stabil pro Seitenaufruf – daher vor allen Hooks; die Reihenfolge bleibt gleich.
-const previewParams = import.meta.env.DEV ? new URLSearchParams(window.location.search) : null;
-const previewCardId = previewParams?.get('figure') ?? null;
+const previewParams = new URLSearchParams(window.location.search);
+const previewCardId = previewParams.get('figure');
 const showFigureViewer = Boolean(
-  import.meta.env.DEV && (previewCardId || previewParams?.get('viewer') === 'figures')
+  previewCardId || previewParams.get('viewer') === 'figures'
 );
 
 export function App() {
