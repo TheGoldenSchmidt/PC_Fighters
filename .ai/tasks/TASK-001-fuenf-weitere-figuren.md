@@ -20,10 +20,10 @@ Kopfregeln:
 
 ## Übergabe
 
-- Vorheriger Operator: – (Neuanlage)
+- Vorheriger Operator: Codex (Task-Anlage und Werkstatt-Vorbereitung)
 - Nächster Operator: Figuren-Designer der Figuren-Werkstatt
 - Handoff-Basis-Commit: 0640212399db785952558e8acfba51c83a62a931
-- Aktueller Übergabe-Commit: ausstehend
+- Aktueller Übergabe-Commit: c622214f45f717778be674a0897757f33fc808e1
 
 ## Kontext
 
@@ -69,6 +69,7 @@ Fünf bislang nicht als Figuren-JSON vorhandene Karten erhalten jeweils eine val
 - Werkstatt-Anweisungen und `LESSONS.md` vollständig gelesen.
 - Zielkarten festgelegt: `alphawolf`, `streunerkatze`, `schwarze_katze`, `katzenmutter`, `luchs`.
 - Kartendaten und Fraktionsfarben (`animals` #4a7c59, `katzen` #d98a2b) für die Designer-Briefs verifiziert.
+- Task-Zustand im Übergabe-Commit `c622214f45f717778be674a0897757f33fc808e1` im gemeinsamen Branch sichtbar gemacht.
 
 ## Entscheidungen
 
@@ -95,8 +96,8 @@ Fünf bislang nicht als Figuren-JSON vorhandene Karten erhalten jeweils eine val
 
 ## Offene Punkte
 
-- Die Task-Datei muss vor dem ersten Operatorwechsel gemäß Repository-Regel in einem gemeinsamen Commit sichtbar sein; Commit-Freigabe steht aus.
+- Keine offenen Governance-Voraussetzungen vor dem ersten Designer-Handoff.
 
 ## Nächster konkreter Schritt
 
-Zielkarten bestimmen, Task-Datei entsprechend aktualisieren und die Nutzerentscheidung zum Task-Handoff-Commit einholen, bevor der Figuren-Designer übernimmt.
+Werkstatt-Umgebung starten und `alphawolf` mit dem dokumentierten Design-Brief an den Figuren-Designer übergeben.
