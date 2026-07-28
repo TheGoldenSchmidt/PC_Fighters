@@ -23,6 +23,15 @@ Erzeugt:
 Alle vorhandenen Figuren-Dateien werden automatisch eingelesen – neue Figuren
 erscheinen nach dem nächsten Build ohne Skript-Änderung im Dropdown.
 
+Die versionierte Ausgabe wird ohne Änderung des Arbeitsbaums geprüft mit:
+
+```bash
+node tools/figuren-viewer/build-viewer.mjs --check
+```
+
+Dieser Check ist Bestandteil von `npm run check`. Ist die Ausgabe veraltet, wird
+sie getrennt mit `npm run generate:viewer` neu erzeugt.
+
 ## Bedienung
 
 - **Figur wählen:** Dropdown oben.

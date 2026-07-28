@@ -1,10 +1,11 @@
 // Baut den eigenständigen Figuren-Viewer aus dem Template + den Repo-Daten.
 //
-//   node tools/figuren-viewer/build-viewer.mjs
+//   node tools/figuren-viewer/build-viewer.mjs          # neu erzeugen
+//   node tools/figuren-viewer/build-viewer.mjs --check  # Aktualität prüfen
 //
-// Ergebnis (nicht versioniert, siehe .gitignore):
-//   tools/figuren-viewer/figuren-viewer.html          – im Browser öffnen
-//   tools/figuren-viewer/figuren-viewer.artifact.html – Body-only (für Artifacts)
+// Ergebnis:
+//   tools/figuren-viewer/figuren-viewer.html          – versioniert
+//   tools/figuren-viewer/figuren-viewer.artifact.html – Body-only, ignoriert
 //
 // three.js wird selbst per esbuild zu einem importfreien IIFE (global PCF_THREE)
 // gebündelt und inline eingebettet – so ist die Ausgabe komplett self-contained
@@ -19,6 +20,7 @@ import { tmpdir } from 'node:os';
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = join(HERE, '..', '..');
 const figDir = join(REPO, 'packages/engine/src/data/figures');
+const checkOnly = process.argv.includes('--check');
 
 // 1) three.js → IIFE bündeln (setzt window.PCF_THREE).
 const tmp = mkdtempSync(join(tmpdir(), 'pcf-three-'));
@@ -49,14 +51,31 @@ const body = template
   .replace('__FIGURES_JSON__', () => JSON.stringify(figures))
   .replace('__DEFAULT_CLIPS_JSON__', () => JSON.stringify(defaultClips));
 
-writeFileSync(join(HERE, 'figuren-viewer.artifact.html'), body);
 const standalone =
   '<!doctype html><html lang="de"><head><meta charset="utf-8">' +
   '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">' +
   '<title>PC Fighters – Figuren-Viewer</title></head><body style="margin:0">' +
   body +
   '</body></html>';
-writeFileSync(join(HERE, 'figuren-viewer.html'), standalone);
 
 console.log('Figuren:', figureIds.join(', '));
-console.log('gebaut :', join(HERE, 'figuren-viewer.html'), `(${(standalone.length / 1024).toFixed(0)} KB)`);
+if (checkOnly) {
+  const viewerPath = join(HERE, 'figuren-viewer.html');
+  let current = null;
+  try {
+    current = readFileSync(viewerPath, 'utf8');
+  } catch {
+    // Die eindeutige Fehlermeldung folgt im gemeinsamen Fehlerpfad.
+  }
+  if (current !== standalone) {
+    console.error('VERALTET:', viewerPath);
+    console.error('Neu erzeugen mit: npm run generate:viewer');
+    process.exitCode = 1;
+  } else {
+    console.log('aktuell:', viewerPath);
+  }
+} else {
+  writeFileSync(join(HERE, 'figuren-viewer.artifact.html'), body);
+  writeFileSync(join(HERE, 'figuren-viewer.html'), standalone);
+  console.log('gebaut :', join(HERE, 'figuren-viewer.html'), `(${(standalone.length / 1024).toFixed(0)} KB)`);
+}
