@@ -31,8 +31,28 @@ zweiten anzulegen.
 
 - **Server-Start-Kommando im Vordergrund kann mit Exit-Code 143/144 „scheitern",
   obwohl der Server läuft** (Signal-Zustellung an die Shell). → Den Start mit
-  `setsid … < /dev/null &` entkoppeln und den Erfolg per `curl :3000` statt am
-  Exit-Code prüfen.
+  `setsid … < /dev/null &` entkoppeln und den Erfolg **nicht** am Exit-Code messen.
+
+- **`curl :3000` beweist nur, dass *irgendein* Server antwortet – nicht deiner.**
+  Hält ein Altprozess den Port, bricht der eigene Start mit `EADDRINUSE` ab (nur im
+  Log sichtbar), und `curl` liefert weiter 200 vom **alten** Prozess mit dem
+  **alten** Datenstand. Symptom: die Montage ist nach einer Überarbeitungsrunde
+  pixelgleich mit der Vorrunde – am Stahlgießer zweimal hintereinander passiert,
+  der Server lieferte 79 Bausteine, während die Datei längst 82 hatte. → Den
+  Neustart am **ausgelieferten Dateninhalt** verifizieren, nicht am HTTP-Status:
+  `curl -s :3000/info` holen und ein Feld prüfen, das sich in dieser Runde geändert
+  hat (Teilezahl, neue Palette-Rolle, neuer Track-Wert). Erst danach `snap.mjs`
+  starten. Zum Beenden `pkill -f "[t]sx packages/server"` – die Klammer verhindert,
+  dass das Muster die eigene Kommandozeile trifft und die Shell sich selbst killt –
+  und mit `pgrep` gegenprüfen, dass wirklich kein Prozess mehr läuft.
+
+- **Die Werkstatt liegt doppelt im Repo** (`.claude/skills/figuren-werkstatt/` und
+  `.agents/skills/figuren-werkstatt/`), und die Kopien driften auseinander: beide
+  enthielten Lektionen und Skript-Korrekturen, die der jeweils anderen fehlten.
+  Symptom: ein Bug wird in der einen Kopie „behoben", obwohl die andere ihn längst
+  besser gelöst hatte (bewiesen an der Bausteinzählung in `snap.mjs`). → Änderungen
+  an `SKILL.md`, `LESSONS.md`, `PARTS.md` und `scripts/` **immer in beide Kopien**
+  schreiben – oder die Doppelung endlich auflösen.
 
 - **Der Vite-Client (Port 5173) kann zwischen zwei Snap-Runden sterben.** Symptom:
   `snap.mjs` bricht mit `net::ERR_CONNECTION_REFUSED` ab. → Vor jeder Aufnahme den
@@ -60,12 +80,21 @@ zweiten anzulegen.
   Wolf 0.62) **und schlanke Proportionen** (sichtbare Beine statt klobigem
   Rumpf), nicht über „alle Teile kleiner".
 
-- **`emissive`-Track auf `root` wäscht die ganze Figur weiß.** Der
-  `AnimationPlayer` setzt bei einem `emissive`-Track alle Meshes des Ziel-
-  Teilbaums auf weißen Glow; auf `root` = komplette Figur cremeweiß, Farbidentität
-  weg – besonders fatal in der Angriffs-Kachel. → **Kein `emissive` auf `root`.**
-  Angriff über Pose lösen (Lunge, Schnapp, Hieb). Falls überhaupt ein Glanz
-  gewünscht: sehr niedriger Wert (<0.1) auf einem einzelnen kleinen Teil.
+- **`emissive` wäscht weiß – nicht nur auf `root`.** Der `AnimationPlayer` setzt
+  bei einem `emissive`-Track `emissive` auf **reines Weiß** (`setRGB(1, 1, 1)`) für
+  alle Meshes des Ziel-Teilbaums; auf `root` = komplette Figur cremeweiß,
+  Farbidentität weg – besonders fatal in der Angriffs-Kachel. → **Kein `emissive`
+  auf `root`.** Angriff über Pose lösen (Lunge, Schnapp, Hieb).
+  **Auch auf kleinen Teilen frisst der weiße Glow die Farbe:** das satt orange
+  Stahlbad (`#ff8c2a`) des Stahlgießers wirkte schon bei Werten von 0.2–0.4 wie ein
+  weißer Handspiegel, die gewollte Glut war überhaupt nicht lesbar – ein
+  Diagnoselauf mit reinem `#00ff00` rendert als blasses Mintgrün. → **Glut und
+  Hitze über Farbe bauen, nicht über `emissive`:** gesättigter, eher dunkler
+  Grundton (`#d1430e` statt `#ff8c2a`), dazu `roughness: 1` und `metalness: 0`,
+  damit das Schlüsselicht die Fläche nicht zusätzlich ausbrennt, und ein dunkles
+  Gegenstück daneben (rußgeschwärzter Pfannenrand). Der `emissive`-Track gehört
+  dann auf ein **winziges Kern-Teil** in der Mitte, nie auf die ganze farbige
+  Fläche.
 
 - **Kleine Kontrast-Teile verschwinden auf ihrem Nachbarn.** Fangzähne in `cream`
   direkt vor `cream`-Wangen sind nicht lesbar. → Detail-Akzente (Zähne, Krallen,
