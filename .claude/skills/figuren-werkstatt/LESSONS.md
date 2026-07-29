@@ -115,6 +115,14 @@ zweiten anzulegen.
   `backRidge`: Box länger als die Rumpf-Rundung = schwebender Strich) und bei
   Figuren mit Gelenkketten die finale Abnahme immer über den Viewer einholen.
 
+- **Dekor-Boxen/-Icos auf einem Ellipsoid-Rumpf können trotz plausibler Zahlen
+  herausragen.** Eine flache `ico`-Rückenlinie (großes `scale.z`) auf dem sich
+  verjüngenden Rumpfende wirkt im Standbild plausibel, ragt aber am Ende über die
+  Ellipsoid-Kontur hinaus und liest sich als schwebender Strich (bewiesen an der
+  Wildkatze). → Bei lang gestreckten Dekor-Teilen auf gekrümmten Rümpfen die
+  Ausdehnung am **schmalsten Punkt der Kontur** (Rumpfende, nicht Rumpfmitte)
+  gegenrechnen, nicht nur die Gesamtlänge gegen die Rumpflänge schätzen.
+
 ---
 
 ## Best Practices (aus Erfolgen gelernt)
@@ -154,6 +162,11 @@ zweiten anzulegen.
 - **Verjüngende Kegelkette** (`base → mid → tip` via `parent`) + mehrere
   Fluff-Icos an der Spitze ergeben einen buschigen Schwanz; ein einzelner Kegel
   mit Kugel wirkt wie eine Fahnenstange.
+- **„Buschig" ist ein Radius-, nicht nur ein Fluff-Icos-Problem.** Ring-/
+  Bänderungs-Deko an einer schlanken Kegelkette reicht allein nicht für
+  „buschig" – die Grundradien der Kette müssen sichtbar über dem Bein-Radius
+  liegen (Richtwert: Schwanzbasis ≥ 1,5× Beinradius), sonst wirkt der Schwanz
+  trotz Musterung drahtig (bewiesen an der Wildkatze).
 
 ### Gliedmaßen als Gelenk-Kette (Pflicht bei beweglichen Gliedmaßen)
 
