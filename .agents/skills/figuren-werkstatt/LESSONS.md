@@ -110,6 +110,23 @@ zweiten anzulegen.
   der Übersichtsmontage **Ausschnitte** rendern (Crop auf Kopf und auf die
   Greifzone), sonst wird an der falschen Stelle optimiert.
 
+- **Regelmäßig gereihte Haarteile lesen als Krone, Borte oder Helm.** Selbst die
+  richtige Farbe hilft nicht, wenn runde Loben oder eine waagerechte Platte die
+  Silhouette bestimmen. → Haar zuerst als **zusammenhängende Masse mit breitem
+  Ansatz** bauen und danach wenige unregelmäßige, klar nach hinten gerichtete
+  Strähnen ergänzen.
+
+- **Ein überdimensionierter Kopf wird durch zusätzliche Höhe zum Ei.** Mehr
+  Schädelhöhe verstärkt nicht automatisch den Charakter, sondern verschmälert
+  die Frontsilhouette. → Zuerst Stirn- und Schläfenbreite sowie die Verjüngung
+  zum Kinn festlegen; Überzeichnung hauptsächlich über Breite und den
+  Gesamtmaßstab erzeugen.
+
+- **Viele gleichmäßige Zähne erzeugen eine Gitterleiste.** Zwei saubere Reihen
+  kleiner Zähne verdrängen die dunkle Mundöffnung und lesen nicht mehr als
+  Gesicht. → Wenige unterschiedlich große Zähne mit sichtbaren dunklen Lücken
+  und klarer Mundhöhle verwenden.
+
 ---
 
 ## Best Practices (aus Erfolgen gelernt)
@@ -168,6 +185,11 @@ sich weniger in der Teilezahl als in diesen Punkten:
   Armkette darauf rechnen: Richtung `d` normieren, `θz = asin(dₓ)`, `θx` aus
   `cos θz · cos θx = d_y`. Kettenlänge ≈ Abstand wählen, sonst greift die Hand
   daneben. „Ungefähr hinstellen und hoffen" kostet mehr Runden als das Rechnen.
+- **Eine korrekte Werkzeugkette beweist noch keinen sichtbaren Griff.** Ärmel,
+  Hand und Werkzeug können technisch verbunden sein und im Render trotzdem wie
+  ein am Arm montiertes Gerät wirken. → In einer Greifzonen-Nahaufnahme
+  mindestens Handfläche und zwei hautfarbene Finger auf einem kontrastierenden
+  Griff nachweisen.
 
 ### Farbe / Material für Glühendes
 
@@ -246,6 +268,11 @@ sich weniger in der Teilezahl als in diesen Punkten:
 - **Unveränderte Ansichten nicht erneut rendern.** Eine reine Animationsänderung
   verändert Körper, Gesicht und Rundumansichten nicht. → Vorhandene Kacheln
   wiederverwenden und nur die betroffenen Clips neu aufnehmen.
+- **Eine leere Montagekachel ist nicht automatisch ein Figurenfehler.** Ein
+  Aufnahme-/Canvasfehler kann eine einzelne Ansicht unterschlagen und so eine
+  rote Kritikerlinse vortäuschen. → Auffällige Einzelansichten mit dem
+  Standard-Snapshot gegenprüfen, bevor dafür eine Überarbeitungsrunde verbraucht
+  wird.
 
 ### Werkzeug / Viewer
 
