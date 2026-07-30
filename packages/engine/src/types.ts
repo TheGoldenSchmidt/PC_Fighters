@@ -26,11 +26,67 @@ export interface DeckbuildingConfig {
   factionRule: FactionRule;
 }
 
+/**
+ * Wann eine Cheerleader-Kraft angeboten wird. Reaktionen sind immer optional:
+ * der Preis ist nicht Energie oder ein Zug, sondern der Bankplatz selbst.
+ */
+export type CheerleaderAusloeser =
+  // Der Gegner hat eine Kreatur ausgespielt (egal in welche Lane).
+  | 'gegnerischeKreatur'
+  // Der Gegner hat eine Kreatur GENAU GEGENÜBER einer eigenen ausgespielt.
+  | 'gegnerischeKreaturGegenueber'
+  // Eine eigene Kreatur würde endgültig sterben (nach Rettung und Nachbarschutz).
+  | 'eigenerTod';
+
+/**
+ * Was eine Cheerleader-Kraft tut. Die Startwerte sind bewusst aus den
+ * gleichnamigen Karten kopiert, damit die Kräfte sofort vertraut wirken – sie
+ * sind aber unabhängig davon und können später frei geändert werden.
+ *
+ * Neue Wirkung = Variante hier + Eintrag in CHEERLEADER_WIRKUNGEN
+ * (cheerleader.ts) + Zweig im wirkungSchema (schema.ts) + Eintrag in
+ * data/config.json.
+ */
+export type CheerleaderWirkung =
+  // Alle gegnerischen Kreaturen bekommen dauerhafte Deckel auf ATK/Leben.
+  | { kind: 'peinigenAlle'; atkDeckel: number; hpDeckel: number }
+  // Alle gegnerischen Kreaturen erhalten bis Rundenende -atk Angriff.
+  | { kind: 'schwaechungRunde'; atk: number }
+  // Der Besitzer zieht Karten und erhält Wissen.
+  | { kind: 'ziehenUndWissen'; karten: number; wissen: number }
+  // Schaden auf die Kreatur, die den Auslöser verursacht hat.
+  | { kind: 'schadenAufAusloeser'; x: number }
+  // Auslöser-Kreatur UND die eigene Kreatur gegenüber nehmen je x Schaden.
+  | { kind: 'gegenseitigerSchaden'; x: number }
+  // Die sterbende Kreatur überlebt mit hp Leben; der Besitzer zieht Karten.
+  | { kind: 'rettenUndZiehen'; hp: number; karten: number }
+  // Der Spieler wählt beim Einlösen zwischen zwei Wirkungen (A oder B).
+  | {
+      kind: 'wahl';
+      optionA: { name: string; wirkung: CheerleaderWirkung };
+      optionB: { name: string; wirkung: CheerleaderWirkung };
+    };
+
+/** Superkraft eines Cheerleaders auf der Bank. */
+export interface CheerleaderKraft {
+  /** Anzeigename der Kraft (nicht der Kartenname). */
+  name: string;
+  /** Regeltext für die Bank-Anzeige. */
+  text: string;
+  ausloeser: CheerleaderAusloeser;
+  wirkung: CheerleaderWirkung;
+}
+
 /** Datengetriebene Regel für die Mannschaftsbank neben der Arena. */
 export interface CheerleaderConfig {
   candidates: string[];
   selectionSize: 3;
   maxInDeck: number;
+  /**
+   * Kraft je Kandidat, Schlüssel ist die cardId. Fehlt ein Eintrag, sitzt der
+   * Cheerleader nur dekorativ auf der Bank – die Auswahl bleibt gültig.
+   */
+  kraefte: Record<string, CheerleaderKraft>;
 }
 
 /**
@@ -490,6 +546,14 @@ export interface Creature {
   /** Schadensübernahme (`nachbar` schadensuebernahme) bereits verbraucht? */
   schutzUsed: boolean;
   /**
+   * Für DIESEN Todesfall wurde bereits ein Cheerleader-Fenster geöffnet.
+   * Verhindert, dass dieselbe sterbende Kreatur die Auflösung endlos anhält,
+   * wenn der Spieler verzichtet. Wird nach einer erfolgreichen Rettung und am
+   * Rundenende zurückgesetzt – ein späterer tödlicher Treffer ist ein neuer
+   * Auslöser und darf wieder gefragt werden.
+   */
+  todesReaktionAngeboten?: boolean;
+  /**
    * Generische SPIELWEITE Auslöse-Zähler (für `maxTriggers` u. ä.). Schlüssel:
    * `${abilityIndex}:${kind}` – nicht nur `kind`, damit zwei gleichartige
    * Fähigkeiten auf derselben Karte getrennt zählen. Wird NIE zurückgesetzt.
@@ -642,7 +706,7 @@ export interface DeathEvent {
   owner: PlayerIndex;
 }
 
-/** Öffentliches Integrationsereignis; die Engine erzeugt es in diesem Auftrag nicht. */
+/** Ein Cheerleader verlässt die Bank – die UI spielt darauf den Opfer-Clip ab. */
 export interface CheerleaderSacrificeEvent {
   kind: 'cheerleaderSacrifice';
   owner: PlayerIndex;
@@ -650,7 +714,30 @@ export interface CheerleaderSacrificeEvent {
   cardId: string;
 }
 
-export type CombatEvent = AttackEvent | DeathEvent | CheerleaderSacrificeEvent;
+/**
+ * Die Superkraft des geopferten Cheerleaders wirkt. Kommt IMMER direkt nach
+ * dem zugehörigen `cheerleaderSacrifice`; die UI blendet darauf das Kraft-Banner
+ * ein, bevor Schaden, Rettung und Tode animiert werden.
+ */
+export interface CheerleaderPowerEvent {
+  kind: 'cheerleaderPower';
+  owner: PlayerIndex;
+  cardId: string;
+  /** Anzeigename der Kraft (nicht der Kartenname). */
+  kraft: string;
+  /** Art der Wirkung – bestimmt Farbe/Form der Animation. */
+  wirkung: CheerleaderWirkung['kind'];
+  /** Lane des Auslösers, auf der die Kraft optisch verankert wird. */
+  lane: number;
+  /** Gewählte Option, falls die Kraft eine Wahl gestellt hat. */
+  wahl?: 'A' | 'B';
+}
+
+export type CombatEvent =
+  | AttackEvent
+  | DeathEvent
+  | CheerleaderSacrificeEvent
+  | CheerleaderPowerEvent;
 
 /**
  * Zauber-Ereignis einer Aktionskarte – die UI spielt es als kurzen Effekt auf
@@ -698,6 +785,52 @@ export interface LogEntry {
   event?: LogEvent;
 }
 
+/**
+ * Ein noch offener Schritt der pausierbaren Auflösung. Bewusst reine Daten:
+ * eine Closure würde weder `structuredClone` in applyAction noch die
+ * JSON-Persistenz des Servers überleben – und genau das muss ein
+ * Reaktionsfenster können (Reconnect, Serverneustart).
+ *
+ * Die Liste wird von vorn abgearbeitet; ein Schritt darf neue Schritte VORNE
+ * einfügen (verschachtelte Auflösung) oder hinten anhängen.
+ */
+export type AufloesungsSchritt =
+  /** Kampf in dieser Lane abhandeln (Angriffe, Basisschaden). */
+  | { art: 'kampfLane'; lane: number }
+  /** Nach allen Lanes: Gift-Zermürbung und Häutung. */
+  | { art: 'kampfAbschluss' }
+  /** Flugphase starten oder direkt zur Rundenabrechnung. */
+  | { art: 'nachKampf' }
+  /** Rundenende-Effekte und Zurücksetzen der temporären Werte. */
+  | { art: 'rundenAbschluss' }
+  /** Zermürbungsschaden, Rundenlimit, nächste Runde starten. */
+  | { art: 'zermuerbung' }
+  /** Tode auflösen, bis das Feld stabil ist (kann ein Fenster öffnen). */
+  | { art: 'todeStabilisieren' };
+
+/**
+ * Ein offenes Reaktionsfenster. Solange es steht, sind ALLE normalen Aktionen
+ * gesperrt und nur `cheerleaderReaction` von `spieler` ist erlaubt. Es gibt
+ * bewusst keinen Timeout: der Zug wartet, bis der Spieler entscheidet.
+ */
+export interface OffeneReaktion {
+  /** Monoton steigend über die Partie – verhindert doppelt gesendete Antworten. */
+  id: number;
+  /** Wer reagieren darf. Während des Fensters ist das auch `state.active`. */
+  spieler: PlayerIndex;
+  ausloeser: CheerleaderAusloeser;
+  /** Belegte Bankplätze, deren Kraft zu diesem Auslöser passt. */
+  slots: (0 | 1 | 2)[];
+  /** Lane des Auslösers (neue bzw. sterbende Kreatur). */
+  lane: number;
+  /** uid der Auslöser-Kreatur – stabil auch über Lane-Wechsel hinweg. */
+  ausloeserUid: number;
+  /** Besitzer der Auslöser-Kreatur. */
+  ausloeserOwner: PlayerIndex;
+  /** Auf welchen Spieler `active` nach dem Fenster zurückfällt. */
+  fortsetzenMit: PlayerIndex;
+}
+
 export interface GameState {
   config: GameConfig;
   /** Fraktionsbaum (parent-Lookup), damit scope=same_top ohne GameData auflösbar ist. */
@@ -720,6 +853,16 @@ export interface GameState {
    */
   rngState: number;
   /**
+   * Noch abzuarbeitende Auflösungsschritte. Leer, solange ein Spieler normal am
+   * Zug ist; gefüllt, sobald Kampf oder Rundenende laufen und ein
+   * Reaktionsfenster sie unterbrechen könnte.
+   */
+  aufloesung: AufloesungsSchritt[];
+  /** Offenes Cheerleader-Reaktionsfenster – blockiert jede andere Aktion. */
+  reaktion: OffeneReaktion | null;
+  /** Zähler für `OffeneReaktion.id`. */
+  naechsteReaktionsId: number;
+  /**
    * Log-Schalter für Massensimulationen (Backtest): 'aus' unterdrückt jeden
    * `log()`-Aufruf (state.log bleibt leer). Ohne Angabe (undefined) wird wie
    * bisher immer geloggt – Server/Client sehen daher keinen Unterschied.
@@ -735,7 +878,12 @@ export type PlayerAction =
   | { type: 'playAction'; handIndex: number; targetLane?: number; toLane?: number }
   | { type: 'pass' }
   | { type: 'flyMove'; fromLane: number; toLane: number }
-  | { type: 'flyDone' };
+  | { type: 'flyDone' }
+  /**
+   * Antwort auf ein offenes Reaktionsfenster. `slot: null` = verzichten.
+   * `choice` nur, wenn die Kraft des gewählten Slots eine Wahl stellt.
+   */
+  | { type: 'cheerleaderReaction'; reactionId: number; slot: 0 | 1 | 2 | null; choice?: 'A' | 'B' };
 
 // ---- Client-Sicht (gefiltert, wird vom Server an die Clients geschickt) ----
 
@@ -776,6 +924,32 @@ export interface PlayerPublicView {
   basisImmun: boolean;
 }
 
+/** Ein einlösbarer Bankplatz im offenen Reaktionsfenster. */
+export interface ReaktionsAngebot {
+  slot: 0 | 1 | 2;
+  cardId: string;
+  /** Anzeigename der Kraft. */
+  kraft: string;
+  text: string;
+  /** Gesetzt, wenn diese Kraft beim Einlösen eine Wahl verlangt. */
+  wahl?: { a: string; b: string };
+}
+
+/**
+ * Öffentlicher Teil eines Reaktionsfensters. Der Gegner bekommt dieselbe
+ * Struktur mit leeren `angebote` – er sieht also, DASS gewartet wird, aber
+ * nicht, welche Optionen der andere hat.
+ */
+export interface ReaktionsView {
+  id: number;
+  /** Wer entscheiden muss. Ist das nicht `you`, zeigt die UI einen Wartezustand. */
+  spieler: PlayerIndex;
+  ausloeser: CheerleaderAusloeser;
+  lane: number;
+  /** Nur für `spieler` gefüllt. */
+  angebote: ReaktionsAngebot[];
+}
+
 export interface ClientView {
   you: PlayerIndex;
   round: number;
@@ -791,4 +965,9 @@ export interface ClientView {
   hand: CardDef[];
   board: (CreatureView | null)[][];
   log: LogEntry[];
+  /**
+   * Offenes Cheerleader-Reaktionsfenster. Solange gesetzt, sind alle normalen
+   * Aktionen gesperrt – die UI darf nur die Reaktion anbieten (bzw. warten).
+   */
+  reaktion?: ReaktionsView;
 }

@@ -23,6 +23,13 @@ export interface BotGewichte {
   kampf: number;
   /** Strafe je Punkt ungenutzter Energie (Anreiz, Energie auszugeben). */
   energieVerfall: number;
+  /**
+   * Wert eines noch besetzten Bankplatzes (Differenz Ich - Gegner). Ohne
+   * dieses Gewicht wäre ein Cheerleader-Opfer für den Bot gratis: der Bankplatz
+   * taucht sonst in keiner anderen Kennzahl auf, und er würde jedes Angebot
+   * sofort einlösen statt es für den passenden Moment aufzuheben.
+   */
+  bank: number;
 }
 
 export interface BotProfil {
@@ -37,22 +44,22 @@ export interface BotProfil {
 export const BOT_PROFILE: Record<string, BotProfil> = {
   ausgewogen: {
     name: 'ausgewogen',
-    gewichte: { basis: 3, brett: 1, hand: 0.5, wissen: 0.2, kampf: 1, energieVerfall: 0.3 },
+    gewichte: { basis: 3, brett: 1, hand: 0.5, wissen: 0.2, kampf: 1, energieVerfall: 0.3, bank: 1.5 },
     epsilonBand: 0.25
   },
   aggro: {
     name: 'aggro',
-    gewichte: { basis: 5, brett: 0.6, hand: 0.2, wissen: 0.1, kampf: 1.5, energieVerfall: 0.2 },
+    gewichte: { basis: 5, brett: 0.6, hand: 0.2, wissen: 0.1, kampf: 1.5, energieVerfall: 0.2, bank: 1 },
     epsilonBand: 0.25
   },
   kontrolle: {
     name: 'kontrolle',
-    gewichte: { basis: 2, brett: 1.4, hand: 0.8, wissen: 0.3, kampf: 0.8, energieVerfall: 0.4 },
+    gewichte: { basis: 2, brett: 1.4, hand: 0.8, wissen: 0.3, kampf: 0.8, energieVerfall: 0.4, bank: 2 },
     epsilonBand: 0.25
   },
   zufall: {
     name: 'zufall',
-    gewichte: { basis: 0, brett: 0, hand: 0, wissen: 0, kampf: 0, energieVerfall: 0 },
+    gewichte: { basis: 0, brett: 0, hand: 0, wissen: 0, kampf: 0, energieVerfall: 0, bank: 0 },
     zufall: true,
     epsilonBand: 0
   }
@@ -155,11 +162,15 @@ export function bewerteZustand(state: GameState, ich: PlayerIndex, profil: BotPr
     if (state.board[gegner][lane]) brettGegner += kreaturWert(state, gegner, lane);
   }
 
+  const bankIch = p.cheerleaders.filter((c) => c != null).length;
+  const bankGegner = g.cheerleaders.filter((c) => c != null).length;
+
   return (
     g_.basis * (p.base - g.base) +
     g_.brett * (brettIch - brettGegner) +
     g_.hand * (p.hand.length - g.hand.length) +
     g_.wissen * (p.knowledge - g.knowledge) +
+    g_.bank * (bankIch - bankGegner) +
     g_.kampf * kampfprognose(state, ich) -
     g_.energieVerfall * p.energy
   );

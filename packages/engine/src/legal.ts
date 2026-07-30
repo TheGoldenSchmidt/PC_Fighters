@@ -5,6 +5,7 @@
 // verwirft dadurch die meisten seiner Klone. legaleAktionen() generiert
 // stattdessen nur Züge, die applyAction garantiert akzeptiert.
 
+import { kraftVonSlot } from './cheerleader.js';
 import { hasKeyword } from './keywords.js';
 import type { ActionCard, GameData, GameState, PlayerAction, PlayerIndex } from './types.js';
 
@@ -98,6 +99,26 @@ function legaleFlugAktionen(state: GameState, player: PlayerIndex): PlayerAction
  * jeder Aufrufer (Bot, Backtest) diese Invariante ohnehin selbst hält.
  */
 export function legaleAktionen(state: GameState, player: PlayerIndex, data: GameData): PlayerAction[] {
+  // Ein offenes Reaktionsfenster sperrt alles andere: hier gibt es nur
+  // "verzichten" und die passenden Opfer (mit Wahl, wo die Kraft eine stellt).
+  if (state.reaktion) {
+    if (state.reaktion.spieler !== player) return [];
+    const reactionId = state.reaktion.id;
+    const actions: PlayerAction[] = [{ type: 'cheerleaderReaction', reactionId, slot: null }];
+    for (const slot of state.reaktion.slots) {
+      const eintrag = kraftVonSlot(state, player, slot);
+      if (!eintrag) continue;
+      if (eintrag.kraft.wirkung.kind === 'wahl') {
+        actions.push(
+          { type: 'cheerleaderReaction', reactionId, slot, choice: 'A' },
+          { type: 'cheerleaderReaction', reactionId, slot, choice: 'B' }
+        );
+      } else {
+        actions.push({ type: 'cheerleaderReaction', reactionId, slot });
+      }
+    }
+    return actions;
+  }
   if (state.phase === 'mulligan') return [{ type: 'mulligan', handIndices: [] }];
   return state.phase === 'fly'
     ? legaleFlugAktionen(state, player)
