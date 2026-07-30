@@ -1,5 +1,8 @@
 # Arena_Cheerleader_Erweiterung
 
+> Fortschritt und aktuelle Messwerte stehen in [STATUS.md](STATUS.md).
+> Dieses Dokument beschreibt das *Wie*, nicht den Stand.
+
 ## Ziel
 
 Die bestehende Cheerleader-Auswahl und die Arena-Teamzonen werden um die

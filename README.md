@@ -5,6 +5,8 @@ Gespielt wird auf zwei Geräten (z. B. zwei Handys) im selben WLAN – eines ers
 
 Diese Anleitung ist bewusst einfach gehalten. Du musst **nicht programmieren können**, um das Spiel zu starten oder eigene Karten, Fraktionen und Schauplätze hinzuzufügen.
 
+> **Woran gerade gearbeitet wird:** [docs/STATUS.md](docs/STATUS.md) – der aktuelle Stand (Now / Next / Later), letzte Messwerte und offene Entscheidungen.
+
 ---
 
 ## 1. Spiel starten (lokal im WLAN)
@@ -75,6 +77,8 @@ npm run backtest -- --spiele 50
 ```
 
 `--spiele 50` bedeutet 50 Partien **je Sitzordnung und Matchup**, also 100 je Matchup. Jeder Lauf erzeugt unter `backtest-results/<Zeitstempel>/` automatisch `report.md`, `summary.json` und `matches.jsonl`. Ein eigener Ausgabeordner ist mit `--out backtest-results/mein-lauf` möglich; sowohl `--spiele 50` als auch `--spiele=50` werden akzeptiert.
+
+Das Ergebnis des jeweils letzten vollständigen Laufs steht in [docs/STATUS.md](docs/STATUS.md).
 
 ---
 
