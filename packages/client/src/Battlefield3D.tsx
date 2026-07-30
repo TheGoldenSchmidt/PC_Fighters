@@ -30,6 +30,12 @@ export interface BattlefieldFx {
   projectiles: { key: string; lane: number; attacker: PlayerIndex; toBase: boolean; emoji: string }[];
   dying: { lane: number; owner: PlayerIndex }[];
   spells: { key: string; lane: number; effect: SpellEffectKind; faction: string }[];
+  sacrifices: {
+    key: string;
+    owner: PlayerIndex;
+    slot: 0 | 1 | 2;
+    cardId: string;
+  }[];
 }
 
 interface Props {
@@ -70,6 +76,28 @@ interface FigureRec {
   approach: THREE.Vector3;
   /** Tatsächliche Modellbreite nach Auto-Fit, für breite Tiere/Dinos. */
   width: number;
+}
+
+interface TeamFigureRec {
+  fig: Figure;
+  side: PlayerIndex;
+  slot: 0 | 1 | 2;
+  cardId: string;
+  width: number;
+  sacrificing: boolean;
+  sacrificeStart: number;
+  from: THREE.Vector3;
+  to: THREE.Vector3;
+}
+
+interface TeamZoneRec {
+  group: THREE.Group;
+  bench: THREE.Mesh;
+  markers: THREE.Mesh[];
+  base: THREE.Mesh;
+  core: THREE.Mesh;
+  shield: THREE.Mesh;
+  flashStart: number;
 }
 
 // Angriffs-Zulauf: die Figur tritt vor dem Schlag ein Stück auf den Gegner zu
@@ -136,6 +164,8 @@ interface World {
   /** Das unveränderte DOM-Lane-Raster für Slot-Anker und Bedienung. */
   layoutRoot: HTMLElement;
   figures: Map<number, FigureRec>;
+  teamFigures: Map<string, TeamFigureRec>;
+  teamZones: [TeamZoneRec, TeamZoneRec];
   orbs: Orb[];
   spellFx: SpellFx[];
   ground: Ground;
@@ -152,9 +182,78 @@ interface World {
   firstSync: boolean;
   seenProjectiles: Set<string>;
   seenSpells: Set<string>;
+  seenSacrifices: Set<string>;
 }
 
 const SPELL_MS = 900;
+const SACRIFICE_MS = 1250;
+const REDUCED_SACRIFICE_MS = 360;
+
+function setFigureOpacity(root: THREE.Object3D, opacity: number): void {
+  root.traverse((object) => {
+    if (!(object instanceof THREE.Mesh)) return;
+    const materials = Array.isArray(object.material) ? object.material : [object.material];
+    for (const material of materials) {
+      const original = material.userData.cheerleaderOpacity;
+      if (typeof original !== 'number') {
+        material.userData.cheerleaderOpacity = material.opacity;
+      }
+      material.transparent = true;
+      material.opacity = (material.userData.cheerleaderOpacity as number) * opacity;
+    }
+  });
+}
+
+function createTeamZone(): TeamZoneRec {
+  const group = new THREE.Group();
+  const steel = new THREE.MeshStandardMaterial({ color: 0x252a33, roughness: 0.7, metalness: 0.35 });
+  const wood = new THREE.MeshStandardMaterial({ color: 0x6b4634, roughness: 0.92, metalness: 0.02 });
+  const gold = new THREE.MeshBasicMaterial({ color: 0xf5b74a, transparent: true, opacity: 0.72 });
+  const light = new THREE.MeshBasicMaterial({
+    color: 0xeaf4ff,
+    transparent: true,
+    opacity: 0.8,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false
+  });
+  const bench = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.28, 0.62), wood);
+  bench.position.y = 0.28;
+  bench.castShadow = true;
+  group.add(bench);
+  const back = new THREE.Mesh(new THREE.BoxGeometry(3.3, 0.85, 0.18), steel);
+  back.position.set(0, 0.76, -0.26);
+  back.castShadow = true;
+  group.add(back);
+  const markers = [-1, 0, 1].map((x) => {
+    const marker = new THREE.Mesh(new THREE.RingGeometry(0.28, 0.38, 18), gold.clone());
+    marker.rotation.x = -Math.PI / 2;
+    marker.position.set(x, 0.015, 0.2);
+    group.add(marker);
+    return marker;
+  });
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(0.92, 1.1, 0.42, 8), steel.clone());
+  base.position.set(0, 0.2, 2.4);
+  base.castShadow = true;
+  base.receiveShadow = true;
+  group.add(base);
+  const core = new THREE.Mesh(new THREE.CylinderGeometry(0.52, 0.62, 0.47, 8), light);
+  core.position.copy(base.position);
+  group.add(core);
+  const shield = new THREE.Mesh(
+    new THREE.SphereGeometry(1.2, 16, 10, 0, Math.PI * 2, 0, Math.PI / 2),
+    new THREE.MeshBasicMaterial({
+      color: 0xeaf4ff,
+      transparent: true,
+      opacity: 0,
+      wireframe: true,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false
+    })
+  );
+  shield.position.set(0, 0.18, 2.4);
+  group.add(shield);
+  return { group, bench, markers, base, core, shield, flashStart: 0 };
+}
 
 /** three.Color aus einem Hex-String, mit Fallback bei ungültiger Angabe. */
 function safeColor(hex: string | undefined, fallback: number): THREE.Color {
@@ -417,6 +516,12 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
       lanePaths.push(strip);
     }
 
+    const teamZones: [TeamZoneRec, TeamZoneRec] = [createTeamZone(), createTeamZone()];
+    teamZones.forEach((zone) => {
+      zone.group.visible = false;
+      scene.add(zone.group);
+    });
+
     const world: World = {
       renderer,
       scene,
@@ -424,6 +529,8 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
       container,
       layoutRoot,
       figures: new Map(),
+      teamFigures: new Map(),
+      teamZones,
       orbs: [],
       spellFx: [],
       ground: { floor, grid, glow },
@@ -437,7 +544,8 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
       raf: 0,
       firstSync: true,
       seenProjectiles: new Set(),
-      seenSpells: new Set()
+      seenSpells: new Set(),
+      seenSacrifices: new Set()
     };
     worldRef.current = world;
 
@@ -514,6 +622,94 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
             ) / (world.lanes - 1)
           : Math.max(rightX - leftX, 2.0)
         : 2.0;
+
+      if (haveField) {
+        const nearZ = Math.max(a0!.pos.z, aN!.pos.z);
+        const farZ = Math.min(f0!.pos.z, fN!.pos.z);
+        const responsiveZoneScale = Math.max(
+          0.58,
+          Math.min(1, world.renderer.domElement.clientWidth / 700)
+        );
+        const zoneScale =
+          Math.max(0.7, Math.min(1, a0!.scale * 1.42)) * responsiveZoneScale;
+        const farSide: PlayerIndex = world.me === 0 ? 1 : 0;
+        const ownZone = world.teamZones[world.me];
+        const opponentZone = world.teamZones[farSide];
+        ownZone.group.position.set(rightX - laneStep * 0.1, 0, nearZ - laneStep * 0.42);
+        opponentZone.group.position.set(leftX + laneStep * 0.1, 0, farZ + laneStep * 0.25);
+        ownZone.group.scale.setScalar(zoneScale);
+        opponentZone.group.scale.setScalar(zoneScale * 0.9);
+        ownZone.group.visible = true;
+        opponentZone.group.visible = true;
+        ownZone.group.updateMatrixWorld(true);
+        opponentZone.group.updateMatrixWorld(true);
+
+        const positionBase = (zone: TeamZoneRec, target: THREE.Vector3) => {
+          const local = zone.group.worldToLocal(target.clone());
+          zone.base.position.copy(local);
+          zone.core.position.copy(local);
+          zone.shield.position.copy(local);
+        };
+        positionBase(
+          ownZone,
+          new THREE.Vector3(leftX + laneStep * 0.1, 0.2, nearZ - laneStep * 0.34)
+        );
+        positionBase(
+          opponentZone,
+          new THREE.Vector3(rightX - laneStep * 0.1, 0.2, farZ + laneStep * 0.22)
+        );
+
+        for (const zone of world.teamZones) {
+          const flash =
+            zone.flashStart && now >= zone.flashStart
+              ? Math.max(0, 1 - (now - zone.flashStart) / 520)
+              : 0;
+          (zone.shield.material as THREE.MeshBasicMaterial).opacity = flash * 0.82;
+          zone.shield.scale.setScalar(1 + (1 - flash) * 0.35);
+          (zone.core.material as THREE.MeshBasicMaterial).opacity = 0.58 + flash * 0.42;
+        }
+
+        for (const rec of world.teamFigures.values()) {
+          const own = rec.side === world.me;
+          const xBase = own ? rightX - laneStep * 0.1 : leftX + laneStep * 0.1;
+          const zBase = own ? nearZ - laneStep * 0.42 : farZ + laneStep * 0.25;
+          const seatSpacing = laneStep * (own ? 0.34 : 0.31);
+          const rest = new THREE.Vector3(
+            xBase + (rec.slot - 1) * seatSpacing,
+            rec.slot === 1 ? 0.18 : 0.3,
+            zBase
+          );
+          const figureScale = Math.min(
+            zoneScale * 0.72,
+            (laneStep * 0.62) / Math.max(rec.width, 0.2)
+          );
+          if (!rec.sacrificing) {
+            rec.fig.root.position.copy(rest);
+            rec.fig.root.scale.setScalar(figureScale);
+            rec.fig.root.visible = true;
+          } else {
+            const progress = Math.min(1, (now - rec.sacrificeStart) / SACRIFICE_MS);
+            const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+            if (reducedMotion) {
+              const fade = Math.min(1, (now - rec.sacrificeStart) / REDUCED_SACRIFICE_MS);
+              rec.fig.root.position.copy(rest);
+              rec.fig.root.scale.setScalar(figureScale);
+              setFigureOpacity(rec.fig.root, 1 - fade);
+              rec.fig.root.visible = fade < 1;
+            } else {
+              rec.fig.root.position.lerpVectors(rec.from, rec.to, progress);
+              rec.fig.root.position.y += Math.sin(progress * Math.PI) * laneStep * 0.85;
+              rec.fig.root.scale.setScalar(figureScale);
+              if (progress >= 1) rec.fig.root.visible = false;
+            }
+          }
+          rec.fig.update(now);
+        }
+      } else {
+        world.teamZones.forEach((zone) => {
+          zone.group.visible = false;
+        });
+      }
 
       // Lane-Wege: getönter Streifen vom eigenen zum gegnerischen Slot je Lane
       for (let i = 0; i < world.lanePaths.length; i++) {
@@ -614,6 +810,11 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
         scene.remove(rec.fig.root);
         rec.fig.dispose();
       }
+      for (const rec of world.teamFigures.values()) {
+        scene.remove(rec.fig.root);
+        rec.fig.dispose();
+      }
+      for (const zone of world.teamZones) disposeGroup(scene, zone.group);
       for (const orb of world.orbs) {
         scene.remove(orb.mesh);
         (orb.mesh.material as THREE.Material).dispose();
@@ -669,13 +870,21 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
       material.color.copy(accent);
       material.opacity = style.pathOpacity;
     }
+    world.teamZones.forEach((zone, side) => {
+      const faction = view.players[side as PlayerIndex].faction;
+      const team = new THREE.Color(faction === 'animals' ? 0x10b981 : 0x3b82f6);
+      (zone.core.material as THREE.MeshBasicMaterial).color.copy(team.lerp(accent, 0.38));
+      (zone.shield.material as THREE.MeshBasicMaterial).color.copy(
+        new THREE.Color(0xeaf4ff).lerp(accent, 0.24)
+      );
+    });
     // Nebelfarbe dunkel aus der Lane-Farbe ableiten → weicher Horizont
     if (world.scene.fog instanceof THREE.Fog) {
       world.scene.fog.color.copy(lane.clone().multiplyScalar(0.4));
       world.scene.fog.near = style.fogNear;
       world.scene.fog.far = style.fogFar;
     }
-  }, [topic]);
+  }, [topic, view.players]);
 
   // ---- Prozedurale 3D-Umgebung (Deko) je nach Schauplatz auf-/abbauen ----
   useEffect(() => {
@@ -748,6 +957,56 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
     }
     world.firstSync = false;
   }, [view, me]);
+
+  // ---- Öffentliche Teamroster: drei stabile Bankplätze je Seite ----
+  useEffect(() => {
+    const world = worldRef.current;
+    if (!world) return;
+    const present = new Set<string>();
+    for (const side of [0, 1] as PlayerIndex[]) {
+      view.players[side].cheerleaders.forEach((cardId, rawSlot) => {
+        if (!cardId) return;
+        const slot = rawSlot as 0 | 1 | 2;
+        const key = `${side}-${slot}`;
+        present.add(key);
+        const current = world.teamFigures.get(key);
+        if (current?.cardId === cardId) return;
+        if (current) {
+          world.scene.remove(current.fig.root);
+          current.fig.dispose();
+        }
+        const cat = catalogRef.current;
+        const fig = createFigure(
+          cardId,
+          side === me ? -1 : 1,
+          10000 + side * 10 + slot,
+          cat?.cards[cardId],
+          cat?.defaultClips,
+          { realShadows: world.realShadows }
+        );
+        const width = new THREE.Box3().setFromObject(fig.root).getSize(new THREE.Vector3()).x;
+        fig.playCheer();
+        world.scene.add(fig.root);
+        world.teamFigures.set(key, {
+          fig,
+          side,
+          slot,
+          cardId,
+          width,
+          sacrificing: false,
+          sacrificeStart: 0,
+          from: new THREE.Vector3(),
+          to: new THREE.Vector3()
+        });
+      });
+    }
+    for (const [key, rec] of world.teamFigures) {
+      if (present.has(key)) continue;
+      world.scene.remove(rec.fig.root);
+      rec.fig.dispose();
+      world.teamFigures.delete(key);
+    }
+  }, [view.players, me]);
 
   // ---- Kampf-Effekte: Angriffs-Ausfall, 3D-Geschosse, Sterbeanimationen ----
   useEffect(() => {
@@ -882,6 +1141,24 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
       });
     }
     if (world.seenSpells.size > 200) world.seenSpells.clear();
+
+    for (const sacrifice of fx.sacrifices) {
+      if (world.seenSacrifices.has(sacrifice.key)) continue;
+      world.seenSacrifices.add(sacrifice.key);
+      const rec = world.teamFigures.get(`${sacrifice.owner}-${sacrifice.slot}`);
+      if (!rec || rec.cardId !== sacrifice.cardId) continue;
+      rec.sacrificing = true;
+      rec.sacrificeStart = now;
+      rec.from.copy(rec.fig.root.position);
+      world.teamZones[sacrifice.owner].group.updateMatrixWorld(true);
+      world.teamZones[sacrifice.owner].core.getWorldPosition(rec.to);
+      rec.to.y = 0.12;
+      const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+      if (!reducedMotion) rec.fig.playSacrifice();
+      world.teamZones[sacrifice.owner].flashStart =
+        now + (reducedMotion ? REDUCED_SACRIFICE_MS * 0.45 : SACRIFICE_MS * 0.58);
+    }
+    if (world.seenSacrifices.size > 100) world.seenSacrifices.clear();
   }, [fx, me]);
 
   return (

@@ -37,6 +37,8 @@ export interface Figure {
   playAttack(): void;
   playHit(): void;
   playDeath(): void;
+  playCheer(): void;
+  playSacrifice(): void;
   /** Vorschau-/Wiederverwendungszustand: laufende Klips beenden und Idle herstellen. */
   reset(): void;
   setExhausted(on: boolean): void;
@@ -554,6 +556,12 @@ function createDataFigure(
       deathT0 = performance.now();
       player.play('death');
     },
+    playCheer() {
+      player.play('cheer');
+    },
+    playSacrifice() {
+      player.play('sacrifice');
+    },
     setExhausted(on) {
       if (on === exhausted) return;
       exhausted = on;
@@ -693,6 +701,16 @@ export function createFigure(
       hitT0 = performance.now();
     },
     playDeath() {
+      if (deathT0 >= 0) return;
+      deathT0 = performance.now();
+      for (const e of mats) {
+        e.m.transparent = true;
+      }
+    },
+    playCheer() {
+      // Der prozedurale Fallback hat bereits einen lebendigen Idle-Loop.
+    },
+    playSacrifice() {
       if (deathT0 >= 0) return;
       deathT0 = performance.now();
       for (const e of mats) {

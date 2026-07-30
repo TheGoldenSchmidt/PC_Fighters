@@ -25,6 +25,8 @@ import {
 import type {
   AttackEvent,
   CardDef,
+  CheerleaderSacrificeEvent,
+  CheerleaderSlots,
   ClientView,
   CreatureView,
   DeathEvent,
@@ -89,6 +91,12 @@ interface FxState {
   baseImpacts: FxBaseImpact[];
   dying: { lane: number; owner: PlayerIndex }[];
   spells: FxSpell[];
+  sacrifices: {
+    key: string;
+    owner: PlayerIndex;
+    slot: 0 | 1 | 2;
+    cardId: string;
+  }[];
   activeLane: number | null;
 }
 
@@ -98,6 +106,7 @@ const EMPTY_FX: FxState = {
   baseImpacts: [],
   dying: [],
   spells: [],
+  sacrifices: [],
   activeLane: null
 };
 
@@ -122,6 +131,43 @@ const SPELL_MS = 750;
 const LANE_PAUSE_MS = 200;
 const BANNER_MS = 1500;
 const LONG_PRESS_MS = 450;
+
+const CHEERLEADER_NAMES: Record<string, string> = {
+  pc_principal: 'PC Principal',
+  pc_babies: 'PC Babies',
+  alter_wissenschaftler: 'Alter Wissenschaftler',
+  junger_neffe: 'Junger Neffe',
+  randy_marsh: 'Randy Marsh'
+};
+
+function CheerleaderStrip({
+  slots,
+  sacrifice,
+  position
+}: {
+  side: PlayerIndex;
+  slots: CheerleaderSlots;
+  sacrifice?: { slot: 0 | 1 | 2; cardId: string };
+  position: 'own' | 'opponent';
+}) {
+  return (
+    <div className={`team-strip team-strip-${position}`} aria-label={`${position === 'own' ? 'Eigene' : 'Gegnerische'} Cheerleader`}>
+      <span className={`team-base ${sacrifice ? 'shield-flash' : ''}`} aria-hidden />
+      <div className="team-bench">
+        {slots.map((cardId, slot) => (
+          <div
+            key={slot}
+            className={`team-seat ${cardId ? 'occupied' : 'empty'} ${sacrifice?.slot === slot ? 'sacrificing' : ''}`}
+            title={cardId ? CHEERLEADER_NAMES[cardId] ?? cardId : `Bankplatz ${slot + 1} ist leer`}
+          >
+            <span>{slot + 1}</span>
+            {cardId && <strong>{(CHEERLEADER_NAMES[cardId] ?? cardId).charAt(0)}</strong>}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 /** Langes Drücken (Touch oder Maus) erkennen, ohne den normalen Tap zu stören. */
 function useLongPress(onLongPress: (() => void) | undefined, ms = LONG_PRESS_MS) {
@@ -167,7 +213,9 @@ export function GameScreen({
 }: Props) {
   const [selection, setSelection] = useState<Selection>(null);
   // 3D-Figuren nur, wenn der Browser WebGL kann – sonst 2D-Fallback (Artwork)
-  const [use3d, setUse3d] = useState(webglSupported);
+  const [use3d, setUse3d] = useState(
+    () => !new URLSearchParams(window.location.search).has('no3d') && webglSupported(),
+  );
   const [shownView, setShownViewState] = useState<ClientView>(view);
   const [isReplaying, setIsReplaying] = useState(false);
   const [fx, setFx] = useState<FxState>(EMPTY_FX);
@@ -373,7 +421,7 @@ export function GameScreen({
           ...f,
           dying: f.dying.filter((x) => !deaths.some((d) => d.lane === x.lane && d.owner === x.owner))
         }));
-      } else {
+      } else if (ev.kind === 'spell') {
         // Zauber-Effekte einer Aktionskarte: alle direkt aufeinanderfolgenden
         // Spell-Events gemeinsam zeigen (z. B. Beschwörung mehrerer Tokens).
         const spellEvents: SpellEvent[] = [ev];
@@ -393,6 +441,24 @@ export function GameScreen({
         await sleep(SPELL_MS);
         if (cancelledRef.current) break;
         setFx((f) => ({ ...f, spells: [] }));
+        await sleep(LANE_PAUSE_MS);
+      } else if (ev.kind === 'cheerleaderSacrifice') {
+        const sacrifice: CheerleaderSacrificeEvent = ev;
+        const item = {
+          key: `c-${sacrifice.owner}-${sacrifice.slot}-${Date.now()}`,
+          owner: sacrifice.owner,
+          slot: sacrifice.slot,
+          cardId: sacrifice.cardId
+        };
+        setFx((current) => ({ ...current, sacrifices: [item] }));
+        await sleep(1250);
+        if (cancelledRef.current) break;
+        const next = structuredClone(shownViewRef.current);
+        if (next.players[sacrifice.owner].cheerleaders[sacrifice.slot] === sacrifice.cardId) {
+          next.players[sacrifice.owner].cheerleaders[sacrifice.slot] = null;
+        }
+        setShown(next);
+        setFx((current) => ({ ...current, sacrifices: [] }));
         await sleep(LANE_PAUSE_MS);
       }
     }
@@ -602,6 +668,22 @@ export function GameScreen({
 
       {/* ---- Lanes ---- */}
       <main className="lanes" style={{ '--lanes': shownView.lanes } as CSSProperties}>
+        {!use3d && (
+          <>
+            <CheerleaderStrip
+              side={opp}
+              slots={shownView.players[opp].cheerleaders}
+              sacrifice={fx.sacrifices.find((item) => item.owner === opp)}
+              position="opponent"
+            />
+            <CheerleaderStrip
+              side={me}
+              slots={shownView.players[me].cheerleaders}
+              sacrifice={fx.sacrifices.find((item) => item.owner === me)}
+              position="own"
+            />
+          </>
+        )}
         {use3d && (
           <Battlefield3D
             view={shownView}

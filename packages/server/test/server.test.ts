@@ -9,6 +9,7 @@ import { buildFactionTree, loadGameData, topOf } from '@pcf/engine';
 import { startServer, type RunningServer } from '../src/server.js';
 
 const factionTree = buildFactionTree(loadGameData().factions);
+const DEFAULT_CHEERLEADERS = ['pc_principal', 'pc_babies', 'alter_wissenschaftler'] as const;
 
 interface TestClient {
   ws: WebSocket;
@@ -32,7 +33,24 @@ function connect(port: number): Promise<TestClient> {
       ws,
       received,
       lastView: null,
-      send: (msg) => ws.send(JSON.stringify(msg)),
+      send: (msg) => {
+        const value = msg as Record<string, unknown>;
+        if (value.type === 'create' || value.type === 'join') {
+          const faction = value.faction;
+          const deckSelection =
+            value.deckSelection ??
+            (faction === 'animals'
+              ? { kind: 'preset', id: 'a1_rudeljaeger' }
+              : { kind: 'preset', id: 'h1_solidaritaet' });
+          ws.send(JSON.stringify({
+            ...value,
+            deckSelection,
+            cheerleaders: value.cheerleaders ?? DEFAULT_CHEERLEADERS
+          }));
+          return;
+        }
+        ws.send(JSON.stringify(msg));
+      },
       next: (type) => {
         const i = unread.findIndex((m) => m.type === type);
         if (i !== -1) return Promise.resolve(unread.splice(i, 1)[0]);
@@ -98,6 +116,9 @@ describe('Server: Raum, Beitritt, Aktionen, gefilterte Sicht', () => {
     expect(stateA.round).toBe(0);
     expect(stateA.hand).toHaveLength(4);
     expect(stateB.hand).toHaveLength(4);
+    expect(stateA.players[0].cheerleaders).toEqual(DEFAULT_CHEERLEADERS);
+    expect(stateA.players[1].cheerleaders).toEqual(DEFAULT_CHEERLEADERS);
+    expect(stateB.players[0].cheerleaders).toEqual(DEFAULT_CHEERLEADERS);
     // Gegnerische Hand nur als Anzahl:
     expect(stateA.players[1].handCount).toBe(4);
 
@@ -192,6 +213,50 @@ describe('Server: Raum, Beitritt, Aktionen, gefilterte Sicht', () => {
     const err = await c.next('error');
     expect(String(err.message)).toContain('Wiederverbinden');
     c.ws.close();
+  });
+
+  it('Reconnect nach Serverneustart übernimmt beide öffentlichen Bankroster', async () => {
+    const host = await connect(server.port);
+    host.send({ type: 'create', faction: 'humans' });
+    const created = await host.next('created');
+    const guest = await connect(server.port);
+    guest.send({ type: 'join', code: created.code, faction: 'animals' });
+    const joined = await guest.next('joined');
+    await host.next('state');
+    await guest.next('state');
+
+    const restarted = await startServer(0);
+    const rejoined = await connect(restarted.port);
+    rejoined.send({ type: 'rejoin', code: created.code, token: joined.token });
+    await rejoined.next('rejoined');
+    const view = (await rejoined.next('state')).view as ClientView;
+    expect(view.players[0].cheerleaders).toEqual(DEFAULT_CHEERLEADERS);
+    expect(view.players[1].cheerleaders).toEqual(DEFAULT_CHEERLEADERS);
+
+    rejoined.ws.close();
+    host.ws.close();
+    guest.ws.close();
+    await restarted.close();
+  });
+
+  it('lehnt ungültige Cheerleader-Auswahlen mit deutscher Meldung ab', async () => {
+    const tooShort = await connect(server.port);
+    tooShort.send({
+      type: 'create',
+      faction: 'humans',
+      cheerleaders: ['pc_principal', 'pc_babies']
+    });
+    expect(String((await tooShort.next('error')).message)).toContain('exakt 3');
+
+    const duplicate = await connect(server.port);
+    duplicate.send({
+      type: 'create',
+      faction: 'humans',
+      cheerleaders: ['pc_principal', 'pc_principal', 'randy_marsh']
+    });
+    expect(String((await duplicate.next('error')).message)).toContain('nur einmal');
+    tooShort.ws.close();
+    duplicate.ws.close();
   });
 
   it('Schauplatz: der Ersteller wählt das Thema, beide Clients bekommen es', async () => {
