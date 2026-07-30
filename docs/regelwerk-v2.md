@@ -4,6 +4,8 @@
 
 **Status:** Theoretisch vorbalancierte Alpha-Fassung. Die Werte sind als belastbarer Ausgangspunkt für Playtests gedacht, nicht als statistisch bewiesenes Endbalancing.
 
+> Die zuletzt **gemessenen** Werte gegen die Zielkorridore aus §7 stehen in [STATUS.md](STATUS.md).
+
 ---
 
 ## 1. Globale Spielparameter

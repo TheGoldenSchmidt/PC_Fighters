@@ -1,0 +1,66 @@
+# Continuous Integration für PC Fighters.
+#
+# Läuft bei jedem Push auf master und bei jedem Pull Request. Prüft in dieser
+# Reihenfolge, was auch lokal vor einem Commit laufen sollte:
+#   1. npm ci        – reproduzierbare Installation aus package-lock.json
+#   2. npm test      – Engine- und Server-Testsuiten (Vitest)
+#   3. npm run typecheck – tsc --noEmit über alle Workspaces
+#   4. npm run build – Produktions-Build des Clients
+#   5. Backtest-Smoke – deterministischer Kurzlauf, damit die Simulation nicht
+#      unbemerkt kaputtgeht. Bewusst OHNE --streng: die Zielkorridore aus
+#      Regelwerk V2 §7 sind aktuell nicht eingehalten (siehe docs/STATUS.md);
+#      CI prüft hier nur, dass der Backtest überhaupt durchläuft.
+
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+# Ältere Läufe desselben Branches abbrechen, wenn neu gepusht wird.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pruefen:
+    name: Tests, Typecheck, Build, Backtest-Smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Repository auschecken
+        uses: actions/checkout@v4
+
+      - name: Node einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Abhängigkeiten installieren
+        run: npm ci
+
+      - name: Tests
+        run: npm test
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Produktions-Build
+        run: npm run build
+
+      # Deterministisch über --saat=1: gleicher Lauf liefert gleiche Zahlen,
+      # ein Diff im Report zeigt also eine echte Regeländerung an.
+      - name: Backtest-Smoke
+        run: npm run backtest -- --schnell --saat=1 --out=backtest-results/ci
+
+      - name: Backtest-Report als Artefakt sichern
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backtest-smoke-report
+          path: backtest-results/ci/
+          if-no-files-found: warn
+          retention-days: 14
