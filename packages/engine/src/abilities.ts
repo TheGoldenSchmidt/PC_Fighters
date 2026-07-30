@@ -49,7 +49,23 @@ export const ABILITIES: Record<Ability['kind'], { label: string; description: st
   hunter: { label: 'Jäger', description: 'Kampfbonus gegen ein vergiftetes Ziel.' },
   shedding: { label: 'Häutung', description: 'Einmal pro Spiel: heilt bei niedrigem Leben und entfernt optional Gift.' },
   synergie: { label: 'Synergie', description: 'Kommt mit Bonus ins Spiel, wenn diese Runde schon eine passende Karte gespielt wurde.' },
-  wahl: { label: 'Wahl', description: 'Rundenbeginn: automatisch aufgelöste Wahl zwischen zwei Optionen.' }
+  wahl: { label: 'Wahl', description: 'Rundenbeginn: automatisch aufgelöste Wahl zwischen zwei Optionen.' },
+  ausspielwahl: {
+    label: 'Ausspiel-Wahl',
+    description: 'Beim Ausspielen: automatisch aufgelöste Wahl zwischen zwei Effekt-Paketen.'
+  },
+  umgruppieren: {
+    label: 'Umgruppieren',
+    description: 'Beim Ausspielen: bewegt eine andere verbündete Kreatur in eine freie eigene Lane.'
+  },
+  rueckstoss: {
+    label: 'Rückstoß',
+    description: 'Beim Ausspielen: Schaden auf sich selbst und den Gegner in derselben Lane.'
+  },
+  peinigen: {
+    label: 'Peinigen',
+    description: 'Beim Ausspielen: setzt Angriff und Verteidigung aller Gegner dauerhaft auf einen Deckel.'
+  }
 };
 
 export const ABILITY_KINDS = Object.keys(ABILITIES) as Ability['kind'][];
@@ -153,6 +169,143 @@ function applySturzflug(
     });
   } else {
     log(state, `${c.name}: Sturzflug trifft ins Leere – die Lane ist frei.`);
+  }
+}
+
+/**
+ * Rückstoß (Randy Marsh): Schaden auf sich selbst, optional zusätzlich auf die
+ * gegnerische Kreatur in derselben Lane. Ist die Lane leer, trifft es nur die
+ * eigene Kreatur (der Selbstschaden ist bedingungslos).
+ */
+function applyRueckstoss(
+  state: GameState,
+  owner: PlayerIndex,
+  lane: number,
+  ab: Extract<Ability, { kind: 'rueckstoss' }>
+): void {
+  const c = state.board[owner][lane]!;
+  const enemy = otherPlayer(owner);
+  const target = ab.gegner ? state.board[enemy][lane] : null;
+  if (target && ab.gegner) {
+    target.currentHealth -= ab.gegner;
+    target.letzterSchaden = { art: 'effekt', quelle: c.cardId, owner };
+    zaehleKarte(state, owner, c.cardId, 'schadenKreatur', ab.gegner);
+  }
+  c.currentHealth -= ab.selbst;
+  c.letzterSchaden = { art: 'effekt', quelle: c.cardId, owner };
+  log(
+    state,
+    target
+      ? `${c.name}: Rückstoß – ${c.name} und ${target.name} erleiden ${ab.selbst} bzw. ${ab.gegner} Schaden.`
+      : `${c.name}: Rückstoß – ${c.name} erleidet ${ab.selbst} Schaden.`,
+    { kind: 'spell', lane, effect: 'attackBuff', faction: c.faction }
+  );
+}
+
+/**
+ * Peinigen (PC Principal): setzt bei allen gegnerischen Kreaturen, die JETZT
+ * auf dem Feld stehen, dauerhafte Deckel auf Angriff und Lebens-Maximum
+ * (Creature.atkDeckel/hpDeckel). Deckel wirken nach Boni und Auren, ein späterer
+ * Aura-Buff hebt die Peinigung also nicht auf. Mehrfache Peinigung verschärft
+ * nur (Math.min), sie lockert nie. Das aktuelle Leben zieht recalcBoard nach.
+ */
+function applyPeinigen(
+  state: GameState,
+  owner: PlayerIndex,
+  lane: number,
+  ab: Extract<Ability, { kind: 'peinigen' }>
+): void {
+  const c = state.board[owner][lane]!;
+  const enemy = otherPlayer(owner);
+  let getroffen = 0;
+  for (const e of state.board[enemy]) {
+    if (!e) continue;
+    e.atkDeckel = e.atkDeckel != null ? Math.min(e.atkDeckel, ab.atkDeckel) : ab.atkDeckel;
+    e.hpDeckel = e.hpDeckel != null ? Math.min(e.hpDeckel, ab.hpDeckel) : ab.hpDeckel;
+    getroffen += 1;
+  }
+  log(
+    state,
+    getroffen === 0
+      ? `${c.name}: Es gibt niemanden zu peinigen.`
+      : `${c.name} peinigt ${getroffen} gegnerische Kreatur(en): ATK ${ab.atkDeckel}, Verteidigung ${ab.hpDeckel}.`
+  );
+}
+
+/**
+ * Umgruppieren (Vogelmensch): bewegt eine ANDERE verbündete Kreatur in eine
+ * freie eigene Lane. Der Effekt ist optional ("du darfst"), und es gibt weiter
+ * keinen Spieler-Interaktionstyp (siehe `wahl`) – die Engine löst ihn deshalb
+ * deterministisch und nur dann auf, wenn er der Kreatur nützt: bewegt wird die
+ * stärkste eigene Kreatur, die einem Gegner gegenübersteht, in die niedrigste
+ * freie Lane OHNE Gegner (dort greift sie die Basis an). Gibt es keine solche
+ * Kombination, bleibt alles stehen.
+ */
+function applyUmgruppieren(
+  state: GameState,
+  owner: PlayerIndex,
+  lane: number,
+  ab: Extract<Ability, { kind: 'umgruppieren' }>
+): void {
+  const c = state.board[owner][lane]!;
+  const enemy = otherPlayer(owner);
+  const ziel = freeLanes(state, owner).find((l) => !state.board[enemy][l]);
+  if (ziel == null) return;
+  let beste = -1;
+  for (let j = 0; j < state.board[owner].length; j++) {
+    if (j === lane) continue;
+    if (!state.board[owner][j] || !state.board[enemy][j]) continue;
+    if (beste < 0 || getEffectiveAttack(state, owner, j) > getEffectiveAttack(state, owner, beste)) {
+      beste = j;
+    }
+  }
+  if (beste < 0) return;
+  const bewegt = state.board[owner][beste]!;
+  state.board[owner][ziel] = bewegt;
+  state.board[owner][beste] = null;
+  if (ab.tempAtkBonus) bewegt.tempAttackBonus += ab.tempAtkBonus;
+  log(
+    state,
+    `${c.name}: ${bewegt.name} wechselt in Lane ${ziel + 1}` +
+      (ab.tempAtkBonus ? ` und erhält +${ab.tempAtkBonus} ATK bis zum Rundenende.` : '.'),
+    { kind: 'spell', lane: ziel, effect: 'move', faction: c.faction }
+  );
+}
+
+/**
+ * Ausspiel-Wahl (Alter Wissenschaftler): dasselbe Prinzip wie `wahl`, nur beim
+ * Ausspielen und mit Schadens-Option. `zielVorhanden` nimmt Paket B, wenn in
+ * derselben Lane eine gegnerische Kreatur steht (dann lohnt der Schaden),
+ * sonst Paket A.
+ */
+function applyAusspielwahl(
+  state: GameState,
+  owner: PlayerIndex,
+  lane: number,
+  ab: Extract<Ability, { kind: 'ausspielwahl' }>
+): void {
+  const c = state.board[owner][lane]!;
+  const enemy = otherPlayer(owner);
+  const ziel = state.board[enemy][lane];
+  const gewaehlt = ziel ? ab.optionB : ab.optionA;
+  for (const teil of gewaehlt) {
+    if (teil.art === 'ziehen') {
+      draw(state, owner, teil.n);
+      log(state, `${c.name}: Wahl → zieht ${teil.n} Karte(n).`);
+    } else if (teil.art === 'wissen') {
+      state.players[owner].knowledge += teil.x;
+      log(state, `${c.name}: Wahl → +${teil.x} Wissen (Pool: ${state.players[owner].knowledge}).`);
+    } else if (ziel) {
+      ziel.currentHealth -= teil.x;
+      ziel.letzterSchaden = { art: 'effekt', quelle: c.cardId, owner };
+      zaehleKarte(state, owner, c.cardId, 'schadenKreatur', teil.x);
+      log(state, `${c.name}: Wahl → ${teil.x} Schaden auf ${ziel.name}.`, {
+        kind: 'spell',
+        lane,
+        effect: 'attackBuff',
+        faction: c.faction
+      });
+    }
   }
 }
 
@@ -344,6 +497,10 @@ const KLASSE_B_HOOKS: { [K in Ability['kind']]?: KlasseBHooks<K> } = {
   entwaffnen: { onPlay: applyEntwaffnen },
   experiment: { onPlay: applyExperiment },
   synergie: { onPlay: applySynergie },
+  ausspielwahl: { onPlay: applyAusspielwahl },
+  umgruppieren: { onPlay: applyUmgruppieren },
+  rueckstoss: { onPlay: applyRueckstoss },
+  peinigen: { onPlay: applyPeinigen },
   wachstum: { onRoundStart: applyWachstum },
   wahl: { onRoundStart: applyWahl },
   heilung: { onRoundEnd: applyHeilung },

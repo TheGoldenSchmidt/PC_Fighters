@@ -85,6 +85,7 @@ Alle Karten liegen als einfache Textdateien hier:
 ```
 packages/engine/src/data/cards/humans.json
 packages/engine/src/data/cards/animals.json
+packages/engine/src/data/cards/neutral.json
 ```
 
 **So geht's:** Datei mit einem Texteditor öffnen (z. B. Editor/Notepad), einen bestehenden Karten-Block **kopieren**, ein Komma dahinter setzen, die Werte ändern, speichern, Server neu starten (im Server-Fenster `Strg+C`, dann wieder `npm run server`) und die Seite im Browser neu laden.
@@ -109,6 +110,16 @@ Wichtig:
 
 - **`id`** muss einmalig sein (kleingeschrieben, keine Leerzeichen).
 - Jede Karte kommt automatisch **2×** ins Deck. Steht `"signature": true` dabei (die ★-Karte), nur **1×**.
+- **`"category"`** (optional) gibt einer Karte ein eigenes Deck-Limit:
+
+| Kategorie | Regel |
+|---|---|
+| `"hero"` | Höchstens **2 Heroes** je Deck, und jeder Hero nur **1×** (`deckbuilding.maxHeroes` / `.maxHeroCopies`). |
+| `"principal"` | Höchstens **1** je Deck (`deckbuilding.maxPrincipals`) – zählt **nicht** zum Hero-Limit. |
+
+  Beides zählt regulär zur Deckgröße von 20 Karten. Karten der Oberfraktion
+  `neutral` (z. B. der PC Principal) gehören zu keiner Seite: sie sind in
+  **jedem** Deck erlaubt und werden nicht als spielbare Oberfraktion angeboten.
 - **Aktionskarten** haben `"type": "action"` und statt Angriff/Leben ein `"effect"`. Es gibt vier Effekt-Arten:
 
 | Effekt | Was er tut | Beispiel |
@@ -154,6 +165,9 @@ Die Datei `packages/engine/src/data/config.json` enthält alle Spielregeln als Z
 | `deckbuilding.size` | Karten pro Deck (V2: 20) |
 | `deckbuilding.maxCopies` | Wie oft eine normale Karte im Deck stecken darf (V2: 3) |
 | `deckbuilding.maxCopiesSignature` | Wie oft eine ★-Signature-Karte im Deck stecken darf (V2: 2) |
+| `deckbuilding.maxHeroes` | Wie viele Hero-Karten (`"category": "hero"`) ein Deck insgesamt enthalten darf (V2: 2) |
+| `deckbuilding.maxHeroCopies` | Wie oft EIN einzelner Hero im Deck stecken darf (V2: 1) |
+| `deckbuilding.maxPrincipals` | Wie viele Principal-Karten (`"category": "principal"`) ein Deck enthalten darf (V2: 1) |
 | `zermuerbung.abRunde` / `.schaden` / `.steigerung` | Ab dieser Runde verlieren beide Basen am Rundenende `schaden` Leben, danach je weitere Runde zusätzlich `steigerung` mehr – das ist der reguläre Weg, wie lange Partien enden (V2 will explizit „kein Rundenlimit", siehe `docs/regelwerk-v2.md` §1/§7) |
 | `roundLimit` | Technische Notbremse weit über der Zermürbung (aktuell 30) – wird im Normalspiel nie erreicht; jeder Treffer ist ein Bug-Report |
 

@@ -109,6 +109,21 @@
   },
 
   {
+    "id": "junger_neffe",
+    "name": "Junger Neffe",
+    "faction": "humans",
+    "type": "creature",
+    "cost": 3,
+    "attack": 2,
+    "health": 3,
+    "keywords": [],
+    "abilities": [{ "kind": "rettung", "mode": "survive_1hp", "ziehenWennAusgeloest": 1 }],
+    "category": "hero",
+    "text": "Zäh. Wenn Zäh ausgelöst wird: Ziehe 1 Karte.",
+    "projectile": "🎒"
+  },
+
+  {
     "id": "flugblatt_verteiler",
     "name": "Flugblatt-Verteiler",
     "faction": "sozis",
@@ -180,6 +195,20 @@
     "cost": 4,
     "effect": { "kind": "debuff", "amount": 2 },
     "text": "Alle gegnerischen Kreaturen erhalten bis zum Rundenende −2 ATK."
+  },
+  {
+    "id": "pc_babies",
+    "name": "PC Babies",
+    "faction": "sozis",
+    "type": "creature",
+    "cost": 5,
+    "attack": 4,
+    "health": 5,
+    "keywords": [],
+    "abilities": [{ "kind": "umverteilung", "menge": 1, "ziel": "alle", "art": "atk", "dauer": "runde" }],
+    "category": "hero",
+    "text": "Beim Ausspielen: Alle gegnerischen Kreaturen erhalten bis zum Rundenende −1 ATK.",
+    "projectile": "🍼"
   },
   {
     "id": "die_massen",
@@ -284,6 +313,23 @@
     "abilities": [{ "kind": "verstaerker", "ziel": "wachstum", "scope": "same_sub", "faktor": 2, "firstOnlyPerRound": true }],
     "text": "Der erste Wachstumseffekt eines Arbeiters in jeder Runde löst ein zusätzliches Mal aus.",
     "projectile": "📋"
+  },
+  {
+    "id": "randy_marsh",
+    "name": "Randy Marsh",
+    "faction": "arbeiter",
+    "type": "creature",
+    "cost": 5,
+    "attack": 5,
+    "health": 6,
+    "keywords": [],
+    "abilities": [
+      { "kind": "wucht" },
+      { "kind": "rueckstoss", "selbst": 2, "gegner": 2 }
+    ],
+    "category": "hero",
+    "text": "Wucht. Beim Ausspielen: Randy Marsh und die gegnerische Kreatur in dieser Lane erleiden jeweils 2 Schaden.",
+    "projectile": "⛏️"
   },
   {
     "id": "stahlgiesser",
@@ -486,6 +532,27 @@
     "abilities": [{ "kind": "experiment", "proMarker": { "atk": 1, "hp": 1 }, "max": 3 }],
     "text": "Beim Ausspielen: Gib bis zu 3 Wissen aus; diese Kreatur erhält je Marker dauerhaft +1/+1.",
     "projectile": "🎓"
+  },
+  {
+    "id": "alter_wissenschaftler",
+    "name": "Alter Wissenschaftler",
+    "faction": "studenten",
+    "type": "creature",
+    "cost": 5,
+    "attack": 3,
+    "health": 5,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "ausspielwahl",
+        "optionA": [{ "art": "ziehen", "n": 1 }, { "art": "wissen", "x": 1 }],
+        "optionB": [{ "art": "schaden", "x": 2 }],
+        "regel": "zielVorhanden"
+      }
+    ],
+    "category": "hero",
+    "text": "Beim Ausspielen – wähle eins: Ziehe 1 Karte und erhalte 1 Wissen; oder füge der gegnerischen Kreatur in dieser Lane 2 Schaden zu.",
+    "projectile": "🧪"
   },
   {
     "id": "die_fakultaet",

@@ -51,6 +51,13 @@ zweiten anzulegen.
   Zustand zurücksetzen**, damit Einzug, Angriff, Treffer und Tod beliebig oft
   reproduzierbar bleiben.
 
+- **Port 3000 kann einer *laufenden* Fremdsitzung gehören, nicht nur einem
+  Rest-Prozess.** Dann schreibt deren Server die Snapshots in deren
+  `PCF_SNAP`-Ordner, der eigene Neustart meldet „ok", weil in Wahrheit deren
+  Server antwortet, und der Branch kann mitten im Lauf wechseln. → Vor dem ersten
+  Snapshot **beweisen, dass der Server die eigenen Daten liefert**: einen
+  markanten Wert aus `/info` gegen die Datei auf der Platte vergleichen.
+
 ### Bauqualität
 
 - **„Zu groß" ist fast nie ein Höhen-, sondern ein Proportions-/`visual.height`-
@@ -127,6 +134,13 @@ zweiten anzulegen.
   Gesicht. → Wenige unterschiedlich große Zähne mit sichtbaren dunklen Lücken
   und klarer Mundhöhle verwenden.
 
+- **Bei liegenden Tieren sprengt die Länge den Rahmen, nicht die Höhe.** Der
+  Auto-Fit skaliert über die Bounding-Box-Höhe; ein langes flaches Tier ohne
+  hohes Merkmal bekommt dadurch einen großen Faktor. T-Rex mit `height` 1.32 lag
+  weit über dem Rand, Spinosaurus mit 1.16 passte – dessen Rückensegel drückt den
+  Faktor. → `visual.height` über die **Bildschirm-Länge im Vergleich zu einer
+  bestehenden Figur derselben Bauart** wählen; beim T-Rex war 1.0 richtig.
+
 ---
 
 ## Best Practices (aus Erfolgen gelernt)
@@ -145,6 +159,19 @@ zweiten anzulegen.
   Mensch ≈ 1, mittelgroßes Tier ~0.6.
 - **Beine sichtbar lassen:** Rumpf hoch genug über den Beinen, sonst wirkt das
   Tier klobig/bärenhaft statt schlank.
+
+### Formen-Kniffe
+
+- **Spitz zulaufende Flächen: flach gedrückter `cone`.** `box` kann nicht spitz
+  werden. Waagerechtes Dreieck: Kegelachse ist lokal +Y, `rot.z = -π/2` dreht die
+  Spitze nach +X, `scale.x ≈ 0.05` macht sie flach. Für Flughaut-Spitzen,
+  Flossen, Rückenplatten.
+- **Eine Membran über mehrere Gelenke entsteht nie aus Einzelpanelen.** Drei
+  geknickte Stücke lasen sich als Bretter mit Lücken, weil die Gelenkgruppen sie
+  auseinanderziehen. → **Eine** durchgehende Fläche in die äußerste gemeinsame
+  Elterngruppe, Knochen darunter fast gerade, Rückschwung nur aus der
+  Wurzelgruppe. (Stand: Der Pteranodon-Flügel liest sich so als Fläche, die
+  Hinterkante bleibt aber gerade.)
 
 ### Was „Charakter" statt „Bausteinhaufen" erzeugt
 
@@ -180,7 +207,10 @@ sich weniger in der Teilezahl als in diesen Punkten:
   Gegenrotation ist die Euler-Zerlegung von `Rᵀ` der Stielrotation – einmal
   ausrechnen, als feste Zahlen eintragen (beim Stahlgießer `[-0.708, 0.767,
   -0.681]` gegen den Stiel `[0.993, 0, 0.977]`). Die `kippGruppe` gibt danach eine
-  saubere Kippachse für Gieß-/Schütt-Animationen.
+  saubere Kippachse für Gieß-/Schütt-Animationen. **Rechnen, nicht schätzen:**
+  Beim Kaffeebecher war die geratene Gegenrotation nah genug, um plausibel
+  auszusehen, und trotzdem sichtbar schief. Den Restfehler von `R · C` gegen die
+  Einheitsmatrix mit ausgeben – über ~1e-3 stimmt die Kette nicht.
 - **Griffpunkt zuerst, Arm danach.** Den Punkt am Werkzeug festlegen, dann die
   Armkette darauf rechnen: Richtung `d` normieren, `θz = asin(dₓ)`, `θx` aus
   `cos θz · cos θx = d_y`. Kettenlänge ≈ Abstand wählen, sonst greift die Hand
@@ -261,6 +291,18 @@ sich weniger in der Teilezahl als in diesen Punkten:
   Einzüge und Todesanimationen können strukturell vorhanden, aber visuell
   fehlerhaft sein. → Die Standardabnahme zeigt zusätzlich mindestens zwei
   Einzugs- und zwei Todesphasen.
+- **Figuren über ein Generator-Skript mit Vorab-Validierung bauen.** Beim
+  Von-Hand-Schreiben langer JSON verfälschten sich zweimal Palettenwerte
+  (`"#cdb храmless"`) – syntaktisch gültig, sichtbar erst beim Rendern. → Vor dem
+  Schreiben Palette (Hex-Regex), doppelte Namen, Eltern-vor-Kind-Reihenfolge,
+  `size` bei Nicht-Gruppen und alle Track-Ziele prüfen. Nebeneffekt:
+  Wiederholtes (Zähne, Dornen, spiegelbildliche Gliedmaßen) kommt aus einer
+  Schleife statt aus Copy-Paste.
+- **Ein gezielter Fix kann die Sache verschlimmern.** Ein weiter nach vorn
+  gedrehter Unterarm sollte das Schwert der Kommandantin freistellen – es fuhr
+  stattdessen in den Rumpf und war ganz verschwunden. In der Übersichtskachel
+  sah die Figur unverändert aus. → Nach jeder Korrektur **genau den geänderten
+  Bereich** als Ausschnitt nachrendern, nicht nur die Gesamtansicht.
 - **Bei gleichzeitig roten A/B/C-Linsen zuerst integriert überarbeiten.** Drei
   sofortige Spezialisten lesen dieselbe Figur mehrfach und können einander
   unnötig nachlaufen. → Zuerst eine kompakte Gesamtrevision beim bestehenden

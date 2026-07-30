@@ -107,6 +107,8 @@ export function getEffectiveAttack(state: GameState, owner: PlayerIndex, lane: n
   let attack = c.baseAttack + c.permAttackBonus + c.tempAttackBonus;
   attack += selfAbilityBonus(state, owner, lane).attack;
   attack += auraBonus(state, owner, lane).attack;
+  // Deckel (`peinigen`) greift ZULETZT – nach allen Boni und Auren.
+  if (c.atkDeckel != null) attack = Math.min(attack, c.atkDeckel);
   return Math.max(0, attack);
 }
 
@@ -115,7 +117,9 @@ export function getMaxHealth(state: GameState, owner: PlayerIndex, lane: number)
   const c = state.board[owner][lane];
   if (!c) return 0;
   const bonus = selfAbilityBonus(state, owner, lane).health + auraBonus(state, owner, lane).health;
-  return Math.max(1, c.baseMaxHealth + c.permHealthBonus + c.tempHealthBonus + bonus);
+  const max = c.baseMaxHealth + c.permHealthBonus + c.tempHealthBonus + bonus;
+  // Deckel (`peinigen`) greift ZULETZT – nach allen Boni und Auren.
+  return Math.max(1, c.hpDeckel != null ? Math.min(max, c.hpDeckel) : max);
 }
 
 export interface DeathInfo {
@@ -152,6 +156,15 @@ function tryRettung(
   if (rescue.bonusWennAusgeloest) {
     creature.permAttackBonus += rescue.bonusWennAusgeloest.atk;
     creature.permHealthBonus += rescue.bonusWennAusgeloest.hp;
+  }
+  // Karten ziehen, wenn Zäh auslöst (Junger Neffe). Absichtlich hier inline
+  // statt über den draw()-Helfer aus abilities.ts: internal.ts darf abilities.ts
+  // nicht importieren (Zirkelimport, siehe Kommentar in abilityHooks.ts).
+  for (let i = 0; i < (rescue.ziehenWennAusgeloest ?? 0); i++) {
+    const card = state.players[owner].deck.shift();
+    if (!card) break;
+    state.players[owner].hand.push(card);
+    zaehleSpieler(state, owner, 'kartenGezogen');
   }
   zaehleKarte(state, owner, creature.cardId, 'verhindert', verhindert);
   zaehleSpieler(state, owner, 'verhinderterSchaden', verhindert);

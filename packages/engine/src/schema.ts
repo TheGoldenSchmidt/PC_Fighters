@@ -8,8 +8,10 @@ import { KEYWORDS } from './keywords.js';
 import type {
   Animations,
   CardDef,
+  DeckbuildingConfig,
   DeckList,
   Faction,
+  FactionTree,
   FigureDef,
   GameConfig,
   GameData,
@@ -31,6 +33,9 @@ export const configSchema = z.object({
     size: z.number().int().min(1),
     maxCopies: z.number().int().min(1),
     maxCopiesSignature: z.number().int().min(1).optional(),
+    maxHeroes: z.number().int().min(0).optional(),
+    maxHeroCopies: z.number().int().min(1).optional(),
+    maxPrincipals: z.number().int().min(0).optional(),
     factionRule: z.enum(['singleTop', 'singleSub', 'free'])
   }),
   zermuerbung: z
@@ -48,7 +53,8 @@ export const factionSchema = z.object({
   parent: z.string().min(1).nullable().default(null),
   color: z.string().min(1).optional(),
   description: z.string().optional(),
-  theme: z.object({ color: z.string().min(1) }).optional()
+  theme: z.object({ color: z.string().min(1) }).optional(),
+  neutral: z.boolean().optional()
 });
 
 export const factionsSchema = z.array(factionSchema);
@@ -120,6 +126,13 @@ const wahlOptionSchema = z.discriminatedUnion('art', [
   z.object({ art: z.literal('wissen'), x: z.number().int().min(1) }).strict()
 ]);
 
+/** Baustein eines `ausspielwahl`-Pakets (wahlOption + Schaden auf die Lane). */
+const ausspielTeilSchema = z.discriminatedUnion('art', [
+  z.object({ art: z.literal('ziehen'), n: z.number().int().min(1) }).strict(),
+  z.object({ art: z.literal('wissen'), x: z.number().int().min(1) }).strict(),
+  z.object({ art: z.literal('schaden'), x: z.number().int().min(1) }).strict()
+]);
+
 // .strict() auf jedem Zweig: unbekannte Zusatzfelder (Tippfehler in Parameter-
 // Namen wie "starke" statt "staerke") werden abgelehnt statt still gestrippt.
 export const abilitySchema = z.discriminatedUnion('kind', [
@@ -129,7 +142,7 @@ export const abilitySchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('heilung'), scope: scopeSchema, reichweite: z.enum(['nachbarn', 'scope']), amount: z.number().int().min(1), mehrWennBasisUnter: z.object({ schwelle: z.number().int(), amount: z.number().int().min(1) }).strict().optional(), maxTargets: z.number().int().min(1).optional() }).strict(),
   z.object({ kind: z.literal('wachstum'), per_round: statSchema, ziel: z.enum(['selbst', 'verbuendeter']).optional(), scope: scopeSchema.optional(), maxTriggers: z.number().int().min(1).optional() }).strict(),
   z.object({ kind: z.literal('verstaerker'), ziel: z.literal('wachstum'), scope: scopeSchema, faktor: z.number().int().min(1), firstOnlyPerRound: z.boolean().optional() }).strict(),
-  z.object({ kind: z.literal('rettung'), mode: z.enum(['survive_1hp', 'revive_1hp', 'full_heal']), bonusWennAusgeloest: statSchema.optional() }).strict(),
+  z.object({ kind: z.literal('rettung'), mode: z.enum(['survive_1hp', 'revive_1hp', 'full_heal']), bonusWennAusgeloest: statSchema.optional(), ziehenWennAusgeloest: z.number().int().min(1).optional() }).strict(),
   z.object({ kind: z.literal('ueberstunden'), bonus: statSchema }).strict(),
   z.object({ kind: z.literal('werkzeug'), atk: z.number().int().min(1) }).strict(),
   z.object({ kind: z.literal('improvisation'), scope: scopeSchema, mode: z.enum(['schwelle', 'pro_fehlende_hp']), bonus: statSchema, schwelle: z.number().int().optional(), proHp: z.number().int().min(1).optional(), cap: z.number().int().min(1).optional() }).strict(),
@@ -153,7 +166,11 @@ export const abilitySchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('hunter'), bonusAtk: z.number().int().min(1) }).strict(),
   z.object({ kind: z.literal('shedding'), schwelle: z.number().int().min(1), heilung: z.number().int().min(1), entferntGift: z.boolean().optional() }).strict(),
   z.object({ kind: z.literal('synergie'), scope: scopeSchema, bonus: statSchema }).strict(),
-  z.object({ kind: z.literal('wahl'), optionA: wahlOptionSchema, optionB: wahlOptionSchema, regel: z.enum(['handKlein', 'wissenKnapp']) }).strict()
+  z.object({ kind: z.literal('wahl'), optionA: wahlOptionSchema, optionB: wahlOptionSchema, regel: z.enum(['handKlein', 'wissenKnapp']) }).strict(),
+  z.object({ kind: z.literal('ausspielwahl'), optionA: z.array(ausspielTeilSchema).min(1), optionB: z.array(ausspielTeilSchema).min(1), regel: z.literal('zielVorhanden') }).strict(),
+  z.object({ kind: z.literal('umgruppieren'), tempAtkBonus: z.number().int().min(1).optional() }).strict(),
+  z.object({ kind: z.literal('rueckstoss'), selbst: z.number().int().min(1), gegner: z.number().int().min(1).optional() }).strict(),
+  z.object({ kind: z.literal('peinigen'), atkDeckel: z.number().int().min(0), hpDeckel: z.number().int().min(1) }).strict()
 ]);
 
 // ---------------------------------------------------------------- Visuals
@@ -276,6 +293,7 @@ const cardBase = {
   faction: z.string().min(1),
   cost: z.number().int().min(0),
   signature: z.boolean().optional(),
+  category: z.enum(['hero', 'principal']).optional(),
   text: z.string().optional()
 };
 
@@ -525,9 +543,27 @@ export class DeckError extends Error {
   }
 }
 
+/** Kopiengrenze einer Karte: Kategorie (Hero/Principal) vor Signatur vor Normalfall. */
+export function maxCopiesOf(card: CardDef, rules: DeckbuildingConfig): number {
+  if (card.category === 'hero') return rules.maxHeroCopies ?? 1;
+  if (card.category === 'principal') return rules.maxPrincipals ?? 1;
+  return card.signature ? (rules.maxCopiesSignature ?? 1) : rules.maxCopies;
+}
+
 /**
- * Prüft eine Deckliste gegen Größe, maxCopies (Signaturkarten max. 1) und die
- * konfigurierte factionRule. Gibt das geprüfte Deck zurück oder wirft DeckError.
+ * Neutrale Karten (Oberfraktion mit `"neutral": true`, z. B. der PC Principal)
+ * gehören zu keiner Seite und sind daher in jedem Deck erlaubt – die
+ * factionRule ignoriert sie.
+ */
+export function isNeutralCard(card: CardDef, factions: Faction[], tree: FactionTree): boolean {
+  const top = topOf(tree, card.faction);
+  return factions.some((f) => f.id === top && f.neutral);
+}
+
+/**
+ * Prüft eine Deckliste gegen Größe, maxCopies (Signaturkarten max. 1), die
+ * Hero-/Principal-Limits und die konfigurierte factionRule. Gibt das geprüfte
+ * Deck zurück oder wirft DeckError.
  */
 export function validateDeck(deck: unknown, data: GameData): DeckList {
   const parsed = deckSchema.safeParse(deck);
@@ -535,11 +571,18 @@ export function validateDeck(deck: unknown, data: GameData): DeckList {
     throw new DeckError(describeZodError(parsed.error));
   }
   const dl = parsed.data;
-  const { size, maxCopies, maxCopiesSignature, factionRule } = data.config.deckbuilding;
+  const rules = data.config.deckbuilding;
+  const { size, factionRule } = rules;
+  const maxHeroes = rules.maxHeroes ?? 2;
+  const maxPrincipals = rules.maxPrincipals ?? 1;
   const tree = buildFactionTree(data.factions);
   const problems: string[] = [];
 
   let total = 0;
+  // Heroes und Principals zählen regulär zur Deckgröße, haben daneben aber je
+  // ein eigenes Limit; Principals zählen NICHT zum Hero-Limit.
+  let heroes = 0;
+  let principals = 0;
   const seen = new Set<string>();
   const tops = new Set<string>();
   const subs = new Set<string>();
@@ -555,16 +598,25 @@ export function validateDeck(deck: unknown, data: GameData): DeckList {
     }
     seen.add(entry.cardId);
     total += entry.count;
-    const max = card.signature ? (maxCopiesSignature ?? 1) : maxCopies;
+    if (card.category === 'hero') heroes += entry.count;
+    if (card.category === 'principal') principals += entry.count;
+    const max = maxCopiesOf(card, rules);
     if (entry.count > max) {
       problems.push(`Zu viele Kopien von "${card.name}": ${entry.count}, erlaubt sind ${max}.`);
     }
+    if (isNeutralCard(card, data.factions, tree)) continue;
     tops.add(topOf(tree, card.faction));
     subs.add(card.faction);
   }
 
   if (total !== size) {
     problems.push(`Deck ungültig: ${total} Karten, erlaubt sind ${size}.`);
+  }
+  if (heroes > maxHeroes) {
+    problems.push(`Zu viele Heroes: ${heroes}, erlaubt sind ${maxHeroes}.`);
+  }
+  if (principals > maxPrincipals) {
+    problems.push(`Zu viele PC Principals: ${principals}, erlaubt ist ${maxPrincipals}.`);
   }
   if (factionRule === 'singleTop' && tops.size > 1) {
     problems.push('Deck mischt mehrere Oberfraktionen – erlaubt ist nur Mensch ODER Tier.');

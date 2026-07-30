@@ -14,7 +14,7 @@ import {
 } from './abilities.js';
 import { resolveEffect } from './effects.js';
 import { buildFactionTree, matchesScope } from './factions.js';
-import { validateDeck } from './schema.js';
+import { maxCopiesOf, validateDeck } from './schema.js';
 import {
   freeLanes,
   GameRuleError,
@@ -83,6 +83,11 @@ function shuffle<T>(arr: T[], random: () => number): T[] {
  * Baut das Deck einer Fraktion: jede Karte maxCopiesPerCard-mal,
  * Signaturkarten (★) nur einmal. Ist das Ergebnis größer als deckSize,
  * wird nach dem Mischen auf deckSize gekürzt.
+ *
+ * Heroes/Principals (category) bekommen ihre eigenen Limits: das Auto-Deck darf
+ * nach dem Kürzen nicht mehr davon enthalten, als `validateDeck` erlaubt – daher
+ * werden sie VOR dem Mischen auf maxHeroes/maxPrincipals begrenzt (zufällige
+ * Auswahl aus den in Frage kommenden Karten).
  */
 export function buildDeck(data: GameData, faction: string, random: () => number): string[] {
   // Parent-aware: wählt der Spieler eine Oberfraktion, gehören alle Karten ihrer
@@ -92,14 +97,30 @@ export function buildDeck(data: GameData, faction: string, random: () => number)
   if (cards.length === 0) {
     throw new GameRuleError(`Für die Fraktion "${faction}" gibt es keine Karten.`);
   }
+  const rules = data.config.deckbuilding;
+  const kategorieLimit: Record<string, number> = {
+    hero: rules.maxHeroes ?? 2,
+    principal: rules.maxPrincipals ?? 1
+  };
+  // Zufällige Reihenfolge, damit nicht immer dieselben Heroes gezogen werden.
+  const gemischteKarten = shuffle(cards, random);
+  const kategorieAnzahl: Record<string, number> = {};
   const deck: string[] = [];
-  for (const card of cards) {
-    const copies = card.signature
-      ? (data.config.deckbuilding.maxCopiesSignature ?? 1)
-      : data.config.deckbuilding.maxCopies;
+  for (const card of gemischteKarten) {
+    const copies = maxCopiesOf(card, rules);
+    if (card.category) {
+      const limit = kategorieLimit[card.category] ?? 0;
+      const bisher = kategorieAnzahl[card.category] ?? 0;
+      const rest = Math.max(0, limit - bisher);
+      if (rest === 0) continue;
+      const n = Math.min(copies, rest);
+      kategorieAnzahl[card.category] = bisher + n;
+      for (let i = 0; i < n; i++) deck.push(card.id);
+      continue;
+    }
     for (let i = 0; i < copies; i++) deck.push(card.id);
   }
-  return shuffle(deck, random).slice(0, data.config.deckbuilding.size);
+  return shuffle(deck, random).slice(0, rules.size);
 }
 
 /** Baut den Ziehstapel aus einer geprüften Deckliste (spielergewählt). */

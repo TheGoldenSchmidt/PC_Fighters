@@ -17,6 +17,12 @@ export interface DeckbuildingConfig {
   maxCopies: number;
   /** Kopiengrenze für Signature-Karten (★). Ohne Angabe: 1 (Abwärtskompatibilität). */
   maxCopiesSignature?: number;
+  /** Wie viele Hero-Karten (category:"hero") ein Deck insgesamt enthalten darf. Ohne Angabe: 2. */
+  maxHeroes?: number;
+  /** Kopiengrenze je einzelnem Hero. Ohne Angabe: 1 (jeder Hero nur einmal). */
+  maxHeroCopies?: number;
+  /** Wie viele Principal-Karten (category:"principal") ein Deck enthalten darf. Ohne Angabe: 1. */
+  maxPrincipals?: number;
   factionRule: FactionRule;
 }
 
@@ -73,6 +79,12 @@ export interface Faction {
   description?: string;
   /** Optionales Design (Farbe) für das kommende UI-Rework. */
   theme?: { color: string };
+  /**
+   * Fraktionslose Oberfraktion ("neutral"): Karten darin gehören zu keiner
+   * Seite, sind daher in JEDEM Deck erlaubt (die factionRule ignoriert sie) und
+   * werden nicht als spielbare Oberfraktion angeboten.
+   */
+  neutral?: boolean;
 }
 
 /** Parent-Lookup: fraktion-id → Oberfraktion-id (null = ist selbst Oberfraktion). */
@@ -158,7 +170,13 @@ export type Ability =
   | { kind: 'verstaerker'; ziel: 'wachstum'; scope: Scope; faktor: number; firstOnlyPerRound?: boolean }
   // Todes-Rettung, einmal pro Spiel (ersetzt zaeh/neun_leben/haeutung).
   // bonusWennAusgeloest: dauerhafter Stat-Bonus, NUR wenn die Rettung tatsächlich auslöst.
-  | { kind: 'rettung'; mode: 'survive_1hp' | 'revive_1hp' | 'full_heal'; bonusWennAusgeloest?: Stat }
+  // ziehenWennAusgeloest: Karten, die der Besitzer zieht, wenn sie auslöst.
+  | {
+      kind: 'rettung';
+      mode: 'survive_1hp' | 'revive_1hp' | 'full_heal';
+      bonusWennAusgeloest?: Stat;
+      ziehenWennAusgeloest?: number;
+    }
   // Einmalig +X/+Y, wenn die Karte eine volle Runde überlebt.
   | { kind: 'ueberstunden'; bonus: Stat }
   // Ausrüstung: gibt genau einer anderen Karte gleicher Sub-Fraktion +X ATK
@@ -214,10 +232,34 @@ export type Ability =
   | { kind: 'synergie'; scope: Scope; bonus: Stat }
   // Rundenbeginn: automatisch aufgelöste Wahl zwischen zwei Optionen (kein
   // Spieler-Interaktionstyp – die Engine entscheidet deterministisch nach `regel`).
-  | { kind: 'wahl'; optionA: WahlOption; optionB: WahlOption; regel: 'handKlein' | 'wissenKnapp' };
+  | { kind: 'wahl'; optionA: WahlOption; optionB: WahlOption; regel: 'handKlein' | 'wissenKnapp' }
+  // Beim Ausspielen: automatisch aufgelöste Wahl zwischen zwei Effekt-Paketen
+  // (wie `wahl`, aber zum Ausspiel-Zeitpunkt und mit Schadens-Option). regel
+  // "zielVorhanden": Paket B, wenn in derselben Lane ein Gegner steht, sonst A.
+  | { kind: 'ausspielwahl'; optionA: AusspielTeil[]; optionB: AusspielTeil[]; regel: 'zielVorhanden' }
+  // Beim Ausspielen: bewegt eine ANDERE verbündete Kreatur in eine freie eigene
+  // Lane (optional, nur wenn es der Kreatur nützt – siehe abilities.ts).
+  // tempAtkBonus: die bewegte Kreatur erhält bis zum Rundenende +X ATK.
+  | { kind: 'umgruppieren'; tempAtkBonus?: number }
+  // Beim Ausspielen: Rückstoß – Schaden auf sich selbst und optional auf die
+  // gegnerische Kreatur in derselben Lane (`gegner`).
+  | { kind: 'rueckstoss'; selbst: number; gegner?: number }
+  // Beim Ausspielen: setzt bei ALLEN gegnerischen Kreaturen auf dem Feld ATK und
+  // Verteidigung dauerhaft auf einen Deckel (Peinigung, siehe Creature.atkDeckel).
+  | { kind: 'peinigen'; atkDeckel: number; hpDeckel: number };
 
 /** Option einer `wahl`-Fähigkeit (siehe oben). */
 export type WahlOption = { art: 'ziehen'; n: number } | { art: 'wissen'; x: number };
+
+/**
+ * Baustein eines `ausspielwahl`-Pakets. Ein Paket ist eine Liste davon und wird
+ * komplett ausgeführt, wenn die Regel es auswählt.
+ */
+export type AusspielTeil =
+  | { art: 'ziehen'; n: number }
+  | { art: 'wissen'; x: number }
+  /** Schaden auf die gegnerische Kreatur in derselben Lane (leere Lane = kein Effekt). */
+  | { art: 'schaden'; x: number };
 
 // ---- Aussehen & Animation (reine Daten – interpretiert ausschließlich der
 // Client beim Rendern; die Engine validiert nur die Struktur). ----
@@ -295,6 +337,13 @@ export interface AnimationClip {
 /** Klip-Name (z. B. "idle", "attack") → Klip. Fehlende Klips erben aus den Defaults. */
 export type Animations = Record<string, AnimationClip>;
 
+/**
+ * Deckbau-Kategorie einer Karte. Beide Kategorien haben EIGENE Deck-Limits
+ * (siehe `DeckbuildingConfig` / `validateDeck`), zählen aber regulär zur
+ * Deckgröße. `principal` zählt NICHT zum Hero-Limit.
+ */
+export type CardCategory = 'hero' | 'principal';
+
 export interface CreatureCard {
   id: string;
   name: string;
@@ -307,6 +356,8 @@ export interface CreatureCard {
   /** Parametrisierte Primitive (siehe `Ability` / `abilities.ts`). */
   abilities?: Ability[];
   signature?: boolean;
+  /** Deckbau-Kategorie mit eigenem Limit (Hero/Principal). */
+  category?: CardCategory;
   /** Emoji, das beim Angriff als Projektil fliegt (z. B. "🗡️"). */
   projectile?: string;
   text?: string;
@@ -331,6 +382,8 @@ export interface ActionCard {
   cost: number;
   effect: Effect;
   signature?: boolean;
+  /** Deckbau-Kategorie mit eigenem Limit (Hero/Principal). */
+  category?: CardCategory;
   text?: string;
 }
 
@@ -376,6 +429,14 @@ export interface Creature {
   isToken: boolean;
   /** Anzahl Giftmarken (Zermürbung durch `gift`), bleibt über Runden bestehen. */
   poison: number;
+  /**
+   * Dauerhafte Obergrenzen ("Deckel") für Angriff bzw. Lebens-Maximum, gesetzt
+   * durch `peinigen`. Sie greifen NACH allen Boni und Auren (internal.ts) – ein
+   * gepeinigter Angriff bleibt also auch unter einer neuen Aura beim Deckel.
+   * undefined = kein Deckel.
+   */
+  atkDeckel?: number;
+  hpDeckel?: number;
   /** Hat die Kreatur in ihrer letzten Runde angegriffen? (für `kaltbluetig`). */
   attackedThisRound: boolean;
   /** Runde, in der die Kreatur erzeugt wurde (für `ueberstunden`). */

@@ -577,6 +577,107 @@ describe('Neue Fähigkeiten – Rettung, Trigger & Wachstum', () => {
   });
 });
 
+describe('Heroes & PC Principal', () => {
+  it('Vogelmensch bewegt einen blockierten Verbündeten in eine freie Lane (+1 ATK)', () => {
+    const s = emptyState();
+    const ritter = put(s, 0, 0, 'ritter'); // steht einem Gegner gegenüber
+    put(s, 1, 0, 'wolf');
+    put(s, 0, 1, 'vogelmensch');
+    onPlayAbilities(s, 0, 1);
+    expect(s.board[0][0]).toBeNull();
+    expect(s.board[0][2]).toBe(ritter);
+    expect(ritter.tempAttackBonus).toBe(1);
+  });
+
+  it('Vogelmensch bewegt nichts, wenn kein Verbündeter blockiert ist', () => {
+    const s = emptyState();
+    const ritter = put(s, 0, 0, 'ritter'); // kein Gegner gegenüber
+    put(s, 0, 1, 'vogelmensch');
+    onPlayAbilities(s, 0, 1);
+    expect(s.board[0][0]).toBe(ritter);
+    expect(ritter.tempAttackBonus).toBe(0);
+  });
+
+  it('PC Babies senken die ATK aller Gegner bis zum Rundenende um 1', () => {
+    let s = emptyState();
+    put(s, 1, 0, 'ritter'); // 4/5
+    put(s, 1, 1, 'wolf');
+    put(s, 0, 2, 'pc_babies');
+    onPlayAbilities(s, 0, 2);
+    expect(getEffectiveAttack(s, 1, 0)).toBe(3);
+    expect(s.board[1][1]?.tempAttackBonus).toBe(-1);
+    // Rundenende hebt den temporären Malus wieder auf.
+    s = passBoth(s);
+    expect(s.board[1][0]?.tempAttackBonus).toBe(0);
+  });
+
+  it('Alter Wissenschaftler: Schaden, wenn ein Gegner in der Lane steht', () => {
+    const s = emptyState();
+    const ritter = put(s, 1, 0, 'ritter'); // 4/5
+    put(s, 0, 0, 'alter_wissenschaftler');
+    onPlayAbilities(s, 0, 0);
+    expect(ritter.currentHealth).toBe(3);
+    expect(s.players[0].hand).toHaveLength(0);
+    expect(s.players[0].knowledge).toBe(0);
+  });
+
+  it('Alter Wissenschaftler: sonst 1 Karte und 1 Wissen', () => {
+    const s = emptyState();
+    s.players[0].deck = ['rekrut'];
+    put(s, 0, 0, 'alter_wissenschaftler');
+    onPlayAbilities(s, 0, 0);
+    expect(s.players[0].hand).toEqual(['rekrut']);
+    expect(s.players[0].knowledge).toBe(1);
+  });
+
+  it('Junger Neffe zieht eine Karte, wenn Zäh auslöst', () => {
+    const s = emptyState();
+    s.players[0].deck = ['rekrut'];
+    const neffe = put(s, 0, 0, 'junger_neffe'); // 2/3, zäh
+    neffe.currentHealth -= 5;
+    recalcBoard(s);
+    expect(s.board[0][0]).toBe(neffe);
+    expect(neffe.currentHealth).toBe(1);
+    expect(neffe.rettungUsed).toBe(true);
+    expect(s.players[0].hand).toEqual(['rekrut']);
+  });
+
+  it('Randy Marsh: Rückstoß trifft ihn und den Gegner in seiner Lane', () => {
+    const s = emptyState();
+    const wolf = put(s, 1, 0, 'wolf'); // 2/3
+    const randy = put(s, 0, 0, 'randy_marsh'); // 5/6
+    onPlayAbilities(s, 0, 0);
+    expect(randy.currentHealth).toBe(4);
+    expect(wolf.currentHealth).toBe(1);
+  });
+
+  it('Randy Marsh: ohne Gegner erleidet nur er selbst Schaden', () => {
+    const s = emptyState();
+    const randy = put(s, 0, 1, 'randy_marsh');
+    onPlayAbilities(s, 0, 1);
+    expect(randy.currentHealth).toBe(4);
+  });
+
+  it('PC Principal peinigt alle Gegner dauerhaft auf 0 ATK / 1 Verteidigung', () => {
+    const s = emptyState();
+    put(s, 1, 0, 'ritter'); // 4/5
+    put(s, 1, 1, 'tyrannosaurus_rex');
+    put(s, 0, 2, 'pc_principal');
+    onPlayAbilities(s, 0, 2);
+    recalcBoard(s);
+    for (const lane of [0, 1]) {
+      expect(getEffectiveAttack(s, 1, lane)).toBe(0);
+      expect(getMaxHealth(s, 1, lane)).toBe(1);
+      expect(s.board[1][lane]?.currentHealth).toBe(1);
+    }
+    // Eine NEUE Aura hebt die Peinigung nicht auf (Deckel greift zuletzt).
+    put(s, 1, 2, 'kommandantin'); // +1/+1 für andere Menschen
+    recalcBoard(s);
+    expect(getEffectiveAttack(s, 1, 0)).toBe(0);
+    expect(getMaxHealth(s, 1, 0)).toBe(1);
+  });
+});
+
 describe('Deckbau-Regeln (Zod)', () => {
   const katzenVoegel = [
     { cardId: 'streunerkatze', count: 2 },
@@ -641,6 +742,73 @@ describe('Deckbau-Regeln (Zod)', () => {
       ]
     };
     expect(() => validateDeck(deck, data)).toThrow(/mehrere Oberfraktionen/);
+  });
+
+  // 17 reguläre Menschen-Karten – Platz für 2 Heroes + 1 PC Principal (=20).
+  const menschenBasis = [
+    { cardId: 'rekrut', count: 3 },
+    { cardId: 'schildwache', count: 3 },
+    { cardId: 'ritter', count: 3 },
+    { cardId: 'lehrling', count: 3 },
+    { cardId: 'fliessbandarbeiter', count: 3 },
+    { cardId: 'bannertraeger', count: 2 }
+  ];
+
+  it('akzeptiert 2 Heroes plus 1 PC Principal (Principal zählt nicht zum Hero-Limit)', () => {
+    const deck = {
+      cards: [
+        ...menschenBasis,
+        { cardId: 'junger_neffe', count: 1 },
+        { cardId: 'randy_marsh', count: 1 },
+        { cardId: 'pc_principal', count: 1 }
+      ]
+    };
+    expect(() => validateDeck(deck, data)).not.toThrow();
+  });
+
+  it('Heroes und PC Principal zählen zur Deckgröße', () => {
+    const deck = {
+      cards: [
+        ...menschenBasis,
+        { cardId: 'junger_neffe', count: 1 },
+        { cardId: 'randy_marsh', count: 1 }
+      ]
+    };
+    expect(() => validateDeck(deck, data)).toThrow(/19 Karten, erlaubt sind 20/);
+  });
+
+  it('lehnt mehr als 2 Heroes ab', () => {
+    const deck = {
+      cards: [
+        ...menschenBasis.slice(0, 5),
+        { cardId: 'bannertraeger', count: 1 },
+        { cardId: 'junger_neffe', count: 1 },
+        { cardId: 'randy_marsh', count: 1 },
+        { cardId: 'pc_babies', count: 1 },
+        { cardId: 'pc_principal', count: 1 }
+      ]
+    };
+    expect(() => validateDeck(deck, data)).toThrow(/Zu viele Heroes: 3, erlaubt sind 2/);
+  });
+
+  it('lehnt denselben Hero mehrfach ab', () => {
+    const deck = {
+      cards: [...menschenBasis, { cardId: 'junger_neffe', count: 2 }, { cardId: 'pc_principal', count: 1 }]
+    };
+    expect(() => validateDeck(deck, data)).toThrow(/Zu viele Kopien von "Junger Neffe": 2, erlaubt sind 1/);
+  });
+
+  it('lehnt mehr als einen PC Principal ab', () => {
+    const deck = {
+      cards: [...menschenBasis, { cardId: 'junger_neffe', count: 1 }, { cardId: 'pc_principal', count: 2 }]
+    };
+    expect(() => validateDeck(deck, data)).toThrow(/Zu viele Kopien von "PC Principal": 2, erlaubt sind 1/);
+  });
+
+  it('der neutrale PC Principal verstößt nicht gegen singleTop', () => {
+    const deck = { cards: [...katzenVoegel.slice(0, 10), { cardId: 'eule', count: 1 }, { cardId: 'pc_principal', count: 1 }] };
+    // 18 Katzen/Vögel + 1 Eule + 1 Principal = 20, keine Oberfraktions-Meldung.
+    expect(() => validateDeck(deck, data)).not.toThrow();
   });
 
   it('lehnt unbekannte Karten ab', () => {
