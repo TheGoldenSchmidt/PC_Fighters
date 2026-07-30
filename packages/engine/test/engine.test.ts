@@ -3,11 +3,12 @@ import {
   applyAction,
   buildDeck,
   buildFactionTree,
+  buildClientView,
   createGame,
   createSeededRandom,
   getEffectiveAttack,
   getMaxHealth,
-  loadGameData,
+  legaleAktionen,
   matchesScope,
   roundEnergy,
   topOf,
@@ -17,104 +18,8 @@ import {
 } from '../src/index.js';
 import { recalcBoard } from '../src/internal.js';
 import { applyShedding, onPlayAbilities, onRoundStartAbilities } from '../src/abilities.js';
-import type {
-  Creature,
-  CreatureCard,
-  GameData,
-  GameState,
-  PlayerIndex,
-  PlayerState
-} from '../src/types.js';
-
-const data: GameData = loadGameData();
-
-function player(faction: string): PlayerState {
-  return {
-    faction,
-    cheerleaders: ['pc_principal', 'pc_babies', 'alter_wissenschaftler'],
-    deck: [],
-    hand: [],
-    base: data.config.baseHealth,
-    energy: 10,
-    knowledge: 0,
-    flyDone: false,
-    mulliganDone: false,
-    gespieltDieseRunde: []
-  };
-}
-
-/** Leerer Testzustand: Runde 1, Ausspielphase, Spieler 0 am Zug. */
-function emptyState(): GameState {
-  return {
-    config: data.config,
-    factionTree: buildFactionTree(data.factions),
-    round: 1,
-    phase: 'play',
-    startingPlayer: 0,
-    active: 0,
-    consecutivePasses: 0,
-    players: [player('humans'), player('animals')],
-    board: [
-      Array.from({ length: data.config.lanes }, () => null),
-      Array.from({ length: data.config.lanes }, () => null)
-    ],
-    log: [],
-    winner: null,
-    uidCounter: 0
-  };
-}
-
-/** Stellt eine Kreatur direkt aufs Feld (Standard: kampfbereit). */
-function put(
-  state: GameState,
-  owner: PlayerIndex,
-  lane: number,
-  cardId: string,
-  opts: { exhausted?: boolean } = {}
-): Creature {
-  const card = data.cardsById[cardId] as CreatureCard;
-  state.uidCounter += 1;
-  const c: Creature = {
-    uid: state.uidCounter,
-    cardId,
-    name: card.name,
-    faction: card.faction,
-    keywords: card.keywords,
-    abilities: (card.abilities ?? []).map((a) => ({ ...a })),
-    baseAttack: card.attack,
-    baseMaxHealth: card.health,
-    permHealthBonus: 0,
-    permAttackBonus: 0,
-    tempAttackBonus: 0,
-    tempHealthBonus: 0,
-    currentHealth: card.health,
-    lastMaxHealth: card.health,
-    exhausted: opts.exhausted ?? false,
-    movedThisFlyPhase: false,
-    isToken: false,
-    poison: 0,
-    attackedThisRound: false,
-    spawnRound: state.round,
-    ueberstundenDone: false,
-    rettungUsed: false,
-    schutzUsed: false,
-    zaehler: {},
-    rundenZaehler: {}
-  };
-  state.board[owner][lane] = c;
-  recalcBoard(state);
-  return c;
-}
-
-/** Beide Spieler passen → Kampfphase läuft, danach Rundenende/Flugphase. */
-function passBoth(state: GameState): GameState {
-  if (state.phase === 'mulligan') {
-    state = applyAction(state, 0, { type: 'mulligan', handIndices: [] }, data);
-    state = applyAction(state, 1, { type: 'mulligan', handIndices: [] }, data);
-  }
-  const afterFirst = applyAction(state, state.active, { type: 'pass' }, data);
-  return applyAction(afterFirst, afterFirst.active, { type: 'pass' }, data);
-}
+import { data, emptyState, passBoth, put } from './helpers.js';
+import type { GameState, PlayerIndex } from '../src/types.js';
 
 describe('Cheerleader-Auswahl', () => {
   const valid = ['pc_principal', 'pc_babies', 'alter_wissenschaftler'] as const;

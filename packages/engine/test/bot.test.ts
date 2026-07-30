@@ -5,95 +5,12 @@ import {
   applyAction,
   BOT_PROFILE,
   bewerteZustand,
-  buildFactionTree,
   createGame,
   createSeededRandom,
   legaleAktionen,
-  loadGameData,
   waehleAktion
 } from '../src/index.js';
-import { recalcBoard } from '../src/internal.js';
-import type { Creature, CreatureCard, GameData, GameState, PlayerIndex, PlayerState } from '../src/types.js';
-
-const data: GameData = loadGameData();
-
-function player(faction: string): PlayerState {
-  return {
-    faction,
-    cheerleaders: ['pc_principal', 'pc_babies', 'alter_wissenschaftler'],
-    deck: [],
-    hand: [],
-    base: data.config.baseHealth,
-    energy: 10,
-    knowledge: 0,
-    flyDone: false,
-    mulliganDone: false,
-    gespieltDieseRunde: []
-  };
-}
-
-/** Leerer Testzustand: Runde 1, Ausspielphase, Spieler 0 am Zug. */
-function emptyState(): GameState {
-  return {
-    config: data.config,
-    factionTree: buildFactionTree(data.factions),
-    round: 1,
-    phase: 'play',
-    startingPlayer: 0,
-    active: 0,
-    consecutivePasses: 0,
-    players: [player('humans'), player('animals')],
-    board: [
-      Array.from({ length: data.config.lanes }, () => null),
-      Array.from({ length: data.config.lanes }, () => null)
-    ],
-    log: [],
-    winner: null,
-    uidCounter: 0
-  };
-}
-
-/** Stellt eine Kreatur direkt aufs Feld (Standard: kampfbereit). */
-function put(
-  state: GameState,
-  owner: PlayerIndex,
-  lane: number,
-  cardId: string,
-  opts: { exhausted?: boolean } = {}
-): Creature {
-  const card = data.cardsById[cardId] as CreatureCard;
-  state.uidCounter += 1;
-  const c: Creature = {
-    uid: state.uidCounter,
-    cardId,
-    name: card.name,
-    faction: card.faction,
-    keywords: card.keywords,
-    abilities: (card.abilities ?? []).map((a) => ({ ...a })),
-    baseAttack: card.attack,
-    baseMaxHealth: card.health,
-    permHealthBonus: 0,
-    permAttackBonus: 0,
-    tempAttackBonus: 0,
-    tempHealthBonus: 0,
-    currentHealth: card.health,
-    lastMaxHealth: card.health,
-    exhausted: opts.exhausted ?? false,
-    movedThisFlyPhase: false,
-    isToken: false,
-    poison: 0,
-    attackedThisRound: false,
-    spawnRound: state.round,
-    ueberstundenDone: false,
-    rettungUsed: false,
-    schutzUsed: false,
-    zaehler: {},
-    rundenZaehler: {}
-  };
-  state.board[owner][lane] = c;
-  recalcBoard(state);
-  return c;
-}
+import { data, emptyState, put } from './helpers.js';
 
 describe('legaleAktionen', () => {
   it('generiert playCreature nur für bezahlbare Karten auf freie Lanes, plus pass', () => {
