@@ -323,6 +323,20 @@
     "projectile": "🦅"
   },
   {
+    "id": "vogelmensch",
+    "name": "Vogelmensch",
+    "faction": "voegel",
+    "type": "creature",
+    "cost": 5,
+    "attack": 4,
+    "health": 5,
+    "keywords": ["fliegend"],
+    "abilities": [{ "kind": "umgruppieren", "tempAtkBonus": 1 }],
+    "category": "hero",
+    "text": "Fliegend. Beim Ausspielen: Du darfst eine andere verbündete Kreatur in eine freie eigene Lane bewegen. Bewegst du sie, erhält sie bis zum Rundenende +1 ATK.",
+    "projectile": "🪶"
+  },
+  {
     "id": "der_schwarm",
     "name": "Der Schwarm",
     "faction": "voegel",

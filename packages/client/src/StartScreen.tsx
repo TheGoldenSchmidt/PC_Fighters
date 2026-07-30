@@ -53,7 +53,9 @@ export function StartScreen({ status, onCreate, onJoin }: Props) {
   }, []);
   useEffect(() => { void loadInfo(server); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const topFactions = info?.factions.filter((f) => f.parent === null) ?? [];
+  // Neutrale Oberfraktionen (z. B. "neutral" für den PC Principal) sind keine
+  // spielbare Seite – ihre Karten stehen aber in jedem Deck zur Auswahl.
+  const topFactions = info?.factions.filter((f) => f.parent === null && !f.neutral) ?? [];
   const presetEntries = Object.entries(info?.decks ?? {}).filter(([, d]) => d.faction === topFaction);
   const ownDecks = library.filter((d) => d.faction === topFaction);
   const selectedValid = selection?.kind === 'preset' || (selection?.kind === 'custom' && !!info && deckProblems(selection.deck, topFaction!, info.cards, info.factions, info.deckbuilding).length === 0);
