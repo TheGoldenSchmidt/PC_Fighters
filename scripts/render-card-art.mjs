@@ -63,7 +63,7 @@ async function waitForServer(url, tries = 60) {
 }
 
 // Playwright robust auflösen: lokal installiert ODER global (`npm root -g`) –
-// gleiche Logik wie .claude/skills/figuren-werkstatt/scripts/snap.mjs.
+// gleiche Logik wie scripts/snap.mjs.
 async function loadChromium() {
   const candidates = ['playwright'];
   try {

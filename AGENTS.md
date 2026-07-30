@@ -11,7 +11,10 @@ PC Fighters ist ein deutsches, serverautoritäres 1-gegen-1-Kartenspiel in drei 
 - `scripts`: read-only Prüf-/Briefingwerkzeuge sowie ausdrücklich mutierende Generatoren und Backtests.
 - `tools/figuren-viewer`: eigenständiger Viewer samt Template, Builder und versionierter Ausgabe.
 - `.ai/tasks`: versionierter Zustand ausschließlich aktiver, reviewpflichtiger Aufgaben.
-- `docs/adr`: langlebige Architekturentscheidungen; `docs/regelwerk-v2.md`: Balancing-Vorgaben.
+- `agents`: kanonische, modellneutrale Rollendefinitionen. Nicht zu verwechseln mit `.agents/skills`, dem von Codex geladenen Skill-Verzeichnis.
+- `.claude/agents` und `.codex/agents`: dünne produktspezifische Adapter auf `agents/`; `.claude/skills` und `.agents/skills`: produktspezifische Skill-Einstiegspunkte.
+- `docs/figure-generation`: Playbook, Qualitätskriterien, Teile-Bibliothek und Experimentberichte der Figurenerstellung.
+- `docs/adr`: langlebige Architekturentscheidungen; `docs/rfcs`: kontroverse größere Änderungen vor der Umsetzung; `docs/regelwerk-v2.md`: Balancing-Vorgaben.
 
 # Commands
 
@@ -33,7 +36,20 @@ PC Fighters ist ein deutsches, serverautoritäres 1-gegen-1-Kartenspiel in drei 
 - `tools/figuren-viewer/figuren-viewer.html` ist generiert aus `viewer-template.html`, `build-viewer.mjs`, allen Figuren-JSONs und `animations.json`.
 - Karten-PNGs sind entweder durch `render-card-art.mjs` verwaltet oder als `MANUAL_ART` selbst ihre Repo-Rohquelle.
 - `package-lock.json` wird aus allen `package.json`-Dateien durch npm erzeugt.
+- Agentenrollen: `agents/figure-designer.md` und `agents/figure-critic.md`. Adapter unter `.claude/agents` und `.codex/agents` enthalten nur Frontmatter, Berechtigungen und einen Verweis; fachliche Abläufe und Qualitätskriterien werden dort nicht dupliziert.
+- Figurenerstellung: `docs/figure-generation/PLAYBOOK.md` (Ablauf), `QUALITY_CRITERIA.md` (Maßstab), `PARTS.md` (Rig-Fragmente), `experiments/` (belegte Versuche und offene Hypothesen).
 - Git enthält abgeschlossene Arbeit; Task-Dateien enthalten nur aktuellen, unfertigen Übergabezustand; ADRs enthalten langlebige Entscheidungen.
+
+Beförderungsweg für Erkenntnisse:
+
+- aktive Arbeit → Task (`.ai/tasks`)
+- abgeschlossener Versuch → Experiment (`docs/figure-generation/experiments`)
+- wiederverwendbarer Prozess → Playbook
+- Qualitätsmaßstab → Quality Criteria
+- kontroverse größere Änderung → RFC (`docs/rfcs`)
+- langlebige Architekturentscheidung → ADR (`docs/adr`)
+
+Unbelegte Ideen bleiben als offene Hypothese im Experimentbericht und werden erst nach Beleg befördert.
 
 # Verbindliche Regeln
 

@@ -41,7 +41,7 @@ sie getrennt mit `npm run generate:viewer` neu erzeugt.
 - **Feedback:** je Figur eine Notiz eintragen, „Feedback für Chat sammeln" bündelt
   alle Notizen zu einem Block. Diesen Block der Figuren-Werkstatt geben – sie
   überarbeitet die Figur(en) und lässt Designer/Kritiker daraus lernen
-  (`.claude/skills/figuren-werkstatt/LESSONS.md`).
+  (`docs/figure-generation/PLAYBOOK.md`, Schritt 8).
 
 ## Aufbau
 

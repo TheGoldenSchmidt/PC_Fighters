@@ -1,12 +1,15 @@
 // Figuren-Werkstatt: deterministischer Montage-Screenshot einer Figur.
 //
-// Aufruf:  node .claude/skills/figuren-werkstatt/scripts/snap.mjs <cardId> [clientPort] [serverPort]
+// Aufruf:  node scripts/snap.mjs <cardId> [clientPort] [serverPort]
 // Ergebnis: POST an den Dev-Server (/snap, nur aktiv bei gesetztem PCF_SNAP) →
 //           <PCF_SNAP-Ordner>/<cardId>.png
 //
 // Erzeugt 6 Kacheln: vorne · seite · hinten + Angriff in 3 Phasen
 // (Ausholen · Kontakt · Rückkehr). Der Angriff wird so aus Bewegung statt aus
-// einem einzigen Standbild beurteilbar (siehe LESSONS.md → Animation).
+// einem einzigen Standbild beurteilbar (siehe docs/figure-generation/PLAYBOOK.md).
+//
+// Einzug und Tod deckt diese Montage NICHT ab – dieses Kriterium wird derzeit nur
+// über den interaktiven Viewer geprüft (PLAYBOOK.md → Bekannte Werkzeuglücken).
 //
 // Warum Playwright statt Screenshot-Tool: direkte Screenshots des Live-WebGL-
 // Canvas timeouten; deshalb rendert die Seite selbst eine Montage und postet sie
@@ -24,9 +27,8 @@ if (!cardId) {
   process.exit(2);
 }
 
-// Playwright robust auflösen: lokal installiert ODER global (diese Umgebung:
-// /opt/node22/... via `npm root -g`). Chromium liegt vorinstalliert unter
-// /opt/pw-browsers/chromium (PLAYWRIGHT_BROWSERS_PATH), daher kein Download.
+// Playwright robust auflösen: lokal installiert ODER global (via `npm root -g`).
+// Bewusst plattformneutral – dieses Skript läuft unter Windows wie unter Linux.
 async function loadChromium() {
   const candidates = ['playwright'];
   try {
@@ -45,16 +47,22 @@ async function loadChromium() {
   }
   throw new Error(
     'Playwright nicht auffindbar. Entweder `npm i -D playwright` im Repo, ' +
-      'oder global verfügbar machen. Chromium wird unter /opt/pw-browsers erwartet.'
+      'oder global verfügbar machen.'
   );
 }
 
 const chromium = await loadChromium();
 const url = `http://localhost:${clientPort}/?figure=${cardId}`;
 
-const browser = await chromium.launch({
-  executablePath: process.env.PW_CHROMIUM || '/opt/pw-browsers/chromium'
-});
+// Chromium umgebungsneutral auflösen: ein ausdrücklich gesetzter Pfad (PW_CHROMIUM)
+// gewinnt; sonst übernimmt Playwright seine eigene Auflösung, die auch
+// PLAYWRIGHT_BROWSERS_PATH berücksichtigt. Kein fest verdrahteter /opt-Pfad – der
+// war unter Windows immer ungültig.
+const launchOptions = process.env.PW_CHROMIUM
+  ? { executablePath: process.env.PW_CHROMIUM }
+  : {};
+
+const browser = await chromium.launch(launchOptions);
 try {
   const page = await browser.newPage({ viewport: { width: 900, height: 700 } });
   page.on('pageerror', (err) => console.log('[pageerror]', err.message));

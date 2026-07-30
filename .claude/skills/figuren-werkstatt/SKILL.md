@@ -3,157 +3,51 @@ name: figuren-werkstatt
 description: Baut oder überarbeitet eine 3D-Figur für eine PC-Fighters-Karte per Designer-/Kritiker-Agenten-Schleife. Aufruf durch den Nutzer, z. B. "/figuren-werkstatt wolf buschigerer Schwanz". Nutze dies, wenn eine Karte ein besseres/neues 3D-Modell bekommen soll.
 ---
 
-# Figuren-Werkstatt
-
-Ein **händisch bedientes** Werkzeug: Eingabe = Karte + optionaler Stil-/Detail-Prompt,
-Ausgabe = eine Figur-Datei `packages/engine/src/data/figures/<cardId>.json`. Das Spiel
-lädt nur vorhandene Dateien – **keine Laufzeit-Generierung**. Jeder Lauf ist transparent
-und endet mit **Freigabe durch den Nutzer** vor dem Commit.
+# Figuren-Werkstatt (Claude-Code-Einstiegspunkt)
 
 Aufruf: `/figuren-werkstatt <cardId> [freier Prompt]`
 
-Die Werkstatt lernt: Sie **liest zu Beginn** das gesammelte Wissen (`LESSONS.md`) und
-**schlägt am Ende** neue Lektionen zur Freigabe vor. So werden Fehler nicht wiederholt
-und Best Practices weitergegeben.
+**Der fachliche Ablauf steht nicht hier.** Lies und befolge:
 
-## Ablauf (du orchestrierst, im Chat sichtbar)
+- **`docs/figure-generation/PLAYBOOK.md`** – der vollständige Ablauf von Schritt 0 bis 8
+- `docs/figure-generation/QUALITY_CRITERIA.md` – der Bewertungsmaßstab
+- `docs/figure-generation/PARTS.md` – kopierfertige Rig-Fragmente
 
-### 0. Werkstatt-Wissen laden
-Lies `.claude/skills/figuren-werkstatt/LESSONS.md` (Fallstricke & Best Practices).
-Die relevanten Punkte fließen unten in die Designer-/Spezialisten-/Kritiker-Briefs ein,
-damit niemand einen bekannten Fehler wiederholt.
+Diese Datei enthält nur, was an Claude Code gebunden ist.
 
-### 1. Brief zusammenstellen
-- Kartendaten lesen: `packages/engine/src/data/cards/*.json` nach `<cardId>` durchsuchen
-  (Name, `text`, Stats, `faction`, `projectile`).
-- Fraktionsfarbe: `packages/engine/src/data/factions.json` → `theme.color` (bzw. Oberfraktion).
-- Vorhandene Figur (falls Überarbeitung): `data/figures/<cardId>.json`.
-- Daraus einen kurzen **Design-Brief** bauen (cardId, Name, Text, Fraktion+Farbe,
-  Projektil-Emoji, Nutzer-Prompt) **plus die passenden LESSONS.md-Punkte**.
-- **Auf `PARTS.md` verweisen:** Nenne im Brief die passenden Fragmente aus
-  `.claude/skills/figuren-werkstatt/PARTS.md` (z. B. „Vierbeiner-Grundgerüst +
-  Schwanzkette + Gesichts-Kit"), damit der Designer sie kopiert statt neu herzuleiten.
+## Rollen in diesem Produkt
 
-### 1b. Referenz-Steckbrief (wenn eine Vorlage vorliegt)
-Liegt eine visuelle Vorlage vor – **Nutzer-Upload** (Bild/Mesh/Textur) oder eine von dir
-per `WebSearch`/`WebFetch` geholte Silhouette/Anatomie – dann **prüfst du (bildfähiger
-Orchestrator) sie selbst** und destillierst sie in **Zahlen**. Der `figuren-designer` ist
-text-only und kann kein Bild „sehen"; er bekommt fertige Werte, keine Bilddatei.
-Format des Steckbriefs siehe `PARTS.md` (Bauart/Breite-Verhältnis, Kopf:Rumpf, Beinlänge,
-Schnauze/Ohren/Augen, Schwanz, Palette-Hex, Charakter-Merkmale). Den Steckbrief in den
-Designer-Brief legen. Gibt es keine Vorlage, diesen Schritt überspringen.
-Hinweis: gelieferte Fremd-Assets (Meshes/Texturen) nur als Referenz ablesen, **nicht ins
-Repo committen** (Lizenz); das Ergebnis sind eigene Primitive.
+| Playbook-Rolle | Agent |
+|---|---|
+| Designer, Modus 1 (vollständige Figur) | `figuren-designer` |
+| Designer, Modus 2 (Gesicht/Kopf) | `figuren-gesicht` |
+| Designer, Modus 3 (Animation) | `figuren-animation` |
+| Kritiker | `figuren-kritiker` |
 
-### 2. Dev-Umgebung sicherstellen
-- Snap-Ordner wählen, z. B. `<scratchpad>/snaps`, und anlegen.
-- **Port 3000 vorher prüfen.** Ein Rest-Prozess aus einer früheren Sitzung (ohne
-  `PCF_SNAP`) blockiert sonst den Start mit `EADDRINUSE`, und `/snap` bleibt inaktiv.
-  Prüfen (`ss -ltnp | grep :3000` bzw. `netstat -ano | grep :3000`), den Rest-Prozess
-  beenden, **bevor** der eigene Server gestartet wird.
-- **Server mit Snap-Endpunkt** starten (nur so ist `/snap` aktiv), entkoppelt im
-  Hintergrund (ein Vordergrund-Start kann mit Exit-Code 143/144 „scheitern", obwohl der
-  Server läuft – Signal an die Shell). Erfolg per `curl` prüfen, nicht am Exit-Code:
-  ```bash
-  setsid env PCF_SNAP="<snaps-ordner>" PORT=3000 npx tsx packages/server/src/index.ts \
-    > <scratchpad>/server.log 2>&1 < /dev/null &
-  sleep 3 && curl -s -o /dev/null -w "%{http_code}\n" http://localhost:3000/   # erwartet 200
-  ```
-  (bewusst `tsx` ohne `watch` – Datenänderungen brauchen ohnehin einen Neustart, siehe Schritt 4.)
-- **Client** (Vite) starten, falls nicht schon offen, ebenfalls entkoppelt:
-  `cd packages/client && setsid npx vite --port 5173 --strictPort > <scratchpad>/client.log 2>&1 < /dev/null &`
-  Ist 5173 belegt, freien Port wählen. (Der Client holt den Katalog von `:3000`.)
+Die Adapter unter `.claude/agents/` verweisen auf die kanonischen Rollen in `agents/`.
 
-### 3. Designer beauftragen
-Spawne **figuren-designer** mit dem Brief (inkl. LESSONS.md-Punkten; bei Runde >1 der
-Kritiker-Änderungsliste). Er schreibt `data/figures/<cardId>.json` und validiert mit
-`npm test`. Für die **Erstanlage** immer der Basis-Designer; Spezialisten kommen erst
-in Überarbeitungsrunden (Schritt 6).
+## Claude-spezifische Ausführung
 
-### 4. Server neu starten, dann Screenshots erzeugen
-**Vor jeder Aufnahme den Server neu starten** (Prozess auf Port 3000 beenden, dann den
-Startbefehl aus Schritt 2 erneut ausführen) – auch nach Überarbeitungsrunden.
-`loadGameData` liest `data/figures/*.json` per `readFileSync` nur **einmal beim Start**;
-weder `tsx watch` noch Vite-HMR bemerken die Änderung (kein Modul-Import). Ohne Neustart
-zeigt die Vorschau den alten Stand und der Kritiker bewertet ein veraltetes Bild – eine
-ganze Runde ist verschwendet.
+- **Erstaufruf** einer Rolle per `Agent`, **jede Fortsetzung** per `SendMessage` an
+  dieselbe Agent-ID. Ein frischer `Agent`-Aufruf verliert den Kontext.
+- **Niemals `isolation: "worktree"`.** Ein Worktree-Agent bearbeitet eine isolierte
+  Repo-Kopie, die der laufende Dev-Server nie liest; die Änderung kommt in der
+  Vorschau nicht an.
+- Bei mehreren roten Linsen die Handler **nacheinander** starten (Playbook Schritt 6),
+  danach **ein** Server-Neustart.
+- Der Montage-Screenshot wird dem Kritiker als PNG-Pfad übergeben; er lädt ihn per
+  `Read`.
+- Ist `mcp__Claude_Browser` vorhanden, kann der Snapshot-Ablauf auch darüber laufen –
+  `scripts/snap.mjs` bleibt der robuste Standardweg.
 
-Danach die Montage per committetem Helferskript erzeugen (rendert 6 Kacheln – vorne /
-seite / hinten + Angriff in 3 Phasen – und postet sie an `/snap`):
-```bash
-node .claude/skills/figuren-werkstatt/scripts/snap.mjs <cardId> [clientPort] [serverPort]
-```
-Ausgabe-PNG: `<snaps-ordner>/<cardId>.png`. Das Skript loggt die **Bausteinzahl** –
-ist sie `0` (oder unverändert zur Vorrunde), wurde der Server nicht neu gestartet:
-erst beheben, dann den Kritiker beauftragen.
+## Abnahme und Abschluss
 
-Das Skript nutzt Playwright (Chromium unter `/opt/pw-browsers/chromium`) – der zuvor
-genutzte `mcp__Claude_Browser` ist nicht in jeder Umgebung vorhanden. Ist Browser-MCP
-verfügbar, geht derselbe Ablauf (freeze → yaw/clip → drawImage → `fetch /snap`) auch
-dort; das Skript ist aber der robuste Standardweg (direkte WebGL-Canvas-Screenshots
-timeouten).
+Playbook Schritt 7 und 8. Für den Standalone-Viewer gilt in diesem Produkt: nach
+`node tools/figuren-viewer/build-viewer.mjs` das Artifact aktualisieren, damit der
+Nutzer interaktiv prüfen kann.
 
-### 5. Kritiker beauftragen (drei Linsen)
-Spawne **figuren-kritiker** mit dem PNG-Pfad + Brief. Er liest das Bild und liefert:
-- ein **Gesamturteil** (`GUT`/`ÜBERARBEITEN`),
-- **Teil-Urteile je Linse**: `A` Körper·Proportion·Größe, `B` Gesicht·Kopf,
-  `C` Animation,
-- eine **nach Linse gelabelte** Änderungsliste (`[A]`/`[B]`/`[C]`).
-
-### 6. Iterieren – Hybrid-Routing an Spezialisten
-Bei `ÜBERARBEITEN` und < 3 Runden die gelabelten Punkte an den jeweils passenden
-Handler geben. Läuft mehr als eine Linse, die Handler **nacheinander** ausführen
-(Scopes sind disjunkt: Gesicht = Kopf-Teilbaum in `visual.parts`, Animation =
-`animations`), **jeder liest die Datei zuerst**; danach **ein** Server-Neustart:
-
-- **`[A]` Körper/Proportion/Größe →** zurück an den **Basis-Designer** per `SendMessage`
-  an dessen bestehende Agent-ID (Kontext bleibt; Statur ist das Skelett = ein Autor).
-- **`[B]` Gesicht →** Spezialist **figuren-gesicht** (nur wenn Linse B `ÜBERARBEITEN`).
-  Beim ersten Mal per `Agent` spawnen, danach per `SendMessage` an dieselbe ID.
-- **`[C]` Animation →** Spezialist **figuren-animation** (nur wenn Linse C `ÜBERARBEITEN`).
-  Ebenso: erst spawnen, dann per `SendMessage` fortführen.
-
-**Niemals `isolation: "worktree"`** und **niemals** einen frischen `Agent`-Aufruf für
-eine Fortsetzung: ein Worktree-Agent schreibt in eine Repo-Kopie, die der Dev-Server nie
-liest; ein frischer Agent verliert den Kontext. Nach den Änderungen zurück zu Schritt 4
-(Server neu starten!). Bei `GUT` oder nach 3 Runden: Schleife beenden.
-
-### 7. Abnahme
-- Dem Nutzer das **finale Montage-PNG** zeigen und die Kritiker-Teil-Urteile zusammenfassen.
-- **Die echte Abnahme passiert im interaktiven Viewer**, nicht auf Standbildern:
-  Montage-GUT hat schon Figuren passieren lassen, die der Nutzer beim Drehen in 3D
-  ablehnte (Gelenk-Lücken, schwebende Teile, verzerrte Pose). Auf Wunsch des Nutzers
-  – oder von selbst bei Figuren mit Gelenkketten – den Figuren-Viewer neu bauen
-  (`node tools/figuren-viewer/build-viewer.mjs`) und das Artifact aktualisieren,
-  damit interaktiv geprüft werden kann.
-- **Auf Freigabe warten.**
-
-### 8. Lektionen vorschlagen, dann committen
-Nach dem OK des Nutzers:
-- **Reflektieren:** Was hat diesmal gut funktioniert (→ *Best Practice*)? Ging etwas
-  schief oder brauchte mehrere Runden für dieselbe Ursache (→ *Fallstrick*)? Formuliere
-  je Fund einen knappen Eintrag (*Symptom → Ursache → Regel*).
-- **Vorschlagen:** Zeige die vorgeschlagenen LESSONS.md-Ergänzungen dem Nutzer und
-  **warte auf dessen Freigabe** (Lektionen werden nie automatisch festgeschrieben).
-  Gibt es nichts Neues, sag das und überspring den Eintrag.
-- **Committen:** Nach Freigabe `packages/engine/src/data/figures/<cardId>.json`
-  committen, **zusammen mit** den freigegebenen `LESSONS.md`-Änderungen (falls
-  vorhanden). Commit-Message z. B. „Figur <cardId>: <Kurzbeschreibung>".
-- Danach im Testmodus prüfbar (die Figur erscheint im Spiel).
-
-## Wichtig
-- Nur Figur-Datei(en) + ggf. `LESSONS.md` werden geändert; Karten-/Gameplay-Daten und
-  Engine-/Render-Code bleiben unangetastet.
-- Server-`/snap` ist dev-only (nur bei gesetztem `PCF_SNAP`), also kein Produktionsrisiko.
-- Hintergrund-Server/-Client am Ende nicht vergessen (laufen lassen für weitere Läufe
-  oder sauber stoppen).
-
-## Wissensspeicher & Selbst-Optimierung
-Das gesammelte Wissen steht in **`LESSONS.md`** (Fallstricke aus Fehlern, Best Practices
-aus Erfolgen). Schritt 0 liest es, Schritt 8 erweitert es nach Freigabe. So verbessert
-sich die Werkstatt mit jedem Lauf, statt dieselben Fehler zu wiederholen. Wächst der
-Figuren-Bestand, dient `LESSONS.md` auch als Kurator guter Referenz-Figuren.
-
-Widerspricht ein neuer Lauf einem bestehenden Eintrag, den Eintrag **korrigieren**
-(nicht einen zweiten anlegen). Ändert sich der Ablauf grundlegend, auch diese SKILL.md
-im selben Schritt anpassen.
+Erkenntnisse aus dem Lauf gehen als datierter Bericht nach
+`docs/figure-generation/experiments/` (Vorlage: `_TEMPLATE.md`) – **nicht** mehr in
+eine `LESSONS.md`. Beförderung nach Playbook, Quality Criteria oder Parts erst, wenn
+eine Erkenntnis belegt und wiederverwendbar ist, und immer erst nach Freigabe durch
+den Nutzer. Der Nutzer entscheidet über den Commit.

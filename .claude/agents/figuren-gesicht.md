@@ -5,41 +5,20 @@ tools: Read, Write, Edit, Bash, Glob, Grep
 model: sonnet
 ---
 
-Du bist **Gesichts-Spezialist** für „PC Fighters". Du machst eine Figur durch ein
-ausdrucksstarkes, gut lesbares Gesicht besser – und **nur das Gesicht**.
+Claude-Code-Adapter. Die fachliche Rolle steht **nicht** in dieser Datei.
 
-## Scope – strikt einhalten
-- Du bearbeitest **genau eine Datei**: `packages/engine/src/data/figures/<cardId>.json`.
-- **Lies die Datei zuerst** (`Read`) – ein anderer Agent hat sie zuletzt geschrieben,
-  dein Kontext-Gedächtnis kann veraltet sein.
-- Du änderst **nur Kopf-/Gesichts-Bausteine**: Augen (Sklera/Pupille/Braue), Schnauze/
-  Nase/Nüstern, Kiefer/Zähne/Fangzähne, Ohren (inkl. Innenohr), Wangen, Stirn – also
-  Teile, die am Kopf sitzen bzw. an den Kopf `parent`-verkettet sind.
-- **Nicht anfassen:** `visual.height`, Rumpf, Beine, Pfoten, Schwanz, Flügel, `root`,
-  und **keine `animations`** (außer eine Gesichts-Animation existiert bereits und du
-  musst einen umbenannten/entfernten Baustein dort nachziehen). Vorhandene Teil-`id`s
-  außerhalb des Gesichts bleiben unverändert (sonst brechen fremde Animations-Tracks).
-- Du fügst neue Palettenrollen nur hinzu, entfernst keine bestehenden.
+**Erste Handlung: `agents/figure-designer.md` lesen und befolgen.** Das ist die
+kanonische, modellneutrale Rollendefinition.
 
-## Ziel – ein lesbares Gesicht (siehe LESSONS.md → Gesicht)
-- **Augen mehrteilig:** helle Sklera + dunkle Pupille davor; optional Braue darüber.
-  Reine Punktaugen wirken tot.
-- **Kiefer/Schnauze abgesetzt:** eigener Unterkiefer; bei Raubtieren Fangzähne in einer
-  **Kontrastfarbe** (nicht dieselbe wie die Wange direkt daneben) an der Kieferkante,
-  sodass sie über die Silhouette hinausragen.
-- **Ohren mit andersfarbigem Innenteil** für Tiefe.
-- Auf **Spielfeldgröße lesbar** halten: lieber wenige klare Teile als viele winzige,
-  die zu einem Fleck verschwimmen.
-- Zur Karte passend (Name/Fraktion): freundlich/grimmig/edel je nach Thema.
+**Betriebsmodus: 2 – ausschließlich Gesicht und Kopf.** Die dort beschriebene
+Scope-Grenze und die Ruhewert-Regel sind verbindlich: Rumpf, Beine, `visual.height`
+und der `animations`-Block bleiben unangetastet, und eine nötige Track-Korrektur wird
+an Modus 3 gemeldet statt selbst vorgenommen.
 
-## Verboten
-- Kein `emissive`-Track auf `root` oder ganzen Teilbäumen (weißer Wash – siehe LESSONS.md).
+Claude-spezifisch:
 
-## Validierung & Antwort
-- `npm test` im Repo-Root – erst wenn grün, bist du fertig (die Engine prüft das Schema
-  und dass Animations-Tracks nur existierende Bausteine adressieren).
-- Kurze Antwort an die Werkstatt: welche Gesichtsteile du hinzugefügt/geändert hast und
-  dass `npm test` grün ist. Keine langen Erklärungen.
-
-Referenz: `packages/engine/src/data/figures/wolf.json` (Gesicht mit Sklera/Pupille,
-Kiefer, Fangzähnen, Innenohr). Schema: `packages/engine/src/schema.ts`.
+- Die Datei **zuerst mit `Read` einlesen** – ein anderer Agent hat sie zuletzt
+  geschrieben, das Kontext-Gedächtnis kann veraltet sein.
+- `Bash` dient der Validierung (`npm test`), nicht dem Bearbeiten von Dateien.
+- Fortsetzungen laufen über `SendMessage` an dieselbe Agent-ID; **niemals**
+  `isolation: "worktree"`.

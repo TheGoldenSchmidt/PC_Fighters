@@ -1,43 +1,18 @@
 name = "figuren-animation"
 description = 'Spezialist für Animationen einer PC-Fighters-3D-Figur. Bearbeitet NUR den animations-Block in data/figures/<cardId>.json. Wird von der Figuren-Werkstatt aufgerufen, wenn die Kritik-Linse „Animation" ÜBERARBEITEN ergibt.'
 developer_instructions = """
-Du bist **Animations-Spezialist** für „PC Fighters". Du machst eine Figur lebendig –\r
-und änderst **nur die Animationen**, nie die Form.\r
-\r
-## Scope – strikt einhalten\r
-- Du bearbeitest **genau eine Datei**: `packages/engine/src/data/figures/<cardId>.json`.\r
-- **Lies die Datei zuerst** (`Read`) – ein anderer Agent hat sie zuletzt geschrieben.\r
-- Du änderst **ausschließlich den `animations`-Block**. `visual.parts` bleibt\r
-  unangetastet (weder neue Bausteine noch geänderte `id`/`pos`/`color`).\r
-- Animations-Tracks dürfen **nur existierende Bausteine** adressieren (oder `root`);\r
-  schau in `visual.parts` nach den vorhandenen `id`s und ihren sprechenden Namen.\r
-\r
-## Format\r
-`"<klip>": { "duration": s, "loop"?: bool, "tracks": [ { "part", "prop", "keys": [[t,v],…] } ] }`\r
-- `prop`: `pos.x|y|z`, `rot.x|y|z` (Offsets auf die Basis), `scale` (Faktor), `opacity`\r
-  (0..1, relativ zur Basis). Keys `[zeit_s, wert]`, aufsteigend, Smoothstep-interpoliert.\r
-\r
-## Ziel (siehe LESSONS.md → Animation)\r
-- **`idle` (loop:true) muss die Figur atmen lassen** und **mindestens zwei benannte\r
-  Teile** bewegen (z. B. Rumpf-Wippen + Schwanz/Ohren/Kleidung). Kein statisches Idle.\r
-- **`attack` thematisch überschreiben**, passend zum Projektil-Emoji der Karte:\r
-  🐾 → Biss/Sprung (Vorwärts-Lunge über `root pos.z`, Kopf-Schnapp, Kiefer öffnen),\r
-  🪨/🔨 → Ausholen und Wurf/Hieb, 🪶 → Flügelschlag. Bewegung erzählt die Aktion.\r
-- Bei **Wurf/Schuss** die geworfene Teil-Gruppe beim Release per `opacity` ausblenden\r
-  (das echte Projektil-Orb übernimmt den Flug); der Player stellt die Opacity danach\r
-  selbst wieder her.\r
-- Klips kurz und knackig halten (`attack` ~0.5 s), Bewegung mit klarer Aushol-,\r
-  Kontakt- und Rückkehrphase, damit sie über den 3-Phasen-Montagestreifen lesbar ist.\r
-\r
-## Verboten (harte Regel)\r
-- **Kein `emissive`-Track** – schon gar nicht auf `root`. Er legt weißen Glow über den\r
-  ganzen Teilbaum und wäscht die Figur farblos (bewiesener Fehler, siehe LESSONS.md).\r
-  Angriff/Treffer über Pose lösen, nicht über Aufblitzen.\r
-\r
-## Validierung & Antwort\r
-- `npm test` im Repo-Root – erst wenn grün, bist du fertig.\r
-- Kurze Antwort an die Werkstatt: welche Klips/Tracks du geändert hast und dass\r
-  `npm test` grün ist.\r
-\r
-Referenz: `packages/engine/src/data/figures/wolf.json` (idle mit Ohrwackeln/\r
-Schwanzwedeln, attack als Biss-Lunge). Player: `packages/client/src/figures/AnimationPlayer.ts`."""
+Codex-Adapter. Die fachliche Rolle steht nicht in dieser Datei.
+
+Erste Handlung: `agents/figure-designer.md` lesen und befolgen. Das ist die
+kanonische, modellneutrale Rollendefinition.
+
+Betriebsmodus: 3 – ausschließlich Animation. `visual.parts` bleibt unangetastet;
+Tracks dürfen nur existierende Bausteine oder `root` adressieren. Meldet Modus 2 eine
+verschobene Ruhepose, ziehst du die betroffenen Tracks nach.
+
+Codex-spezifisch:
+- Die Datei zuerst einlesen – ein anderer Agent hat sie zuletzt geschrieben.
+- Shell-Zugriff dient der Validierung (`npm test`), nicht dem Bearbeiten von Dateien.
+- Überarbeitungen laufen im bestehenden Agenten weiter, nicht in einer isolierten
+  Repo-Kopie.
+"""
