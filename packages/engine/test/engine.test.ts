@@ -8,7 +8,6 @@ import {
   createSeededRandom,
   getEffectiveAttack,
   getMaxHealth,
-  legaleAktionen,
   matchesScope,
   roundEnergy,
   topOf,
@@ -18,6 +17,7 @@ import {
 } from '../src/index.js';
 import { recalcBoard } from '../src/internal.js';
 import { applyShedding, onPlayAbilities, onRoundStartAbilities } from '../src/abilities.js';
+import { aktiviereStatistik } from '../src/stats.js';
 import { data, emptyState, passBoth, put } from './helpers.js';
 import type { GameState, PlayerIndex } from '../src/types.js';
 
@@ -997,4 +997,442 @@ describe('Balancing V2 Phase 6: neue Engine-Primitive', () => {
     recalcBoard(s);
     expect(c.zaehler).toEqual({});
   });
+});
+
+describe('Schadensübernahme: der Nachbar opfert sich', () => {
+  /** Streikposten (nachbar/schadensuebernahme, same_top) neben einem sterbenden Menschen. */
+  function stellung(opferLane: number, beschuetzerLane: number) {
+    const s = emptyState();
+    const opfer = put(s, 0, opferLane, 'rekrut'); // 2/1
+    const beschuetzer = put(s, 0, beschuetzerLane, 'streikposten'); // 2/3
+    return { s, opfer, beschuetzer };
+  }
+
+  it('rettet den Nachbarn auf 1 Leben und geht dabei selbst auf 0', () => {
+    const { s, opfer, beschuetzer } = stellung(1, 2);
+    opfer.currentHealth = -3; // tödlicher Treffer
+    recalcBoard(s);
+    expect(s.board[0][1]).toBe(opfer);
+    expect(opfer.currentHealth).toBe(1);
+    expect(beschuetzer.schutzUsed).toBe(true);
+    expect(s.board[0][2]).toBeNull(); // hat sich geopfert
+  });
+
+  it('greift nur einmal pro Spiel', () => {
+    const { s, opfer, beschuetzer } = stellung(1, 2);
+    beschuetzer.schutzUsed = true;
+    opfer.currentHealth = 0;
+    recalcBoard(s);
+    expect(s.board[0][1]).toBeNull(); // niemand fängt den Treffer ab
+    expect(s.board[0][2]).toBe(beschuetzer); // der Beschützer lebt weiter
+  });
+
+  it('wirkt nur auf direkte Nachbarn, nicht über eine Lane hinweg', () => {
+    const { s, opfer, beschuetzer } = stellung(0, 2); // Lane 0 und 2 sind keine Nachbarn
+    opfer.currentHealth = 0;
+    recalcBoard(s);
+    expect(s.board[0][0]).toBeNull();
+    expect(beschuetzer.schutzUsed).toBe(false);
+  });
+
+  it('wirkt nicht über den scope hinaus (same_top: kein Tier)', () => {
+    const s = emptyState();
+    const tier = put(s, 1, 1, 'wolf');
+    put(s, 1, 2, 'streikposten'); // steht hier bei den Tieren, scope same_top passt nicht
+    tier.currentHealth = 0;
+    recalcBoard(s);
+    expect(s.board[1][1]).toBeNull();
+    expect(s.board[1][2]?.schutzUsed).toBe(false);
+  });
+
+  it('die Rettung geht der Schadensübernahme vor', () => {
+    const s = emptyState();
+    const opfer = put(s, 0, 1, 'der_alte_hund'); // rettung
+    const beschuetzer = put(s, 0, 2, 'streikposten');
+    opfer.currentHealth = 0;
+    recalcBoard(s);
+    expect(opfer.rettungUsed).toBe(true);
+    expect(beschuetzer.schutzUsed).toBe(false); // musste nicht einspringen
+    expect(s.board[0][2]).toBe(beschuetzer);
+  });
+});
+
+describe('Bisher ungetestete Primitive', () => {
+  it('werkzeug gibt genau einer anderen Karte gleicher Sub-Fraktion +ATK', () => {
+    const s = emptyState();
+    put(s, 0, 1, 'werkzeugkiste'); // werkzeug +2, arbeiter
+    const lehrling = put(s, 0, 0, 'lehrling'); // arbeiter, 2 ATK
+    const rekrut = put(s, 0, 2, 'rekrut'); // humans, andere Sub-Fraktion
+    recalcBoard(s);
+    expect(getEffectiveAttack(s, 0, 0)).toBe(lehrling.baseAttack + 2);
+    expect(getEffectiveAttack(s, 0, 2)).toBe(rekrut.baseAttack); // kein zweites Ziel
+  });
+
+  it('werkzeug springt weiter, wenn das bisherige Ziel stirbt', () => {
+    const s = emptyState();
+    put(s, 0, 1, 'werkzeugkiste');
+    const ersterEmpfaenger = put(s, 0, 0, 'lehrling');
+    put(s, 0, 2, 'fliessbandarbeiter'); // ebenfalls arbeiter, höhere Lane
+    recalcBoard(s);
+    expect(getEffectiveAttack(s, 0, 0)).toBe(4); // niedrigste Lane gewinnt
+    expect(getEffectiveAttack(s, 0, 2)).toBe(3);
+
+    ersterEmpfaenger.currentHealth = 0;
+    recalcBoard(s);
+    expect(s.board[0][0]).toBeNull();
+    expect(getEffectiveAttack(s, 0, 2)).toBe(5); // Bonus wandert weiter
+  });
+
+  it('improvisation (Modus schwelle) schaltet erst unter der Basis-Schwelle frei', () => {
+    const s = emptyState();
+    put(s, 0, 1, 'improvisiertes_lager'); // Schwelle 7
+    const rekrut = put(s, 0, 0, 'rekrut');
+    recalcBoard(s);
+    expect(getEffectiveAttack(s, 0, 0)).toBe(rekrut.baseAttack); // Basis 15 > 7
+
+    s.players[0].base = 7;
+    recalcBoard(s);
+    expect(getEffectiveAttack(s, 0, 0)).toBe(rekrut.baseAttack + 1);
+  });
+
+  it('improvisation (Modus pro_fehlende_hp) skaliert mit fehlenden Basis-HP und ist gedeckelt', () => {
+    const s = emptyState();
+    const meute = put(s, 0, 0, 'meute_der_vergessenen'); // +1/+1 je 4 fehlende HP, cap 2
+    recalcBoard(s);
+    expect(getEffectiveAttack(s, 0, 0)).toBe(meute.baseAttack);
+
+    s.players[0].base = data.config.baseHealth - 4;
+    recalcBoard(s);
+    expect(getEffectiveAttack(s, 0, 0)).toBe(meute.baseAttack + 1);
+
+    s.players[0].base = 0; // 15 fehlende HP → 3 Stufen, aber cap 2
+    recalcBoard(s);
+    expect(getEffectiveAttack(s, 0, 0)).toBe(meute.baseAttack + 2);
+  });
+
+  it('entwaffnen entfernt die konfigurierten Keywords beim Ausspielen', () => {
+    const s = emptyState();
+    put(s, 1, 0, 'spatz'); // fliegend + flink
+    s.players[0].hand = ['eule'];
+    const nach = applyAction(s, 0, { type: 'playCreature', handIndex: 0, lane: 0 }, data);
+    expect(nach.board[1][0]!.keywords).not.toContain('fliegend');
+    expect(nach.board[1][0]!.keywords).not.toContain('flink');
+    expect(nach.board[0][0]!.keywords).toContain('fliegend'); // die Eule selbst behält es
+  });
+
+  it('experiment verbraucht Wissen und wandelt es in dauerhafte Werte', () => {
+    const s = emptyState();
+    s.players[0].knowledge = 5;
+    s.players[0].hand = ['doktorandin']; // proMarker +1/+1, max 3
+    const nach = applyAction(s, 0, { type: 'playCreature', handIndex: 0, lane: 0 }, data);
+    const dok = nach.board[0][0]!;
+    expect(dok.permAttackBonus).toBe(3); // max 3 Marker
+    expect(dok.permHealthBonus).toBe(3);
+    expect(nach.players[0].knowledge).toBe(2); // Rest bleibt liegen
+  });
+
+  it('experiment ohne Wissen bleibt wirkungslos', () => {
+    const s = emptyState();
+    s.players[0].knowledge = 0;
+    s.players[0].hand = ['doktorandin'];
+    const nach = applyAction(s, 0, { type: 'playCreature', handIndex: 0, lane: 0 }, data);
+    expect(nach.board[0][0]!.permAttackBonus).toBe(0);
+  });
+
+  it('beschwoeren beim Ausspielen läuft ins Leere, wenn keine Lane frei ist', () => {
+    const s = emptyState();
+    put(s, 0, 0, 'rekrut');
+    put(s, 0, 2, 'rekrut');
+    s.players[0].hand = ['katzenmutter'];
+    // Lane 1 ist das einzige freie Feld – dorthin kommt die Katzenmutter selbst.
+    const nach = applyAction(s, 0, { type: 'playCreature', handIndex: 0, lane: 1 }, data);
+    expect(nach.board[0].filter((c) => c?.isToken)).toHaveLength(0);
+    expect(nach.board[0][1]?.cardId).toBe('katzenmutter');
+  });
+
+  it('verstaerker ohne firstOnlyPerRound verdoppelt jedes Wachstum der Runde', () => {
+    const s = emptyState();
+    const verstaerker = put(s, 0, 0, 'betriebsrat');
+    verstaerker.abilities = [
+      { kind: 'verstaerker', ziel: 'wachstum', scope: 'same_sub', faktor: 2, firstOnlyPerRound: false }
+    ];
+    const a = put(s, 0, 1, 'lehrling'); // wachstum +0/+1
+    const b = put(s, 0, 2, 'fliessbandarbeiter'); // wachstum +1/+0
+    onRoundStartAbilities(s);
+    // Beide Arbeiter wachsen doppelt, nicht nur der erste der Runde.
+    expect(a.permHealthBonus).toBe(2);
+    expect(b.permAttackBonus).toBe(2);
+  });
+
+  it('verstaerker mit firstOnlyPerRound verstärkt nur den ersten Wachstumstrigger', () => {
+    const s = emptyState();
+    put(s, 0, 0, 'betriebsrat'); // firstOnlyPerRound: true (Kartenwert)
+    const a = put(s, 0, 1, 'lehrling');
+    const b = put(s, 0, 2, 'fliessbandarbeiter');
+    onRoundStartAbilities(s);
+    expect(a.permHealthBonus).toBe(2); // verdoppelt
+    expect(b.permAttackBonus).toBe(1); // einfach
+  });
+});
+
+describe('Aktionskarten-Effekte (effects.ts)', () => {
+  /** Spielt eine Aktionskarte aus Spieler 0s Hand. */
+  function spieleAktion(s: GameState, cardId: string, targetLane?: number, toLane?: number) {
+    s.players[0].hand = [cardId];
+    return applyAction(s, 0, { type: 'playAction', handIndex: 0, targetLane, toLane }, data);
+  }
+
+  it('buffHealth braucht eine eigene Kreatur als Ziel', () => {
+    const s = emptyState();
+    expect(() => spieleAktion(s, 'schildwall', 0)).toThrow(/keine eigene Kreatur/);
+    expect(() => spieleAktion(s, 'schildwall', undefined)).toThrow(/eigene Kreatur als Ziel/);
+    expect(() => spieleAktion(s, 'schildwall', 99)).toThrow(/eigene Kreatur als Ziel/);
+  });
+
+  it('buffHealth hebt Maximum und aktuelles Leben und meldet ein spell-Ereignis', () => {
+    const s = emptyState();
+    put(s, 0, 1, 'rekrut'); // 2/1
+    const nach = spieleAktion(s, 'schildwall', 1);
+    expect(nach.board[0][1]!.permHealthBonus).toBe(3);
+    expect(getMaxHealth(nach, 0, 1)).toBe(4);
+    expect(nach.board[0][1]!.currentHealth).toBe(4);
+    expect(nach.log.at(-1)?.event).toMatchObject({ kind: 'spell', lane: 1, effect: 'buff' });
+  });
+
+  it('moveCreature lehnt besetzte und identische Ziel-Lanes ab', () => {
+    const s = emptyState();
+    put(s, 0, 0, 'wolf');
+    put(s, 0, 1, 'ratte');
+    expect(() => spieleAktion(s, 'hetzjagd', 0, 1)).toThrow(/Ziel-Lane ist nicht frei/);
+    expect(() => spieleAktion(s, 'hetzjagd', 0, undefined)).toThrow(/Ziel-Lane wählen/);
+    // Ziel == Startlane: die Belegt-Prüfung greift zuerst, weil die Kreatur dort
+    // ja noch selbst steht. Der eigene "steht schon in dieser Lane"-Zweig in
+    // effects.ts ist dadurch unerreichbar – hier festgehalten, damit ein
+    // Umbau der Prüfreihenfolge auffällt.
+    expect(() => spieleAktion(s, 'hetzjagd', 0, 0)).toThrow(/Ziel-Lane ist nicht frei/);
+  });
+
+  it('moveCreature versetzt die Kreatur und gibt den temporären Bonus', () => {
+    const s = emptyState();
+    put(s, 0, 0, 'wolf');
+    const nach = spieleAktion(s, 'hetzjagd', 0, 2);
+    expect(nach.board[0][0]).toBeNull();
+    expect(nach.board[0][2]?.cardId).toBe('wolf');
+    expect(nach.board[0][2]?.tempAttackBonus).toBe(1);
+    expect(nach.log.at(-1)?.event).toMatchObject({ kind: 'spell', lane: 2, effect: 'move' });
+  });
+
+  it('summon füllt nur die freien Lanes und wird bei vollem Brett abgelehnt', () => {
+    const s = emptyState();
+    put(s, 0, 0, 'rekrut');
+    const nach = spieleAktion(s, 'mobilmachung', undefined); // 2 Token, 2 freie Lanes
+    expect(nach.board[0].filter((c) => c?.isToken)).toHaveLength(2);
+    expect(nach.log.filter((l) => l.event?.kind === 'spell')).toHaveLength(2);
+
+    const voll = emptyState();
+    for (let lane = 0; lane < data.config.lanes; lane++) put(voll, 0, lane, 'rekrut');
+    expect(() => spieleAktion(voll, 'mobilmachung')).toThrow(/Keine freie Lane/);
+  });
+
+  it('debuff senkt den Angriff aller Gegner und niemals unter 0', () => {
+    const s = emptyState();
+    put(s, 1, 0, 'ratte'); // 2 ATK
+    put(s, 1, 2, 'wolf');
+    const nach = spieleAktion(s, 'generalstreik'); // −2 ATK
+    expect(nach.board[1][0]!.tempAttackBonus).toBe(-2);
+    expect(getEffectiveAttack(nach, 1, 0)).toBe(0); // nie negativ
+    expect(nach.log.at(-1)?.event).toMatchObject({ kind: 'spell', effect: 'attackBuff' });
+  });
+
+  it('spendKnowledge verteilt Schaden reihum auf die gegnerischen Kreaturen', () => {
+    const s = emptyState();
+    s.players[0].knowledge = 2; // 2 Marker × 2 Schaden = 4
+    put(s, 1, 0, 'schildkroete'); // 0/7
+    put(s, 1, 1, 'gecko'); // 1/4
+    const nach = spieleAktion(s, 'experimentelle_formel');
+    expect(nach.players[0].knowledge).toBe(0);
+    expect(nach.board[1][0]!.currentHealth).toBe(5); // 2 von 4 Treffern
+    expect(nach.board[1][1]!.currentHealth).toBe(2);
+  });
+
+  it('spendKnowledge trifft die Basis, wenn der Gegner kein Brett hat', () => {
+    const s = emptyState();
+    s.players[0].knowledge = 3;
+    const nach = spieleAktion(s, 'experimentelle_formel'); // 3 × 2 = 6
+    expect(nach.players[1].base).toBe(data.config.baseHealth - 6);
+  });
+
+  it('spendKnowledge ohne Wissen ist ein Leerlauf (kostet aber die Karte)', () => {
+    const s = emptyState();
+    s.players[0].knowledge = 0;
+    put(s, 1, 0, 'gecko');
+    const nach = spieleAktion(s, 'experimentelle_formel');
+    expect(nach.board[1][0]!.currentHealth).toBe(4);
+    expect(nach.players[0].hand).toHaveLength(0);
+  });
+});
+
+describe('buildClientView: die Grenze zur verdeckten Information', () => {
+  function aufgebauterZustand(): GameState {
+    const s = emptyState();
+    s.players[0].hand = ['rekrut', 'schildwall'];
+    s.players[1].hand = ['wolf', 'ratte', 'schlange'];
+    s.players[0].deck = ['ritter', 'kommandantin'];
+    s.players[1].deck = ['baer'];
+    s.players[0].knowledge = 4;
+    put(s, 0, 0, 'rekrut');
+    put(s, 1, 1, 'adler');
+    return s;
+  }
+
+  it('liefert die eigene Hand vollständig, die gegnerische nur als Anzahl', () => {
+    const s = aufgebauterZustand();
+    const sicht = buildClientView(s, 0, data);
+    expect(sicht.hand.map((c) => c.id)).toEqual(['rekrut', 'schildwall']);
+    expect(sicht.players[1].handCount).toBe(3);
+    expect(sicht.players[1].deckCount).toBe(1);
+    expect(JSON.stringify(sicht)).not.toContain('baer'); // gegnerisches Deck bleibt geheim
+  });
+
+  it('gibt weder knowledge noch stats noch die Deck-Listen heraus', () => {
+    const s = aufgebauterZustand();
+    aktiviereStatistik(s);
+    const sicht = buildClientView(s, 0, data);
+    expect(sicht).not.toHaveProperty('stats');
+    expect(sicht.players[0]).not.toHaveProperty('knowledge');
+    expect(sicht.players[0]).not.toHaveProperty('deck');
+    expect(sicht.players[0]).not.toHaveProperty('hand');
+    expect(JSON.stringify(sicht)).not.toContain('knowledge');
+  });
+
+  it('meldet Rundenenergie als energyCap und die Konfiguration des Bretts', () => {
+    const s = aufgebauterZustand();
+    s.round = 4;
+    const sicht = buildClientView(s, 1, data);
+    expect(sicht.you).toBe(1);
+    expect(sicht.energyCap).toBe(roundEnergy(data.config, 4));
+    expect(sicht.lanes).toBe(data.config.lanes);
+    expect(sicht.roundLimit).toBe(data.config.roundLimit);
+    expect(sicht.board[0]).toHaveLength(data.config.lanes);
+  });
+
+  it('reicht berechnete Kreaturenwerte durch, nicht die Rohwerte', () => {
+    const s = emptyState();
+    put(s, 0, 0, 'schildwache'); // nachbar/schild +1 Leben
+    const rekrut = put(s, 0, 1, 'rekrut');
+    recalcBoard(s);
+    const ansicht = buildClientView(s, 0, data).board[0][1]!;
+    expect(ansicht.baseMaxHealth).toBe(rekrut.baseMaxHealth);
+    expect(ansicht.maxHealth).toBe(getMaxHealth(s, 0, 1));
+    expect(ansicht.attack).toBe(getEffectiveAttack(s, 0, 1));
+    expect(ansicht.uid).toBe(rekrut.uid);
+  });
+
+  it('kappt das Log auf die letzten 60 Einträge', () => {
+    const s = emptyState();
+    for (let i = 0; i < 80; i++) s.log.push({ id: i, round: 1, text: `Eintrag ${i}` });
+    const sicht = buildClientView(s, 0, data);
+    expect(sicht.log).toHaveLength(60);
+    expect(sicht.log[0].text).toBe('Eintrag 20');
+    expect(sicht.log.at(-1)?.text).toBe('Eintrag 79');
+  });
+});
+
+describe('Die drei Wege zum Spielende', () => {
+  it('zerstörte Basis: der andere Spieler gewinnt', () => {
+    const s = emptyState();
+    s.players[1].base = 1;
+    put(s, 0, 0, 'ritter'); // 4 ATK auf eine leere Lane
+    const nach = passBoth(s);
+    expect(nach.phase).toBe('ended');
+    expect(nach.winner).toBe(0);
+  });
+
+  it('der Kampf bricht ab, sobald eine Basis fällt – spätere Lanes schlagen nicht mehr zu', () => {
+    const s = emptyState();
+    s.players[1].base = 1;
+    put(s, 0, 0, 'ritter'); // Lane 0 zuerst: beendet die Partie
+    put(s, 1, 1, 'baer'); // Lane 1 käme danach – kommt nicht mehr dran
+    const nach = passBoth(s);
+    expect(nach.phase).toBe('ended');
+    expect(nach.winner).toBe(0);
+    expect(nach.players[0].base).toBe(data.config.baseHealth); // unangetastet
+  });
+
+  it('beide Basen gleichzeitig auf 0 (Zermürbung): Unentschieden', () => {
+    const s = emptyState();
+    const z = data.config.zermuerbung!;
+    s.round = z.abRunde;
+    // Die Zermürbung trifft beide Basen im selben Schritt.
+    s.players[0].base = z.schaden;
+    s.players[1].base = z.schaden;
+    const nach = passBoth(s);
+    expect(nach.phase).toBe('ended');
+    expect(nach.winner).toBe('draw');
+    expect(nach.log.some((l) => l.text.includes('Beide Basen zerstört'))).toBe(true);
+  });
+
+  it('Zermürbung beendet eine sonst festgefahrene Partie', () => {
+    const s = emptyState();
+    const z = data.config.zermuerbung!;
+    s.round = z.abRunde;
+    s.players[0].base = z.schaden; // genau tödlich
+    s.players[1].base = 10;
+    const nach = passBoth(s);
+    expect(nach.phase).toBe('ended');
+    expect(nach.winner).toBe(1);
+    expect(nach.log.some((l) => l.text.includes('Zermürbung'))).toBe(true);
+  });
+
+  it('Rundenlimit: die höhere Basis gewinnt', () => {
+    const s = emptyState();
+    s.round = data.config.roundLimit;
+    s.config = { ...data.config, zermuerbung: undefined }; // sonst greift vorher die Zermürbung
+    s.players[0].base = 9;
+    s.players[1].base = 4;
+    const nach = passBoth(s);
+    expect(nach.phase).toBe('ended');
+    expect(nach.winner).toBe(0);
+    expect(nach.log.some((l) => l.text.includes('Rundenlimit erreicht'))).toBe(true);
+  });
+
+  it('Rundenlimit bei Gleichstand: Unentschieden', () => {
+    const s = emptyState();
+    s.round = data.config.roundLimit;
+    s.config = { ...data.config, zermuerbung: undefined };
+    const nach = passBoth(s);
+    expect(nach.phase).toBe('ended');
+    expect(nach.winner).toBe('draw');
+  });
+});
+
+describe('Cheerleader-Superkräfte: noch offener Vertrag', () => {
+  // Umgesetzt sind Auswahl, drei stabile Bankplätze und der öffentliche Typ
+  // CheerleaderSacrificeEvent. Die eigentliche Opfer-Mechanik fehlt noch;
+  // die offenen Punkte stehen in docs/Arena_Cheerleader_Erweiterung.md §3/§4.
+
+  it('heute erzeugt die Engine kein cheerleaderSacrifice-Ereignis', () => {
+    const s = emptyState();
+    put(s, 0, 0, 'ritter');
+    put(s, 1, 0, 'wolf');
+    const nach = passBoth(s);
+    expect(nach.log.some((l) => l.event?.kind === 'cheerleaderSacrifice')).toBe(false);
+    expect(nach.players[0].cheerleaders).toEqual(s.players[0].cheerleaders);
+  });
+
+  it('die Bankplätze sind öffentlich und stehen in beiden Client-Sichten', () => {
+    const s = emptyState();
+    for (const ich of [0, 1] as PlayerIndex[]) {
+      const sicht = buildClientView(s, ich, data);
+      expect(sicht.players[0].cheerleaders).toEqual(s.players[0].cheerleaders);
+      expect(sicht.players[1].cheerleaders).toEqual(s.players[1].cheerleaders);
+    }
+  });
+
+  it.todo('PlayerAction sacrificeCheerleader mit Slot 0|1|2 wird angenommen');
+  it.todo('ein leerer Bankplatz kann nicht geopfert werden');
+  it.todo('nur der Besitzer darf seinen eigenen Bankplatz opfern');
+  it.todo('der geopferte Slot wird stabil auf null gesetzt');
+  it.todo('das CheerleaderSacrificeEvent steht im Log VOR der Wirkung der Superkraft');
+  it.todo('nach dem Opfer werden Todesfälle, Folgetrigger und zerstörte Basen geprüft');
 });
