@@ -1,8 +1,9 @@
 export * from './types.js';
 export { KEYWORDS, hasKeyword } from './keywords.js';
 export { ABILITIES, getAbilities, getAbility, hasAbility } from './abilities.js';
-export { createSeededRandom } from './rng.js';
+export { createSeededRandom, wuerfle } from './rng.js';
 export { EFFECTS } from './effects.js';
+export { SUPERKRAEFTE, basisSchaden } from './schild.js';
 export {
   applyAction,
   buildClientView,

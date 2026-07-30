@@ -33,7 +33,19 @@ The server holds the complete `GameState`. It never sends it raw. `buildClientVi
 
 ### Combat is a state jump + an event stream the client animates
 
-`resolveCombat`/`applyAction` mutate state to the post-combat result in one step, but each attack/death is also appended to `state.log` as a `LogEntry` carrying a structured `event` (`AttackEvent` | `DeathEvent`). The server sends the final state plus this log. The client (`GameScreen.tsx`) keeps showing the *old* board (`shownView`) and replays the events lane-by-lane — projectile → damage → death → next lane — before switching to the server's new state. Consequence: if you add a combat mechanic in the engine, emit a matching `CombatEvent` or the client will silently jump instead of animating it. New event kinds must be handled in the `runReplay` loop.
+`resolveCombat`/`applyAction` mutate state to the post-combat result in one step, but each attack/death is also appended to `state.log` as a `LogEntry` carrying a structured `event` (`AttackEvent` | `DeathEvent` | `CheerleaderSacrificeEvent` | `SpellEvent` | `SchildEvent`). The server sends the final state plus this log. The client (`GameScreen.tsx`) keeps showing the *old* board (`shownView`) and replays the events lane-by-lane — projectile → damage → death → next lane — before switching to the server's new state. Consequence: if you add a combat mechanic in the engine, emit a matching `LogEvent` or the client will silently jump instead of animating it. New event kinds must be handled in the `runReplay` loop, which dispatches on `ev.kind` through an `else if` chain with **no catch-all `else`** — a kind nobody claims is silently dropped from the animation (the state still jumps, so this fails quietly).
+
+Because the client applies `AttackEvent.damage` directly to its own displayed state, that field must always carry the **effective** damage, not the raw roll — see the shield below.
+
+### Base shield (`schild.ts`)
+
+Every hit on a base goes through `basisSchaden(state, ziel, menge)` — the single funnel that owns `player.base`. It charges the defender's shield by a random 1–3 segments; on reaching `config.schild.abschnitte` (7) it blocks that hit entirely, fires a random superpower from the `SUPERKRAEFTE` registry, and resets to 0. It returns the damage that actually landed, so callers must use the return value for both `base` bookkeeping and telemetry. Deliberate exception: attrition (`zermuerbung` in `endRound`) writes `base` directly and stays unblockable.
+
+`schild.ts` sits *below* `abilities.ts` in the import order (it's used by `game.ts`, `abilities.ts` and `effects.ts`), so it must not import them. Two consequences worth knowing: it inlines its own card-draw (same reason as `internal.ts`), and `schwaechung` only mutates creature stats — the surrounding flow's `logDeaths` does the removal, so death events and on-death triggers still fire. Also note `getMaxHealth` floors at 1, so a max-health debuff alone can never kill; `schwaechung` subtracts from `currentHealth` too.
+
+### Randomness lives in the state, not in a closure
+
+`applyAction` does a `structuredClone`, and the server round-trips `GameState` through JSON, so a `random` closure cannot survive either. `createGame` therefore draws one seed from its injected `random` into `state.rngState`, and everything after deck setup uses `wuerfle(state, min, max)` (`rng.ts`), which advances that field in place. Keep new randomness on `wuerfle` — `simulate.ts` calls `applyAction` *without* a `random` argument and would otherwise lose reproducibility. `test/regression.test.ts` is the golden master that catches this.
 
 ### Turn phases
 

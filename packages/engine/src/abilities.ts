@@ -14,6 +14,7 @@ import {
   otherPlayer
 } from './internal.js';
 import type { DeathInfo } from './internal.js';
+import { basisSchaden } from './schild.js';
 import { zaehleKarte, zaehleSpieler } from './stats.js';
 import type { Ability, Creature, GameState, PlayerIndex, Scope, TokenDef } from './types.js';
 
@@ -616,8 +617,8 @@ function applyExperiment(
     const liveLanes: number[] = [];
     for (let j = 0; j < state.board[enemy].length; j++) if (state.board[enemy][j]) liveLanes.push(j);
     if (liveLanes.length === 0) {
-      state.players[enemy].base -= total;
-      zaehleKarte(state, owner, c.cardId, 'schadenBasis', total);
+      // Über den Schild-Trichter: auch Effektschaden lädt auf und ist blockbar.
+      zaehleKarte(state, owner, c.cardId, 'schadenBasis', basisSchaden(state, enemy, total));
     } else {
       let i = 0;
       while (total > 0) {
