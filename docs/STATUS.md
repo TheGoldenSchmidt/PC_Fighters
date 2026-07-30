@@ -18,11 +18,25 @@ Fertig ist die Infrastruktur: datengetriebener Kandidatenpool
 Bankplätze je Spieler, Persistenz mit Migration, `CheerleaderSacrificeEvent` als
 Replay-Vertrag, 3D-Teamzonen samt 2D-Fallback und eigene `cheer`/`sacrifice`-Clips.
 
-Offen ist die eigentliche Wirkung: die fünf Reaktionskräfte und die dafür nötige
-**serialisierbare Auflösungssteuerung** in der Engine. Heute löst `applyAction`
-Kampf und Effekte vollständig in einem Aufruf auf; eine Reaktion auf tödlichen
-Schaden braucht einen pausierbaren, persistierbaren Auflösungszustand, der nach
-der Spielerwahl exakt an der unterbrochenen Stelle weiterläuft.
+**Engine fertig** (Branch `cheerleader-reaktionen`): die pausierbare
+Auflösungssteuerung steht als Schrittmaschine (`GameState.aufloesung`, reine
+Daten), alle fünf Kräfte sind datengetrieben in `config.cheerleaders.kraefte`,
+Reaktionsfenster sperren jede andere Aktion, `legaleAktionen` und der Bot
+kennen die neue Aktion. 189 Tests grün, 420 Backtest-Partien terminieren.
+
+Noch offen, bevor der Meilenstein steht:
+
+1. **Client-UI und Replay** – Auswahl, Wartezustand beim Gegner,
+   Reihenfolge Opfer → Kraft-Banner → Schaden/Rettung/Tod, in 3D und `?no3d`.
+2. **Versionierte Raum-Persistenz** mit atomarem Schreiben, damit ein offenes
+   Fenster einen Serverneustart übersteht.
+3. **Cheerleader-Kennzahlen** im Backtest-Report (Angebote, Verzicht, Opfer,
+   verursachter/verhinderter Schaden, Rettungen je Cheerleader).
+
+> **Offene Designfrage:** Drei der fünf Kandidaten lösen auf *jede* gegnerische
+> Kreatur aus. Mit der Standardbank öffnet damit fast jedes Ausspielen ein
+> Fenster beim Gegner. Regelkonform, aber sehr gesprächig – vor dem Client-Bau
+> zu entscheiden, ob Auslöser seltener greifen sollen.
 
 ## Next – direkt danach
 
@@ -58,7 +72,7 @@ der Spielerwahl exakt an der unterbrochenen Stelle weiterläuft.
 
 | Prüfung | Stand 2026-07-30 |
 |---|---|
-| `npm test` | 🟢 177 Tests (163 Engine + 14 Server), 6+1 Dateien |
+| `npm test` | 🟢 189 Tests (175 Engine + 14 Server), 6+1 Dateien |
 | `npm run typecheck` | 🟢 alle drei Workspaces fehlerfrei |
 | `npm run build` | 🟢 – aber **ein** JS-Chunk mit 796 kB (222 kB gzip) |
 | CI | 🟢 [`.github/workflows/ci.yml`](../.github/workflows/ci.yml): `npm ci` → Tests → Typecheck → Build → Backtest-Smoke |
