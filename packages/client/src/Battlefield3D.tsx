@@ -635,8 +635,13 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
         const farSide: PlayerIndex = world.me === 0 ? 1 : 0;
         const ownZone = world.teamZones[world.me];
         const opponentZone = world.teamZones[farSide];
-        ownZone.group.position.set(rightX - laneStep * 0.1, 0, nearZ - laneStep * 0.42);
-        opponentZone.group.position.set(leftX + laneStep * 0.1, 0, farZ + laneStep * 0.25);
+        // Die Bank ist um ihren Mittelpunkt zentriert und ragt daher über die
+        // äußere Lane-Kante hinaus. Auf schmalem Canvas ist seitlich zu wenig
+        // Bühne dafür da – dann rückt sie nach innen, analog zu
+        // responsiveZoneScale direkt darüber.
+        const zoneInset = 0.1 + (1 - responsiveZoneScale) * 1.6;
+        ownZone.group.position.set(rightX - laneStep * zoneInset, 0, nearZ - laneStep * 0.42);
+        opponentZone.group.position.set(leftX + laneStep * zoneInset, 0, farZ + laneStep * 0.25);
         ownZone.group.scale.setScalar(zoneScale);
         opponentZone.group.scale.setScalar(zoneScale * 0.9);
         ownZone.group.visible = true;

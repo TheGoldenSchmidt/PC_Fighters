@@ -583,6 +583,14 @@ input:focus {
   height: 100vh;
   max-width: 960px;
   overflow: hidden;
+  /* Seitlicher Freiraum neben den Lanes für die Cheerleader-Bänke. Lane-Breite,
+     Bankbreite, Bank-Versatz und die 3D-Bühne leiten sich ALLE hieraus ab –
+     vorher standen sie unabhängig voneinander im CSS und liefen im
+     Handy-Breakpoint auseinander (36px Rand gegen 142px Bank). */
+  --arena-rand: 110px;
+  /* Wie weit die Bank bewusst in die äußere Lane ragt, damit die drei Plätze
+     lesbar bleiben. Sie ist pointer-events:none, verdeckt also nichts Bedienbares. */
+  --bank-ueberlappung: 32px;
 }
 
 .game-screen > .player-bar,
@@ -706,7 +714,7 @@ input:focus {
   z-index: 3;
   /* Anker für das 3D-Schlachtfeld-Canvas */
   position: relative;
-  width: min(680px, calc(100% - 220px));
+  width: min(680px, calc(100% - 2 * var(--arena-rand)));
   align-self: center;
 }
 
@@ -731,22 +739,46 @@ input:focus {
 }
 
 @media (max-width: 699px) {
-  .game-screen { max-width: 100%; }
-  .lanes { width: calc(100% - 72px); }
-  .battlefield3d-shell { left: -36px; right: -36px; }
+  /* Schmalerer Rand fürs Handy – Bank und 3D-Bühne ziehen automatisch mit,
+     weil sie aus derselben Variable rechnen. Die Bank ragt hier weiter in die
+     äußere Lane, sonst bliebe von den drei Plätzen nichts Lesbares übrig. */
+  .game-screen { max-width: 100%; --arena-rand: 36px; --bank-ueberlappung: 40px; }
+  .lanes { width: calc(100% - 2 * var(--arena-rand)); }
+  .battlefield3d-shell {
+    left: calc(-1 * var(--arena-rand));
+    right: calc(-1 * var(--arena-rand));
+  }
+}
+
+/* Auf schmalen Handys (iPhone SE & Co.) teilen sich Basis-, Schild-, Energie-
+   und Deck-Anzeige die Leiste mit dem Passen-Button. In Standardgröße passt das
+   ab etwa 400px nicht mehr – gemessen ragte der Button 60px heraus. Alles wird
+   daher etwas kompakter; der Button behält als einziges seine Größe. */
+@media (max-width: 430px) {
+  .player-bar { gap: 4px; padding: 8px 8px; }
+
+  .base-chip,
+  .deck-chip,
+  .energy-chip {
+    padding: 5px 6px;
+  }
+
+  .pass-button { padding: 6px 12px; }
 }
 
 /* Kompakte 2D-Teamzonen, wenn WebGL fehlt. Die Diagonale bleibt dieselbe wie
-   auf der 3D-Bühne; die Leiste liegt außerhalb der Lane-Tapflächen. */
+   auf der 3D-Bühne. Breite und Versatz hängen an --arena-rand: die Bank sitzt
+   damit garantiert im Bild und ragt nur um --bank-ueberlappung in die äußere
+   Lane (dank pointer-events:none ohne die Tapfläche zu stören). */
 .team-strip {
   position:absolute;
   z-index:7;
-  width:min(142px,34vw);
+  width:calc(var(--arena-rand) + var(--bank-ueberlappung));
   pointer-events:none;
   filter:drop-shadow(0 6px 10px rgba(0,0,0,.5));
 }
-.team-strip-opponent { top:2px; left:calc(-1 * min(116px,27vw)); transform:scale(.86); transform-origin:top left; }
-.team-strip-own { right:calc(-1 * min(116px,27vw)); bottom:2px; transform-origin:bottom right; }
+.team-strip-opponent { top:2px; left:calc(-1 * var(--arena-rand)); transform:scale(.86); transform-origin:top left; }
+.team-strip-own { right:calc(-1 * var(--arena-rand)); bottom:2px; transform-origin:bottom right; }
 .team-bench {
   display:grid;
   grid-template-columns:repeat(3,1fr);
@@ -1450,6 +1482,9 @@ input:focus {
 
 .pass-button {
   margin-left: auto;
+  /* Bedienbares Element – darf nie zugunsten der Chips schrumpfen oder
+     abgeschnitten werden. Nachgeben soll die Handkarten-Reihe. */
+  flex-shrink: 0;
   background: linear-gradient(135deg, var(--gold) 0%, #d97706 100%);
   color: #0f1115;
   font-weight: 800;
@@ -2087,7 +2122,11 @@ input:focus {
   .game-screen {
     padding: 20px;
     gap: 16px;
-    max-width: 720px;
+    /* Muss zur Basisregel passen: seit die Cheerleader-Bänke seitlich Platz
+       brauchen, sind es 960px. Blieb hier der alte Wert 720px stehen, gewinnt
+       er (spätere Regel) und die Lanes schrumpfen von 680px auf 460px – die
+       Bank-Ränder gingen dann vom Spielfeld ab statt daneben. */
+    max-width: 960px;
   }
 
   .slot {
