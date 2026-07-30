@@ -1199,17 +1199,13 @@ describe('Aktionskarten-Effekte (effects.ts)', () => {
     expect(nach.log.at(-1)?.event).toMatchObject({ kind: 'spell', lane: 1, effect: 'buff' });
   });
 
-  it('moveCreature lehnt besetzte und identische Ziel-Lanes ab', () => {
+  it('moveCreature lehnt besetzte und identische Ziel-Lanes mit je eigener Meldung ab', () => {
     const s = emptyState();
     put(s, 0, 0, 'wolf');
     put(s, 0, 1, 'ratte');
     expect(() => spieleAktion(s, 'hetzjagd', 0, 1)).toThrow(/Ziel-Lane ist nicht frei/);
     expect(() => spieleAktion(s, 'hetzjagd', 0, undefined)).toThrow(/Ziel-Lane wählen/);
-    // Ziel == Startlane: die Belegt-Prüfung greift zuerst, weil die Kreatur dort
-    // ja noch selbst steht. Der eigene "steht schon in dieser Lane"-Zweig in
-    // effects.ts ist dadurch unerreichbar – hier festgehalten, damit ein
-    // Umbau der Prüfreihenfolge auffällt.
-    expect(() => spieleAktion(s, 'hetzjagd', 0, 0)).toThrow(/Ziel-Lane ist nicht frei/);
+    expect(() => spieleAktion(s, 'hetzjagd', 0, 0)).toThrow(/steht schon in dieser Lane/);
   });
 
   it('moveCreature versetzt die Kreatur und gibt den temporären Bonus', () => {

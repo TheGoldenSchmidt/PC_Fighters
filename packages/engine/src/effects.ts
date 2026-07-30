@@ -80,11 +80,11 @@ export const EFFECTS: { [K in Effect['kind']]: EffectResolver<K> } = {
     if (to === undefined || to < 0 || to >= ctx.state.config.lanes) {
       throw new GameRuleError('Bitte eine Ziel-Lane wählen.');
     }
-    if (ctx.state.board[ctx.player][to]) {
-      throw new GameRuleError('Die Ziel-Lane ist nicht frei.');
-    }
     if (to === lane) {
       throw new GameRuleError('Die Kreatur steht schon in dieser Lane.');
+    }
+    if (ctx.state.board[ctx.player][to]) {
+      throw new GameRuleError('Die Ziel-Lane ist nicht frei.');
     }
     ctx.state.board[ctx.player][to] = creature;
     ctx.state.board[ctx.player][lane] = null;
