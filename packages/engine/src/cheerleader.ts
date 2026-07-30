@@ -172,7 +172,9 @@ export const CHEERLEADER_WIRKUNGEN: {
       state,
       getroffen === 0
         ? 'Sicherer Raum: der Gegner hat keine Kreaturen im Feld.'
-        : `Sicherer Raum: ${getroffen} gegnerische Kreatur${getroffen === 1 ? '' : 'en'} erhält bis Rundenende −${wirkung.atk} ATK.`
+        : getroffen === 1
+          ? `Sicherer Raum: 1 gegnerische Kreatur erhält bis Rundenende −${wirkung.atk} ATK.`
+          : `Sicherer Raum: ${getroffen} gegnerische Kreaturen erhalten bis Rundenende −${wirkung.atk} ATK.`
     );
   },
 

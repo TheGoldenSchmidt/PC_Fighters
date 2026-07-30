@@ -25,6 +25,7 @@ import {
 import type {
   AttackEvent,
   CardDef,
+  CheerleaderPowerEvent,
   CheerleaderSacrificeEvent,
   CheerleaderSlots,
   ClientView,
@@ -33,6 +34,7 @@ import type {
   LogEvent,
   PlayerAction,
   PlayerIndex,
+  ReaktionsView,
   SpellEvent,
   Topic,
   VisualCatalog
@@ -91,6 +93,14 @@ interface FxShield {
   blockiert: boolean;
 }
 
+/** Wirkende Cheerleader-Superkraft: kurzer Effekt auf der Auslöser-Lane. */
+interface FxPower {
+  key: string;
+  owner: PlayerIndex;
+  lane: number;
+  kraft: string;
+}
+
 interface FxState {
   projectiles: FxProjectile[];
   impacts: FxImpact[];
@@ -104,6 +114,7 @@ interface FxState {
     slot: 0 | 1 | 2;
     cardId: string;
   }[];
+  power: FxPower | null;
   activeLane: number | null;
 }
 
@@ -115,6 +126,7 @@ const EMPTY_FX: FxState = {
   spells: [],
   shield: null,
   sacrifices: [],
+  power: null,
   activeLane: null
 };
 
@@ -139,6 +151,8 @@ const SPELL_MS = 750;
 const SHIELD_MS = 550;
 /** Block ist der Höhepunkt: länger, damit Banner und Superkraft lesbar sind. */
 const SHIELD_BLOCK_MS = 1200;
+/** Cheerleader-Kraft: lang genug, dass das Banner mit dem Kraftnamen lesbar ist. */
+const POWER_MS = 1100;
 const LANE_PAUSE_MS = 200;
 const BANNER_MS = 1500;
 const LONG_PRESS_MS = 450;
@@ -154,12 +168,15 @@ const CHEERLEADER_NAMES: Record<string, string> = {
 function CheerleaderStrip({
   slots,
   sacrifice,
-  position
+  position,
+  bereiteSlots
 }: {
   side: PlayerIndex;
   slots: CheerleaderSlots;
   sacrifice?: { slot: 0 | 1 | 2; cardId: string };
   position: 'own' | 'opponent';
+  /** Plätze, die gerade auf ein offenes Fenster antworten könnten. */
+  bereiteSlots?: (0 | 1 | 2)[];
 }) {
   return (
     <div className={`team-strip team-strip-${position}`} aria-label={`${position === 'own' ? 'Eigene' : 'Gegnerische'} Cheerleader`}>
@@ -168,13 +185,83 @@ function CheerleaderStrip({
         {slots.map((cardId, slot) => (
           <div
             key={slot}
-            className={`team-seat ${cardId ? 'occupied' : 'empty'} ${sacrifice?.slot === slot ? 'sacrificing' : ''}`}
+            className={
+              `team-seat ${cardId ? 'occupied' : 'empty'}` +
+              (sacrifice?.slot === slot ? ' sacrificing' : '') +
+              (bereiteSlots?.includes(slot as 0 | 1 | 2) ? ' ready' : '')
+            }
             title={cardId ? CHEERLEADER_NAMES[cardId] ?? cardId : `Bankplatz ${slot + 1} ist leer`}
           >
             <span>{slot + 1}</span>
             {cardId && <strong>{(CHEERLEADER_NAMES[cardId] ?? cardId).charAt(0)}</strong>}
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+const AUSLOESER_TEXT: Record<ReaktionsView['ausloeser'], string> = {
+  gegnerischeKreatur: 'Der Gegner hat eine Kreatur ausgespielt.',
+  gegnerischeKreaturGegenueber: 'Der Gegner hat eine Kreatur genau gegenüber deiner ausgespielt.',
+  eigenerTod: 'Eine deiner Kreaturen würde jetzt sterben.'
+};
+
+/**
+ * Auswahl für ein offenes Reaktionsfenster. Bewusst ein DOM-Overlay statt einer
+ * Interaktion auf der Bank: so ist die Bedienung in 3D und im `?no3d`-Fallback
+ * exakt dieselbe. Verzichten ist immer möglich und steht deshalb fest unten.
+ */
+function ReaktionsAuswahl({
+  reaktion,
+  onEntscheiden
+}: {
+  reaktion: ReaktionsView;
+  onEntscheiden: (slot: 0 | 1 | 2 | null, choice?: 'A' | 'B') => void;
+}) {
+  return (
+    <div className="overlay reaction-overlay">
+      <div className="reaction-box" role="dialog" aria-label="Cheerleader-Reaktion">
+        <h2 className="reaction-title">📣 Cheerleader-Reaktion</h2>
+        <p className="reaction-trigger">
+          {AUSLOESER_TEXT[reaktion.ausloeser]} (Lane {reaktion.lane + 1})
+        </p>
+        <p className="reaction-cost">
+          Ein Opfer kostet weder Energie noch deinen Zug – nur den Bankplatz.
+        </p>
+
+        <div className="reaction-offers">
+          {reaktion.angebote.map((angebot) => (
+            <div key={angebot.slot} className="reaction-offer">
+              <div className="reaction-offer-head">
+                <span className="reaction-slot">Platz {angebot.slot + 1}</span>
+                <strong>{angebot.kraft}</strong>
+              </div>
+              <p className="reaction-offer-text">{angebot.text}</p>
+              {angebot.wahl ? (
+                <div className="reaction-choices">
+                  <button className="primary" onClick={() => onEntscheiden(angebot.slot, 'A')}>
+                    {angebot.wahl.a}
+                  </button>
+                  <button className="primary" onClick={() => onEntscheiden(angebot.slot, 'B')}>
+                    {angebot.wahl.b}
+                  </button>
+                </div>
+              ) : (
+                <button className="primary" onClick={() => onEntscheiden(angebot.slot)}>
+                  {angebot.kraft} einsetzen
+                </button>
+              )}
+            </div>
+          ))}
+          {reaktion.angebote.length === 0 && (
+            <p className="hint">Kein passender Cheerleader mehr auf der Bank.</p>
+          )}
+        </div>
+
+        <button className="secondary reaction-decline" onClick={() => onEntscheiden(null)}>
+          Verzichten
+        </button>
       </div>
     </div>
   );
@@ -281,7 +368,18 @@ export function GameScreen({
 
   const me = view.you;
   const opp: PlayerIndex = me === 0 ? 1 : 0;
-  const myTurn = shownView.active === me && shownView.winner === null && !isReplaying;
+
+  // Reaktionsfenster kommen IMMER aus der neuesten Serversicht, nicht aus
+  // shownView: während einer Abspielung hinkt die angezeigte Lage absichtlich
+  // hinterher, die Frage an den Spieler darf das aber nicht.
+  const reaktion: ReaktionsView | null = view.reaktion ?? null;
+  const meineReaktion = reaktion !== null && reaktion.spieler === me;
+  // Erst fragen, wenn die Animation durch ist – sonst klickt man blind.
+  const zeigeReaktionsAuswahl = meineReaktion && !isReplaying && view.winner === null;
+
+  // Ein offenes Fenster sperrt jede normale Aktion, auch die des Gegners.
+  const myTurn =
+    shownView.active === me && shownView.winner === null && !isReplaying && reaktion === null;
   const myBoard = shownView.board[me];
   const energy = shownView.players[me].energy;
   const canPlaySomething =
@@ -487,6 +585,27 @@ export function GameScreen({
         setShown(next);
         setFx((current) => ({ ...current, sacrifices: [] }));
         await sleep(LANE_PAUSE_MS);
+      } else if (ev.kind === 'cheerleaderPower') {
+        // Kommt immer direkt nach dem Opfer: erst leert sich der Bankplatz,
+        // dann wirkt die Kraft. Die Lage wird hier BEWUSST nicht auf den
+        // Serverstand gezogen – was die Kraft anrichtet, kommt gleich als
+        // eigene Angriffs- und Sterbe-Events bzw. am Ende der Abspielung.
+        const power: CheerleaderPowerEvent = ev;
+        setFx((current) => ({
+          ...current,
+          activeLane: power.lane,
+          power: {
+            key: `k-${power.owner}-${power.lane}-${Date.now()}`,
+            owner: power.owner,
+            lane: power.lane,
+            kraft: power.kraft
+          }
+        }));
+        showBanner(`📣 ${power.kraft}!`);
+        await sleep(POWER_MS);
+        if (cancelledRef.current) break;
+        setFx((current) => ({ ...current, power: null }));
+        await sleep(LANE_PAUSE_MS);
       }
     }
 
@@ -607,6 +726,10 @@ export function GameScreen({
     ? '⚔️ Kampf läuft …'
     : shownView.winner !== null
       ? 'Partie beendet'
+      : reaktion !== null
+        ? meineReaktion
+          ? '📣 Cheerleader-Reaktion: entscheide dich'
+          : 'Gegner entscheidet über eine Cheerleader-Reaktion …'
       : shownView.phase === 'fly'
         ? myTurn
           ? '🕊 Flug-Phase: fliegende Kreatur antippen und Ziel-Lane wählen'
@@ -715,6 +838,9 @@ export function GameScreen({
               slots={shownView.players[me].cheerleaders}
               sacrifice={fx.sacrifices.find((item) => item.owner === me)}
               position="own"
+              bereiteSlots={
+                zeigeReaktionsAuswahl ? reaktion?.angebote.map((a) => a.slot) : undefined
+              }
             />
           </>
         )}
@@ -775,6 +901,10 @@ export function GameScreen({
                 {/* Zauber-Effekt (2D-Fallback ohne WebGL) */}
                 {!use3d && spellOnLane(lane) && (
                   <span className={`spell-burst spell-${spellOnLane(lane)!.effect}`} aria-hidden />
+                )}
+                {/* Cheerleader-Kraft auf dieser Lane (2D-Fallback) */}
+                {!use3d && fx.power?.lane === lane && (
+                  <span className="power-burst" aria-hidden />
                 )}
               </button>
               {/* Fliegende Projektile dieser Lane (2D-Fallback – in 3D
@@ -865,6 +995,29 @@ export function GameScreen({
       {banner && (
         <div key={banner.key} className="phase-banner">
           {banner.text}
+        </div>
+      )}
+
+      {/* ---- Cheerleader-Reaktion ---- */}
+      {zeigeReaktionsAuswahl && reaktion && (
+        <ReaktionsAuswahl
+          reaktion={reaktion}
+          onEntscheiden={(slot, choice) =>
+            onAction({
+              type: 'cheerleaderReaction',
+              reactionId: reaktion.id,
+              slot,
+              ...(choice ? { choice } : {})
+            })
+          }
+        />
+      )}
+
+      {/* Gegner entscheidet: nur ein Wartehinweis, keine Angebote (die Sicht
+          des Gegners enthält sie ohnehin nicht). */}
+      {reaktion !== null && !meineReaktion && !isReplaying && view.winner === null && (
+        <div className="reaction-waiting" role="status">
+          📣 Der Gegner entscheidet über eine Cheerleader-Reaktion …
         </div>
       )}
 

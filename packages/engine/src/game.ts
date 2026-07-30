@@ -725,7 +725,8 @@ function playPhaseAction(state: GameState, player: PlayerIndex, action: PlayerAc
 function reaktionsAktion(
   state: GameState,
   player: PlayerIndex,
-  action: Extract<PlayerAction, { type: 'cheerleaderReaction' }>
+  action: Extract<PlayerAction, { type: 'cheerleaderReaction' }>,
+  data: GameData
 ): void {
   const reaktion = state.reaktion;
   if (!reaktion) throw new GameRuleError('Gerade wartet keine Cheerleader-Reaktion.');
@@ -763,7 +764,9 @@ function reaktionsAktion(
   // Reihenfolge ist der Replay-Vertrag: erst der Bankplatz leert sich, dann
   // wirkt die Kraft, dann erst folgen Schaden, Rettung und Tode.
   state.players[player].cheerleaders[action.slot] = null;
-  log(state, `Spieler ${player + 1} opfert ${cardId} von der Bank.`, {
+  // Kartenname statt cardId: Log-Zeilen sieht der Spieler.
+  const anzeigeName = data.cardsById[cardId]?.name ?? cardId;
+  log(state, `Spieler ${player + 1} opfert ${anzeigeName} von der Bank.`, {
     kind: 'cheerleaderSacrifice',
     owner: player,
     slot: action.slot,
@@ -854,7 +857,7 @@ export function applyAction(
     if (action.type !== 'cheerleaderReaction') {
       throw new GameRuleError('Es wartet eine Cheerleader-Reaktion – bitte zuerst entscheiden.');
     }
-    reaktionsAktion(next, player, action);
+    reaktionsAktion(next, player, action, data);
   } else if (action.type === 'cheerleaderReaction') {
     throw new GameRuleError('Gerade wartet keine Cheerleader-Reaktion.');
   } else if (next.aufloesung.length > 0) {
