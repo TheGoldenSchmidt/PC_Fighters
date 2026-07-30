@@ -23,11 +23,15 @@ function checkFig(
   figure: unknown,
   opts: { file?: string; cards?: unknown[] } = {}
 ) {
+  const cheerleaderCards = data.config.cheerleaders.candidates.map((id) => data.cardsById[id]);
   return validateGameData({
     config: data.config,
     factions: data.factions,
     topics: data.topics,
-    cardFiles: [{ file: 'cards/test.json', content: opts.cards ?? [creature()] }],
+    cardFiles: [{
+      file: 'cards/test.json',
+      content: [...cheerleaderCards, ...(opts.cards ?? [creature()])]
+    }],
     figureFiles: [{ file: opts.file ?? 'figures/testfigur.json', content: figure }]
   });
 }

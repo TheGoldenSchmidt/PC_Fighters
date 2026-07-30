@@ -59,6 +59,91 @@
 .deck-validation { margin:.75rem 0; padding:.65rem; border-radius:8px; }
 .deck-validation.valid { background:rgba(45,180,90,.16); color:#98f0b4; }
 .deck-validation.invalid { background:rgba(220,70,70,.14); color:#ffb0b0; }
+.wizard-title-row { display:flex; align-items:center; justify-content:space-between; gap:1rem; }
+.wizard-title-row small { color:var(--gold); font-weight:800; letter-spacing:.04em; }
+.cheerleader-step {
+  background:
+    linear-gradient(135deg, rgba(37,42,51,.96), rgba(18,22,30,.94)),
+    repeating-linear-gradient(90deg, transparent 0 28px, rgba(245,183,74,.04) 28px 29px);
+  border-color:rgba(245,183,74,.25);
+}
+.cheerleader-slots {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:.6rem;
+  margin:.8rem 0 1rem;
+}
+.cheerleader-slot {
+  min-height:76px;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-end;
+  gap:.2rem;
+  padding:.65rem;
+  border:1px dashed rgba(234,244,255,.28);
+  border-bottom:5px solid #6b4634;
+  border-radius:10px 10px 4px 4px;
+  background:linear-gradient(180deg,rgba(234,244,255,.03),rgba(0,0,0,.28));
+  color:var(--muted);
+  position:relative;
+}
+.cheerleader-slot.filled {
+  border-color:rgba(245,183,74,.52);
+  box-shadow:inset 0 -10px 24px rgba(245,183,74,.08);
+  color:var(--text);
+}
+.slot-number {
+  position:absolute;
+  top:.45rem;
+  left:.5rem;
+  display:grid;
+  place-items:center;
+  width:1.35rem;
+  height:1.35rem;
+  border-radius:50%;
+  background:#f5b74a;
+  color:#252a33;
+  font:800 .72rem var(--font-body);
+}
+.cheerleader-slot strong { font-size:.78rem; line-height:1.2; }
+.cheerleader-candidates {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(185px,1fr));
+  gap:.55rem;
+}
+.cheerleader-candidate {
+  display:grid;
+  grid-template-columns:42px 1fr;
+  align-items:center;
+  gap:.65rem;
+  min-height:62px;
+  padding:.55rem;
+  border:1px solid rgba(234,244,255,.12);
+  border-radius:10px;
+  background:rgba(10,13,18,.45);
+  color:inherit;
+  text-align:left;
+}
+.cheerleader-candidate > span:last-child { display:flex; flex-direction:column; gap:.15rem; min-width:0; }
+.cheerleader-candidate strong { font-size:.82rem; }
+.cheerleader-candidate small { color:var(--muted); font-size:.68rem; }
+.cheerleader-candidate.selected {
+  border-color:#f5b74a;
+  background:rgba(245,183,74,.1);
+}
+.cheerleader-candidate.locked { opacity:.52; filter:saturate(.35); }
+.candidate-portrait {
+  display:grid;
+  place-items:center;
+  width:42px;
+  height:42px;
+  border-radius:50% 50% 44% 44%;
+  background:linear-gradient(145deg,#eaf4ff,#8895a6);
+  border:3px solid #252a33;
+  color:#252a33;
+  font-weight:900;
+  box-shadow:0 3px 0 #6b4634;
+}
 .mulligan-screen { text-align:center; }
 .mulligan-hand { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.8rem; margin:1.25rem 0; }
 .mulligan-card { display:flex; flex-direction:column; gap:.35rem; align-items:center; padding:.65rem; border:2px solid transparent; border-radius:12px; background:rgba(10,9,20,.75); color:inherit; }
@@ -70,6 +155,8 @@
   .deck-builder-card { grid-template-columns:48px 1fr; }
   .deck-art { width:48px; height:64px; }
   .copy-stepper { grid-column:1/-1; justify-content:flex-end; }
+  .cheerleader-candidates { grid-template-columns:1fr; }
+  .cheerleader-slot { min-height:68px; padding:.5rem; }
 }
 
 * {
@@ -494,8 +581,16 @@ input:focus {
   padding: 10px;
   gap: 10px;
   height: 100vh;
-  max-width: 680px;
+  max-width: 960px;
   overflow: hidden;
+}
+
+.game-screen > .player-bar,
+.game-screen > .round-bar,
+.game-screen > .log,
+.game-screen > .own-area {
+  width: min(680px, 100%);
+  align-self: center;
 }
 
 .player-bar {
@@ -611,6 +706,8 @@ input:focus {
   z-index: 3;
   /* Anker für das 3D-Schlachtfeld-Canvas */
   position: relative;
+  width: min(680px, calc(100% - 220px));
+  align-self: center;
 }
 
 /* 3D-Schlachtfeld: Die Bühne reicht seitlich über das Lane-Raster hinaus.
@@ -620,8 +717,8 @@ input:focus {
   position: absolute;
   top: 0;
   bottom: 0;
-  left: clamp(-240px, -20vw, -56px);
-  right: clamp(-240px, -20vw, -56px);
+  left: -110px;
+  right: -110px;
   z-index: 6;
   pointer-events: none;
 }
@@ -631,6 +728,82 @@ input:focus {
   width: 100%;
   height: 100%;
   pointer-events: none;
+}
+
+@media (max-width: 699px) {
+  .game-screen { max-width: 100%; }
+  .lanes { width: calc(100% - 72px); }
+  .battlefield3d-shell { left: -36px; right: -36px; }
+}
+
+/* Kompakte 2D-Teamzonen, wenn WebGL fehlt. Die Diagonale bleibt dieselbe wie
+   auf der 3D-Bühne; die Leiste liegt außerhalb der Lane-Tapflächen. */
+.team-strip {
+  position:absolute;
+  z-index:7;
+  width:min(142px,34vw);
+  pointer-events:none;
+  filter:drop-shadow(0 6px 10px rgba(0,0,0,.5));
+}
+.team-strip-opponent { top:2px; left:calc(-1 * min(116px,27vw)); transform:scale(.86); transform-origin:top left; }
+.team-strip-own { right:calc(-1 * min(116px,27vw)); bottom:2px; transform-origin:bottom right; }
+.team-bench {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:3px;
+  padding:5px 5px 8px;
+  border:1px solid rgba(234,244,255,.18);
+  border-bottom:7px solid #6b4634;
+  border-radius:8px 8px 3px 3px;
+  background:#252a33;
+}
+.team-seat {
+  height:34px;
+  display:grid;
+  place-items:center;
+  border:1px solid rgba(245,183,74,.34);
+  border-radius:50% 50% 8px 8px;
+  background:rgba(234,244,255,.04);
+  position:relative;
+}
+.team-seat > span {
+  position:absolute;
+  left:2px;
+  bottom:1px;
+  color:#f5b74a;
+  font-size:.48rem;
+}
+.team-seat strong {
+  display:grid;
+  place-items:center;
+  width:23px;
+  height:23px;
+  border-radius:50%;
+  background:#eaf4ff;
+  color:#252a33;
+  font-size:.64rem;
+}
+.team-seat.empty { opacity:.38; }
+.team-seat.sacrificing { animation:team-sacrifice-fade .72s ease-in forwards; }
+.team-base {
+  position:absolute;
+  width:38px;
+  height:22px;
+  border:5px solid #252a33;
+  border-radius:50% 50% 18% 18%;
+  background:radial-gradient(circle,#eaf4ff 0 30%,#5b84b1 35% 58%,#252a33 62%);
+}
+.team-strip-own .team-base { left:-46px; bottom:2px; }
+.team-strip-opponent .team-base { right:-46px; top:2px; }
+.team-base.shield-flash { animation:team-shield-flash .62s ease-out .48s both; }
+@keyframes team-sacrifice-fade {
+  45% { transform:translateY(-18px) scale(1.08); opacity:1; }
+  100% { transform:translate(-28px,-2px) scale(.65); opacity:0; }
+}
+@keyframes team-shield-flash {
+  0% { box-shadow:0 0 0 0 rgba(234,244,255,0); }
+  35% { box-shadow:0 0 4px 14px rgba(234,244,255,.85); }
+  100% { box-shadow:0 0 20px 28px rgba(234,244,255,0); }
 }
 
 .lane {
@@ -1180,19 +1353,22 @@ input:focus {
 /* Segmentbalken neben dem 🏰-Chip: jeder Basis-Treffer füllt 1–3 Abschnitte,
    ist er voll, blockt der Schild und eine Superkraft löst aus. */
 
+/* Bewusst schmal: die player-bar teilt sich 680px mit Basis-, Energie- und
+   Deck-Chip, dem Passen-Button und der gegnerischen Handkarten-Reihe. Wird der
+   Balken breiter, schneidet die Leiste rechts ab. */
 .shield-meter {
   display: flex;
   align-items: center;
-  gap: 2px;
-  padding: 4px 6px;
-  border-radius: 10px;
+  gap: 1px;
+  padding: 3px 4px;
+  border-radius: 8px;
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.06);
   flex-shrink: 0;
 }
 
 .shield-seg {
-  width: 6px;
+  width: 4px;
   height: 14px;
   border-radius: 2px;
   background: rgba(255, 255, 255, 0.1);
@@ -1217,7 +1393,7 @@ input:focus {
 
 /* Block: der Höhepunkt – alle Segmente leuchten kurz golden auf. */
 .shield-meter.blocked {
-  animation: shield-flash 1.2s ease-out;
+  animation: shield-block-flash 1.2s ease-out;
 }
 
 .shield-meter.blocked .shield-seg {
@@ -1225,7 +1401,7 @@ input:focus {
   box-shadow: 0 0 10px var(--gold-glow);
 }
 
-@keyframes shield-flash {
+@keyframes shield-block-flash {
   0% { transform: scale(1); box-shadow: none; }
   20% { transform: scale(1.25); box-shadow: 0 0 22px var(--gold-glow); }
   100% { transform: scale(1); box-shadow: none; }
@@ -1895,6 +2071,14 @@ input:focus {
     transform: none !important;
     transition: none !important;
   }
+
+  .team-seat.sacrificing {
+    animation: team-sacrifice-dissolve .36s linear forwards !important;
+  }
+}
+
+@keyframes team-sacrifice-dissolve {
+  to { opacity: 0; }
 }
 
 /* ---------- Desktop and Large Screens ---------- */

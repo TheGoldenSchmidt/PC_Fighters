@@ -16,14 +16,17 @@ import {
   buildVisualCatalog,
   createGame,
   DataError,
+  defaultCheerleaderSelection,
   GameRuleError,
   loadGameData,
   ladeDecks,
   topOf,
   validateDeck,
+  validateCheerleaderSelection,
   DeckError,
   type DeckList,
   type DeckSelection,
+  type CheerleaderSelection,
   type GameData,
   type GameState,
   type PlayerAction,
@@ -47,6 +50,7 @@ interface RoomPlayer {
   token: string;
   faction: string;
   deck: DeckList | null;
+  cheerleaders: CheerleaderSelection;
   socket: WebSocket | null;
 }
 
@@ -101,7 +105,8 @@ function saveRooms(rooms: Map<string, Room>) {
         players: room.players.map(p => ({
           token: p.token,
           faction: p.faction,
-          deck: p.deck
+          deck: p.deck,
+          cheerleaders: p.cheerleaders
         }))
       };
     });
@@ -111,7 +116,7 @@ function saveRooms(rooms: Map<string, Room>) {
   }
 }
 
-function loadRooms(): Map<string, Room> {
+function loadRooms(data: GameData): Map<string, Room> {
   const map = new Map<string, Room>();
   try {
     if (existsSync(persistFilePath)) {
@@ -121,21 +126,46 @@ function loadRooms(): Map<string, Room> {
         topic: Topic;
         state: GameState | null;
         testMode?: boolean;
-        players: Array<{ token: string; faction: string; deck?: DeckList | null }>;
+        players: Array<{
+          token: string;
+          faction: string;
+          deck?: DeckList | null;
+          cheerleaders?: unknown;
+        }>;
       }>;
       for (const item of parsed) {
-        map.set(item.code, {
-          code: item.code,
-          topic: item.topic,
-          state: item.state,
-          testMode: item.testMode,
-          players: item.players.map(p => ({
-            token: p.token,
-            faction: p.faction,
-            deck: p.deck ?? null,
-            socket: null
-          }))
-        });
+        try {
+          const players = item.players.map((p, idx) => {
+            const deck = p.deck ?? null;
+            const cheerleaders = p.cheerleaders
+              ? validateCheerleaderSelection(p.cheerleaders, deck, data)
+              : defaultCheerleaderSelection(deck, data);
+            const persistedSlots = item.state?.players[idx]?.cheerleaders;
+            if (item.state?.players[idx] && !persistedSlots) {
+              item.state.players[idx].cheerleaders = [...cheerleaders];
+            } else if (
+              persistedSlots &&
+              (persistedSlots.length !== cheerleaders.length ||
+                persistedSlots.some(
+                  (cardId, slot) => cardId !== null && cardId !== cheerleaders[slot]
+                ))
+            ) {
+              throw new GameRuleError(
+                `Die gespeicherten Cheerleader-Plätze von Spieler ${idx + 1} sind ungültig.`
+              );
+            }
+            return { token: p.token, faction: p.faction, deck, cheerleaders, socket: null };
+          });
+          map.set(item.code, {
+            code: item.code,
+            topic: item.topic,
+            state: item.state,
+            testMode: item.testMode,
+            players
+          });
+        } catch (error) {
+          console.warn(`Historischer Raum ${item.code} wurde übersprungen:`, error);
+        }
       }
     }
   } catch (err) {
@@ -156,7 +186,7 @@ export function startServer(port: number): Promise<RunningServer> {
     console.error('\n⚠ Datendateien fehlerhaft:\n' + dataError + '\n');
   }
 
-  const rooms = loadRooms();
+  const rooms = data ? loadRooms(data) : new Map<string, Room>();
 
   const newRoomCode = (): string => {
     for (let i = 0; i < 1000; i++) {
@@ -246,6 +276,7 @@ export function startServer(port: number): Promise<RunningServer> {
           visuals: buildVisualCatalog(data!),
           cards: data!.cards,
           deckbuilding: data!.config.deckbuilding,
+          cheerleaders: data!.config.cheerleaders,
           decks: ladeDecks(data!)
         })
       );
@@ -354,6 +385,18 @@ export function startServer(port: number): Promise<RunningServer> {
       return { faction: topOf(buildFactionTree(d.factions), first.faction), deck };
     }
 
+    function resolveCheerleaders(
+      selection: unknown,
+      deck: DeckList | null
+    ): CheerleaderSelection {
+      try {
+        return validateCheerleaderSelection(selection, deck, requireData());
+      } catch (e) {
+        if (e instanceof DeckError) throw new GameRuleError(e.message);
+        throw e;
+      }
+    }
+
     /** Thema auflösen; ohne Angabe gilt das erste Thema aus topics.json. */
     function validTopic(topicId: unknown): Topic {
       const d = requireData();
@@ -379,10 +422,17 @@ export function startServer(port: number): Promise<RunningServer> {
       switch (msg.type) {
         case 'create': {
           const { faction, deck } = resolveDeck(msg.deckSelection, msg.faction);
+          const cheerleaders = resolveCheerleaders(msg.cheerleaders, deck);
           const topic = validTopic(msg.topic);
           const room: Room = {
             code: newRoomCode(),
-            players: [{ token: randomBytes(12).toString('hex'), faction, deck, socket: null }],
+            players: [{
+              token: randomBytes(12).toString('hex'),
+              faction,
+              deck,
+              cheerleaders,
+              socket: null
+            }],
             state: null,
             topic,
             testMode: Boolean(msg.testMode)
@@ -406,6 +456,7 @@ export function startServer(port: number): Promise<RunningServer> {
 
         case 'join': {
           const { faction, deck } = resolveDeck(msg.deckSelection, msg.faction);
+          const cheerleaders = resolveCheerleaders(msg.cheerleaders, deck);
           const room = rooms.get(String(msg.code));
           if (!room) {
             throw new GameRuleError('Diesen Raum-Code gibt es nicht. Tippfehler?');
@@ -417,6 +468,7 @@ export function startServer(port: number): Promise<RunningServer> {
             token: randomBytes(12).toString('hex'),
             faction,
             deck,
+            cheerleaders,
             socket: null
           });
           attach(room, 1);
@@ -436,7 +488,8 @@ export function startServer(port: number): Promise<RunningServer> {
             room.testMode ? testGameData(d) : d,
             [room.players[0].faction, faction],
             Math.random,
-            [room.players[0].deck, deck]
+            [room.players[0].deck, deck],
+            [room.players[0].cheerleaders, cheerleaders]
           );
           if (room.testMode) {
             // Beide Hände direkt mit allen Figuren-Karten füllen, damit sich

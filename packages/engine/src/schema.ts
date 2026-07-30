@@ -8,6 +8,7 @@ import { KEYWORDS } from './keywords.js';
 import type {
   Animations,
   CardDef,
+  CheerleaderSelection,
   DeckbuildingConfig,
   DeckList,
   Faction,
@@ -68,6 +69,11 @@ export const configSchema = z.object({
     maxHeroCopies: z.number().int().min(1).optional(),
     maxPrincipals: z.number().int().min(0).optional(),
     factionRule: z.enum(['singleTop', 'singleSub', 'free'])
+  }),
+  cheerleaders: z.object({
+    candidates: z.array(z.string().min(1)).min(3),
+    selectionSize: z.literal(3),
+    maxInDeck: z.number().int().min(0)
   }),
   zermuerbung: z
     .object({
@@ -503,6 +509,24 @@ export function validateGameData(raw: {
     cards.push(...(parsed.data as CardDef[]));
   }
 
+  const cheerleaderProblems: string[] = [];
+  const cheerleaderIds = configResult.data.cheerleaders.candidates;
+  if (new Set(cheerleaderIds).size !== cheerleaderIds.length) {
+    cheerleaderProblems.push('Cheerleader-Kandidaten dürfen nicht doppelt konfiguriert sein.');
+  }
+  for (const id of cheerleaderIds) {
+    const card = cards.find((candidate) => candidate.id === id);
+    if (!card) {
+      cheerleaderProblems.push(`Cheerleader-Kandidat "${id}" ist keine bekannte Karte.`);
+    } else if (card.type !== 'creature') {
+      cheerleaderProblems.push(`Cheerleader-Kandidat "${id}" ist keine Kreatur.`);
+    }
+  }
+  if (configResult.data.cheerleaders.maxInDeck > cheerleaderIds.length) {
+    cheerleaderProblems.push('"maxInDeck" darf nicht größer als der Kandidatenpool sein.');
+  }
+  if (cheerleaderProblems.length > 0) throw new DataError('config.json', cheerleaderProblems);
+
   // ---- 3D-Figuren (data/figures/*.json) ----
   const cardById = new Map(cards.map((c) => [c.id, c]));
   const figures: Record<string, FigureDef> = {};
@@ -619,6 +643,8 @@ export function validateDeck(deck: unknown, data: GameData): DeckList {
   const seen = new Set<string>();
   const tops = new Set<string>();
   const subs = new Set<string>();
+  const cheerleaderIds = new Set(data.config.cheerleaders.candidates);
+  let cheerleadersInDeck = 0;
 
   for (const entry of dl.cards) {
     const card = data.cardsById[entry.cardId];
@@ -630,6 +656,7 @@ export function validateDeck(deck: unknown, data: GameData): DeckList {
       problems.push(`Karte "${card.name}" ist mehrfach aufgeführt – bitte zusammenfassen.`);
     }
     seen.add(entry.cardId);
+    if (cheerleaderIds.has(entry.cardId)) cheerleadersInDeck += 1;
     total += entry.count;
     if (card.category === 'hero') heroes += entry.count;
     if (card.category === 'principal') principals += entry.count;
@@ -651,6 +678,11 @@ export function validateDeck(deck: unknown, data: GameData): DeckList {
   if (principals > maxPrincipals) {
     problems.push(`Zu viele PC Principals: ${principals}, erlaubt ist ${maxPrincipals}.`);
   }
+  if (cheerleadersInDeck > data.config.cheerleaders.maxInDeck) {
+    problems.push(
+      `Zu viele Cheerleader-Kandidaten im Deck: ${cheerleadersInDeck}, erlaubt sind ${data.config.cheerleaders.maxInDeck}.`
+    );
+  }
   if (factionRule === 'singleTop' && tops.size > 1) {
     problems.push('Deck mischt mehrere Oberfraktionen – erlaubt ist nur Mensch ODER Tier.');
   }
@@ -660,4 +692,49 @@ export function validateDeck(deck: unknown, data: GameData): DeckList {
 
   if (problems.length > 0) throw new DeckError(problems);
   return dl;
+}
+
+/** Konkrete, servergeeignete Validierung der geordneten Dreierauswahl. */
+export function validateCheerleaderSelection(
+  selection: unknown,
+  deck: DeckList | null,
+  data: GameData
+): CheerleaderSelection {
+  const expected = data.config.cheerleaders.selectionSize;
+  if (!Array.isArray(selection) || selection.length !== expected) {
+    throw new DeckError([`Wähle exakt ${expected} Cheerleader.`]);
+  }
+  const problems: string[] = [];
+  const ids = selection.filter((id): id is string => typeof id === 'string');
+  if (ids.length !== expected) problems.push('Alle Cheerleader-Plätze müssen belegt sein.');
+  if (new Set(ids).size !== ids.length) problems.push('Jeder Cheerleader darf nur einmal gewählt werden.');
+  const allowed = new Set(data.config.cheerleaders.candidates);
+  for (const id of ids) {
+    if (!allowed.has(id)) problems.push(`Unbekannter Cheerleader "${id}".`);
+  }
+  const deckIds = new Set(
+    deck?.cards.filter((entry) => entry.count > 0).map((entry) => entry.cardId) ?? []
+  );
+  for (const id of ids) {
+    if (deckIds.has(id)) {
+      const name = data.cardsById[id]?.name ?? id;
+      problems.push(`"${name}" ist Bestandteil des Decks und kann nicht zugleich Cheerleader sein.`);
+    }
+  }
+  if (problems.length > 0) throw new DeckError(problems);
+  return ids as CheerleaderSelection;
+}
+
+/** Deterministische Migration historischer Räume ohne Auswahl. */
+export function defaultCheerleaderSelection(
+  deck: DeckList | null,
+  data: GameData
+): CheerleaderSelection {
+  const deckIds = new Set(
+    deck?.cards.filter((entry) => entry.count > 0).map((entry) => entry.cardId) ?? []
+  );
+  const selection = data.config.cheerleaders.candidates
+    .filter((id) => !deckIds.has(id))
+    .slice(0, data.config.cheerleaders.selectionSize);
+  return validateCheerleaderSelection(selection, deck, data);
 }

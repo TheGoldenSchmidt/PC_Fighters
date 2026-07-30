@@ -14,7 +14,7 @@ import {
 } from './abilities.js';
 import { resolveEffect } from './effects.js';
 import { buildFactionTree, matchesScope } from './factions.js';
-import { maxCopiesOf, validateDeck } from './schema.js';
+import { defaultCheerleaderSelection, maxCopiesOf, validateDeck } from './schema.js';
 import {
   freeLanes,
   GameRuleError,
@@ -30,6 +30,8 @@ import { basisSchaden } from './schild.js';
 import { registriereAusspielen, registriereEnergie, registriereMulligan, registriereZug, zaehleKarte, zaehleSpieler } from './stats.js';
 import type {
   CardDef,
+  CheerleaderSelection,
+  CheerleaderSlots,
   ClientView,
   Creature,
   CreatureView,
@@ -150,11 +152,17 @@ export function createGame(
   factions: [string, string],
   random: () => number = Math.random,
   /** Optionale spielergewählte Decks (Deck-Editor). Ohne Angabe: Auto-Deck. */
-  decks?: [DeckList | null, DeckList | null]
+  decks?: [DeckList | null, DeckList | null],
+  cheerleaders?: [CheerleaderSelection, CheerleaderSelection]
 ): GameState {
-  const makePlayer = (faction: string, deck: DeckList | null): PlayerState => ({
+  const makePlayer = (
+    faction: string,
+    deck: DeckList | null,
+    selection: CheerleaderSelection
+  ): PlayerState => ({
     faction,
     deckName: deck?.name,
+    cheerleaders: [...selection],
     deck: deck ? buildDeckFromList(data, deck, random) : buildDeck(data, faction, random),
     hand: [],
     base: data.config.baseHealth,
@@ -175,7 +183,18 @@ export function createGame(
     startingPlayer: random() < 0.5 ? 0 : 1,
     active: 0,
     consecutivePasses: 0,
-    players: [makePlayer(factions[0], decks?.[0] ?? null), makePlayer(factions[1], decks?.[1] ?? null)],
+    players: [
+      makePlayer(
+        factions[0],
+        decks?.[0] ?? null,
+        cheerleaders?.[0] ?? defaultCheerleaderSelection(decks?.[0] ?? null, data)
+      ),
+      makePlayer(
+        factions[1],
+        decks?.[1] ?? null,
+        cheerleaders?.[1] ?? defaultCheerleaderSelection(decks?.[1] ?? null, data)
+      )
+    ],
     board: [
       Array.from({ length: data.config.lanes }, () => null),
       Array.from({ length: data.config.lanes }, () => null)
@@ -697,6 +716,7 @@ export function buildClientView(state: GameState, player: PlayerIndex, data: Gam
   const publicView = (idx: PlayerIndex) => ({
     faction: state.players[idx].faction,
     deckName: state.players[idx].deckName,
+    cheerleaders: [...state.players[idx].cheerleaders] as CheerleaderSlots,
     base: state.players[idx].base,
     energy: state.players[idx].energy,
     deckCount: state.players[idx].deck.length,

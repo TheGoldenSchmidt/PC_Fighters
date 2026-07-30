@@ -26,6 +26,13 @@ export interface DeckbuildingConfig {
   factionRule: FactionRule;
 }
 
+/** Datengetriebene Regel für die Mannschaftsbank neben der Arena. */
+export interface CheerleaderConfig {
+  candidates: string[];
+  selectionSize: 3;
+  maxInDeck: number;
+}
+
 /**
  * Zermürbung (Regelwerk V2): ab Runde `abRunde` verlieren beide Basen am
  * Rundenende Leben – eine echte Spielentscheidung statt eines harten
@@ -73,6 +80,7 @@ export interface GameConfig {
   roundLimit: number;
   energy: EnergyConfig;
   deckbuilding: DeckbuildingConfig;
+  cheerleaders: CheerleaderConfig;
   /** Optional: ohne sie endet eine Partie nur über roundLimit/Basiszerstörung (V1-Verhalten). */
   zermuerbung?: ZermuerbungConfig;
   /** Optional: ohne sie nimmt die Basis Treffer ungehindert (Verhalten vor dem Schild-Feature). */
@@ -97,6 +105,11 @@ export interface DeckList {
 export type DeckSelection =
   | { kind: 'preset'; id: string }
   | { kind: 'custom'; deck: DeckList };
+
+/** Geordnete Auswahl; die Reihenfolge entspricht den drei festen Bankplätzen. */
+export type CheerleaderSelection = [string, string, string];
+/** Ein geopferter Platz bleibt stabil und wird nicht nachbesetzt. */
+export type CheerleaderSlots = [string | null, string | null, string | null];
 
 export interface Faction {
   id: string;
@@ -570,6 +583,7 @@ export interface PlayerState {
   faction: string;
   /** Öffentlicher Anzeigename, niemals die gegnerische Deckliste. */
   deckName?: string;
+  cheerleaders: CheerleaderSlots;
   deck: string[];
   hand: string[];
   base: number;
@@ -628,7 +642,15 @@ export interface DeathEvent {
   owner: PlayerIndex;
 }
 
-export type CombatEvent = AttackEvent | DeathEvent;
+/** Öffentliches Integrationsereignis; die Engine erzeugt es in diesem Auftrag nicht. */
+export interface CheerleaderSacrificeEvent {
+  kind: 'cheerleaderSacrifice';
+  owner: PlayerIndex;
+  slot: 0 | 1 | 2;
+  cardId: string;
+}
+
+export type CombatEvent = AttackEvent | DeathEvent | CheerleaderSacrificeEvent;
 
 /**
  * Zauber-Ereignis einer Aktionskarte – die UI spielt es als kurzen Effekt auf
@@ -741,6 +763,7 @@ export interface CreatureView {
 export interface PlayerPublicView {
   faction: string;
   deckName?: string;
+  cheerleaders: CheerleaderSlots;
   base: number;
   energy: number;
   deckCount: number;

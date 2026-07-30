@@ -10,7 +10,7 @@ import { createFigure, type Figure } from './figures3d';
 import { defaultServerHost, toInfoUrl } from './config';
 import './FigurePreview.css';
 
-type ClipName = 'idle' | 'entrance' | 'attack' | 'hit' | 'death';
+type ClipName = 'idle' | 'entrance' | 'attack' | 'hit' | 'death' | 'cheer' | 'sacrifice';
 
 const CLIPS: { id: ClipName; label: string; short: string; description: string }[] = [
   { id: 'idle', label: 'Idle', short: 'Ruhe', description: 'Atmung und kleine Nebenbewegungen' },
@@ -18,6 +18,8 @@ const CLIPS: { id: ClipName; label: string; short: string; description: string }
   { id: 'attack', label: 'Angriff', short: 'Aktion', description: 'Die individuelle Angriffs-Choreografie' },
   { id: 'hit', label: 'Treffer', short: 'Reaktion', description: 'Rückstoß und Schadensreaktion' },
   { id: 'death', label: 'Tod', short: 'Abgang', description: 'Die vollständige Sterbeanimation' }
+  ,{ id: 'cheer', label: 'Cheer', short: 'Bank', description: 'Individueller Jubel-Loop in der Teamzone' }
+  ,{ id: 'sacrifice', label: 'Opfer', short: 'Schutz', description: 'Sprung von der Bank vor die Basis' }
 ];
 
 interface ViewerMeta {
@@ -217,7 +219,9 @@ export function FigurePreview({ cardId }: { cardId?: string | null }) {
       entrance: 'playSpawn',
       attack: 'playAttack',
       hit: 'playHit',
-      death: 'playDeath'
+      death: 'playDeath',
+      cheer: 'playCheer',
+      sacrifice: 'playSacrifice'
     } as const;
     const handle = {
       freeze() {
@@ -299,11 +303,13 @@ export function FigurePreview({ cardId }: { cardId?: string | null }) {
     else if (clip === 'attack') figure.playAttack();
     else if (clip === 'hit') figure.playHit();
     else if (clip === 'death') figure.playDeath();
+    else if (clip === 'cheer') figure.playCheer();
+    else if (clip === 'sacrifice') figure.playSacrifice();
     setActiveClip(clip);
     setRunId((value) => value + 1);
 
     const duration = meta?.durations[clip];
-    if (clip !== 'idle' && clip !== 'death' && duration) {
+    if (clip !== 'idle' && clip !== 'death' && clip !== 'cheer' && duration) {
       statusTimerRef.current = window.setTimeout(() => setActiveClip('idle'), duration * 1000 + 120);
     }
   };
@@ -399,7 +405,7 @@ export function FigurePreview({ cardId }: { cardId?: string | null }) {
                   <button
                     type="button"
                     key={clip.id}
-                    className={`animation-take${isActive ? ' is-active' : ''}${clip.id === 'death' ? ' is-danger' : ''}`}
+                    className={`animation-take${isActive ? ' is-active' : ''}${clip.id === 'death' || clip.id === 'sacrifice' ? ' is-danger' : ''}`}
                     onClick={() => playClip(clip.id)}
                     disabled={clip.id !== 'idle' && !duration}
                   >

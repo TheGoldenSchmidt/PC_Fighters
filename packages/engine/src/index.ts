@@ -22,7 +22,16 @@ export { BOT_PROFILE, bewerteZustand, kampfprognose, waehleAktion, waehleMulliga
 export type { BotGewichte, BotProfil } from './bot.js';
 export { spielePartie } from './simulate.js';
 export type { PartieErgebnis, PartieOptionen } from './simulate.js';
-export { DataError, DeckError, isNeutralCard, maxCopiesOf, validateDeck, validateGameData } from './schema.js';
+export {
+  DataError,
+  DeckError,
+  defaultCheerleaderSelection,
+  isNeutralCard,
+  maxCopiesOf,
+  validateCheerleaderSelection,
+  validateDeck,
+  validateGameData
+} from './schema.js';
 export { ladeDecks, loadGameData } from './loadData.js';
 export { buildVisualCatalog } from './visualCatalog.js';
 export type { VisualCatalog, VisualCatalogEntry } from './visualCatalog.js';

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   applyAction,
   basisSchaden,
+  buildClientView,
   buildDeck,
   buildFactionTree,
   createGame,
@@ -14,6 +15,7 @@ import {
   roundEnergy,
   spielePartie,
   topOf,
+  validateCheerleaderSelection,
   validateDeck,
   validateGameData
 } from '../src/index.js';
@@ -36,6 +38,7 @@ const data: GameData = loadGameData();
 function player(faction: string): PlayerState {
   return {
     faction,
+    cheerleaders: ['pc_principal', 'pc_babies', 'alter_wissenschaftler'],
     deck: [],
     hand: [],
     base: data.config.baseHealth,
@@ -123,6 +126,45 @@ function passBoth(state: GameState): GameState {
   const afterFirst = applyAction(state, state.active, { type: 'pass' }, data);
   return applyAction(afterFirst, afterFirst.active, { type: 'pass' }, data);
 }
+
+describe('Cheerleader-Auswahl', () => {
+  const valid = ['pc_principal', 'pc_babies', 'alter_wissenschaftler'] as const;
+
+  it('lädt fünf konfigurierte Kandidaten und drei feste Plätze', () => {
+    expect(data.config.cheerleaders).toMatchObject({
+      candidates: [
+        'pc_principal',
+        'pc_babies',
+        'alter_wissenschaftler',
+        'junger_neffe',
+        'randy_marsh'
+      ],
+      selectionSize: 3,
+      maxInDeck: 2
+    });
+  });
+
+  it('akzeptiert genau drei unterschiedliche konfigurierte Figuren', () => {
+    expect(validateCheerleaderSelection(valid, null, data)).toEqual(valid);
+  });
+
+  it('lehnt falsche Anzahl, Duplikate und unbekannte IDs ab', () => {
+    expect(() => validateCheerleaderSelection(valid.slice(0, 2), null, data)).toThrow(/exakt 3/);
+    expect(() =>
+      validateCheerleaderSelection(['pc_principal', 'pc_principal', 'pc_babies'], null, data)
+    ).toThrow(/nur einmal/);
+    expect(() =>
+      validateCheerleaderSelection(['pc_principal', 'pc_babies', 'unbekannt'], null, data)
+    ).toThrow(/Unbekannter Cheerleader/);
+  });
+
+  it('schließt Figuren aus, die Bestandteil des Decks sind', () => {
+    const deck = { cards: [{ cardId: 'pc_principal', count: 1 }] };
+    expect(() => validateCheerleaderSelection(valid, deck, data)).toThrow(
+      /Bestandteil des Decks/
+    );
+  });
+});
 
 describe('Kampflogik', () => {
   it('kampfbereite Kreaturen schaden sich gleichzeitig', () => {
@@ -773,7 +815,9 @@ describe('Deckbau-Regeln (Zod)', () => {
         { cardId: 'pc_principal', count: 1 }
       ]
     };
-    expect(() => validateDeck(deck, data)).not.toThrow();
+    expect(() => validateDeck(deck, data)).toThrow(
+      /Zu viele Cheerleader-Kandidaten im Deck: 3, erlaubt sind 2/
+    );
   });
 
   it('Heroes und PC Principal zählen zur Deckgröße', () => {
@@ -1204,6 +1248,24 @@ describe('Basis-Schild', () => {
 
     expect(after.players[1].base).toBe(data.config.baseHealth - 2);
     expect(schildEvents(after)).toHaveLength(0);
+  });
+
+  it('buildClientView liefert Schild UND Cheerleader – beide Features nebeneinander', () => {
+    // Naht-Test: publicView ist ein Objektliteral ohne Typannotation, ein beim
+    // Zusammenführen verlorenes Feld fällt TypeScript daher NICHT auf.
+    const s = emptyState();
+    s.players[1].schild = 4;
+    s.players[1].basisImmun = true;
+    const sicht = buildClientView(s, 0, data);
+
+    expect(sicht.schildAbschnitte).toBe(SCHILD.abschnitte);
+    expect(sicht.players[1].schild).toBe(4);
+    expect(sicht.players[1].basisImmun).toBe(true);
+    expect(sicht.players[0].schild).toBe(0);
+    expect(sicht.players[0].basisImmun).toBe(false);
+    // Das Cheerleader-Feld aus dem Arena-Feature muss unangetastet mitkommen.
+    expect(sicht.players[0].cheerleaders).toHaveLength(3);
+    expect(sicht.players[1].cheerleaders).toEqual(s.players[1].cheerleaders);
   });
 
   it('Der Schildverlauf ist bei gleichem Seed reproduzierbar und bei anderem Seed verschieden', () => {

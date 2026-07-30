@@ -152,6 +152,10 @@ export function createAnimationPlayer(
       oneShots = oneShots.filter((os) => {
         const dur = os.clip.duration;
         let lt = now - os.start;
+        if (os.clip.loop && dur > 0) {
+          active.push([os.clip, ((lt % dur) + dur) % dur]);
+          return true;
+        }
         if (lt > dur) {
           if (os.name === 'death') lt = dur;
           else return false;

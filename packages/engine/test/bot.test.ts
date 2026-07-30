@@ -20,6 +20,7 @@ const data: GameData = loadGameData();
 function player(faction: string): PlayerState {
   return {
     faction,
+    cheerleaders: ['pc_principal', 'pc_babies', 'alter_wissenschaftler'],
     deck: [],
     hand: [],
     base: data.config.baseHealth,
