@@ -170,8 +170,57 @@ Die Datei `packages/engine/src/data/config.json` enthält alle Spielregeln als Z
 | `deckbuilding.maxPrincipals` | Wie viele Principal-Karten (`"category": "principal"`) ein Deck enthalten darf (V2: 1) |
 | `zermuerbung.abRunde` / `.schaden` / `.steigerung` | Ab dieser Runde verlieren beide Basen am Rundenende `schaden` Leben, danach je weitere Runde zusätzlich `steigerung` mehr – das ist der reguläre Weg, wie lange Partien enden (V2 will explizit „kein Rundenlimit", siehe `docs/regelwerk-v2.md` §1/§7) |
 | `roundLimit` | Technische Notbremse weit über der Zermürbung (aktuell 30) – wird im Normalspiel nie erreicht; jeder Treffer ist ein Bug-Report |
+| `schild.abschnitte` | Wie viele Abschnitte der Basis-Schild hat (Standard 7) |
+| `schild.ladung.min` / `.max` | Spanne, um die ein Treffer den Schild auflädt (Standard 1–3) |
+| `schild.superkraefte` | Liste der Superkräfte, aus der beim Block zufällig eine gezogen wird (siehe unten) |
 
 Zahl ändern, speichern, Server neu starten – fertig.
+
+### Der Schild
+
+Neben jeder Basis (🏰) steht ein Balken aus **7 Abschnitten**. Jedes Mal, wenn diese Basis
+getroffen wird, lädt sich der Schild **zufällig um 1 bis 3 Abschnitte** auf. Sobald er dabei
+7 erreicht, passiert dreierlei:
+
+1. **Der Treffer wird komplett geblockt** – die Basis verliert kein einziges Leben.
+2. **Eine zufällige Superkraft** löst aus (der Name erscheint kurz als Banner).
+3. Der Schild ist wieder **leer** und muss von vorn aufgeladen werden.
+
+Weil der Schild im Schnitt alle dreieinhalb Treffer voll ist, bekommt der Spieler, der gerade
+unter Druck steht, regelmäßig etwas zurück.
+
+**Was NICHT auf den Schild geht:** die Zermürbung am Rundenende. Die ist die Uhr, die lange
+Partien beendet – sie soll unblockbar bleiben. Alles andere (Kreaturen, die auf eine leere
+Bahn treffen, Wucht-Überschuss, Kartenschaden) lädt den Schild auf.
+
+**Die drei Superkräfte** (in `config.json` unter `schild.superkraefte`):
+
+| Name | `kind` | Wirkung |
+|---|---|---|
+| Schutzschild | `keinSchaden` | Die eigene Basis nimmt in dieser Runde gar keinen Schaden mehr. |
+| Nachschub | `kartenZiehen` | Man zieht `n` Karten (Standard 2). |
+| Störfeuer | `schwaechung` | Alle gegnerischen Kreaturen bekommen dauerhaft `-atk`/`-hp`. Kreaturen mit wenig Leben sterben daran. |
+
+Den Schild ganz abschalten geht, indem man den kompletten `"schild"`-Block aus `config.json`
+löscht – dann spielt sich alles wie vorher.
+
+### Eine neue Superkraft hinzufügen
+
+Das braucht drei kleine Code-Stellen (mehr nicht):
+
+1. **`packages/engine/src/types.ts`** – eine Variante beim Typ `Superkraft` ergänzen, z. B.
+   `| { kind: 'heilung'; name: string; menge: number }`.
+2. **`packages/engine/src/schild.ts`** – einen Eintrag in `SUPERKRAEFTE` mit demselben Namen
+   schreiben; dort steht, was die Superkraft tut. (Vergisst man das, meckert TypeScript –
+   die Liste muss vollständig sein.)
+3. **`packages/engine/src/schema.ts`** – im `superkraftSchema` einen Zweig ergänzen, damit die
+   Prüfung die neue Art kennt.
+
+Danach nur noch in `config.json` eintragen:
+
+```json
+{ "kind": "heilung", "name": "Feldlazarett", "menge": 3 }
+```
 
 ---
 

@@ -1,15 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import {
   applyAction,
+  basisSchaden,
   buildDeck,
   buildFactionTree,
   createGame,
   createSeededRandom,
   getEffectiveAttack,
   getMaxHealth,
+  ladeDecks,
   loadGameData,
   matchesScope,
   roundEnergy,
+  spielePartie,
   topOf,
   validateDeck,
   validateGameData
@@ -17,12 +20,15 @@ import {
 import { recalcBoard } from '../src/internal.js';
 import { applyShedding, onPlayAbilities, onRoundStartAbilities } from '../src/abilities.js';
 import type {
+  AttackEvent,
   Creature,
   CreatureCard,
   GameData,
   GameState,
   PlayerIndex,
-  PlayerState
+  PlayerState,
+  SchildEvent,
+  Superkraft
 } from '../src/types.js';
 
 const data: GameData = loadGameData();
@@ -37,6 +43,8 @@ function player(faction: string): PlayerState {
     knowledge: 0,
     flyDone: false,
     mulliganDone: false,
+    schild: 0,
+    basisImmun: false,
     gespieltDieseRunde: []
   };
 }
@@ -58,7 +66,9 @@ function emptyState(): GameState {
     ],
     log: [],
     winner: null,
-    uidCounter: 0
+    uidCounter: 0,
+    // Fester Seed: macht die Schild-Zufallszahlen im Test reproduzierbar.
+    rngState: 1
   };
 }
 
@@ -1039,6 +1049,20 @@ describe('Balancing V2 Phase 6: neue Engine-Primitive', () => {
     expect(after.players[1].base).toBe(data.config.baseHealth - z.schaden);
   });
 
+  it('Zermürbung umgeht den Schild vollständig (Endspiel-Uhr bleibt unblockbar)', () => {
+    const s = emptyState();
+    const z = data.config.zermuerbung!;
+    s.round = z.abRunde;
+    // Beide Schilde randvoll: würde Zermürbung durch basisSchaden laufen, wäre
+    // sie geblockt. Sie muss aber ungehindert durchgehen.
+    s.players[0].schild = data.config.schild!.abschnitte - 1;
+    s.players[1].schild = data.config.schild!.abschnitte - 1;
+    const after = passBoth(s);
+    expect(after.players[0].base).toBe(data.config.baseHealth - z.schaden);
+    expect(after.players[1].base).toBe(data.config.baseHealth - z.schaden);
+    expect(after.players[0].schild).toBe(data.config.schild!.abschnitte - 1);
+  });
+
   it('I1: Klasse-A-Hooks schreiben nie in zaehler (sonst nicht-idempotente recalcBoard-Fixpunktschleife)', () => {
     const s = emptyState();
     const c = put(s, 0, 0, 'ritter');
@@ -1048,5 +1072,152 @@ describe('Balancing V2 Phase 6: neue Engine-Primitive', () => {
     recalcBoard(s);
     recalcBoard(s);
     expect(c.zaehler).toEqual({});
+  });
+});
+
+// ---------------------------------------------------------------- Basis-Schild
+
+describe('Basis-Schild', () => {
+  const SCHILD = data.config.schild!;
+
+  /** Zustand mit genau EINER Superkraft im Katalog – macht den Block-Ausgang eindeutig. */
+  function mitSuperkraft(kraft: Superkraft): GameState {
+    const s = emptyState();
+    // Kopie statt Mutation: emptyState() teilt sich `data.config` mit allen Tests.
+    s.config = { ...data.config, schild: { ...SCHILD, superkraefte: [kraft] } };
+    return s;
+  }
+
+  function schildEvents(state: GameState): SchildEvent[] {
+    return state.log.flatMap((e) => (e.event?.kind === 'schild' ? [e.event] : []));
+  }
+
+  it('Ein Treffer an der Basis lädt den Schild um 1–3 Abschnitte auf, Schaden kommt normal an', () => {
+    const s = emptyState();
+    put(s, 0, 0, 'rekrut'); // 2/1, Lane 0 des Gegners ist frei → Basisangriff
+    const after = passBoth(s);
+
+    expect(after.players[1].base).toBe(data.config.baseHealth - 2);
+    expect(after.players[1].schild).toBeGreaterThanOrEqual(SCHILD.ladung.min);
+    expect(after.players[1].schild).toBeLessThanOrEqual(SCHILD.ladung.max);
+
+    const ev = schildEvents(after);
+    expect(ev).toHaveLength(1);
+    expect(ev[0]).toMatchObject({ owner: 1, abschnitte: SCHILD.abschnitte, stand: after.players[1].schild });
+    expect(ev[0].blockiert).toBeUndefined();
+  });
+
+  it('Voller Schild blockt den Treffer, setzt sich auf 0 zurück und meldet die Superkraft', () => {
+    const s = mitSuperkraft({ kind: 'kartenZiehen', name: 'Nachschub', n: 2 });
+    s.players[1].deck = ['rekrut', 'rekrut', 'rekrut'];
+    // Ein Abschnitt unter der Schwelle: jede Ladung (≥1) löst den Block aus.
+    s.players[1].schild = SCHILD.abschnitte - 1;
+    put(s, 0, 0, 'rekrut');
+    const after = passBoth(s);
+
+    expect(after.players[1].base).toBe(data.config.baseHealth);
+    expect(after.players[1].schild).toBe(0);
+
+    const ev = schildEvents(after);
+    expect(ev).toHaveLength(1);
+    expect(ev[0]).toMatchObject({ owner: 1, stand: 0, blockiert: true, superkraft: 'Nachschub' });
+
+    // Das AttackEvent muss den EFFEKTIVEN Schaden tragen, sonst rechnet der
+    // Client beim Replay an der falschen Basis weiter.
+    const angriff = after.log.find((e) => e.event?.kind === 'attack' && e.event.toBase)!.event as AttackEvent;
+    expect(angriff.damage).toBe(0);
+    expect(angriff.blockiert).toBe(true);
+  });
+
+  it('Superkraft „Nachschub": der Schildbesitzer zieht 2 Karten (leeres Deck zieht 0)', () => {
+    const kraft: Superkraft = { kind: 'kartenZiehen', name: 'Nachschub', n: 2 };
+
+    // Direkt über basisSchaden statt über eine ganze Runde: sonst mischt sich
+    // der reguläre Kartenzug aus startRound() in die Handgröße.
+    const s = mitSuperkraft(kraft);
+    s.players[1].deck = ['rekrut', 'ritter', 'rekrut'];
+    s.players[1].schild = SCHILD.abschnitte - 1;
+    expect(basisSchaden(s, 1, 3)).toBe(0);
+    expect(s.players[1].hand).toEqual(['rekrut', 'ritter']);
+    expect(s.players[1].deck).toEqual(['rekrut']);
+
+    const leer = mitSuperkraft(kraft);
+    leer.players[1].deck = [];
+    leer.players[1].schild = SCHILD.abschnitte - 1;
+    expect(basisSchaden(leer, 1, 3)).toBe(0); // trotz leerem Deck geblockt
+    expect(leer.players[1].hand).toHaveLength(0);
+    expect(leer.players[1].base).toBe(data.config.baseHealth);
+  });
+
+  it('Superkraft „Schutzschild": weiterer Basisschaden derselben Runde verpufft, ab der nächsten Runde nicht mehr', () => {
+    const s = mitSuperkraft({ kind: 'keinSchaden', name: 'Schutzschild' });
+    s.players[1].schild = SCHILD.abschnitte - 1;
+    // Lane 0 blockt und löst Schutzschild aus, Lane 1 trifft danach ins Leere.
+    put(s, 0, 0, 'rekrut');
+    put(s, 0, 1, 'ritter');
+    const after = passBoth(s);
+
+    expect(after.players[1].base).toBe(data.config.baseHealth);
+    // startRound() nach dem Kampf hebt die Immunität wieder auf.
+    expect(after.players[1].basisImmun).toBe(false);
+    // Der verpuffte zweite Treffer lädt den Schild NICHT auf.
+    expect(after.players[1].schild).toBe(0);
+  });
+
+  it('Superkraft „Störfeuer": gegnerische Kreaturen erhalten dauerhaft -1/-1 und können daran sterben', () => {
+    const s = mitSuperkraft({ kind: 'schwaechung', name: 'Störfeuer', atk: 1, hp: 1 });
+    // Spieler 1 blockt → Störfeuer trifft Spieler 0.
+    s.players[1].schild = SCHILD.abschnitte - 1;
+    put(s, 0, 0, 'rekrut'); // 2/1 – stirbt an -1/-1
+    put(s, 0, 1, 'ritter'); // 4/5 – überlebt als 3/4
+    const after = passBoth(s);
+
+    expect(after.board[0][0]).toBeNull();
+    expect(after.log.some((e) => e.event?.kind === 'death' && e.event.owner === 0)).toBe(true);
+    const ritter = after.board[0][1]!;
+    expect(ritter.permAttackBonus).toBe(-1);
+    expect(ritter.permHealthBonus).toBe(-1);
+    expect(getEffectiveAttack(after, 0, 1)).toBe(3);
+    expect(getMaxHealth(after, 0, 1)).toBe(4);
+  });
+
+  it('Wucht-Überschuss läuft ebenfalls durch den Schild', () => {
+    const s = emptyState();
+    // eisbaer (5/8) hat Wucht? Unabhängig davon: Überschuss nur, wenn die
+    // Fähigkeit vorhanden ist – deshalb explizit setzen.
+    const angreifer = put(s, 0, 0, 'ritter'); // 4/5
+    angreifer.abilities = [{ kind: 'wucht' }];
+    put(s, 1, 0, 'rekrut'); // 2/1 → 3 Überschuss auf die Basis
+    const after = passBoth(s);
+
+    expect(after.players[1].base).toBe(data.config.baseHealth - 3);
+    expect(after.players[1].schild).toBeGreaterThanOrEqual(SCHILD.ladung.min);
+  });
+
+  it('Ohne config.schild verhält sich die Basis wie vor dem Feature', () => {
+    const s = emptyState();
+    const { schild: _weg, ...ohneSchild } = data.config;
+    s.config = ohneSchild;
+    s.players[1].schild = 99; // wird ignoriert
+    put(s, 0, 0, 'rekrut');
+    const after = passBoth(s);
+
+    expect(after.players[1].base).toBe(data.config.baseHealth - 2);
+    expect(schildEvents(after)).toHaveLength(0);
+  });
+
+  it('Der Schildverlauf ist bei gleichem Seed reproduzierbar und bei anderem Seed verschieden', () => {
+    // Wichtig: applyAction bekommt hier KEIN random – der Schild-Zufall muss
+    // allein aus state.rngState kommen, sonst wären Backtests nicht mehr
+    // reproduzierbar (simulate.ts ruft applyAction ebenfalls ohne random auf).
+    const decks = ladeDecks(data);
+    // spielePartie schaltet das Log ab (logModus 'aus'), daher über den Endstand.
+    const verlauf = (saat: number): string => {
+      const r = spielePartie(data, decks['a1_rudeljaeger'], decks['h1_solidaritaet'], { saat });
+      const p = r.endState.players;
+      return `${r.gewinner}:${r.runden}:${p[0].base}:${p[1].base}:${p[0].schild}:${p[1].schild}`;
+    };
+    expect(verlauf(4242)).toBe(verlauf(4242));
+    expect(verlauf(4242)).not.toBe(verlauf(777));
   });
 });

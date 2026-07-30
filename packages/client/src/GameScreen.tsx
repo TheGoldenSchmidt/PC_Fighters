@@ -83,12 +83,19 @@ interface FxSpell {
   faction: string;
 }
 
+/** Aktiver Schild-Effekt: Aufladen oder Block samt Superkraft. */
+interface FxShield {
+  owner: PlayerIndex;
+  blockiert: boolean;
+}
+
 interface FxState {
   projectiles: FxProjectile[];
   impacts: FxImpact[];
   baseImpacts: FxBaseImpact[];
   dying: { lane: number; owner: PlayerIndex }[];
   spells: FxSpell[];
+  shield: FxShield | null;
   activeLane: number | null;
 }
 
@@ -98,6 +105,7 @@ const EMPTY_FX: FxState = {
   baseImpacts: [],
   dying: [],
   spells: [],
+  shield: null,
   activeLane: null
 };
 
@@ -119,6 +127,9 @@ const PROJECTILE_MS = 500;
 const IMPACT_MS = 650;
 const DEATH_MS = 600;
 const SPELL_MS = 750;
+const SHIELD_MS = 550;
+/** Block ist der Höhepunkt: länger, damit Banner und Superkraft lesbar sind. */
+const SHIELD_BLOCK_MS = 1200;
 const LANE_PAUSE_MS = 200;
 const BANNER_MS = 1500;
 const LONG_PRESS_MS = 450;
@@ -338,7 +349,11 @@ export function GameScreen({
           const defender: PlayerIndex = g.attacker === 0 ? 1 : 0;
           if (g.toBase) {
             next.players[defender].base -= g.damage;
-            baseImpacts.push({ key: `b-${g.lane}-${i}-${Date.now()}`, side: defender, damage: g.damage });
+            // Bei einem vom Schild geblockten Treffer ist damage 0 – dann keine
+            // "-0"-Schadenszahl zeigen, das übernimmt der Schild-Effekt.
+            if (g.damage > 0) {
+              baseImpacts.push({ key: `b-${g.lane}-${i}-${Date.now()}`, side: defender, damage: g.damage });
+            }
           } else {
             const target = next.board[defender][g.lane];
             if (target) target.health = Math.max(0, target.health - g.damage);
@@ -373,6 +388,18 @@ export function GameScreen({
           ...f,
           dying: f.dying.filter((x) => !deaths.some((d) => d.lane === x.lane && d.owner === x.owner))
         }));
+      } else if (ev.kind === 'schild') {
+        // Basis-Schild: Ladebalken auf den Stand aus dem Event setzen. Beim Block
+        // zusätzlich das Banner mit der ausgelösten Superkraft.
+        const next = structuredClone(shownViewRef.current);
+        next.players[ev.owner].schild = ev.stand;
+        setShown(next);
+        setFx((f) => ({ ...f, shield: { owner: ev.owner, blockiert: Boolean(ev.blockiert) } }));
+        if (ev.blockiert) showBanner(`🛡️ ${ev.superkraft ?? 'Angriff geblockt'}!`);
+        await sleep(ev.blockiert ? SHIELD_BLOCK_MS : SHIELD_MS);
+        if (cancelledRef.current) break;
+        setFx((f) => ({ ...f, shield: null }));
+        await sleep(LANE_PAUSE_MS);
       } else {
         // Zauber-Effekte einer Aktionskarte: alle direkt aufeinanderfolgenden
         // Spell-Events gemeinsam zeigen (z. B. Beschwörung mehrerer Tokens).
@@ -534,6 +561,7 @@ export function GameScreen({
   const incomingDamage = (side: PlayerIndex, lane: number) =>
     fx.impacts.find((i) => i.side === side && i.lane === lane);
   const baseHit = (side: PlayerIndex) => fx.baseImpacts.find((b) => b.side === side);
+  const shieldFx = (side: PlayerIndex) => (fx.shield?.owner === side ? fx.shield : null);
   // Zauber-Effekte treffen immer eigene Lanes (Aktionskarten zielen auf sich selbst)
   const spellOnLane = (lane: number) => fx.spells.find((s) => s.lane === lane);
 
@@ -568,6 +596,12 @@ export function GameScreen({
           🏰 {Math.max(0, shownView.players[opp].base)}
           {baseHit(opp) && <span className="dmg-float">-{baseHit(opp)!.damage}</span>}
         </div>
+        <ShieldMeter
+          stand={shownView.players[opp].schild}
+          abschnitte={shownView.schildAbschnitte}
+          fx={shieldFx(opp)}
+          immun={shownView.players[opp].basisImmun}
+        />
         <div
           className="hand-backs"
           aria-label={`Gegner hat ${shownView.players[opp].handCount} Handkarten`}
@@ -695,6 +729,12 @@ export function GameScreen({
             🏰 {Math.max(0, shownView.players[me].base)}
             {baseHit(me) && <span className="dmg-float">-{baseHit(me)!.damage}</span>}
           </div>
+          <ShieldMeter
+            stand={shownView.players[me].schild}
+            abschnitte={shownView.schildAbschnitte}
+            fx={shieldFx(me)}
+            immun={shownView.players[me].basisImmun}
+          />
           <div className={'energy-chip' + (canPlaySomething ? ' pulse' : '')}>
             ⚡ {energy}/{shownView.energyCap}
           </div>
@@ -862,6 +902,45 @@ function CardArt({
       alt={alt}
       onError={() => setFailed(true)}
     />
+  );
+}
+
+/**
+ * Basis-Schild als Segmentbalken. Jeder Treffer an der Basis füllt 1–3
+ * Abschnitte; ist der Balken voll, blockt der Schild und löst eine Superkraft
+ * aus (der Server schickt dann ein SchildEvent mit `blockiert`).
+ */
+function ShieldMeter({
+  stand,
+  abschnitte,
+  fx,
+  immun
+}: {
+  stand: number;
+  abschnitte: number;
+  fx: FxShield | null;
+  immun: boolean;
+}) {
+  // 0 Abschnitte = Schild-Regel in der Config abgeschaltet: gar nichts rendern.
+  if (abschnitte <= 0) return null;
+  const klassen = [
+    'shield-meter',
+    fx?.blockiert ? 'blocked' : '',
+    fx && !fx.blockiert ? 'charging' : '',
+    immun ? 'immun' : ''
+  ]
+    .filter(Boolean)
+    .join(' ');
+  return (
+    <div
+      className={klassen}
+      title={immun ? 'Schutzschild aktiv: keine Basis-Treffer in dieser Runde' : `Schild ${stand}/${abschnitte}`}
+      aria-label={`Schild ${stand} von ${abschnitte}`}
+    >
+      {Array.from({ length: abschnitte }, (_, i) => (
+        <span key={i} className={`shield-seg ${i < stand ? 'filled' : ''}`} />
+      ))}
+    </div>
   );
 }
 

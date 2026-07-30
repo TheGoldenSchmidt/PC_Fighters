@@ -18,6 +18,37 @@ import type {
   Topic
 } from './types.js';
 
+/**
+ * Superkräfte des Basis-Schilds. Neue Superkraft = neuer Zweig hier, eine
+ * Variante in `Superkraft` (types.ts) und ein Eintrag in SUPERKRAEFTE (schild.ts).
+ */
+export const superkraftSchema = z.discriminatedUnion('kind', [
+  z.object({ kind: z.literal('keinSchaden'), name: z.string().min(1) }).strict(),
+  z.object({ kind: z.literal('kartenZiehen'), name: z.string().min(1), n: z.number().int().min(1) }).strict(),
+  z
+    .object({
+      kind: z.literal('schwaechung'),
+      name: z.string().min(1),
+      atk: z.number().int().min(0),
+      hp: z.number().int().min(0)
+    })
+    .strict()
+]);
+
+export const schildSchema = z
+  .object({
+    abschnitte: z.number().int().min(1),
+    ladung: z.object({
+      min: z.number().int().min(1),
+      max: z.number().int().min(1)
+    }),
+    // Ohne Superkräfte würde ein Block ins Leere laufen.
+    superkraefte: z.array(superkraftSchema).min(1)
+  })
+  .refine((s) => s.ladung.max >= s.ladung.min, {
+    message: 'ladung.max muss mindestens so groß sein wie ladung.min'
+  });
+
 export const configSchema = z.object({
   lanes: z.number().int().min(1).max(6),
   baseHealth: z.number().int().min(1),
@@ -44,7 +75,9 @@ export const configSchema = z.object({
       schaden: z.number().int().min(1),
       steigerung: z.number().int().min(0)
     })
-    .optional()
+    .optional(),
+  /** Ohne diesen Block nimmt die Basis Treffer ungehindert (Verhalten vor dem Schild-Feature). */
+  schild: schildSchema.optional()
 });
 
 export const factionSchema = z.object({

@@ -1176,6 +1176,72 @@ input:focus {
   30%, 60%, 90% { transform: translateX(4px); }
 }
 
+/* ---------- Basis-Schild ---------- */
+/* Segmentbalken neben dem 🏰-Chip: jeder Basis-Treffer füllt 1–3 Abschnitte,
+   ist er voll, blockt der Schild und eine Superkraft löst aus. */
+
+.shield-meter {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 6px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  flex-shrink: 0;
+}
+
+.shield-seg {
+  width: 6px;
+  height: 14px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.6);
+}
+
+.shield-seg.filled {
+  background: linear-gradient(180deg, #60a5fa, var(--accent));
+  box-shadow: 0 0 6px rgba(var(--accent-rgb), 0.7);
+}
+
+/* Aufladen: kurzer Puls auf dem ganzen Balken. */
+.shield-meter.charging {
+  animation: shield-charge 0.55s ease-out;
+}
+
+@keyframes shield-charge {
+  0% { transform: none; }
+  40% { transform: scale(1.12); border-color: rgba(var(--accent-rgb), 0.8); }
+  100% { transform: none; }
+}
+
+/* Block: der Höhepunkt – alle Segmente leuchten kurz golden auf. */
+.shield-meter.blocked {
+  animation: shield-flash 1.2s ease-out;
+}
+
+.shield-meter.blocked .shield-seg {
+  background: linear-gradient(180deg, #fcd34d, var(--gold));
+  box-shadow: 0 0 10px var(--gold-glow);
+}
+
+@keyframes shield-flash {
+  0% { transform: scale(1); box-shadow: none; }
+  20% { transform: scale(1.25); box-shadow: 0 0 22px var(--gold-glow); }
+  100% { transform: scale(1); box-shadow: none; }
+}
+
+/* Superkraft „Schutzschild": Dauerglühen, solange die Runde läuft. */
+.shield-meter.immun {
+  border-color: var(--gold);
+  animation: shield-immune 1.6s ease-in-out infinite;
+}
+
+@keyframes shield-immune {
+  0%, 100% { box-shadow: 0 0 4px var(--gold-glow); }
+  50% { box-shadow: 0 0 14px var(--gold-glow); }
+}
+
 /* ---------- Kampf-Log ---------- */
 
 .log {
@@ -1824,7 +1890,7 @@ input:focus {
 
 /* Reduced Motion Override */
 @media (prefers-reduced-motion: reduce) {
-  *, .creature-figure, .dmg-float, .base-chip.hit, .hand-card.playable:hover {
+  *, .creature-figure, .dmg-float, .base-chip.hit, .shield-meter, .hand-card.playable:hover {
     animation: none !important;
     transform: none !important;
     transition: none !important;

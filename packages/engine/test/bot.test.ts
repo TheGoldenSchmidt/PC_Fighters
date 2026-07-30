@@ -27,6 +27,8 @@ function player(faction: string): PlayerState {
     knowledge: 0,
     flyDone: false,
     mulliganDone: false,
+    schild: 0,
+    basisImmun: false,
     gespieltDieseRunde: []
   };
 }
@@ -48,7 +50,9 @@ function emptyState(): GameState {
     ],
     log: [],
     winner: null,
-    uidCounter: 0
+    uidCounter: 0,
+    // Fester Seed: macht die Schild-Zufallszahlen im Test reproduzierbar.
+    rngState: 1
   };
 }
 

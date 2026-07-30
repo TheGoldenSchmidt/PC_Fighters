@@ -26,6 +26,7 @@ import {
   recalcBoard
 } from './internal.js';
 import { hasKeyword } from './keywords.js';
+import { basisSchaden } from './schild.js';
 import { registriereAusspielen, registriereEnergie, registriereMulligan, registriereZug, zaehleKarte, zaehleSpieler } from './stats.js';
 import type {
   CardDef,
@@ -161,6 +162,8 @@ export function createGame(
     knowledge: 0,
     flyDone: false,
     mulliganDone: false,
+    schild: 0,
+    basisImmun: false,
     gespieltDieseRunde: []
   });
 
@@ -179,7 +182,11 @@ export function createGame(
     ],
     log: [],
     winner: null,
-    uidCounter: 0
+    uidCounter: 0,
+    // Einmalig aus der injizierten Zufallsquelle gezogen: ab hier bezieht die
+    // Engine jeden weiteren Zufall aus diesem Feld (wuerfle(), siehe rng.ts),
+    // damit ein gesetzter Seed die ganze Partie deterministisch macht.
+    rngState: Math.floor(random() * 0x100000000) >>> 0
   };
 
   drawCards(state, 0, data.config.startingHand);
@@ -248,6 +255,10 @@ function startRound(state: GameState): void {
   state.players[1].flyDone = false;
   state.players[0].gespieltDieseRunde = [];
   state.players[1].gespieltDieseRunde = [];
+  // Superkraft „Schutzschild" gilt nur für ihre eigene Runde. Die Schild-Ladung
+  // selbst bleibt bewusst über Runden hinweg stehen.
+  state.players[0].basisImmun = false;
+  state.players[1].basisImmun = false;
   // Rundenbeginn-Effekte (Rundenwachstum, lernen/wissen pro Runde) – wirkt auf
   // Kreaturen, die aus einer früheren Runde übrig sind (Runde 1: leeres Feld).
   onRoundStartAbilities(state);
@@ -357,10 +368,12 @@ function creatureStrike(
   if (hasAbility(attacker, 'wucht')) {
     const overflow = Math.max(0, atk - defenderHealthBefore);
     if (overflow > 0) {
-      state.players[defenderIdx].base -= overflow;
-      zaehleKarte(state, attackerIdx, attacker.cardId, 'schadenBasis', overflow);
-      zaehleSpieler(state, attackerIdx, 'wuchtSchaden', overflow);
-      log(state, `Lane ${lane + 1}: Wucht! ${overflow} Überschuss trifft die Basis.`);
+      // Läuft durch den Schild: ein Wucht-Überschuss kann geblockt werden und
+      // lädt genauso auf wie ein direkter Basis-Angriff.
+      const echt = basisSchaden(state, defenderIdx, overflow);
+      zaehleKarte(state, attackerIdx, attacker.cardId, 'schadenBasis', echt);
+      zaehleSpieler(state, attackerIdx, 'wuchtSchaden', echt);
+      if (echt > 0) log(state, `Lane ${lane + 1}: Wucht! ${echt} Überschuss trifft die Basis.`);
     }
   }
   // Dornen: Verteidiger fügt dem Angreifer Schaden zu. Mehrere dornen-Einträge stapeln.
@@ -417,36 +430,42 @@ function resolveCombat(state: GameState): void {
     } else if (a && !b && !a.exhausted) {
       const dmg = getEffectiveAttack(state, 0, lane) + soloBasisschaden(a);
       a.attackedThisRound = true;
-      state.players[1].base -= dmg;
-      zaehleKarte(state, 0, a.cardId, 'schadenBasis', dmg);
+      // Der Schild entscheidet, wie viel wirklich ankommt. Das AttackEvent trägt
+      // den effektiven Schaden, weil der Client damit direkt weiterrechnet.
+      const echt = basisSchaden(state, 1, dmg);
+      zaehleKarte(state, 0, a.cardId, 'schadenBasis', echt);
       if (a.spawnRound === state.round) {
         zaehleSpieler(state, 0, 'flinkAngriffe');
         zaehleKarte(state, 0, a.cardId, 'flinkAngriffe');
       }
-      log(state, `Lane ${lane + 1}: ${a.name} trifft die gegnerische Basis für ${dmg}.`, {
-        kind: 'attack',
-        lane,
-        attacker: 0,
-        damage: dmg,
-        toBase: true
-      });
+      log(
+        state,
+        echt > 0
+          ? `Lane ${lane + 1}: ${a.name} trifft die gegnerische Basis für ${echt}.`
+          : `Lane ${lane + 1}: ${a.name} greift die gegnerische Basis an – abgewehrt.`,
+        { kind: 'attack', lane, attacker: 0, damage: echt, toBase: true, ...(echt === 0 ? { blockiert: true } : {}) }
+      );
+      // Superkraft „Störfeuer" kann Kreaturen getötet haben – sofort auflösen,
+      // damit die Tode in dieser Lane-Reihenfolge animiert werden.
+      logDeaths(state);
       if (checkBaseDestroyed(state)) return;
     } else if (b && !a && !b.exhausted) {
       const dmg = getEffectiveAttack(state, 1, lane) + soloBasisschaden(b);
       b.attackedThisRound = true;
-      state.players[0].base -= dmg;
-      zaehleKarte(state, 1, b.cardId, 'schadenBasis', dmg);
+      const echt = basisSchaden(state, 0, dmg);
+      zaehleKarte(state, 1, b.cardId, 'schadenBasis', echt);
       if (b.spawnRound === state.round) {
         zaehleSpieler(state, 1, 'flinkAngriffe');
         zaehleKarte(state, 1, b.cardId, 'flinkAngriffe');
       }
-      log(state, `Lane ${lane + 1}: ${b.name} trifft die gegnerische Basis für ${dmg}.`, {
-        kind: 'attack',
-        lane,
-        attacker: 1,
-        damage: dmg,
-        toBase: true
-      });
+      log(
+        state,
+        echt > 0
+          ? `Lane ${lane + 1}: ${b.name} trifft die gegnerische Basis für ${echt}.`
+          : `Lane ${lane + 1}: ${b.name} greift die gegnerische Basis an – abgewehrt.`,
+        { kind: 'attack', lane, attacker: 1, damage: echt, toBase: true, ...(echt === 0 ? { blockiert: true } : {}) }
+      );
+      logDeaths(state);
       if (checkBaseDestroyed(state)) return;
     }
   }
@@ -683,7 +702,10 @@ export function buildClientView(state: GameState, player: PlayerIndex, data: Gam
     deckCount: state.players[idx].deck.length,
     handCount: state.players[idx].hand.length,
     flyDone: state.players[idx].flyDone,
-    mulliganDone: state.players[idx].mulliganDone
+    mulliganDone: state.players[idx].mulliganDone,
+    // Schildstand ist öffentlich – wie das Basis-Leben auch.
+    schild: state.players[idx].schild,
+    basisImmun: state.players[idx].basisImmun
   });
 
   return {
@@ -691,6 +713,8 @@ export function buildClientView(state: GameState, player: PlayerIndex, data: Gam
     round: state.round,
     roundLimit: state.config.roundLimit,
     lanes: state.config.lanes,
+    // 0 = Schild-Regel in der Config abgeschaltet, der Client blendet sie dann aus.
+    schildAbschnitte: state.config.schild?.abschnitte ?? 0,
     // Energie ist rundenbasiert (ggf. ungedeckelt): der Client zeigt die
     // Rundenenergie als "Cap" an (⚡ n/n).
     energyCap: roundEnergy(state.config, state.round),

@@ -9,6 +9,7 @@ import {
   otherPlayer,
   recalcBoard
 } from './internal.js';
+import { basisSchaden } from './schild.js';
 import { zaehleKarte } from './stats.js';
 import type { ActionCard, Effect, GameState, PlayerAction, PlayerIndex } from './types.js';
 
@@ -121,8 +122,8 @@ export const EFFECTS: { [K in Effect['kind']]: EffectResolver<K> } = {
     const liveLanes: number[] = [];
     for (let j = 0; j < ctx.state.board[enemy].length; j++) if (ctx.state.board[enemy][j]) liveLanes.push(j);
     if (liveLanes.length === 0) {
-      ctx.state.players[enemy].base -= rest;
-      zaehleKarte(ctx.state, owner, ctx.card.id, 'schadenBasis', rest);
+      // Über den Schild-Trichter: auch Effektschaden lädt auf und ist blockbar.
+      zaehleKarte(ctx.state, owner, ctx.card.id, 'schadenBasis', basisSchaden(ctx.state, enemy, rest));
     } else {
       let i = 0;
       while (rest > 0) {

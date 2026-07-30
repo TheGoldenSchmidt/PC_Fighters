@@ -38,6 +38,33 @@ export interface ZermuerbungConfig {
   steigerung: number;
 }
 
+/**
+ * Eine Superkraft, die auslöst, wenn der Schild einen Treffer blockt. Neue
+ * Superkraft = neue Variante hier + Eintrag in SUPERKRAEFTE (schild.ts) +
+ * Zweig im superkraftSchema (schema.ts) + Eintrag in config.json.
+ */
+export type Superkraft =
+  // Der Schildbesitzer nimmt bis zum Rundenende keinen Basisschaden mehr.
+  | { kind: 'keinSchaden'; name: string }
+  // Der Schildbesitzer zieht n Karten.
+  | { kind: 'kartenZiehen'; name: string; n: number }
+  // Alle gegnerischen Kreaturen verlieren dauerhaft atk Angriff und hp Leben.
+  | { kind: 'schwaechung'; name: string; atk: number; hp: number };
+
+/**
+ * Schild der Basis: jeder Treffer lädt ihn zufällig um `ladung.min`–`ladung.max`
+ * Abschnitte auf. Erreicht er `abschnitte`, wird DIESER Treffer komplett
+ * geblockt, eine zufällige Superkraft löst aus und der Schild geht auf 0.
+ */
+export interface SchildConfig {
+  /** Wie viele Abschnitte der Schild hat (Standard-Regel: 7). */
+  abschnitte: number;
+  /** Spanne, um die ein Treffer den Schild auflädt (Standard-Regel: 1–3). */
+  ladung: { min: number; max: number };
+  /** Katalog der Superkräfte – beim Block wird eine davon zufällig gezogen. */
+  superkraefte: Superkraft[];
+}
+
 export interface GameConfig {
   lanes: number;
   baseHealth: number;
@@ -48,6 +75,8 @@ export interface GameConfig {
   deckbuilding: DeckbuildingConfig;
   /** Optional: ohne sie endet eine Partie nur über roundLimit/Basiszerstörung (V1-Verhalten). */
   zermuerbung?: ZermuerbungConfig;
+  /** Optional: ohne sie nimmt die Basis Treffer ungehindert (Verhalten vor dem Schild-Feature). */
+  schild?: SchildConfig;
 }
 
 /** Deck-Datenstruktur (spielergewählt) – für den kommenden Deck-Editor. */
@@ -552,6 +581,17 @@ export interface PlayerState {
   /** Vor Runde 1: dieser Spieler hat seinen einmaligen Mulligan bestätigt. */
   mulliganDone: boolean;
   /**
+   * Ladung des Basis-Schilds in Abschnitten. Erreicht sie
+   * `config.schild.abschnitte`, blockt der Schild den Treffer, löst eine
+   * zufällige Superkraft aus und geht auf 0 zurück (siehe schild.ts).
+   */
+  schild: number;
+  /**
+   * Superkraft „Schutzschild": die eigene Basis ignoriert bis zum Rundenende
+   * jeden Treffer. Wird in startRound() zurückgesetzt.
+   */
+  basisImmun: boolean;
+  /**
    * Fraktionen der in DIESER Runde bereits gespielten Karten (für `synergie` –
    * Hooks bekommen nur `GameState`, keine `GameData`, daher Fraktion statt
    * cardId gespeichert). Wird in startRound() geleert.
@@ -569,9 +609,16 @@ export interface AttackEvent {
   kind: 'attack';
   lane: number;
   attacker: PlayerIndex;
+  /**
+   * TATSÄCHLICH angerichteter Schaden – 0, wenn der Schild geblockt hat. Der
+   * Client rechnet damit direkt auf seiner angezeigten Lage weiter, deshalb darf
+   * hier nie der ungefilterte Rohschaden stehen.
+   */
   damage: number;
   /** true = der Angriff ging auf die Basis statt auf eine Kreatur. */
   toBase: boolean;
+  /** Gesetzt, wenn der Basis-Schild den Treffer komplett abgefangen hat. */
+  blockiert?: boolean;
 }
 
 export interface DeathEvent {
@@ -597,8 +644,29 @@ export interface SpellEvent {
   faction: string;
 }
 
+/**
+ * Schild-Ereignis: entsteht bei JEDEM Treffer auf eine Basis, solange
+ * `config.schild` gesetzt ist. Die UI zeigt damit den Ladebalken animiert und
+ * bei `blockiert` den Block plus die ausgelöste Superkraft.
+ */
+export interface SchildEvent {
+  kind: 'schild';
+  /** Besitzer des Schilds – immer der Verteidiger. */
+  owner: PlayerIndex;
+  /** Um wie viele Abschnitte dieser Treffer aufgeladen hat. */
+  ladung: number;
+  /** Stand NACH dem Treffer – 0, wenn geblockt wurde. */
+  stand: number;
+  /** Gesamtzahl der Abschnitte, damit der Client nichts hartkodieren muss. */
+  abschnitte: number;
+  /** Gesetzt, wenn der Treffer komplett abgefangen wurde. */
+  blockiert?: boolean;
+  /** Name der ausgelösten Superkraft (nur zusammen mit `blockiert`). */
+  superkraft?: string;
+}
+
 /** Alles, was als strukturiertes Ereignis an einem Log-Eintrag hängen kann. */
-export type LogEvent = CombatEvent | SpellEvent;
+export type LogEvent = CombatEvent | SpellEvent | SchildEvent;
 
 export interface LogEntry {
   /** Fortlaufende Nummer über die ganze Partie (stabil trotz gekürzter Sicht). */
@@ -623,6 +691,12 @@ export interface GameState {
   log: LogEntry[];
   winner: PlayerIndex | 'draw' | null;
   uidCounter: number;
+  /**
+   * Zustand des spielinternen Zufallsgenerators (mulberry32, siehe rng.ts).
+   * Bewusst eine Zahl statt einer Closure: nur so übersteht der Zufall das
+   * structuredClone in applyAction UND die JSON-Persistenz des Servers.
+   */
+  rngState: number;
   /**
    * Log-Schalter für Massensimulationen (Backtest): 'aus' unterdrückt jeden
    * `log()`-Aufruf (state.log bleibt leer). Ohne Angabe (undefined) wird wie
@@ -673,6 +747,10 @@ export interface PlayerPublicView {
   handCount: number;
   flyDone: boolean;
   mulliganDone: boolean;
+  /** Aktuelle Schild-Ladung in Abschnitten (öffentlich, wie das Basis-Leben). */
+  schild: number;
+  /** Superkraft „Schutzschild" aktiv: die Basis ist bis Rundenende unverwundbar. */
+  basisImmun: boolean;
 }
 
 export interface ClientView {
@@ -680,6 +758,8 @@ export interface ClientView {
   round: number;
   roundLimit: number;
   lanes: number;
+  /** Abschnitte des Basis-Schilds; 0 = Schild-Regel in der Config abgeschaltet. */
+  schildAbschnitte: number;
   energyCap: number;
   phase: Phase;
   active: PlayerIndex;
