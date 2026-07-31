@@ -8,12 +8,12 @@ Run from the repo root (npm workspaces):
 
 - `npm run server` — dev server with reload (`tsx watch`, port 3000). Serves the game over WebSocket; also serves `packages/client/dist` if it exists.
 - `npm run client` — Vite dev client (port 5173), talks to the server on 3000.
-- `npm test` — runs engine + server test suites (Vitest). There is no client test suite.
+- `npm test` — runs engine + server + client test suites (Vitest). The client suite runs in `jsdom` (see `packages/client/vite.config.ts` and `test/setup.ts`, which stubs `scrollTo` and forces `getContext` to return `null` so tests exercise the 2D fallback).
 - `npm run typecheck` — `tsc --noEmit` across all workspaces. Do this after changes; nothing emits JS, everything runs from TS source via `tsx`/Vite.
 - `npm run build` — production client build only (`packages/client/dist`).
 - `npm start` — production server (`tsx`, reads `PORT` env; serves the built client + game).
 
-Single test: `npx vitest run -t "<name>" packages/engine/test/engine.test.ts` (or `--workspace @pcf/engine`). Tests live in `packages/<pkg>/test/*.test.ts`.
+Single test: run it from inside the workspace — `cd packages/engine && npx vitest run -t "<name>"`. Running `npx vitest --workspace @pcf/engine` from the repo root fails: vitest reads `--workspace` as a config-file path. Tests live in `packages/<pkg>/test/*.test.ts` (client also `*.test.tsx`).
 
 Production == the server IS the whole app: `npm run build && npm start` has one process serve the built client AND hold game connections (this is what Render runs via `render.yaml`). Locally, client and server are two processes on two ports.
 
