@@ -1,0 +1,476 @@
+/* Figuren auf dem Feld und die Kampf-Effekte: Marken, Namensschild,
+   Angriff, Tod, Projektile, Zauber, Schadenszahlen. */
+
+/* Kreatur-Figur auf dem Feld: steht wie eine 3D-Spielfigur im Slot –
+   Artwork im leicht gekippten Rahmen, Standschatten am Boden,
+   ATK/HP-Badges an den unteren Ecken, Namensschild (Plaque) darunter. */
+.slot {
+  perspective: 520px;
+  /* Bezugsgroesse fuer die cqw-Einheiten der Figuren-Beschriftung. */
+  container-type: inline-size;
+}
+
+.creature-figure {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-height: 0;
+  position: relative;
+  transform-style: preserve-3d;
+  animation: play-in 0.6s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+
+/* Karte wird zur Figur: dreht sich in 3D auf und "landet" auf dem Feld */
+@keyframes play-in {
+  0% {
+    transform: perspective(600px) rotateY(85deg) translateY(26px) scale(0.45);
+    opacity: 0;
+  }
+  55% {
+    transform: perspective(600px) rotateY(-12deg) translateY(-4px) scale(1.08);
+    opacity: 1;
+  }
+  100% {
+    transform: perspective(600px) rotateY(0deg) translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Standschatten unter der Figur */
+.creature-figure::before {
+  content: '';
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  bottom: 24px;
+  height: 12px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.55) 0%, transparent 70%);
+  z-index: -1;
+}
+
+.figure-frame {
+  position: relative;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(15, 20, 35, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-top: 3px solid var(--accent-2);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: rotateX(9deg);
+  transform-origin: bottom center;
+  /* Idle: die Figur "atmet" – jede mit eigenem Takt (animation-delay per uid) */
+  animation: idle-bob 3s ease-in-out infinite;
+}
+
+@keyframes idle-bob {
+  0%, 100% {
+    transform: rotateX(9deg) translateY(0);
+  }
+  50% {
+    transform: rotateX(9deg) translateY(-2.5px) scale(1.008);
+  }
+}
+
+/* Fliegende schweben deutlich sichtbar */
+.creature-figure.can-fly .figure-frame {
+  animation: fly-hover 2.2s ease-in-out infinite;
+}
+
+@keyframes fly-hover {
+  0%, 100% {
+    transform: rotateX(9deg) translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: rotateX(9deg) translateY(-7px) rotate(1.2deg);
+  }
+}
+
+/* Der Standschatten der Fliegenden pulsiert gegenläufig zum Schweben */
+.creature-figure.can-fly::before {
+  animation: shadow-breathe 2.2s ease-in-out infinite;
+}
+
+@keyframes shadow-breathe {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.8);
+    opacity: 0.6;
+  }
+}
+
+/* Lane-Wechsel (fliegend/Hetzjagd): Figur läuft sichtbar von der alten
+   Position herüber, mit kleinem Hüpfer. Überstimmt die play-in-Animation. */
+.creature-figure.lane-move {
+  animation: lane-walk 0.5s cubic-bezier(0.25, 0.8, 0.35, 1);
+}
+
+@keyframes lane-walk {
+  0% {
+    transform: translateX(var(--move-x, 0px)) translateY(0);
+    opacity: 1;
+  }
+  50% {
+    transform: translateX(calc(var(--move-x, 0px) / 2)) translateY(-10px);
+  }
+  100% {
+    transform: translateX(0) translateY(0);
+    opacity: 1;
+  }
+}
+
+.creature-figure.enemy .figure-frame {
+  border-top-color: var(--danger);
+}
+
+.creature-figure.can-fly .figure-frame {
+  border-top-color: var(--gold);
+}
+
+.figure-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+.figure-image-fallback {
+  font-size: 1.7rem;
+  opacity: 0.85;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
+}
+
+/* Groesse folgt der Bahnbreite: bei 5 oder 6 Bahnen ist ein Slot auf dem Handy
+   nur noch gut 60px breit, feste 24px-Marken wuerden sich dort ueberlappen.
+   cqw statt vw, damit die Marke am Slot haengt und nicht am Fenster. */
+.figure-stat {
+  position: absolute;
+  bottom: 3px;
+  min-width: clamp(17px, 34cqw, 24px);
+  height: clamp(17px, 34cqw, 24px);
+  padding: 0 clamp(2px, 6cqw, 5px);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: clamp(0.6rem, 12cqw, 0.82rem);
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.55);
+  z-index: 2;
+}
+
+.figure-stat.stat-atk {
+  left: 3px;
+  background: linear-gradient(180deg, #b45309, #7c2d12);
+}
+
+.figure-stat.stat-hp {
+  right: 3px;
+  background: linear-gradient(180deg, #b91c1c, #7f1d1d);
+}
+
+.figure-stat.buffed {
+  color: #6ee7b7;
+  box-shadow: 0 0 8px rgba(52, 211, 153, 0.5);
+}
+
+.figure-stat.damaged {
+  color: #fecaca;
+  box-shadow: 0 0 8px rgba(248, 113, 113, 0.6);
+}
+
+.figure-stat.reduced {
+  color: #fca5a5;
+}
+
+.figure-plaque {
+  max-width: 100%;
+  padding: 1px clamp(3px, 8cqw, 8px);
+  border-radius: 6px;
+  background: linear-gradient(180deg, rgba(30, 38, 60, 0.95), rgba(15, 20, 35, 0.95));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-family: var(--font-title);
+  font-weight: 700;
+  font-size: clamp(0.5rem, 10cqw, 0.68rem);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.figure-keywords {
+  max-width: 100%;
+  color: var(--theme-accent, var(--muted));
+  opacity: 0.9;
+  font-size: clamp(0.44rem, 9cqw, 0.58rem);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.creature-figure.exhausted {
+  opacity: 0.55;
+  filter: grayscale(0.6);
+}
+
+/* Erschöpfte ruhen sich aus: kein Idle-Wippen, leicht zur Seite gekippt */
+.creature-figure.exhausted .figure-frame {
+  animation: none;
+  transform: rotateX(9deg) rotate(-3deg);
+}
+
+/* Angriff: eigene Figuren stoßen nach oben vor, gegnerische nach unten
+   (parallel dazu fliegt das Projektil durch die Lane). */
+.creature-figure.own.attacking {
+  animation: lunge-up 0.5s ease-in-out;
+}
+
+.creature-figure.enemy.attacking {
+  animation: lunge-down 0.5s ease-in-out;
+}
+
+@keyframes lunge-up {
+  0%, 100% { transform: translateY(0); }
+  35% { transform: translateY(-22px) scale(1.1); }
+  65% { transform: translateY(4px); }
+}
+
+@keyframes lunge-down {
+  0%, 100% { transform: translateY(0); }
+  35% { transform: translateY(22px) scale(1.1); }
+  65% { transform: translateY(-4px); }
+}
+
+/* Sterbeanimation: Figur kippt um, wird grau und löst sich auf. */
+.creature-figure.dying {
+  animation: death-out 0.6s ease-in forwards;
+  z-index: 3;
+}
+
+@keyframes death-out {
+  0% {
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
+  30% {
+    filter: brightness(1.8);
+    transform: scale(1.04);
+  }
+  100% {
+    opacity: 0;
+    filter: grayscale(1) brightness(0.5);
+    transform: rotateZ(80deg) translateY(16px) scale(0.55);
+  }
+}
+
+.creature-figure.dying::after {
+  content: '💀';
+  position: absolute;
+  top: 20%;
+  left: 50%;
+  font-size: 1.4rem;
+  animation: skull-rise 0.6s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes skull-rise {
+  0% { opacity: 0; transform: translate(-50%, 8px) scale(0.5); }
+  40% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -22px) scale(1.2); }
+}
+
+/* Projektile: fliegen innerhalb der Lane vom Angreifer zum Ziel. */
+.projectile {
+  position: absolute;
+  left: 50%;
+  z-index: 8;
+  font-size: 1.5rem;
+  pointer-events: none;
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.4));
+}
+
+.projectile.from-own {
+  animation: proj-up 0.5s ease-in forwards;
+}
+
+.projectile.from-enemy {
+  animation: proj-down 0.5s ease-in forwards;
+}
+
+@keyframes proj-up {
+  0% { top: 74%; transform: translateX(-50%) scale(0.6); opacity: 0; }
+  20% { opacity: 1; }
+  100% { top: 10%; transform: translateX(-50%) scale(1.2); opacity: 1; }
+}
+
+@keyframes proj-down {
+  0% { top: 10%; transform: translateX(-50%) scale(0.6); opacity: 0; }
+  20% { opacity: 1; }
+  100% { top: 74%; transform: translateX(-50%) scale(1.2); opacity: 1; }
+}
+
+/* Zauber-Effekt einer Aktionskarte (nur 2D-Fallback ohne WebGL) */
+.spell-burst {
+  position: absolute;
+  left: 50%;
+  bottom: 18%;
+  width: 60%;
+  aspect-ratio: 1;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 7;
+  animation: spell-burst 0.75s ease-out forwards;
+  --spell-color: #ffd766;
+}
+
+.spell-burst.spell-buff { --spell-color: #5ee8a0; }
+.spell-burst.spell-attackBuff { --spell-color: #ff8a4d; }
+.spell-burst.spell-summon { --spell-color: #ffd766; }
+.spell-burst.spell-move { --spell-color: #d9c4a0; }
+
+@keyframes spell-burst {
+  0% {
+    opacity: 0;
+    box-shadow: 0 0 0 0 var(--spell-color);
+    background: radial-gradient(circle, var(--spell-color) 0%, transparent 60%);
+    transform: translateX(-50%) scale(0.4);
+  }
+  30% { opacity: 0.9; }
+  100% {
+    opacity: 0;
+    box-shadow: 0 0 30px 12px transparent;
+    background: radial-gradient(circle, transparent 0%, transparent 70%);
+    transform: translateX(-50%) scale(1.5);
+  }
+}
+
+/* ---- 3D-Modus: Die Figur zeichnet das Schlachtfeld-Canvas, die Kachel
+   liefert nur noch die Overlays (ATK/HP-Badges, Namensschild, Keywords).
+   Diese Regeln stehen bewusst NACH den 2D-Regeln, damit sie gewinnen. ---- */
+
+.creature-figure.figure-3d {
+  /* Overlays über das Canvas heben (Canvas hat z-index 6) */
+  z-index: 8;
+  /* sanftes Einblenden statt 3D-Kartendreher – die Beschwörung macht WebGL */
+  animation: overlay-in 0.5s ease;
+}
+
+@keyframes overlay-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* CSS-Standschatten aus – das Schlachtfeld rendert einen eigenen */
+.creature-figure.figure-3d::before {
+  display: none;
+}
+
+.creature-figure.figure-3d .figure-frame {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  overflow: visible;
+  transform: none;
+  animation: none;
+}
+
+/* Erschöpfung zeigt die 3D-Figur selbst (graue, eingesackte Pose) –
+   die Badges bleiben gut lesbar */
+.creature-figure.figure-3d.exhausted {
+  opacity: 0.85;
+  filter: none;
+}
+
+.creature-figure.figure-3d.exhausted .figure-frame {
+  transform: none;
+}
+
+/* Angriffs-Ausfall und Umkippen macht das 3D-Modell; Overlays nur ausblenden */
+.creature-figure.figure-3d.own.attacking,
+.creature-figure.figure-3d.enemy.attacking {
+  animation: none;
+}
+
+.creature-figure.figure-3d.dying {
+  animation: overlay-death 0.6s ease-in forwards;
+}
+
+@keyframes overlay-death {
+  to {
+    opacity: 0;
+  }
+}
+
+/* Lane, in der gerade gekämpft wird, hervorheben */
+.lane {
+  position: relative;
+}
+
+.lane.combat-active .slot {
+  border-color: var(--gold);
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.25);
+}
+
+.lane.combat-active .lane-label {
+  color: var(--gold);
+  opacity: 1;
+  text-shadow: 0 0 8px rgba(245, 158, 11, 0.5);
+}
+
+/* Floating damage numbers */
+.dmg-float {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  z-index: 10;
+  font-weight: 900;
+  font-size: 1.3rem;
+  color: #ff4d4d;
+  text-shadow: 0 0 8px rgba(0,0,0,0.8), 0 0 15px rgba(255, 77, 77, 0.4);
+  animation: dmg-rise 0.8s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+  pointer-events: none;
+}
+
+@keyframes dmg-rise {
+  0% { opacity: 0; transform: translate(-50%, 15px) scale(0.5); }
+  30% { opacity: 1; transform: translate(-50%, 0px) scale(1.2); }
+  100% { opacity: 0; transform: translate(-50%, -25px) scale(0.9); }
+}
+
+.basis-anzeige.hit {
+  animation: base-shake 0.5s;
+  background: rgba(239, 68, 110, 0.25);
+  border-color: var(--danger);
+}
+
+@keyframes base-shake {
+  0%, 100% { transform: none; }
+  15%, 45%, 75% { transform: translateX(-4px); }
+  30%, 60%, 90% { transform: translateX(4px); }
+}
+

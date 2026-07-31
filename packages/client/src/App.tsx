@@ -1,10 +1,16 @@
-import { useEffect } from 'react';
-import { FigurePreview } from './FigurePreview';
+import { Suspense, lazy, useEffect } from 'react';
 import { GameScreen } from './GameScreen';
 import { LobbyScreen } from './LobbyScreen';
 import { MulliganScreen } from './MulliganScreen';
 import { StartScreen } from './StartScreen';
 import { useGame } from './useGame';
+
+// Die Figuren-Werkstatt zieht three.js und den kompletten Figurenkatalog nach.
+// Sie ist ein Sonderweg (?viewer=figures) – normale Spieler sollen den Code
+// nicht mitladen muessen.
+const FigurePreview = lazy(() =>
+  import('./FigurePreview').then((m) => ({ default: m.FigurePreview }))
+);
 
 // Figuren-Werkstatt: /?viewer=figures öffnet den Katalog auch im Production-Build,
 // ?figure=<cardId> springt direkt zu einer Figur und bleibt mit snap.mjs
@@ -17,7 +23,13 @@ const showFigureViewer = Boolean(
 );
 
 export function App() {
-  if (showFigureViewer) return <FigurePreview cardId={previewCardId} />;
+  if (showFigureViewer) {
+    return (
+      <Suspense fallback={<div className="screen">Figuren werden geladen …</div>}>
+        <FigurePreview cardId={previewCardId} />
+      </Suspense>
+    );
+  }
   return <Game />;
 }
 

@@ -33,7 +33,7 @@ The server holds the complete `GameState`. It never sends it raw. `buildClientVi
 
 ### Combat is a state jump + an event stream the client animates
 
-`resolveCombat`/`applyAction` mutate state to the post-combat result in one step, but each attack/death is also appended to `state.log` as a `LogEntry` carrying a structured `event` (`AttackEvent` | `DeathEvent` | `CheerleaderSacrificeEvent` | `SpellEvent` | `SchildEvent`). The server sends the final state plus this log. The client (`GameScreen.tsx`) keeps showing the *old* board (`shownView`) and replays the events lane-by-lane — projectile → damage → death → next lane — before switching to the server's new state. Consequence: if you add a combat mechanic in the engine, emit a matching `LogEvent` or the client will silently jump instead of animating it. New event kinds must be handled in the `runReplay` loop, which dispatches on `ev.kind` through an `else if` chain with **no catch-all `else`** — a kind nobody claims is silently dropped from the animation (the state still jumps, so this fails quietly).
+`resolveCombat`/`applyAction` mutate state to the post-combat result in one step, but each attack/death is also appended to `state.log` as a `LogEntry` carrying a structured `event` (`AttackEvent` | `DeathEvent` | `CheerleaderSacrificeEvent` | `SpellEvent` | `SchildEvent`). The server sends the final state plus this log. The client (`arena/useKampfReplay.ts`) keeps showing the *old* board (`shownView`) and replays the events lane-by-lane — projectile → damage → death → next lane — before switching to the server's new state. Consequence: if you add a combat mechanic in the engine, emit a matching `LogEvent` or the client will silently jump instead of animating it. New event kinds must be handled in the `runReplay` loop, which dispatches on `ev.kind` through an `else if` chain with **no catch-all `else`** — a kind nobody claims is silently dropped from the animation (the state still jumps, so this fails quietly).
 
 Because the client applies `AttackEvent.damage` directly to its own displayed state, that field must always carry the **effective** damage, not the raw roll — see the shield below.
 
@@ -71,6 +71,24 @@ Card art and 3D: a creature's `cardId` drives both. 2D art is `packages/client/p
 `GameScreen.tsx` renders a full-bleed `.arena` layer: the WebGL canvas fills it, the lane grid sits in a middle band, and everything else (base + shield, energy, deck, round, log ticker, hand) floats on top as chips. There are deliberately no header/footer bars — the empty margins they created were the whole point of the rewrite.
 
 `Battlefield3D` never invents positions. `elementAnchor(world, selector)` raycasts a DOM rect onto the ground plane, so **CSS decides where 3D things stand**: `[data-slot="<side>-<lane>"]` for the fighters, `[data-zone="<side>"]` for the cheerleader bench (the base rides behind it in the zone group's local space; the opponent group is rotated 180° so "behind" points the right way). Rename or drop one of those attributes and the corresponding 3D object silently loses its anchor. One exception, documented in place: the *opponent's* zone only takes its x from the anchor. Its anchor sits at the top edge where the ground runs into the horizon, so the raycast would land dozens of units past the field — depth and size come from the lane geometry instead.
+
+### Where client code lives
+
+`GameScreen.tsx` only orchestrates: screen state, input → `PlayerAction`, and the layout. Everything else sits in `src/arena/`:
+
+| File | Owns |
+|---|---|
+| `fx.ts` | shapes + timing of the combat replay (no React) |
+| `useKampfReplay.ts` | the replay itself — `shownView`, effects, phase banners |
+| `Karten.tsx` | card artwork, the compact hand card, the detail overlay |
+| `CreatureTile.tsx` | a figure on the board |
+| `Anzeigen.tsx` | shield meter, base readout, cheerleader bench (2D fallback) |
+| `ReaktionsAuswahl.tsx` | the shield-block choice dialog |
+| `useLongPress.ts` | long-press detection |
+
+`styles.css` is a barrel of `@import`s into `src/styles/*.css`. **The import order there is the old file's order** — CSS cascade depends on it, so append new rules inside the matching part rather than reordering the barrel.
+
+three.js is never in the first chunk: `webglSupported()` lives in its own `webgl.ts`, and both `Battlefield3D` and `FigurePreview` are `React.lazy`. Import either statically and the start screen pulls ~600 kB it does not need.
 
 ### Hand cards: drag to play, tap for the effect
 
