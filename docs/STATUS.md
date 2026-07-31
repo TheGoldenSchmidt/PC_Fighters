@@ -73,6 +73,21 @@ Auslöser-Kreatur, weil ein Block an der Basis passiert). Golden Master neu
 erzeugt, 202 Tests grün, im Zwei-Browser-Test verifiziert. Im 🧪 Testmodus ist
 der Schild nach einem Treffer voll, damit man die Kräfte sofort sieht.
 
+**Client aufgeräumt und Startladezeit gedrittelt.** `GameScreen.tsx` (1.500
+Zeilen) ist auf 700 Zeilen geschrumpft: Replay, Karten, Figur, Anzeigen und die
+Reaktionsauswahl liegen jetzt in `src/arena/`. `styles.css` (2.500 Zeilen) ist
+ein Sammler aus neun `@import`s in `src/styles/` – die Reihenfolge entspricht
+exakt der alten Datei, das gebündelte CSS ist byte-identisch geblieben.
+
+Dazu wird Three.js nicht mehr im ersten Chunk geladen: `webglSupported()` sitzt
+in einer eigenen Mini-Datei, `Battlefield3D` und `FigurePreview` sind
+`React.lazy`. Der Startbildschirm lädt damit **72 kB statt 225 kB** (gzip);
+die Figuren (139 kB gzip) kommen erst, wenn wirklich in 3D gespielt wird.
+
+Reiner Umbau – alle 205 Tests laufen unverändert durch.
+
+---
+
 **Feld und Tempo umgestellt.** Das Spielfeld hat jetzt **5 Bahnen** statt 3, und
 die **Zermürbung setzt erst ab Runde 15** ein (vorher 13). Die Bahnenzahl ist
 zusätzlich **pro Raum wählbar**: Wer eine Partie erstellt, sucht im
@@ -123,12 +138,9 @@ bis in den Kampf hinein; sechs neue Client-Tests in `test/arena.test.tsx`.
 
 ## Later – bewusst zurückgestellt
 
-- **Modul-Zerlegung**: Auflösungslogik aus `game.ts`, Raum/Persistenz aus
-  `server.ts`, Replay/UI aus `GameScreen.tsx`, Welt/Teamzonen/Effekte aus
-  `Battlefield3D.tsx`, CSS nach Bildschirm/Funktion.
-- **Bundle-Größe**: Three.js, Spielfeld und Figuren-Viewer dynamisch laden.
-  Aktuell lädt der Startbildschirm das komplette Bündel (siehe unten).
-  Die Warnschwelle *nicht* hochsetzen, sondern die geladenen Chunks messen.
+- **Modul-Zerlegung, Rest**: Auflösungslogik aus `game.ts`, Raum/Persistenz aus
+  `server.ts`, Welt/Teamzonen/Effekte aus `Battlefield3D.tsx`. Client-UI und CSS
+  sind erledigt (siehe oben).
 - **Figuren-Viewer nicht mehr versionieren**: den 1,17-MB-Standalone lokal bzw.
   in CI aus Template und Daten erzeugen.
 - **Figuren-Wissen kanonisieren**: gemeinsame Playbook-, Bauteil-, Qualitäts-

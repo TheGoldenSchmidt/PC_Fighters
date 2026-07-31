@@ -1,0 +1,31 @@
+/* 
+ * PC Fighters Premium CSS 
+ * Designed with a premium Dark Fantasy TCG aesthetic.
+ * Fonts: 'Cinzel' (headings), 'Inter' (UI, stats)
+ */
+
+:root {
+  --bg: #090b11;
+  --bg-gradient: radial-gradient(circle at 50% 50%, #151926 0%, #080a0f 100%);
+  --panel: rgba(22, 28, 45, 0.65);
+  --panel-border: rgba(255, 255, 255, 0.08);
+  --panel-2: rgba(30, 39, 61, 0.8);
+  --panel-2-border: rgba(255, 255, 255, 0.12);
+  --text: #f1f4fa;
+  --muted: #8e9bb0;
+  
+  /* Brand colors */
+  --accent: #3b82f6;      /* Blue (Humans) */
+  --accent-rgb: 59, 130, 246;
+  --accent-2: #10b981;    /* Green (Animals) */
+  --accent-2-rgb: 16, 185, 129;
+  --danger: #ef4444;
+  --gold: #f59e0b;
+  --gold-glow: rgba(245, 158, 11, 0.4);
+  
+  --radius: 16px;
+  --font-title: 'Cinzel', Georgia, serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  --shadow-lg: 0 10px 30px -10px rgba(0, 0, 0, 0.7);
+  --glass: backdrop-filter: blur(16px);
+}

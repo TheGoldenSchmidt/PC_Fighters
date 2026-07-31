@@ -1,0 +1,430 @@
+/* Arena-Layout: Vollbild-Buehne, Zonen-Baender mit Bank und Basis,
+   Lane-Raster und Slots. */
+
+/* ---------- Spielfeld ---------- */
+
+/* Die Arena füllt den ganzen Bildschirm; alle Anzeigen schweben als Chips
+   darüber. Kopf- und Fußleisten gibt es bewusst nicht mehr – sie waren genau
+   der tote Rand oben und unten. Die Höhe des Lane-Bands ergibt sich aus dem
+   Platz, den Bank + Basis oben und Bank + Basis + Hand unten brauchen. */
+.game-screen {
+  padding: 0;
+  gap: 0;
+  /* dvh zuerst als vh-Fallback: sonst schiebt die Browserleiste auf dem Handy
+     die Handkarten aus dem Bild. */
+  height: 100vh;
+  height: 100dvh;
+  max-width: none;
+  overflow: hidden;
+  /* Handkarten-Breite; Höhe folgt über aspect-ratio 3/4 */
+  --karte-breite: 76px;
+  /* Hand (zwei Kartenreihen) + Statuszeile ganz unten */
+  --hand-hoehe: calc(2 * var(--karte-breite) * 4 / 3 + 34px);
+  /* Höhe eines Zonen-Bands (Basis + Bank + Eck-Chips) */
+  --zone-hoehe: 82px;
+  /* Freiraum über und unter dem Lane-Raster */
+  --feld-oben: var(--zone-hoehe);
+  --feld-unten: calc(var(--hand-hoehe) + var(--zone-hoehe));
+  --feld-seite: 12px;
+}
+
+/* Bühne: Anker für das 3D-Canvas UND Träger aller data-slot-/data-zone-
+   Elemente, aus denen Battlefield3D seine Weltpositionen ausliest. */
+.arena {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.deck-chip,
+.energy-chip,
+.runden-chip {
+  background: rgba(6, 10, 18, 0.55);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  padding: 4px 8px;
+  font-weight: 700;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  backdrop-filter: blur(6px);
+}
+
+/* ---------- Zonen-Bänder: Basis + Bank mittig, Chips in den Ecken ---------- */
+
+.zone-band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: var(--zone-hoehe);
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 10px;
+  z-index: 7;
+  /* Nur Knöpfe sind bedienbar – der Rest darf das Ablegen nicht blockieren. */
+  pointer-events: none;
+}
+
+/* Oben etwas mehr Luft: die gegnerische Basis steht HINTER der Bank, ragt also
+   über deren Oberkante hinaus und würde sonst am Bildrand abgeschnitten. */
+.zone-oben { top: 0; align-items: flex-start; padding-top: 18px; }
+.zone-unten { bottom: var(--hand-hoehe); align-items: flex-end; }
+
+/* Die Eck-Chips stapeln sich, statt sich in der Breite zu drängeln: neben der
+   Zonenmitte bleibt auf dem Handy nur eine gute Chipbreite übrig. */
+.hud-gruppe {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.hud-gruppe.rechts { align-items: flex-end; }
+.zone-unten .hud-gruppe { justify-content: flex-end; }
+
+/* Basis und Bank stehen zusammen in der Mitte – dort, wo im Vorbild der Held
+   steht. Die Basis selbst zeichnet die 3D-Bühne hinter der Bank. */
+.zone-mitte {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Leerer Anker im 3D-Modus: seine Bildschirmposition bestimmt, wo die
+   Bankfiguren stehen. Er braucht deshalb eine feste Größe. */
+.bank-anker {
+  position: relative;
+  width: 152px;
+  height: 58px;
+}
+
+.zone-oben .bank-anker { width: 128px; height: 48px; }
+
+/* Basis-Anzeige: Leben + Schildbalken direkt an der Bank. */
+.basis-anzeige {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  background: rgba(6, 10, 18, 0.55);
+  border: 1px solid rgba(255,255,255,0.09);
+  backdrop-filter: blur(6px);
+}
+
+.basis-wert {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 800;
+  font-size: 0.85rem;
+}
+
+.basis-wert strong {
+  font-size: 1.05rem;
+  color: #fff;
+}
+
+.energy-chip {
+  color: var(--gold);
+  text-shadow: 0 0 8px rgba(245, 158, 11, 0.2);
+}
+
+.hand-backs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  overflow: hidden;
+}
+
+.card-back {
+  width: 12px;
+  height: 19px;
+  border-radius: 3px;
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%);
+  border: 1px solid rgba(255,255,255,0.2);
+  flex-shrink: 0;
+  box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+}
+
+.hand-count {
+  margin-left: 5px;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.9);
+}
+
+/* Einzige dauerhaft sichtbare Textzeile: sagt, wer am Zug ist und was gerade
+   erwartet wird. Sie schwebt direkt über den Handkarten. */
+.status-band {
+  text-align: center;
+  font-family: var(--font-title);
+  font-size: 0.76rem;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  padding: 2px 10px;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.9);
+}
+
+.status-band.my-turn {
+  color: var(--gold);
+  font-weight: 700;
+}
+
+.conn-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.conn-dot.ok {
+  background: var(--accent-2);
+  box-shadow: 0 0 8px var(--accent-2);
+}
+
+.conn-dot.lost {
+  background: var(--danger);
+  box-shadow: 0 0 8px var(--danger);
+  animation: pulse 1s infinite;
+}
+
+/* Lane-Raster: mittleres Band der Arena. Die Slots strecken sich über die
+   volle Bandhöhe, dadurch bleibt oben und unten kein toter Rand übrig. */
+.lane-grid {
+  position: absolute;
+  top: var(--feld-oben);
+  bottom: var(--feld-unten);
+  /* Zentriert über margin statt translateX: die Reduced-Motion-Regel weiter
+     unten setzt `transform: none !important` auf alles. */
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: min(680px, calc(100% - 2 * var(--feld-seite)));
+  display: grid;
+  grid-template-columns: repeat(var(--lanes, 3), 1fr);
+  gap: 8px;
+  z-index: 3;
+}
+
+/* 3D-Schlachtfeld: füllt jetzt die GANZE Arena, nicht mehr nur den Streifen um
+   die Lanes. Dadurch reichen Boden und Umgebung bis an die Bildschirmkanten,
+   und Bank wie Basis haben vor bzw. hinter den Lanes echte Bühne. Das Canvas
+   liegt über den DOM-Slots (die Figuren sollen darin stehen), lässt aber alle
+   Taps durch. */
+.battlefield3d-shell {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+}
+
+.battlefield3d {
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+@media (max-width: 699px) {
+  .game-screen {
+    --karte-breite: 72px;
+    --zone-hoehe: 74px;
+    --feld-seite: 8px;
+  }
+  .zone-oben .bank-anker { width: 108px; height: 42px; }
+  .bank-anker { width: 132px; height: 52px; }
+}
+
+/* Schmale Handys (iPhone SE & Co.): Chips und Karten enger, der Passen-Knopf
+   behält als einziges Bedienelement seine Größe. */
+@media (max-width: 430px) {
+  .game-screen {
+    --karte-breite: 66px;
+    --zone-hoehe: 68px;
+  }
+  .deck-chip,
+  .energy-chip,
+  .runden-chip { padding: 3px 6px; font-size: 0.72rem; }
+  .basis-anzeige { padding: 3px 5px; }
+  .bank-anker { width: 112px; height: 46px; }
+  .zone-oben .bank-anker { width: 94px; height: 38px; }
+  .pass-button { padding: 6px 12px; }
+}
+
+/* Flache Fenster (Querformat): das Lane-Band ist hier das Knappste, also
+   schrumpfen zuerst Hand und Zonen. */
+@media (max-height: 680px) {
+  .game-screen {
+    --karte-breite: 58px;
+    --zone-hoehe: 60px;
+  }
+}
+
+/* Kompakte 2D-Bank, wenn WebGL fehlt: sie füllt exakt den Bank-Anker, den im
+   3D-Modus die Figurengruppe bekommt. Beide Darstellungen sitzen dadurch an
+   derselben Stelle – mittig vor bzw. hinter den Lanes. */
+.team-strip {
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  filter:drop-shadow(0 6px 10px rgba(0,0,0,.5));
+}
+.team-bench {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:3px;
+  height:100%;
+  padding:4px 5px 7px;
+  border:1px solid rgba(234,244,255,.18);
+  border-bottom:6px solid #6b4634;
+  border-radius:8px 8px 3px 3px;
+  background:rgba(37,42,51,.92);
+}
+.team-seat {
+  display:grid;
+  place-items:center;
+  border:1px solid rgba(245,183,74,.34);
+  border-radius:50% 50% 8px 8px;
+  background:rgba(234,244,255,.04);
+  position:relative;
+}
+.team-seat > span {
+  position:absolute;
+  left:2px;
+  bottom:1px;
+  color:#f5b74a;
+  font-size:.48rem;
+}
+.team-seat strong {
+  display:grid;
+  place-items:center;
+  width:23px;
+  height:23px;
+  border-radius:50%;
+  background:#eaf4ff;
+  color:#252a33;
+  font-size:.64rem;
+}
+.team-seat.empty { opacity:.38; }
+.team-seat.sacrificing { animation:team-sacrifice-fade .72s ease-in forwards; }
+/* Die Basis steht hinter der Bank: eigene nach unten (zum Betrachter),
+   gegnerische nach oben. */
+.team-base {
+  position:absolute;
+  left:50%;
+  width:38px;
+  height:22px;
+  margin-left:-19px;
+  border:5px solid #252a33;
+  border-radius:50% 50% 18% 18%;
+  background:radial-gradient(circle,#eaf4ff 0 30%,#5b84b1 35% 58%,#252a33 62%);
+}
+.team-strip-own .team-base { bottom:-16px; }
+.team-strip-opponent .team-base { top:-16px; transform:rotate(180deg); }
+.team-base.shield-flash { animation:team-shield-flash .62s ease-out .48s both; }
+@keyframes team-sacrifice-fade {
+  45% { transform:translateY(-18px) scale(1.08); opacity:1; }
+  100% { transform:translate(-28px,-2px) scale(.65); opacity:0; }
+}
+@keyframes team-shield-flash {
+  0% { box-shadow:0 0 0 0 rgba(234,244,255,0); }
+  35% { box-shadow:0 0 4px 14px rgba(234,244,255,.85); }
+  100% { box-shadow:0 0 20px 28px rgba(234,244,255,0); }
+}
+
+.lane {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+/* Nur noch die Lane-Nummer: der Platz gehört dem Spielfeld, nicht der Schrift. */
+.lane-label {
+  text-align: center;
+  color: var(--theme-accent, var(--muted));
+  opacity: 0.5;
+  font-size: 0.65rem;
+  font-family: var(--font-title);
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.slot {
+  flex: 1;
+  min-height: 100px;
+  /* Bewusst sehr dezent: die Arena (3D-Boden, Lane-Wege, Umgebung) soll
+     durchscheinen. Eine Lane ist ein Weg, keine auffällige Box. */
+  background: rgba(8, 12, 20, 0.14);
+  border-radius: var(--radius);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  position: relative;
+  /* KEIN overflow:hidden – Figuren dürfen beim Angriff/Aufstellen leicht
+     über den Slot hinausragen (2.5D-Wirkung). */
+}
+
+/* Tiefenstaffelung: gegnerische Reihe steht "weiter hinten" */
+.enemy-slot {
+  transform: scale(0.93);
+  transform-origin: top center;
+  filter: brightness(0.92);
+}
+
+.own-slot {
+  border-color: rgba(255, 255, 255, 0.08);
+  transform: scale(1.02);
+  transform-origin: bottom center;
+}
+
+.own-slot.targetable {
+  border-color: var(--gold);
+  background: rgba(245, 158, 11, 0.05);
+  box-shadow: 0 0 15px rgba(245, 158, 11, 0.2);
+  animation: pulse-border 1.5s infinite;
+  cursor: pointer;
+}
+
+.own-slot.selected-slot {
+  border-color: var(--accent);
+  background: rgba(59, 130, 246, 0.1);
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+}
+
+/* Lane unter der gezogenen Karte: deutlich stärker als „nur gültig", sonst
+   sieht man beim Ziehen nicht, wo die Karte landen würde. */
+.own-slot.drop-hover {
+  border-color: var(--gold);
+  background: rgba(245, 158, 11, 0.18);
+  box-shadow: 0 0 24px rgba(245, 158, 11, 0.45), inset 0 0 22px rgba(245, 158, 11, 0.2);
+  transform: scale(1.06);
+  animation: none;
+}
+
+@keyframes pulse-border {
+  0%, 100% { border-color: var(--gold); }
+  50% { border-color: rgba(245, 158, 11, 0.3); }
+}
+
+.empty-slot {
+  color: rgba(255,255,255,0.07);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
