@@ -24,7 +24,12 @@ const decks = ladeDecks(data);
 const profil: BotProfil = { ...BOT_PROFILE.ausgewogen, epsilonBand: 0 };
 
 /** deckA, deckB, Saat, erwarteter Hash `sieger:runden:basisA:basisB:uidCounter`. */
-// Neu erzeugt, nachdem die BANK ZUM SCHILD geworden ist: Der Basis-Schild hat
+// Neu erzeugt nach der Feld- und Tempo-Aenderung: 5 statt 3 Bahnen und
+// Zermuerbung erst ab Runde 15 statt 13. Beides sind Zahlen in config.json,
+// aendert aber jede Partie von Grund auf. Bewusste Regeländerung – Decklisten
+// und Kartenwerte sind unverändert.
+//
+// Davor: neu erzeugt, nachdem die BANK ZUM SCHILD geworden ist: Der Basis-Schild hat
 // keine eigenen Superkräfte mehr, ein Block wird mit einem Cheerleader-Opfer
 // bezahlt, und ohne Cheerleader gibt es gar keinen Schild. Damit fallen die
 // alten Auslöser (Ausspielen, eigener Tod) weg und alle fünf Kräfte sind neu
@@ -34,26 +39,26 @@ const profil: BotProfil = { ...BOT_PROFILE.ausgewogen, epsilonBand: 0 };
 // Davor: neu erzeugt nach Einführung der Cheerleader-Superkräfte, und davor
 // nach Einführung des Basis-Schilds.
 const GOLDEN_MASTER: [string, string, number, string][] = [
-  ['a1_rudeljaeger', 'a2_luftangriff', 5000, '1:14:0:5:30'],
-  ['a1_rudeljaeger', 'a3_gift_urgewalt', 5001, '1:15:-2:2:30'],
-  ['a1_rudeljaeger', 'a4_urzeitliches_rudel', 5002, '1:14:-2:6:27'],
-  ['a1_rudeljaeger', 'h1_solidaritaet', 5003, '1:10:-1:4:22'],
-  ['a1_rudeljaeger', 'h2_schicht', 5004, '1:16:-1:2:37'],
-  ['a1_rudeljaeger', 'h3_campus', 5005, '0:16:1:-1:34'],
-  ['a2_luftangriff', 'a3_gift_urgewalt', 5006, '1:16:-1:5:34'],
-  ['a2_luftangriff', 'a4_urzeitliches_rudel', 5007, '0:15:1:0:32'],
-  ['a2_luftangriff', 'h1_solidaritaet', 5008, '1:14:-1:6:29'],
-  ['a2_luftangriff', 'h2_schicht', 5009, '0:17:1:-2:36'],
-  ['a2_luftangriff', 'h3_campus', 5010, 'draw:16:0:-3:34'],
-  ['a3_gift_urgewalt', 'a4_urzeitliches_rudel', 5011, 'draw:15:0:-1:33'],
-  ['a3_gift_urgewalt', 'h1_solidaritaet', 5012, '1:15:-2:1:23'],
-  ['a3_gift_urgewalt', 'h2_schicht', 5013, '0:15:2:-1:29'],
-  ['a3_gift_urgewalt', 'h3_campus', 5014, '0:16:2:-1:28'],
-  ['a4_urzeitliches_rudel', 'h1_solidaritaet', 5015, '0:15:1:-1:28'],
-  ['a4_urzeitliches_rudel', 'h2_schicht', 5016, 'draw:16:-3:-1:35'],
-  ['a4_urzeitliches_rudel', 'h3_campus', 5017, '1:15:-2:1:28'],
-  ['h1_solidaritaet', 'h2_schicht', 5018, '1:11:-1:15:19'],
-  ['h1_solidaritaet', 'h3_campus', 5019, '1:15:0:5:26']
+  ['a1_rudeljaeger', 'a2_luftangriff', 5000, '1:14:0:4:33'],
+  ['a1_rudeljaeger', 'a3_gift_urgewalt', 5001, '1:14:-3:9:31'],
+  ['a1_rudeljaeger', 'a4_urzeitliches_rudel', 5002, '0:10:2:0:23'],
+  ['a1_rudeljaeger', 'h1_solidaritaet', 5003, '1:9:-1:4:23'],
+  ['a1_rudeljaeger', 'h2_schicht', 5004, '0:6:7:0:14'],
+  ['a1_rudeljaeger', 'h3_campus', 5005, '1:12:-1:8:30'],
+  ['a2_luftangriff', 'a3_gift_urgewalt', 5006, '0:16:1:0:37'],
+  ['a2_luftangriff', 'a4_urzeitliches_rudel', 5007, '1:10:0:3:23'],
+  ['a2_luftangriff', 'h1_solidaritaet', 5008, '0:12:7:0:28'],
+  ['a2_luftangriff', 'h2_schicht', 5009, '0:11:8:-2:28'],
+  ['a2_luftangriff', 'h3_campus', 5010, '0:12:8:-2:32'],
+  ['a3_gift_urgewalt', 'a4_urzeitliches_rudel', 5011, '1:9:-2:3:20'],
+  ['a3_gift_urgewalt', 'h1_solidaritaet', 5012, '1:13:0:5:28'],
+  ['a3_gift_urgewalt', 'h2_schicht', 5013, '1:16:-1:4:34'],
+  ['a3_gift_urgewalt', 'h3_campus', 5014, '0:17:2:-1:35'],
+  ['a4_urzeitliches_rudel', 'h1_solidaritaet', 5015, '0:12:9:0:23'],
+  ['a4_urzeitliches_rudel', 'h2_schicht', 5016, '1:13:-3:4:31'],
+  ['a4_urzeitliches_rudel', 'h3_campus', 5017, '1:13:-3:9:29'],
+  ['h1_solidaritaet', 'h2_schicht', 5018, '0:14:8:0:31'],
+  ['h1_solidaritaet', 'h3_campus', 5019, '0:15:6:0:34']
 ];
 
 describe('Golden Master: Partie-Simulation bleibt bei Refactors unverändert', () => {

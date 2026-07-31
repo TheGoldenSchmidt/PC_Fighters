@@ -456,6 +456,48 @@ input:focus {
   font-weight: 600;
 }
 
+/* Bahnenwahl beim Erstellen: gleiche Optik wie die Schauplatz-Kacheln, nur
+   knapper – hier steht eine Zahl statt eines Bildes. */
+.lane-grid-choice {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.lane-choice {
+  background: var(--panel-2);
+  border: 1px solid var(--panel-2-border);
+  border-radius: var(--radius);
+  padding: 12px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  cursor: pointer;
+  color: inherit;
+}
+
+.lane-choice-zahl {
+  font-family: var(--font-title);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.lane-choice-text {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.lane-choice:hover { transform: translateY(-2px); border-color: var(--accent); }
+
+.lane-choice.selected {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 15%, var(--panel-2));
+}
+
+.lane-choice.selected .lane-choice-text { color: var(--text); font-weight: 600; }
+
 /* Tabs & Buttons */
 .tabs {
   display: flex;
@@ -1007,6 +1049,8 @@ input:focus {
    ATK/HP-Badges an den unteren Ecken, Namensschild (Plaque) darunter. */
 .slot {
   perspective: 520px;
+  /* Bezugsgroesse fuer die cqw-Einheiten der Figuren-Beschriftung. */
+  container-type: inline-size;
 }
 
 .creature-figure {
@@ -1153,18 +1197,21 @@ input:focus {
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
 }
 
+/* Groesse folgt der Bahnbreite: bei 5 oder 6 Bahnen ist ein Slot auf dem Handy
+   nur noch gut 60px breit, feste 24px-Marken wuerden sich dort ueberlappen.
+   cqw statt vw, damit die Marke am Slot haengt und nicht am Fenster. */
 .figure-stat {
   position: absolute;
   bottom: 3px;
-  min-width: 24px;
-  height: 24px;
-  padding: 0 5px;
+  min-width: clamp(17px, 34cqw, 24px);
+  height: clamp(17px, 34cqw, 24px);
+  padding: 0 clamp(2px, 6cqw, 5px);
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 900;
-  font-size: 0.82rem;
+  font-size: clamp(0.6rem, 12cqw, 0.82rem);
   color: white;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.3);
@@ -1198,13 +1245,13 @@ input:focus {
 
 .figure-plaque {
   max-width: 100%;
-  padding: 1px 8px;
+  padding: 1px clamp(3px, 8cqw, 8px);
   border-radius: 6px;
   background: linear-gradient(180deg, rgba(30, 38, 60, 0.95), rgba(15, 20, 35, 0.95));
   border: 1px solid rgba(255, 255, 255, 0.12);
   font-family: var(--font-title);
   font-weight: 700;
-  font-size: 0.68rem;
+  font-size: clamp(0.5rem, 10cqw, 0.68rem);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1215,7 +1262,7 @@ input:focus {
   max-width: 100%;
   color: var(--theme-accent, var(--muted));
   opacity: 0.9;
-  font-size: 0.58rem;
+  font-size: clamp(0.44rem, 9cqw, 0.58rem);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.03em;
@@ -2423,28 +2470,8 @@ input:focus {
   width: 100%;
 }
 
-/* Wartezustand des Gegners: nur Information, nie interaktiv. */
-/* Über der Hand, nicht darauf: unten liegen jetzt die Handkarten. */
-.reaction-waiting {
-  position: fixed;
-  bottom: calc(var(--hand-hoehe, 150px) + 8px);
-  left: 0;
-  right: 0;
-  margin: 0 auto;
-  width: fit-content;
-  z-index: 40;
-  background: rgba(18, 24, 38, 0.95);
-  border: 1px solid var(--gold);
-  border-radius: 12px;
-  padding: 9px 16px;
-  font-size: 0.8rem;
-  color: var(--gold);
-  pointer-events: none;
-  animation: reaction-wait-pulse 1.8s ease-in-out infinite;
-}
-
 @keyframes reaction-wait-pulse {
-  0%, 100% { opacity: 0.72; }
+  0%, 100% { opacity: 0.62; }
   50% { opacity: 1; }
 }
 
@@ -2455,7 +2482,6 @@ input:focus {
   animation: reaction-wait-pulse 1.4s ease-in-out infinite;
 }
 
-/* Wirkende Superkraft auf der Ausloeser-Lane (2D-Fallback). */
 /* Wirkende Cheerleader-Kraft: Ein Schild-Block passiert an der Basis und alle
    Kräfte wirken auf das ganze Feld – der Effekt liegt deshalb über der ganzen
    Arena statt auf einer Lane. */

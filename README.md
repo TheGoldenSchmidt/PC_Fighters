@@ -160,7 +160,7 @@ Die Datei `packages/engine/src/data/config.json` enthält alle Spielregeln als Z
 
 | Wert | Bedeutung |
 |---|---|
-| `lanes` | Anzahl der Kampfbahnen (Standard 3 – bei 4 zeigt das Spiel wirklich 4 Lanes!) |
+| `lanes` | **Voreingestellte** Anzahl der Kampfbahnen (Standard 5). Der Ersteller einer Partie kann davon abweichen und beim Einrichten 3 bis 6 wählen – die Zahl hier ist nur die Vorauswahl im Startbildschirm. |
 | `baseHealth` | Lebenspunkte jeder Basis (V2: 15) |
 | `startingHand` | Handkarten zu Spielbeginn (V2: 4) |
 | `cardsDrawnPerTurn` | Karten, die jede Runde gezogen werden |
