@@ -43,11 +43,16 @@ Spieler per Token wieder und antwortet dann – das Fenster überlebt vollständ
 *Cheerleader-Reaktionen* mit Angeboten, Opfern, Einlösequote, Verzicht,
 verursachtem/verhindertem Schaden und Rettungen je Cheerleader.
 
+**Client-Tests fertig.** Der Client hat jetzt eine eigene Vitest-Suite
+(`jsdom`, `@testing-library/react`) – sechs Tests für Besitzer- gegen
+Gegneransicht, gesperrte Normalaktionen, Verzicht, Opfer, die A/B-Wahl und die
+Replay-Reihenfolge. Die Fixtures kommen aus der **echten Engine**
+(`createGame` + `applyAction`), damit die Suite nicht grün bleibt, während sich
+der `ClientView`-Vertrag darunter verschiebt.
+
 Noch offen, bevor der Meilenstein steht:
 
-1. **Client-Tests** – es gibt bis heute keine Client-Testsuite; die
-   Replay-Reihenfolge ist nur manuell abgesichert.
-2. **Zwei Kräfte sind unvermessen.** Der Backtest nutzt die Standardauswahl
+1. **Zwei Kräfte sind unvermessen.** Der Backtest nutzt die Standardauswahl
    (die ersten drei Kandidaten), deshalb kommen `junger_neffe` (Auslöser
    `eigenerTod`) und `randy_marsh` (`gegnerischeKreaturGegenueber`) in keiner
    simulierten Partie vor. Beide sind durch Engine-Tests abgedeckt, aber ohne
@@ -97,7 +102,7 @@ Noch offen, bevor der Meilenstein steht:
 
 | Prüfung | Stand 2026-07-30 |
 |---|---|
-| `npm test` | 🟢 192 Tests (176 Engine + 16 Server), 6+1 Dateien |
+| `npm test` | 🟢 198 Tests (176 Engine + 16 Server + 6 Client) |
 | `npm run typecheck` | 🟢 alle drei Workspaces fehlerfrei |
 | `npm run build` | 🟢 – aber **ein** JS-Chunk mit 796 kB (222 kB gzip) |
 | CI | 🟢 [`.github/workflows/ci.yml`](../.github/workflows/ci.yml): `npm ci` → Tests → Typecheck → Build → Backtest-Smoke |

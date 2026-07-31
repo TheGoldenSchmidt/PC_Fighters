@@ -11,7 +11,7 @@
     "client": "npm run dev --workspace @pcf/client",
     "build": "npm run build --workspace @pcf/client",
     "start": "npm run start --workspace @pcf/server",
-    "test": "npm run test --workspace @pcf/engine && npm run test --workspace @pcf/server",
+    "test": "npm run test --workspace @pcf/engine && npm run test --workspace @pcf/server && npm run test --workspace @pcf/client",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "list-missing-art": "node scripts/list-missing-art.mjs",
     "backtest": "tsx scripts/backtest/backtest.ts"

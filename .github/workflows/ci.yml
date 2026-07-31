@@ -3,7 +3,7 @@
 # Läuft bei jedem Push auf master und bei jedem Pull Request. Prüft in dieser
 # Reihenfolge, was auch lokal vor einem Commit laufen sollte:
 #   1. npm ci        – reproduzierbare Installation aus package-lock.json
-#   2. npm test      – Engine- und Server-Testsuiten (Vitest)
+#   2. npm test      – Engine-, Server- und Client-Testsuiten (Vitest)
 #   3. npm run typecheck – tsc --noEmit über alle Workspaces
 #   4. npm run build – Produktions-Build des Clients
 #   5. Backtest-Smoke – deterministischer Kurzlauf, damit die Simulation nicht
