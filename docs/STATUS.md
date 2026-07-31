@@ -73,6 +73,35 @@ Auslöser-Kreatur, weil ein Block an der Basis passiert). Golden Master neu
 erzeugt, 202 Tests grün, im Zwei-Browser-Test verifiziert. Im 🧪 Testmodus ist
 der Schild nach einem Treffer voll, damit man die Kräfte sofort sieht.
 
+**Bot sieht jetzt Schild und Immunität.** `bewerteZustand` kannte weder den
+Schildstand noch `basisImmun`. „Sicherer Raum" sah für den Bot deshalb aus wie
+ein verschenkter Bankplatz, und ein fast voller Schild war ihm nichts wert.
+Beides fließt jetzt als **Basis-Reserve** in die Bewertung ein – in Basis-Leben
+umgerechnet, damit die Profile ohne neue Gewichte auskommen. Die Schildladung
+zählt nur bei besetzter Bank, weil sie sonst wirkungslos ist.
+
+> **Wichtig fürs Balancing:** Die Korrektur hat an den Wahlquoten fast nichts
+> geändert (PC Babies 8,6 % → 10,0 %). Die Vermutung, die 8,6 % seien nur ein
+> Messartefakt, war also **falsch** – „Sicherer Raum" ist tatsächlich zu
+> schwach, weil der Block meist im Kampf fällt und der Rundenstart die
+> Immunität sofort wieder aufhebt. Die Zahlen sind jetzt aber belastbar.
+
+Gemessen nach der Korrektur (420 Partien, `--schnell --saat=1`):
+
+| Cheerleader | angeboten | geopfert | Wahlquote |
+|---|---|---|---|
+| PC Principal | 404 | 364 | 90,1 % |
+| Alter Wissenschaftler | 425 | 262 | 61,6 % |
+| Junger Neffe | 464 | 70 | 15,1 % |
+| PC Babies | 479 | 48 | 10,0 % |
+| Randy Marsh | 461 | 37 | 8,0 % |
+
+Deck-Winraten: `h2_schicht` 64,1 % 🔴 bleibt der grösste Ausreisser,
+`a3_gift_urgewalt` 36,8 % der schwächste. Ø Spieldauer 11,4 Runden (Ziel 7–10),
+16,7 % der Partien erreichen die Zermürbung (Ziel ≤ 10 %).
+
+---
+
 **Client aufgeräumt und Startladezeit gedrittelt.** `GameScreen.tsx` (1.500
 Zeilen) ist auf 700 Zeilen geschrumpft: Replay, Karten, Figur, Anzeigen und die
 Reaktionsauswahl liegen jetzt in `src/arena/`. `styles.css` (2.500 Zeilen) ist
@@ -157,11 +186,11 @@ bis in den Kampf hinein; sechs neue Client-Tests in `test/arena.test.tsx`.
 
 ## Qualitätsstand
 
-| Prüfung | Stand 2026-07-30 |
+| Prüfung | Stand 2026-07-31 |
 |---|---|
-| `npm test` | 🟢 198 Tests (176 Engine + 16 Server + 6 Client) |
+| `npm test` | 🟢 208 Tests (177 Engine + 19 Server + 12 Client) |
 | `npm run typecheck` | 🟢 alle drei Workspaces fehlerfrei |
-| `npm run build` | 🟢 – aber **ein** JS-Chunk mit 796 kB (222 kB gzip) |
+| `npm run build` | 🟢 – Startbildschirm 216 kB (72 kB gzip); Three.js liegt in einem eigenen Chunk und wird erst fürs 3D nachgeladen |
 | CI | 🟢 [`.github/workflows/ci.yml`](../.github/workflows/ci.yml): `npm ci` → Tests → Typecheck → Build → Backtest-Smoke |
 
 Der Backtest-Smoke in CI läuft bewusst **ohne** `--streng`: die Zielkorridore
