@@ -61,6 +61,18 @@ All cards, factions, topics, and rules are JSON under `packages/engine/src/data/
 
 Card art and 3D: a creature's `cardId` drives both. 2D art is `packages/client/public/assets/cards/<id>.png` (missing → emoji fallback, no code). 3D figures are procedural per `cardId` in `packages/client/src/figures3d.ts`; unknown ids fall back to a color-hashed golem. See `Battlefield3D.tsx` for how DOM lane slots are projected into the WebGL scene.
 
+### The arena layout IS the 3D world's coordinate system
+
+`GameScreen.tsx` renders a full-bleed `.arena` layer: the WebGL canvas fills it, the lane grid sits in a middle band, and everything else (base + shield, energy, deck, round, log ticker, hand) floats on top as chips. There are deliberately no header/footer bars — the empty margins they created were the whole point of the rewrite.
+
+`Battlefield3D` never invents positions. `elementAnchor(world, selector)` raycasts a DOM rect onto the ground plane, so **CSS decides where 3D things stand**: `[data-slot="<side>-<lane>"]` for the fighters, `[data-zone="<side>"]` for the cheerleader bench (the base rides behind it in the zone group's local space; the opponent group is rotated 180° so "behind" points the right way). Rename or drop one of those attributes and the corresponding 3D object silently loses its anchor. One exception, documented in place: the *opponent's* zone only takes its x from the anchor. Its anchor sits at the top edge where the ground runs into the horizon, so the raycast would land dozens of units past the field — depth and size come from the lane geometry instead.
+
+### Hand cards: drag to play, tap for the effect
+
+Playing a card means dragging it into a lane. `useKartenZug.ts` does this with pointer events (HTML5 drag-and-drop never fires on touch) and hit-tests the lane rects it collected at drag start — not `document.elementFromPoint`, which jsdom lacks and which the drag ghost would poison anyway. Two traps it exists to avoid: card artwork needs `draggable={false}` (the browser's native image drag fires `pointercancel` and kills the gesture) and `.hand-card` needs `touch-action: none` (otherwise the page scrolls instead).
+
+A short tap opens the detail overlay with the card text. Its `Ausspielen` button falls back into the old tap-a-lane selection, which is still the only way to play cards without a lane target (`summon`) and still drives the fly phase. Both paths end in `karteAufLane(handIndex, lane)` — don't add a second place that turns a card into a `PlayerAction`.
+
 ## Conventions & gotchas
 
 - **Engine internal imports use `.js` extensions** on `.ts` files (`from './game.js'`) — ESM/NodeNext resolution. Keep this in new engine files or imports break at runtime.

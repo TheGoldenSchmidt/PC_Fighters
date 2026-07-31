@@ -1,6 +1,14 @@
-// Spielfeld: gegnerische Basis oben, eigene unten, Lanes dazwischen
-// (dynamisch aus der Config – auch 4+ Lanes funktionieren), Handkarten
-// als scrollbare Leiste. Bedienung über große Tap-Flächen statt Drag & Drop.
+// Spielfeld als bildschirmfüllende Arena: Das Lane-Raster (dynamisch aus der
+// Config – auch 4+ Lanes funktionieren) liegt in einem mittleren Band, davor
+// und dahinter steht mittig die Cheerleader-Bank mit der Basis dahinter. Alle
+// Anzeigen (Basis, Schild, Energie, Deck, Runde) schweben als Chips darüber,
+// es gibt bewusst KEINE Kopf-/Fußleiste mehr: der tote Rand oben und unten war
+// genau das, was hier verschwinden sollte.
+//
+// Bedienung: Handkarten werden in eine Lane GEZOGEN (`useKartenZug`, Pointer-
+// Events). Kurzes Antippen öffnet stattdessen die Detailansicht mit dem
+// Karteneffekt; von dort führt „Ausspielen" in die alte Tap-auf-Lane-Auswahl,
+// die Karten ohne Lane-Ziel (Beschwörung) und die Flug-Phase weiterhin braucht.
 //
 // Kampf-Abspielung: Der Server schickt nach dem Kampf den fertigen Zustand
 // PLUS strukturierte Events (Angriffe, Tode). Der Client zeigt den alten
@@ -41,6 +49,7 @@ import type {
 } from '@pcf/engine';
 import type { ConnectionStatus, KeywordInfo } from './useGame';
 import { Battlefield3D, webglSupported, type SpellEffectKind } from './Battlefield3D';
+import { eigeneLaneRects, useKartenZug } from './useKartenZug';
 
 interface Props {
   view: ClientView;
@@ -141,6 +150,12 @@ interface DetailData {
   keywords: string[];
   text?: string;
   signature?: boolean;
+  /**
+   * Nur bei Handkarten gesetzt: erlaubt „Ausspielen" direkt aus dem Detail.
+   * Das ist die Rückfallebene zum Ziehen – und der einzige Weg für Karten
+   * ohne Lane-Ziel (Beschwörung), die man nirgendwohin ziehen kann.
+   */
+  handIndex?: number;
 }
 
 // Timing der Kampf-Abspielung (Millisekunden)
@@ -320,6 +335,8 @@ export function GameScreen({
   const [moveFx, setMoveFx] = useState<Record<number, number>>({});
   const [banner, setBanner] = useState<{ key: number; text: string } | null>(null);
   const [detail, setDetail] = useState<DetailData | null>(null);
+  /** Kampf-Log: normal nur als Ticker sichtbar, auf Tippen als Overlay. */
+  const [logOffen, setLogOffen] = useState(false);
   const logRef = useRef<HTMLDivElement>(null);
 
   const shownViewRef = useRef(view);
@@ -390,7 +407,7 @@ export function GameScreen({
 
   useEffect(() => {
     logRef.current?.scrollTo({ top: logRef.current.scrollHeight });
-  }, [shownView.log.length]);
+  }, [shownView.log.length, logOffen]);
 
   // Phasen-Banner: Rundenwechsel, Flug-Phase, eigener Zug.
   const prevMeta = useRef<{ round: number; phase: string; myTurn: boolean; init: boolean }>({
@@ -620,22 +637,35 @@ export function GameScreen({
       ? shownView.hand[selection.index] ?? null
       : null;
 
-  /** Welche eigenen Lanes sind gerade gültige Tap-Ziele? */
-  function laneTargets(): { lanes: Set<number> } {
+  /**
+   * Gültige eigene Ziel-Lanes für eine Karte. Eine Stelle für beide
+   * Bedienwege – Ziehen fragt sie mit der gezogenen Karte, das Antippen mit
+   * der ausgewählten. Karten ohne Lane-Ziel liefern eine leere Menge und sind
+   * damit auch nicht ziehbar.
+   */
+  function laneZieleFuerKarte(card: CardDef | null): Set<number> {
     const free = new Set<number>();
     const occupied = new Set<number>();
     myBoard.forEach((c, i) => (c ? occupied.add(i) : free.add(i)));
+    if (!card) return new Set<number>();
+    if (card.type === 'creature') return free;
+    const kind = card.effect.kind;
+    if (kind === 'buffHealth' || kind === 'buffAttackTemp' || kind === 'moveCreature') {
+      return occupied;
+    }
+    return new Set<number>();
+  }
 
+  /** Welche eigenen Lanes sind gerade gültige Tap-Ziele? */
+  function laneTargets(): { lanes: Set<number> } {
     if (selection?.kind === 'fly' || selection?.kind === 'move') {
+      const free = new Set<number>();
+      myBoard.forEach((c, i) => {
+        if (!c) free.add(i);
+      });
       return { lanes: free };
     }
-    if (selection?.kind === 'hand' && selectedCard) {
-      if (selectedCard.type === 'creature') return { lanes: free };
-      const kind = selectedCard.effect.kind;
-      if (kind === 'buffHealth' || kind === 'buffAttackTemp' || kind === 'moveCreature') {
-        return { lanes: occupied };
-      }
-    }
+    if (selection?.kind === 'hand') return { lanes: laneZieleFuerKarte(selectedCard) };
     return { lanes: new Set<number>() };
   }
 
@@ -671,27 +701,54 @@ export function GameScreen({
       return;
     }
 
-    if (selection.kind === 'hand' && selectedCard) {
-      if (selectedCard.type === 'creature') {
-        onAction({ type: 'playCreature', handIndex: selection.index, lane });
-      } else if (selectedCard.effect.kind === 'moveCreature') {
-        setSelection({ kind: 'move', index: selection.index, fromLane: lane });
-        return;
-      } else {
-        onAction({ type: 'playAction', handIndex: selection.index, targetLane: lane });
-      }
-      setSelection(null);
+    if (selection.kind === 'hand') {
+      karteAufLane(selection.index, lane);
     }
   }
 
-  function tapHandCard(index: number) {
-    if (!myTurn || shownView.phase !== 'play') return;
-    const card = shownView.hand[index];
-    if (!card || card.cost > energy) return;
-    setSelection(
-      selection?.kind === 'hand' && selection.index === index ? null : { kind: 'hand', index }
-    );
+  /**
+   * Handkarte auf eine Lane bringen – gemeinsamer Endpunkt für Ziehen und für
+   * den Tap-Weg aus dem Detailfenster. Die Regelprüfung ist vorher passiert
+   * (`laneZieleFuerKarte`); hier steht nur noch, welche Aktion daraus wird.
+   */
+  function karteAufLane(handIndex: number, lane: number) {
+    const card = shownView.hand[handIndex];
+    if (!card) return;
+    if (card.type === 'creature') {
+      onAction({ type: 'playCreature', handIndex, lane });
+    } else if (card.effect.kind === 'moveCreature') {
+      // Zwei Schritte: erst die zu versetzende Kreatur, dann die Ziel-Lane.
+      setSelection({ kind: 'move', index: handIndex, fromLane: lane });
+      return;
+    } else {
+      onAction({ type: 'playAction', handIndex, targetLane: lane });
+    }
+    setSelection(null);
   }
+
+  /** Kann diese Handkarte gerade bezahlt und gespielt werden? */
+  function karteSpielbar(index: number): boolean {
+    const card = shownView.hand[index];
+    return Boolean(myTurn && shownView.phase === 'play' && card && card.cost <= energy);
+  }
+
+  const kartenZug = useKartenZug({
+    // Nur Karten mit Lane-Ziel sind ziehbar; alles andere läuft über das Detail.
+    ziehbar: (index) =>
+      karteSpielbar(index) && laneZieleFuerKarte(shownView.hand[index] ?? null).size > 0,
+    laneRects: () => eigeneLaneRects(me, shownView.lanes),
+    gueltig: (lane, index) => laneZieleFuerKarte(shownView.hand[index] ?? null).has(lane),
+    onAblegen: karteAufLane,
+    onTippen: (index) => {
+      // Eine bereits ausgewählte Karte wieder abwählen, sonst den Effekt zeigen.
+      if (selection?.kind === 'hand' && selection.index === index) {
+        setSelection(null);
+        return;
+      }
+      const card = shownView.hand[index];
+      if (card) openCardDetail(card, index);
+    }
+  });
 
   function openCreatureDetail(c: CreatureView) {
     setDetail({
@@ -705,7 +762,7 @@ export function GameScreen({
     });
   }
 
-  function openCardDetail(card: CardDef) {
+  function openCardDetail(card: CardDef, handIndex?: number) {
     setDetail({
       cardId: card.id,
       name: card.name,
@@ -714,7 +771,8 @@ export function GameScreen({
       health: card.type === 'creature' ? card.health : undefined,
       keywords: card.type === 'creature' ? card.keywords : [],
       text: card.text,
-      signature: card.signature
+      signature: card.signature,
+      handIndex
     });
   }
 
@@ -738,8 +796,8 @@ export function GameScreen({
           ? selection
             ? selection.kind === 'move'
               ? 'Ziel-Lane wählen'
-              : 'Ziel antippen (oder Karte erneut antippen zum Abwählen)'
-            : 'Du bist am Zug'
+              : 'Ziel-Lane antippen (oder Karte erneut antippen zum Abwählen)'
+            : 'Du bist am Zug – Karte in eine Lane ziehen'
           : 'Gegner ist am Zug …';
 
   // ---- Effekt-Abfragen fürs Rendering ----
@@ -777,73 +835,19 @@ export function GameScreen({
     []
   );
 
+  // Beim Ziehen ersetzt die gezogene Karte die Auswahl als Quelle der
+  // Lane-Markierung – sonst blieben die gültigen Ziele unsichtbar.
+  const zugZiele = kartenZug.zug
+    ? laneZieleFuerKarte(shownView.hand[kartenZug.zug.handIndex] ?? null)
+    : null;
+  const letzteLogZeile = shownView.log.at(-1)?.text ?? '';
+
   return (
     <div className="screen game-screen" style={themeVars}>
-      {/* ---- Kopfzeile: Gegner ---- */}
-      <header className="player-bar opponent-bar">
-        <div className={`base-chip ${baseHit(opp) ? 'hit' : ''}`}>
-          🏰 {Math.max(0, shownView.players[opp].base)}
-          {baseHit(opp) && <span className="dmg-float">-{baseHit(opp)!.damage}</span>}
-        </div>
-        <ShieldMeter
-          stand={shownView.players[opp].schild}
-          abschnitte={shownView.schildAbschnitte}
-          fx={shieldFx(opp)}
-          immun={shownView.players[opp].basisImmun}
-        />
-        <div
-          className="hand-backs"
-          aria-label={`Gegner hat ${shownView.players[opp].handCount} Handkarten`}
-        >
-          {Array.from({ length: Math.min(shownView.players[opp].handCount, 10) }, (_, i) => (
-            <span key={i} className="card-back" />
-          ))}
-          <span className="hand-count">{shownView.players[opp].handCount}</span>
-        </div>
-        <div className="deck-chip">📚 {shownView.players[opp].deckCount}</div>
-        <div
-          className={`conn-dot ${opponentConnected ? 'ok' : 'lost'}`}
-          title={opponentConnected ? 'Gegner verbunden' : 'Gegner: Verbindung verloren'}
-        />
-      </header>
-
-      <div className="round-bar">
-        <span>
-          {topic && (
-            <span className="topic-badge" title={`Schauplatz: ${topic.name}`}>
-              {topic.emoji}{' '}
-            </span>
-          )}
-          Runde {shownView.round}/{shownView.roundLimit}
-        </span>
-        <span className={`turn-indicator ${myTurn ? 'my-turn' : ''}`}>{statusText}</span>
-        <span
-          className={`conn-dot ${status === 'connected' ? 'ok' : 'lost'}`}
-          title={status === 'connected' ? 'Verbunden' : 'Verbindung verloren'}
-        />
-      </div>
-
-      {/* ---- Lanes ---- */}
-      <main className="lanes" style={{ '--lanes': shownView.lanes } as CSSProperties}>
-        {!use3d && (
-          <>
-            <CheerleaderStrip
-              side={opp}
-              slots={shownView.players[opp].cheerleaders}
-              sacrifice={fx.sacrifices.find((item) => item.owner === opp)}
-              position="opponent"
-            />
-            <CheerleaderStrip
-              side={me}
-              slots={shownView.players[me].cheerleaders}
-              sacrifice={fx.sacrifices.find((item) => item.owner === me)}
-              position="own"
-              bereiteSlots={
-                zeigeReaktionsAuswahl ? reaktion?.angebote.map((a) => a.slot) : undefined
-              }
-            />
-          </>
-        )}
+      {/* ---- Arena: bildschirmfüllende Bühne. Sie ist zugleich der layoutRoot
+           für Battlefield3D – die 3D-Figuren, Bänke und Basen werden über die
+           data-slot- und data-zone-Anker darin auf das DOM projiziert. ---- */}
+      <div className="arena" style={{ '--lanes': shownView.lanes } as CSSProperties}>
         {use3d && (
           <Battlefield3D
             view={shownView}
@@ -854,114 +858,198 @@ export function GameScreen({
             onUnsupported={() => setUse3d(false)}
           />
         )}
-        {Array.from({ length: shownView.lanes }, (_, lane) => {
-          const targetable = myTurn && targets.lanes.has(lane);
-          const flySource = selection?.kind === 'fly' && selection.fromLane === lane;
-          const moveSource = selection?.kind === 'move' && selection.fromLane === lane;
-          const enemyCreature = shownView.board[opp][lane];
-          const ownCreature = myBoard[lane];
-          const enemyDmg = incomingDamage(opp, lane);
-          const ownDmg = incomingDamage(me, lane);
-          const combatActive = isReplaying && fx.activeLane === lane;
-          return (
-            <div className={'lane' + (combatActive ? ' combat-active' : '')} key={lane}>
-              <div className="slot enemy-slot" data-slot={`${opp}-${lane}`}>
-                <CreatureTile
-                  key={enemyCreature?.uid ?? 'leer'}
-                  creature={enemyCreature}
-                  flat3d={use3d}
-                  attacking={isAttacking(opp, lane)}
-                  dying={isDying(opp, lane)}
-                  moveDelta={enemyCreature ? moveFx[enemyCreature.uid] : undefined}
-                  onDetail={openCreatureDetail}
-                />
-                {enemyDmg && <span className="dmg-float">-{enemyDmg.damage}</span>}
-              </div>
-              <div className="lane-label">Lane {lane + 1}</div>
-              <button
-                className={
-                  'slot own-slot' +
-                  (targetable ? ' targetable' : '') +
-                  (flySource || moveSource ? ' selected-slot' : '')
-                }
-                data-slot={`${me}-${lane}`}
-                onClick={() => tapOwnLane(lane)}
-              >
-                <CreatureTile
-                  key={ownCreature?.uid ?? 'leer'}
-                  creature={ownCreature}
-                  own
-                  flat3d={use3d}
-                  attacking={isAttacking(me, lane)}
-                  dying={isDying(me, lane)}
-                  moveDelta={ownCreature ? moveFx[ownCreature.uid] : undefined}
-                  onDetail={openCreatureDetail}
-                />
-                {ownDmg && <span className="dmg-float">-{ownDmg.damage}</span>}
-                {/* Zauber-Effekt (2D-Fallback ohne WebGL) */}
-                {!use3d && spellOnLane(lane) && (
-                  <span className={`spell-burst spell-${spellOnLane(lane)!.effect}`} aria-hidden />
-                )}
-                {/* Cheerleader-Kraft auf dieser Lane (2D-Fallback) */}
-                {!use3d && fx.power?.lane === lane && (
-                  <span className="power-burst" aria-hidden />
-                )}
-              </button>
-              {/* Fliegende Projektile dieser Lane (2D-Fallback – in 3D
-                  übernehmen die Leucht-Geschosse des Schlachtfelds) */}
-              {!use3d &&
-                fx.projectiles
-                  .filter((p) => p.lane === lane)
-                  .map((p) => (
-                  <span
-                    key={p.key}
-                    className={'projectile ' + (p.attacker === me ? 'from-own' : 'from-enemy')}
-                  >
-                    {p.emoji}
-                  </span>
-                ))}
-            </div>
-          );
-        })}
-      </main>
 
-      {/* ---- Kampf-Log ---- */}
-      <div className="log" ref={logRef}>
-        {shownView.log.map((entry) => (
-          <div key={entry.id} className="log-entry">
-            {entry.text}
+        {/* ---- Gegnerische Zone: Basis und Bank mittig über den Lanes ---- */}
+        <div className="zone-band zone-oben">
+          <div className="hud-gruppe">
+            <div
+              className="hand-backs"
+              aria-label={`Gegner hat ${shownView.players[opp].handCount} Handkarten`}
+            >
+              {Array.from({ length: Math.min(shownView.players[opp].handCount, 5) }, (_, i) => (
+                <span key={i} className="card-back" />
+              ))}
+              <span className="hand-count">{shownView.players[opp].handCount}</span>
+            </div>
+            <div className="deck-chip">📚 {shownView.players[opp].deckCount}</div>
           </div>
-        ))}
+
+          <div className="zone-mitte">
+            <BasisAnzeige
+              leben={shownView.players[opp].base}
+              treffer={baseHit(opp)}
+              schild={shownView.players[opp].schild}
+              abschnitte={shownView.schildAbschnitte}
+              schildFx={shieldFx(opp)}
+              immun={shownView.players[opp].basisImmun}
+            />
+            <div className="bank-anker" data-zone={opp}>
+              {!use3d && (
+                <CheerleaderStrip
+                  side={opp}
+                  slots={shownView.players[opp].cheerleaders}
+                  sacrifice={fx.sacrifices.find((item) => item.owner === opp)}
+                  position="opponent"
+                />
+              )}
+            </div>
+          </div>
+
+          <div className="hud-gruppe rechts">
+            <span className="runden-chip">
+              {topic && (
+                <span className="topic-badge" title={`Schauplatz: ${topic.name}`}>
+                  {topic.emoji}{' '}
+                </span>
+              )}
+              {shownView.round}/{shownView.roundLimit}
+            </span>
+            <span
+              className={`conn-dot ${opponentConnected ? 'ok' : 'lost'}`}
+              title={opponentConnected ? 'Gegner verbunden' : 'Gegner: Verbindung verloren'}
+            />
+            <span
+              className={`conn-dot ${status === 'connected' ? 'ok' : 'lost'}`}
+              title={status === 'connected' ? 'Verbunden' : 'Verbindung verloren'}
+            />
+          </div>
+        </div>
+
+        {/* ---- Lanes ---- */}
+        <main className="lane-grid">
+          {Array.from({ length: shownView.lanes }, (_, lane) => {
+            const targetable = myTurn && (zugZiele ?? targets.lanes).has(lane);
+            const dropHover = kartenZug.zug?.lane === lane;
+            const flySource = selection?.kind === 'fly' && selection.fromLane === lane;
+            const moveSource = selection?.kind === 'move' && selection.fromLane === lane;
+            const enemyCreature = shownView.board[opp][lane];
+            const ownCreature = myBoard[lane];
+            const enemyDmg = incomingDamage(opp, lane);
+            const ownDmg = incomingDamage(me, lane);
+            const combatActive = isReplaying && fx.activeLane === lane;
+            return (
+              <div className={'lane' + (combatActive ? ' combat-active' : '')} key={lane}>
+                <div className="slot enemy-slot" data-slot={`${opp}-${lane}`}>
+                  <CreatureTile
+                    key={enemyCreature?.uid ?? 'leer'}
+                    creature={enemyCreature}
+                    flat3d={use3d}
+                    attacking={isAttacking(opp, lane)}
+                    dying={isDying(opp, lane)}
+                    moveDelta={enemyCreature ? moveFx[enemyCreature.uid] : undefined}
+                    onDetail={openCreatureDetail}
+                  />
+                  {enemyDmg && <span className="dmg-float">-{enemyDmg.damage}</span>}
+                </div>
+                <div className="lane-label">{lane + 1}</div>
+                <button
+                  className={
+                    'slot own-slot' +
+                    (targetable ? ' targetable' : '') +
+                    (dropHover ? ' drop-hover' : '') +
+                    (flySource || moveSource ? ' selected-slot' : '')
+                  }
+                  data-slot={`${me}-${lane}`}
+                  onClick={() => tapOwnLane(lane)}
+                >
+                  <CreatureTile
+                    key={ownCreature?.uid ?? 'leer'}
+                    creature={ownCreature}
+                    own
+                    flat3d={use3d}
+                    attacking={isAttacking(me, lane)}
+                    dying={isDying(me, lane)}
+                    moveDelta={ownCreature ? moveFx[ownCreature.uid] : undefined}
+                    onDetail={openCreatureDetail}
+                  />
+                  {ownDmg && <span className="dmg-float">-{ownDmg.damage}</span>}
+                  {/* Zauber-Effekt (2D-Fallback ohne WebGL) */}
+                  {!use3d && spellOnLane(lane) && (
+                    <span className={`spell-burst spell-${spellOnLane(lane)!.effect}`} aria-hidden />
+                  )}
+                  {/* Cheerleader-Kraft auf dieser Lane (2D-Fallback) */}
+                  {!use3d && fx.power?.lane === lane && <span className="power-burst" aria-hidden />}
+                </button>
+                {/* Fliegende Projektile dieser Lane (2D-Fallback – in 3D
+                    übernehmen die Leucht-Geschosse des Schlachtfelds) */}
+                {!use3d &&
+                  fx.projectiles
+                    .filter((p) => p.lane === lane)
+                    .map((p) => (
+                      <span
+                        key={p.key}
+                        className={'projectile ' + (p.attacker === me ? 'from-own' : 'from-enemy')}
+                      >
+                        {p.emoji}
+                      </span>
+                    ))}
+              </div>
+            );
+          })}
+        </main>
+
+        {/* ---- Eigene Zone: Bank mittig, Basis dahinter ---- */}
+        <div className="zone-band zone-unten">
+          <div className="hud-gruppe">
+            <div className={'energy-chip' + (canPlaySomething ? ' pulse' : '')}>
+              ⚡ {energy}/{shownView.energyCap}
+            </div>
+          </div>
+
+          <div className="zone-mitte">
+            <BasisAnzeige
+              leben={shownView.players[me].base}
+              treffer={baseHit(me)}
+              schild={shownView.players[me].schild}
+              abschnitte={shownView.schildAbschnitte}
+              schildFx={shieldFx(me)}
+              immun={shownView.players[me].basisImmun}
+            />
+            <div className="bank-anker" data-zone={me}>
+              {!use3d && (
+                <CheerleaderStrip
+                  side={me}
+                  slots={shownView.players[me].cheerleaders}
+                  sacrifice={fx.sacrifices.find((item) => item.owner === me)}
+                  position="own"
+                  bereiteSlots={
+                    zeigeReaktionsAuswahl ? reaktion?.angebote.map((a) => a.slot) : undefined
+                  }
+                />
+              )}
+            </div>
+          </div>
+
+          <div className="hud-gruppe rechts">
+            <div className="deck-chip">📚 {shownView.players[me].deckCount}</div>
+            {shownView.phase === 'play' && myTurn && (
+              <button className="pass-button" onClick={() => onAction({ type: 'pass' })}>
+                Passen
+              </button>
+            )}
+            {shownView.phase === 'fly' && myTurn && (
+              <button className="pass-button" onClick={() => onAction({ type: 'flyDone' })}>
+                Fertig
+              </button>
+            )}
+          </div>
+        </div>
       </div>
 
-      {/* ---- Fußzeile: eigene Werte, Buttons, Hand ---- */}
+      {/* ---- Kampf-Log: nur die letzte Zeile schwebt mit, Tippen klappt auf ---- */}
+      {letzteLogZeile && (
+        <button
+          className="log-ticker"
+          onClick={() => setLogOffen(true)}
+          aria-label="Kampf-Log öffnen"
+        >
+          {letzteLogZeile}
+        </button>
+      )}
+
+      {/* ---- Fußbereich: Status und Hand, direkt über der Arena ---- */}
       <footer className="own-area">
-        <div className="player-bar own-bar">
-          <div className={`base-chip ${baseHit(me) ? 'hit' : ''}`}>
-            🏰 {Math.max(0, shownView.players[me].base)}
-            {baseHit(me) && <span className="dmg-float">-{baseHit(me)!.damage}</span>}
-          </div>
-          <ShieldMeter
-            stand={shownView.players[me].schild}
-            abschnitte={shownView.schildAbschnitte}
-            fx={shieldFx(me)}
-            immun={shownView.players[me].basisImmun}
-          />
-          <div className={'energy-chip' + (canPlaySomething ? ' pulse' : '')}>
-            ⚡ {energy}/{shownView.energyCap}
-          </div>
-          <div className="deck-chip">📚 {shownView.players[me].deckCount}</div>
-          {shownView.phase === 'play' && myTurn && (
-            <button className="pass-button" onClick={() => onAction({ type: 'pass' })}>
-              Passen
-            </button>
-          )}
-          {shownView.phase === 'fly' && myTurn && (
-            <button className="pass-button" onClick={() => onAction({ type: 'flyDone' })}>
-              Fertig
-            </button>
-          )}
-        </div>
+        <div className={`status-band ${myTurn ? 'my-turn' : ''}`}>{statusText}</div>
 
         {showSummonConfirm && (
           <button
@@ -981,15 +1069,53 @@ export function GameScreen({
               key={`${card.id}-${i}`}
               card={card}
               selected={selection?.kind === 'hand' && selection.index === i}
-              playable={myTurn && shownView.phase === 'play' && card.cost <= energy}
-              onTap={() => tapHandCard(i)}
-              onDetail={openCardDetail}
+              playable={karteSpielbar(i)}
+              dragging={kartenZug.zug?.handIndex === i}
+              handlers={kartenZug.handlers(i)}
             />
           ))}
           {shownView.hand.length === 0 && <div className="hint empty-hand">Keine Handkarten</div>}
         </div>
-        <p className="hint press-hint">Tipp: Karte oder Figur lange gedrückt halten für Details</p>
       </footer>
+
+      {/* ---- Gezogene Karte am Finger ---- */}
+      {kartenZug.zug && shownView.hand[kartenZug.zug.handIndex] && (
+        <div
+          className={'zug-geist' + (kartenZug.zug.lane !== null ? ' ueber-ziel' : '')}
+          style={{ left: kartenZug.zug.x, top: kartenZug.zug.y }}
+          aria-hidden
+        >
+          <CardArt
+            cardId={shownView.hand[kartenZug.zug.handIndex].id}
+            className="zug-geist-art"
+            alt=""
+            fallback={
+              <div className="zug-geist-fallback">
+                {shownView.hand[kartenZug.zug.handIndex].type === 'creature' ? '🛡️' : '⚡'}
+              </div>
+            }
+          />
+        </div>
+      )}
+
+      {/* ---- Vollständiges Kampf-Log ---- */}
+      {logOffen && (
+        <div className="overlay log-overlay" onClick={() => setLogOffen(false)}>
+          <div className="log-box" onClick={(e) => e.stopPropagation()}>
+            <h2>Kampf-Log</h2>
+            <div className="log" ref={logRef}>
+              {shownView.log.map((entry) => (
+                <div key={entry.id} className="log-entry">
+                  {entry.text}
+                </div>
+              ))}
+            </div>
+            <button className="secondary" onClick={() => setLogOffen(false)}>
+              Schließen
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ---- Phasen-Banner ---- */}
       {banner && (
@@ -1058,6 +1184,19 @@ export function GameScreen({
               </div>
             )}
             {detail.text && <p className="detail-text">{detail.text}</p>}
+            {/* Rückfallebene zum Ziehen – und der einzige Weg für Karten ohne
+                Lane-Ziel. Danach greift die normale Tap-auf-Lane-Auswahl. */}
+            {detail.handIndex !== undefined && karteSpielbar(detail.handIndex) && (
+              <button
+                className="primary"
+                onClick={() => {
+                  setSelection({ kind: 'hand', index: detail.handIndex! });
+                  setDetail(null);
+                }}
+              >
+                Ausspielen
+              </button>
+            )}
             <button className="secondary" onClick={() => setDetail(null)}>
               Schließen
             </button>
@@ -1135,6 +1274,9 @@ function CardArt({
       src={`/assets/cards/${cardId}.png`}
       className={className}
       alt={alt}
+      // Ohne das startet der Browser beim Ziehen seinen eigenen Bild-Drag,
+      // schickt ein `pointercancel` – und der Kartenzug bricht sofort ab.
+      draggable={false}
       onError={() => setFailed(true)}
     />
   );
@@ -1175,6 +1317,39 @@ function ShieldMeter({
       {Array.from({ length: abschnitte }, (_, i) => (
         <span key={i} className={`shield-seg ${i < stand ? 'filled' : ''}`} />
       ))}
+    </div>
+  );
+}
+
+/**
+ * Basis einer Seite: Leben und Schildbalken direkt neben der Bank, statt in
+ * einer eigenen Leiste am Bildschirmrand. Die Trefferanimation (`hit`) und die
+ * aufsteigende Schadenszahl bleiben unverändert, sie hängen nur an einem
+ * anderen Element.
+ */
+function BasisAnzeige({
+  leben,
+  treffer,
+  schild,
+  abschnitte,
+  schildFx,
+  immun
+}: {
+  leben: number;
+  treffer?: FxBaseImpact;
+  schild: number;
+  abschnitte: number;
+  schildFx: FxShield | null;
+  immun: boolean;
+}) {
+  return (
+    <div className={`basis-anzeige${treffer ? ' hit' : ''}`}>
+      <div className="basis-wert" title={`Basis-Leben: ${Math.max(0, leben)}`}>
+        <span aria-hidden>🏰</span>
+        <strong>{Math.max(0, leben)}</strong>
+        {treffer && <span className="dmg-float">-{treffer.damage}</span>}
+      </div>
+      <ShieldMeter stand={schild} abschnitte={abschnitte} fx={schildFx} immun={immun} />
     </div>
   );
 }
@@ -1273,67 +1448,62 @@ function CreatureTile({
   );
 }
 
+/**
+ * Kompakte Handkarte: Artwork füllt die Karte, Kosten als Kreis oben rechts,
+ * ATK/HP als kleine Marken unten. Der Regeltext steht bewusst NICHT mehr auf
+ * der Karte – ihn zeigt das Antippen im Detailfenster. Ausgespielt wird per
+ * Ziehen, deshalb kommen alle Zeiger-Ereignisse von `useKartenZug`.
+ */
 function HandCard({
   card,
   selected,
   playable,
-  onTap,
-  onDetail
+  dragging,
+  handlers
 }: {
   card: CardDef;
   selected: boolean;
   playable: boolean;
-  onTap: () => void;
-  onDetail: (card: CardDef) => void;
+  dragging: boolean;
+  handlers: Record<string, unknown>;
 }) {
-  const longPress = useLongPress(() => onDetail(card));
   return (
     <button
       className={
         'hand-card' +
         (selected ? ' selected' : '') +
         (playable ? ' playable' : ' unplayable') +
+        (dragging ? ' dragging' : '') +
         (card.signature ? ' signature-card' : '') +
         ` faction-${card.faction}`
       }
-      {...longPress.handlers}
-      onClick={() => {
-        if (longPress.fired.current) {
-          longPress.fired.current = false;
-          return;
-        }
-        onTap();
-      }}
+      type="button"
+      aria-label={`${card.name}, Kosten ${card.cost}`}
+      {...handlers}
     >
-      <div className="hand-card-top">
-        <span className="cost">{card.cost}</span>
-        <span className="hand-card-name">
-          {card.signature ? '★ ' : ''}
-          {card.name}
-        </span>
-      </div>
-
-      <div className="hand-card-art-container">
-        <CardArt
-          cardId={card.id}
-          className="hand-card-art"
-          alt={card.name}
-          fallback={
-            <div className={`hand-card-art-fallback theme-${card.faction}`}>
-              <span className="fallback-symbol">{card.type === 'creature' ? '🛡️' : '⚡'}</span>
-            </div>
-          }
-        />
-      </div>
-
+      <CardArt
+        cardId={card.id}
+        className="hand-card-art"
+        alt=""
+        fallback={
+          <div className={`hand-card-art-fallback theme-${card.faction}`}>
+            <span className="fallback-symbol">{card.type === 'creature' ? '🛡️' : '⚡'}</span>
+          </div>
+        }
+      />
+      <span className="cost">{card.cost}</span>
+      <span className="hand-card-name">
+        {card.signature ? '★ ' : ''}
+        {card.name}
+      </span>
       {card.type === 'creature' ? (
-        <div className="hand-card-stats">
-          ⚔ {card.attack} &nbsp; ♥ {card.health}
-        </div>
+        <span className="hand-card-stats">
+          <span className="hand-stat atk">{card.attack}</span>
+          <span className="hand-stat hp">{card.health}</span>
+        </span>
       ) : (
-        <div className="hand-card-stats action-label">Aktion</div>
+        <span className="hand-card-stats action-label">Aktion</span>
       )}
-      {card.text && <div className="hand-card-text">{card.text}</div>}
     </button>
   );
 }
