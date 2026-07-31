@@ -13,6 +13,14 @@ if (!Element.prototype.scrollTo) {
 // ein Browser ohne WebGL liefert – die Tests laufen dadurch im 2D-Fallback.
 HTMLCanvasElement.prototype.getContext = (() => null) as unknown as typeof HTMLCanvasElement.prototype.getContext;
 
+// Pointer-Capture gibt es in jsdom nicht. Der Kartenzug ruft es legitim auf,
+// damit das pointerup auch außerhalb der Karte ankommt.
+if (!Element.prototype.setPointerCapture) {
+  Element.prototype.setPointerCapture = () => {};
+  Element.prototype.releasePointerCapture = () => {};
+  Element.prototype.hasPointerCapture = () => false;
+}
+
 if (!window.matchMedia) {
   window.matchMedia = ((query: string) => ({
     matches: false,

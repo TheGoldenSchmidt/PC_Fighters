@@ -577,56 +577,134 @@ input:focus {
 
 /* ---------- Spielfeld ---------- */
 
+/* Die Arena füllt den ganzen Bildschirm; alle Anzeigen schweben als Chips
+   darüber. Kopf- und Fußleisten gibt es bewusst nicht mehr – sie waren genau
+   der tote Rand oben und unten. Die Höhe des Lane-Bands ergibt sich aus dem
+   Platz, den Bank + Basis oben und Bank + Basis + Hand unten brauchen. */
 .game-screen {
-  padding: 10px;
-  gap: 10px;
+  padding: 0;
+  gap: 0;
+  /* dvh zuerst als vh-Fallback: sonst schiebt die Browserleiste auf dem Handy
+     die Handkarten aus dem Bild. */
   height: 100vh;
-  max-width: 960px;
+  height: 100dvh;
+  max-width: none;
   overflow: hidden;
-  /* Seitlicher Freiraum neben den Lanes für die Cheerleader-Bänke. Lane-Breite,
-     Bankbreite, Bank-Versatz und die 3D-Bühne leiten sich ALLE hieraus ab –
-     vorher standen sie unabhängig voneinander im CSS und liefen im
-     Handy-Breakpoint auseinander (36px Rand gegen 142px Bank). */
-  --arena-rand: 110px;
-  /* Wie weit die Bank bewusst in die äußere Lane ragt, damit die drei Plätze
-     lesbar bleiben. Sie ist pointer-events:none, verdeckt also nichts Bedienbares. */
-  --bank-ueberlappung: 32px;
+  /* Handkarten-Breite; Höhe folgt über aspect-ratio 3/4 */
+  --karte-breite: 76px;
+  /* Hand (zwei Kartenreihen) + Statuszeile ganz unten */
+  --hand-hoehe: calc(2 * var(--karte-breite) * 4 / 3 + 34px);
+  /* Höhe eines Zonen-Bands (Basis + Bank + Eck-Chips) */
+  --zone-hoehe: 82px;
+  /* Freiraum über und unter dem Lane-Raster */
+  --feld-oben: var(--zone-hoehe);
+  --feld-unten: calc(var(--hand-hoehe) + var(--zone-hoehe));
+  --feld-seite: 12px;
 }
 
-.game-screen > .player-bar,
-.game-screen > .round-bar,
-.game-screen > .log,
-.game-screen > .own-area {
-  width: min(680px, 100%);
-  align-self: center;
+/* Bühne: Anker für das 3D-Canvas UND Träger aller data-slot-/data-zone-
+   Elemente, aus denen Battlefield3D seine Weltpositionen ausliest. */
+.arena {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
 }
 
-.player-bar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: var(--panel);
-  border: 1px solid var(--panel-border);
-  backdrop-filter: blur(16px);
-  border-radius: var(--radius);
-  padding: 8px 12px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.25);
-  z-index: 5;
-}
-
-.base-chip,
 .deck-chip,
-.energy-chip {
-  background: rgba(0,0,0,0.3);
-  border: 1px solid rgba(255,255,255,0.06);
+.energy-chip,
+.runden-chip {
+  background: rgba(6, 10, 18, 0.55);
+  border: 1px solid rgba(255,255,255,0.08);
   border-radius: 10px;
-  padding: 6px 12px;
+  padding: 4px 8px;
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   white-space: nowrap;
   display: flex;
   align-items: center;
   gap: 4px;
+  backdrop-filter: blur(6px);
+}
+
+/* ---------- Zonen-Bänder: Basis + Bank mittig, Chips in den Ecken ---------- */
+
+.zone-band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: var(--zone-hoehe);
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 10px;
+  z-index: 7;
+  /* Nur Knöpfe sind bedienbar – der Rest darf das Ablegen nicht blockieren. */
+  pointer-events: none;
+}
+
+/* Oben etwas mehr Luft: die gegnerische Basis steht HINTER der Bank, ragt also
+   über deren Oberkante hinaus und würde sonst am Bildrand abgeschnitten. */
+.zone-oben { top: 0; align-items: flex-start; padding-top: 18px; }
+.zone-unten { bottom: var(--hand-hoehe); align-items: flex-end; }
+
+/* Die Eck-Chips stapeln sich, statt sich in der Breite zu drängeln: neben der
+   Zonenmitte bleibt auf dem Handy nur eine gute Chipbreite übrig. */
+.hud-gruppe {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.hud-gruppe.rechts { align-items: flex-end; }
+.zone-unten .hud-gruppe { justify-content: flex-end; }
+
+/* Basis und Bank stehen zusammen in der Mitte – dort, wo im Vorbild der Held
+   steht. Die Basis selbst zeichnet die 3D-Bühne hinter der Bank. */
+.zone-mitte {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Leerer Anker im 3D-Modus: seine Bildschirmposition bestimmt, wo die
+   Bankfiguren stehen. Er braucht deshalb eine feste Größe. */
+.bank-anker {
+  position: relative;
+  width: 152px;
+  height: 58px;
+}
+
+.zone-oben .bank-anker { width: 128px; height: 48px; }
+
+/* Basis-Anzeige: Leben + Schildbalken direkt an der Bank. */
+.basis-anzeige {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  background: rgba(6, 10, 18, 0.55);
+  border: 1px solid rgba(255,255,255,0.09);
+  backdrop-filter: blur(6px);
+}
+
+.basis-wert {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 800;
+  font-size: 0.85rem;
+}
+
+.basis-wert strong {
+  font-size: 1.05rem;
+  color: #fff;
 }
 
 .energy-chip {
@@ -635,19 +713,16 @@ input:focus {
 }
 
 .hand-backs {
-  flex: 1;
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: 2px;
   overflow: hidden;
-  justify-content: flex-start;
-  padding: 0 4px;
 }
 
 .card-back {
-  width: 16px;
-  height: 24px;
-  border-radius: 4px;
+  width: 12px;
+  height: 19px;
+  border-radius: 3px;
   background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%);
   border: 1px solid rgba(255,255,255,0.2);
   flex-shrink: 0;
@@ -655,35 +730,28 @@ input:focus {
 }
 
 .hand-count {
-  margin-left: 8px;
+  margin-left: 5px;
   color: var(--muted);
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.9);
 }
 
-.round-bar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 0.85rem;
-  color: var(--muted);
-  padding: 0 4px;
-  z-index: 4;
-}
-
-.turn-indicator {
-  flex: 1;
+/* Einzige dauerhaft sichtbare Textzeile: sagt, wer am Zug ist und was gerade
+   erwartet wird. Sie schwebt direkt über den Handkarten. */
+.status-band {
   text-align: center;
-  font-weight: 500;
   font-family: var(--font-title);
-  letter-spacing: 0.05em;
-  font-size: 0.9rem;
+  font-size: 0.76rem;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  padding: 2px 10px;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.9);
 }
 
-.turn-indicator.my-turn {
+.status-band.my-turn {
   color: var(--gold);
   font-weight: 700;
-  text-shadow: 0 0 10px rgba(245, 158, 11, 0.2);
 }
 
 .conn-dot {
@@ -704,29 +772,32 @@ input:focus {
   animation: pulse 1s infinite;
 }
 
-/* Lanes layout */
-.lanes {
+/* Lane-Raster: mittleres Band der Arena. Die Slots strecken sich über die
+   volle Bandhöhe, dadurch bleibt oben und unten kein toter Rand übrig. */
+.lane-grid {
+  position: absolute;
+  top: var(--feld-oben);
+  bottom: var(--feld-unten);
+  /* Zentriert über margin statt translateX: die Reduced-Motion-Regel weiter
+     unten setzt `transform: none !important` auf alles. */
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: min(680px, calc(100% - 2 * var(--feld-seite)));
   display: grid;
   grid-template-columns: repeat(var(--lanes, 3), 1fr);
   gap: 8px;
-  flex: 1;
-  min-height: 0;
   z-index: 3;
-  /* Anker für das 3D-Schlachtfeld-Canvas */
-  position: relative;
-  width: min(680px, calc(100% - 2 * var(--arena-rand)));
-  align-self: center;
 }
 
-/* 3D-Schlachtfeld: Die Bühne reicht seitlich über das Lane-Raster hinaus.
-   Dort stehen Bäume, Häuser und Felsen wirklich NEBEN dem Kampfband, statt
-   die äußeren Figuren zu überdecken. Taps gehen weiterhin vollständig durch. */
+/* 3D-Schlachtfeld: füllt jetzt die GANZE Arena, nicht mehr nur den Streifen um
+   die Lanes. Dadurch reichen Boden und Umgebung bis an die Bildschirmkanten,
+   und Bank wie Basis haben vor bzw. hinter den Lanes echte Bühne. Das Canvas
+   liegt über den DOM-Slots (die Figuren sollen darin stehen), lässt aber alle
+   Taps durch. */
 .battlefield3d-shell {
   position: absolute;
-  top: 0;
-  bottom: 0;
-  left: -110px;
-  right: -110px;
+  inset: 0;
   z-index: 6;
   pointer-events: none;
 }
@@ -739,58 +810,61 @@ input:focus {
 }
 
 @media (max-width: 699px) {
-  /* Schmalerer Rand fürs Handy – Bank und 3D-Bühne ziehen automatisch mit,
-     weil sie aus derselben Variable rechnen. Die Bank ragt hier weiter in die
-     äußere Lane, sonst bliebe von den drei Plätzen nichts Lesbares übrig. */
-  .game-screen { max-width: 100%; --arena-rand: 36px; --bank-ueberlappung: 40px; }
-  .lanes { width: calc(100% - 2 * var(--arena-rand)); }
-  .battlefield3d-shell {
-    left: calc(-1 * var(--arena-rand));
-    right: calc(-1 * var(--arena-rand));
+  .game-screen {
+    --karte-breite: 72px;
+    --zone-hoehe: 74px;
+    --feld-seite: 8px;
   }
+  .zone-oben .bank-anker { width: 108px; height: 42px; }
+  .bank-anker { width: 132px; height: 52px; }
 }
 
-/* Auf schmalen Handys (iPhone SE & Co.) teilen sich Basis-, Schild-, Energie-
-   und Deck-Anzeige die Leiste mit dem Passen-Button. In Standardgröße passt das
-   ab etwa 400px nicht mehr – gemessen ragte der Button 60px heraus. Alles wird
-   daher etwas kompakter; der Button behält als einziges seine Größe. */
+/* Schmale Handys (iPhone SE & Co.): Chips und Karten enger, der Passen-Knopf
+   behält als einziges Bedienelement seine Größe. */
 @media (max-width: 430px) {
-  .player-bar { gap: 4px; padding: 8px 8px; }
-
-  .base-chip,
-  .deck-chip,
-  .energy-chip {
-    padding: 5px 6px;
+  .game-screen {
+    --karte-breite: 66px;
+    --zone-hoehe: 68px;
   }
-
+  .deck-chip,
+  .energy-chip,
+  .runden-chip { padding: 3px 6px; font-size: 0.72rem; }
+  .basis-anzeige { padding: 3px 5px; }
+  .bank-anker { width: 112px; height: 46px; }
+  .zone-oben .bank-anker { width: 94px; height: 38px; }
   .pass-button { padding: 6px 12px; }
 }
 
-/* Kompakte 2D-Teamzonen, wenn WebGL fehlt. Die Diagonale bleibt dieselbe wie
-   auf der 3D-Bühne. Breite und Versatz hängen an --arena-rand: die Bank sitzt
-   damit garantiert im Bild und ragt nur um --bank-ueberlappung in die äußere
-   Lane (dank pointer-events:none ohne die Tapfläche zu stören). */
+/* Flache Fenster (Querformat): das Lane-Band ist hier das Knappste, also
+   schrumpfen zuerst Hand und Zonen. */
+@media (max-height: 680px) {
+  .game-screen {
+    --karte-breite: 58px;
+    --zone-hoehe: 60px;
+  }
+}
+
+/* Kompakte 2D-Bank, wenn WebGL fehlt: sie füllt exakt den Bank-Anker, den im
+   3D-Modus die Figurengruppe bekommt. Beide Darstellungen sitzen dadurch an
+   derselben Stelle – mittig vor bzw. hinter den Lanes. */
 .team-strip {
   position:absolute;
-  z-index:7;
-  width:calc(var(--arena-rand) + var(--bank-ueberlappung));
+  inset:0;
   pointer-events:none;
   filter:drop-shadow(0 6px 10px rgba(0,0,0,.5));
 }
-.team-strip-opponent { top:2px; left:calc(-1 * var(--arena-rand)); transform:scale(.86); transform-origin:top left; }
-.team-strip-own { right:calc(-1 * var(--arena-rand)); bottom:2px; transform-origin:bottom right; }
 .team-bench {
   display:grid;
   grid-template-columns:repeat(3,1fr);
   gap:3px;
-  padding:5px 5px 8px;
+  height:100%;
+  padding:4px 5px 7px;
   border:1px solid rgba(234,244,255,.18);
-  border-bottom:7px solid #6b4634;
+  border-bottom:6px solid #6b4634;
   border-radius:8px 8px 3px 3px;
-  background:#252a33;
+  background:rgba(37,42,51,.92);
 }
 .team-seat {
-  height:34px;
   display:grid;
   place-items:center;
   border:1px solid rgba(245,183,74,.34);
@@ -817,16 +891,20 @@ input:focus {
 }
 .team-seat.empty { opacity:.38; }
 .team-seat.sacrificing { animation:team-sacrifice-fade .72s ease-in forwards; }
+/* Die Basis steht hinter der Bank: eigene nach unten (zum Betrachter),
+   gegnerische nach oben. */
 .team-base {
   position:absolute;
+  left:50%;
   width:38px;
   height:22px;
+  margin-left:-19px;
   border:5px solid #252a33;
   border-radius:50% 50% 18% 18%;
   background:radial-gradient(circle,#eaf4ff 0 30%,#5b84b1 35% 58%,#252a33 62%);
 }
-.team-strip-own .team-base { left:-46px; bottom:2px; }
-.team-strip-opponent .team-base { right:-46px; top:2px; }
+.team-strip-own .team-base { bottom:-16px; }
+.team-strip-opponent .team-base { top:-16px; transform:rotate(180deg); }
 .team-base.shield-flash { animation:team-shield-flash .62s ease-out .48s both; }
 @keyframes team-sacrifice-fade {
   45% { transform:translateY(-18px) scale(1.08); opacity:1; }
@@ -845,15 +923,16 @@ input:focus {
   min-width: 0;
 }
 
+/* Nur noch die Lane-Nummer: der Platz gehört dem Spielfeld, nicht der Schrift. */
 .lane-label {
   text-align: center;
   color: var(--theme-accent, var(--muted));
-  opacity: 0.8;
-  font-size: 0.75rem;
+  opacity: 0.5;
+  font-size: 0.65rem;
   font-family: var(--font-title);
   letter-spacing: 0.05em;
   font-weight: 600;
-  padding: 2px 0;
+  line-height: 1;
 }
 
 .slot {
@@ -898,6 +977,16 @@ input:focus {
   border-color: var(--accent);
   background: rgba(59, 130, 246, 0.1);
   box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+}
+
+/* Lane unter der gezogenen Karte: deutlich stärker als „nur gültig", sonst
+   sieht man beim Ziehen nicht, wo die Karte landen würde. */
+.own-slot.drop-hover {
+  border-color: var(--gold);
+  background: rgba(245, 158, 11, 0.18);
+  box-shadow: 0 0 24px rgba(245, 158, 11, 0.45), inset 0 0 22px rgba(245, 158, 11, 0.2);
+  transform: scale(1.06);
+  animation: none;
 }
 
 @keyframes pulse-border {
@@ -1369,9 +1458,9 @@ input:focus {
   100% { opacity: 0; transform: translate(-50%, -25px) scale(0.9); }
 }
 
-.base-chip.hit {
+.basis-anzeige.hit {
   animation: base-shake 0.5s;
-  background: rgba(239, 68, 110, 0.2);
+  background: rgba(239, 68, 110, 0.25);
   border-color: var(--danger);
 }
 
@@ -1385,14 +1474,13 @@ input:focus {
 /* Segmentbalken neben dem 🏰-Chip: jeder Basis-Treffer füllt 1–3 Abschnitte,
    ist er voll, blockt der Schild und eine Superkraft löst aus. */
 
-/* Bewusst schmal: die player-bar teilt sich 680px mit Basis-, Energie- und
-   Deck-Chip, dem Passen-Button und der gegnerischen Handkarten-Reihe. Wird der
-   Balken breiter, schneidet die Leiste rechts ab. */
+/* Bewusst schmal: der Balken sitzt in der Basis-Anzeige direkt neben der Bank
+   und darf das Zonen-Band nicht auseinanderdrücken. */
 .shield-meter {
   display: flex;
   align-items: center;
   gap: 1px;
-  padding: 3px 4px;
+  padding: 2px 4px;
   border-radius: 8px;
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.06);
@@ -1401,7 +1489,7 @@ input:focus {
 
 .shield-seg {
   width: 4px;
-  height: 14px;
+  height: 11px;
   border-radius: 2px;
   background: rgba(255, 255, 255, 0.1);
   box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.6);
@@ -1452,8 +1540,51 @@ input:focus {
 
 /* ---------- Kampf-Log ---------- */
 
+/* Im Normalfall sieht man nur die letzte Zeile als schmalen Ticker über dem
+   Feld. Das Log als feste Box hat vorher dauerhaft Bildhöhe gekostet, obwohl
+   man es nur gelegentlich liest. Antippen öffnet das vollständige Log. */
+.log-ticker {
+  position: absolute;
+  top: calc(var(--feld-oben) - 14px);
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: fit-content;
+  max-width: min(420px, 86%);
+  z-index: 8;
+  padding: 2px 12px;
+  border-radius: 999px;
+  background: rgba(4, 7, 13, 0.62);
+  border: 1px solid rgba(255,255,255,0.07);
+  color: var(--muted);
+  font-size: 0.68rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  backdrop-filter: blur(4px);
+}
+
+.log-overlay { z-index: 45; }
+
+.log-box {
+  background: var(--panel);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius);
+  padding: 16px;
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.log-box h2 {
+  font-size: 1rem;
+  margin: 0;
+}
+
 .log {
-  height: 60px;
+  max-height: 52vh;
   overflow-y: auto;
   background: rgba(0, 0, 0, 0.45);
   border: 1px solid var(--panel-border);
@@ -1461,8 +1592,6 @@ input:focus {
   padding: 6px 12px;
   font-size: 0.75rem;
   color: var(--muted);
-  flex-shrink: 0;
-  z-index: 4;
 }
 
 .log-entry {
@@ -1471,20 +1600,33 @@ input:focus {
   line-height: 1.4;
 }
 
-/* ---------- Eigener Bereich ---------- */
+/* ---------- Eigener Bereich: Statuszeile + Hand über der Arena ---------- */
 
 .own-area {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  z-index: 5;
+  justify-content: flex-end;
+  gap: 3px;
+  padding: 0 8px 6px;
+  /* Die Hand wächst nach oben, aber höchstens bis `--hand-hoehe` – genau der
+     Platz, den das Lane-Band unten frei lässt. Ohne diese Grenze schöbe eine
+     große Hand ihre Karten über das Zonen-Band und machte den Passen-Knopf
+     unklickbar; darüber hinaus wird stattdessen gescrollt. */
+  max-height: var(--hand-hoehe);
+  z-index: 8;
+  /* Nur die Karten und Knöpfe darin sind bedienbar. */
+  pointer-events: none;
 }
 
 .pass-button {
-  margin-left: auto;
   /* Bedienbares Element – darf nie zugunsten der Chips schrumpfen oder
      abgeschnitten werden. Nachgeben soll die Handkarten-Reihe. */
   flex-shrink: 0;
+  pointer-events: auto;
   background: linear-gradient(135deg, var(--gold) 0%, #d97706 100%);
   color: #0f1115;
   font-weight: 800;
@@ -1505,51 +1647,53 @@ input:focus {
 .summon-confirm {
   width: 100%;
   margin-bottom: 4px;
+  pointer-events: auto;
   background: linear-gradient(135deg, var(--accent-2) 0%, #047857 100%);
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
-/* Hand Cards Area */
+/* Handkarten: kleines, bildlastiges Raster statt einer breiten Scrollleiste.
+   Alle Karten sind gleichzeitig sichtbar; erst ab zwei vollen Reihen wird
+   gescrollt. */
 .hand {
   display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  padding: 4px 4px 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: flex-start;
+  gap: 6px;
+  /* Zwei Reihen sind der Normalfall; darüber hinaus wird gescrollt. */
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 2px;
+  pointer-events: auto;
   -webkit-overflow-scrolling: touch;
 }
 
-/* TCG style Hand Card */
+/* Kompakte Karte: Artwork füllt die Fläche, Kosten oben rechts, Werte unten.
+   Der Regeltext steht bewusst nicht drauf – den zeigt das Antippen. */
 .hand-card {
-  flex-shrink: 0;
-  width: 130px;
-  min-height: 180px;
-  background: rgba(18, 24, 38, 0.95);
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 12px;
-  padding: 6px;
+  flex: 0 0 auto;
+  width: var(--karte-breite);
+  aspect-ratio: 3 / 4;
+  background: rgba(12, 17, 28, 0.92);
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 9px;
+  padding: 0;
+  /* Ohne das erben Name und Werte die schwarze Standardfarbe von <button>. */
+  color: var(--text);
   position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
   overflow: hidden;
-  box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.5);
+  /* Ohne das interpretiert der Browser das Ziehen als Seiten-Scroll. */
+  touch-action: none;
 }
 
-.hand-card::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.85) 100%);
-  pointer-events: none;
-  z-index: 1;
-}
-
-.hand-card-inner {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  justify-content: space-between;
-  z-index: 2;
+/* Gleiche Baustelle wie `draggable={false}` am Artwork: der native Bild-Drag
+   des Browsers würde den Kartenzug mit einem pointercancel abwürgen. */
+.hand-card img {
+  -webkit-user-drag: none;
+  user-select: none;
 }
 
 .hand-card.faction-humans {
@@ -1566,63 +1710,63 @@ input:focus {
   box-shadow: 0 0 12px var(--gold-glow);
 }
 
-.hand-card-top {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  z-index: 2;
-  margin-bottom: 4px;
+/* Karte, die gerade am Finger hängt: an ihrem Platz nur noch angedeutet. */
+.hand-card.dragging {
+  opacity: 0.3;
 }
 
 .cost {
   background: var(--gold);
   color: #0d0f17;
   font-weight: 800;
-  font-size: 0.85rem;
-  width: 20px;
-  height: 20px;
+  font-size: 0.72rem;
+  width: 19px;
+  height: 19px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.5);
   font-family: var(--font-body);
 }
 
+.hand-card .cost {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  z-index: 3;
+}
+
 .hand-card-name {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 15px;
+  z-index: 3;
   font-weight: 700;
-  font-size: 0.72rem;
+  font-size: 0.55rem;
   font-family: var(--font-title);
+  text-align: center;
+  padding: 2px 3px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   color: #f1f4fa;
-  flex: 1;
+  background: linear-gradient(transparent, rgba(0,0,0,0.85) 55%);
+  text-shadow: 0 1px 3px #000;
 }
 
-/* Art container */
-.hand-card-art-container {
-  width: 100%;
-  height: 70px;
-  border-radius: 8px;
-  background: rgba(0,0,0,0.3);
-  border: 1px solid rgba(255,255,255,0.05);
-  margin-bottom: 4px;
-  overflow: hidden;
-  position: relative;
-  z-index: 1;
-}
-
-.hand-card-art {
+.hand-card-art,
+.hand-card-art-fallback {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
 .hand-card-art-fallback {
-  width: 100%;
-  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1644,17 +1788,34 @@ input:focus {
 }
 
 .hand-card-stats {
-  font-size: 0.75rem;
-  font-weight: 700;
-  z-index: 2;
-  text-align: center;
-  margin-bottom: 2px;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 3;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1px 4px 2px;
+  background: rgba(0, 0, 0, 0.75);
+  font-size: 0.6rem;
+  font-weight: 800;
 }
 
+.hand-stat {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.hand-stat.atk::before { content: '⚔'; opacity: 0.85; }
+.hand-stat.hp::before { content: '♥'; color: #ff6b81; }
+
 .action-label {
+  justify-content: center;
   color: var(--accent);
   text-transform: uppercase;
-  font-size: 0.65rem;
+  font-size: 0.55rem;
   letter-spacing: 0.05em;
 }
 
@@ -1662,21 +1823,8 @@ input:focus {
   color: var(--accent-2);
 }
 
-.hand-card-text {
-  font-size: 0.65rem;
-  color: var(--muted);
-  line-height: 1.3;
-  z-index: 2;
-  text-align: left;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  height: 38px;
-}
-
 .hand-card.playable {
-  cursor: pointer;
+  cursor: grab;
   border-color: rgba(255,255,255,0.25);
 }
 
@@ -1692,13 +1840,55 @@ input:focus {
 
 .hand-card.selected {
   border-color: var(--gold) !important;
-  transform: translateY(-12px);
+  transform: translateY(-10px);
   box-shadow: 0 12px 28px rgba(245, 158, 11, 0.3), 0 0 15px rgba(245, 158, 11, 0.2);
 }
 
 .hand-card.unplayable {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+/* ---------- Gezogene Karte am Finger ---------- */
+
+.zug-geist {
+  position: fixed;
+  z-index: 60;
+  width: 84px;
+  aspect-ratio: 3 / 4;
+  /* Karte sitzt über dem Finger, sonst verdeckt die Hand das Ziel. */
+  margin: -104px 0 0 -42px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 2px solid rgba(255,255,255,0.5);
+  box-shadow: 0 14px 30px rgba(0,0,0,0.7);
+  pointer-events: none;
+  transform: rotate(-4deg);
+  opacity: 0.94;
+  /* Die globale `* { transition: all }`-Regel würde die Karte dem Finger
+     spürbar hinterherziehen. */
+  transition: none;
+}
+
+.zug-geist.ueber-ziel {
+  border-color: var(--gold);
+  box-shadow: 0 0 26px var(--gold-glow), 0 14px 30px rgba(0,0,0,0.7);
+  transform: rotate(0deg) scale(1.1);
+}
+
+.zug-geist-art,
+.zug-geist-fallback {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.zug-geist-fallback {
+  display: grid;
+  place-items: center;
+  font-size: 2rem;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
 }
 
 .empty-hand {
@@ -1797,9 +1987,10 @@ input:focus {
   cursor: pointer;
 }
 
+/* Unten rechts statt oben rechts: oben sitzen jetzt Runde und Verbindung. */
 .test-badge {
   position: fixed;
-  top: 8px;
+  bottom: 8px;
   right: 8px;
   background: #7c3aed;
   color: white;
@@ -1901,20 +2092,13 @@ input:focus {
   }
 }
 
-/* ---------- Karten-Detailansicht (langes Drücken) ---------- */
+/* ---------- Karten-Detailansicht (Antippen bzw. langes Drücken) ---------- */
 
 .creature-figure,
 .hand-card {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
-}
-
-.press-hint {
-  text-align: center;
-  font-size: 0.7rem;
-  opacity: 0.6;
-  margin: 0;
 }
 
 .detail-overlay {
@@ -2101,7 +2285,7 @@ input:focus {
 
 /* Reduced Motion Override */
 @media (prefers-reduced-motion: reduce) {
-  *, .creature-figure, .dmg-float, .base-chip.hit, .shield-meter, .hand-card.playable:hover {
+  *, .creature-figure, .dmg-float, .basis-anzeige.hit, .shield-meter, .hand-card.playable:hover {
     animation: none !important;
     transform: none !important;
     transition: none !important;
@@ -2116,90 +2300,37 @@ input:focus {
   to { opacity: 0; }
 }
 
-/* ---------- Desktop and Large Screens ---------- */
+/* ---------- Desktop und große Bildschirme ---------- */
+/* Die Arena bleibt auch hier randlos – begrenzt wird nur das Lane-Raster
+   (siehe `.lane-grid`), damit die Kampfbahnen nicht ins Endlose auseinander
+   laufen. Größer werden Karten, Bank und Basis. */
 
 @media (min-width: 700px) {
   .game-screen {
-    padding: 20px;
-    gap: 16px;
-    /* Muss zur Basisregel passen: seit die Cheerleader-Bänke seitlich Platz
-       brauchen, sind es 960px. Blieb hier der alte Wert 720px stehen, gewinnt
-       er (spätere Regel) und die Lanes schrumpfen von 680px auf 460px – die
-       Bank-Ränder gingen dann vom Spielfeld ab statt daneben. */
-    max-width: 960px;
+    --karte-breite: 96px;
+    --zone-hoehe: 100px;
+    --feld-seite: 24px;
   }
 
-  .slot {
-    min-height: 140px;
-  }
-
-  .log {
-    height: 80px;
-  }
-
-  .hand-card {
-    width: 140px;
-    min-height: 200px;
-  }
-  
-  .hand-card-art-container {
-    height: 85px;
-  }
-  
-  .hand-card-name {
-    font-size: 0.78rem;
-  }
-  
-  .hand-card-text {
-    font-size: 0.68rem;
-    height: 42px;
-  }
+  .bank-anker { width: 208px; height: 78px; }
+  .zone-oben .bank-anker { width: 172px; height: 64px; }
+  .zone-band { padding: 10px 16px; }
+  .zone-oben { padding-top: 22px; }
+  .status-band { font-size: 0.85rem; }
+  .slot { min-height: 140px; }
 }
 
-/* Kompakte Desktop-Fenster (z. B. 1280×720): Die bisherigen festen
-   Mindesthöhen ließen Lane-Kinder aus ihrem Flex-Bereich herauslaufen. Dadurch
-   lagen Kampf-Log und Hand über den eigenen Slots und verdeckten auch das
-   WebGL-Canvas. Hier schrumpfen Karten und Slots gemeinsam, ohne Überlagerung. */
+/* Kompakte Desktop-Fenster (z. B. 1280×720): dort ist die Höhe knapp, also
+   schrumpfen Karten und Zonen wieder auf Handymaß. */
 @media (min-width: 700px) and (max-height: 820px) {
   .game-screen {
-    padding: 10px;
-    gap: 8px;
+    --karte-breite: 78px;
+    --zone-hoehe: 84px;
   }
 
-  .player-bar {
-    padding: 6px 10px;
-  }
-
-  .slot {
-    min-height: 0;
-  }
-
-  .log {
-    height: 52px;
-  }
-
-  .own-area {
-    gap: 5px;
-  }
-
-  .hand {
-    gap: 8px;
-    padding-bottom: 6px;
-  }
-
-  .hand-card {
-    width: 124px;
-    min-height: 146px;
-  }
-
-  .hand-card-art-container {
-    height: 52px;
-  }
-
-  .hand-card-text {
-    height: 28px;
-    -webkit-line-clamp: 2;
-  }
+  .bank-anker { width: 168px; height: 62px; }
+  .zone-oben .bank-anker { width: 138px; height: 52px; }
+  .slot { min-height: 0; }
 }
 
 /* ---- Cheerleader-Reaktion --------------------------------------------- */
@@ -2298,11 +2429,14 @@ input:focus {
 }
 
 /* Wartezustand des Gegners: nur Information, nie interaktiv. */
+/* Über der Hand, nicht darauf: unten liegen jetzt die Handkarten. */
 .reaction-waiting {
   position: fixed;
-  bottom: 16px;
-  left: 50%;
-  transform: translateX(-50%);
+  bottom: calc(var(--hand-hoehe, 150px) + 8px);
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: fit-content;
   z-index: 40;
   background: rgba(18, 24, 38, 0.95);
   border: 1px solid var(--gold);

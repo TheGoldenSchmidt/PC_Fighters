@@ -231,8 +231,12 @@ function createTeamZone(): TeamZoneRec {
     group.add(marker);
     return marker;
   });
+  // Die Basis steht HINTER der Bank (lokales +z). Bei der Gegnerzone dreht die
+  // 180°-Drehung der Gruppe dieses "hinten" korrekt nach hinten weg. Weiter als
+  // knapp zwei Einheiten darf sie nicht rücken, sonst schiebt die Perspektive
+  // die eigene Basis unter die Handkarten.
   const base = new THREE.Mesh(new THREE.CylinderGeometry(0.92, 1.1, 0.42, 8), steel.clone());
-  base.position.set(0, 0.2, 2.4);
+  base.position.set(0, 0.2, 1.85);
   base.castShadow = true;
   base.receiveShadow = true;
   group.add(base);
@@ -250,7 +254,7 @@ function createTeamZone(): TeamZoneRec {
       depthWrite: false
     })
   );
-  shield.position.set(0, 0.18, 2.4);
+  shield.position.set(0, 0.18, 1.85);
   group.add(shield);
   return { group, bench, markers, base, core, shield, flashStart: 0 };
 }
@@ -293,20 +297,29 @@ function groundPoint(world: World, px: number, py: number, out: THREE.Vector3): 
   return out;
 }
 
-/** Fußpunkt + Figurenskala für einen Slot (side, lane) aus dessen DOM-Rect. */
-function slotAnchor(
-  world: World,
-  side: PlayerIndex,
-  lane: number,
-  modelWidth = NOMINAL_HEIGHT
-): { pos: THREE.Vector3; scale: number } | null {
-  const el = world.layoutRoot.querySelector<HTMLElement>(`[data-slot="${side}-${lane}"]`);
+interface Anchor {
+  pos: THREE.Vector3;
+  scale: number;
+  /** Breite des Ankerelements in Welt-Einheiten auf dieser Kameratiefe. */
+  breite: number;
+}
+
+/**
+ * Fußpunkt, Figurenskala und Weltgröße eines Layout-Elements.
+ *
+ * Alles, was auf der Bühne steht, hängt an einem DOM-Rechteck: die Kämpfer an
+ * `[data-slot="<seite>-<lane>"]`, Bank und Basis an `[data-zone="<seite>"]`.
+ * Dadurch können 2D-Fallback und 3D-Bühne gar nicht auseinanderlaufen – wer
+ * das Layout im CSS verschiebt, verschiebt die 3D-Welt automatisch mit.
+ */
+function elementAnchor(world: World, selector: string, modelWidth = NOMINAL_HEIGHT): Anchor | null {
+  const el = world.layoutRoot.querySelector<HTMLElement>(selector);
   if (!el) return null;
   const rect = el.getBoundingClientRect();
   const cRect = world.container.getBoundingClientRect();
   if (rect.width === 0 || rect.height === 0) return null;
   const px = rect.left - cRect.left + rect.width / 2;
-  // Füße nahe der unteren Slotkante verankern. Der kleine Bodenabstand hält
+  // Füße nahe der unteren Kante verankern. Der kleine Bodenabstand hält
   // Namensschild/Stats frei, ohne die Figur optisch schweben zu lassen.
   const py = rect.top - cRect.top + rect.height * 0.86;
   const pos = groundPoint(world, px, py, new THREE.Vector3());
@@ -319,8 +332,21 @@ function slotAnchor(
     (world.container.clientHeight || 1);
   const heightScale = (rect.height * 0.64 * worldPerPx) / NOMINAL_HEIGHT;
   const widthScale = (rect.width * 0.7 * worldPerPx) / Math.max(modelWidth, 0.1);
-  const scale = Math.min(heightScale, widthScale);
-  return { pos, scale };
+  return {
+    pos,
+    scale: Math.min(heightScale, widthScale),
+    breite: rect.width * worldPerPx
+  };
+}
+
+/** Fußpunkt + Figurenskala für einen Slot (side, lane) aus dessen DOM-Rect. */
+function slotAnchor(
+  world: World,
+  side: PlayerIndex,
+  lane: number,
+  modelWidth = NOMINAL_HEIGHT
+): Anchor | null {
+  return elementAnchor(world, `[data-slot="${side}-${lane}"]`, modelWidth);
 }
 
 interface ArenaRenderStyle {
@@ -626,43 +652,54 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
       if (haveField) {
         const nearZ = Math.max(a0!.pos.z, aN!.pos.z);
         const farZ = Math.min(f0!.pos.z, fN!.pos.z);
-        const responsiveZoneScale = Math.max(
-          0.58,
-          Math.min(1, world.renderer.domElement.clientWidth / 700)
-        );
-        const zoneScale =
-          Math.max(0.7, Math.min(1, a0!.scale * 1.42)) * responsiveZoneScale;
         const farSide: PlayerIndex = world.me === 0 ? 1 : 0;
         const ownZone = world.teamZones[world.me];
         const opponentZone = world.teamZones[farSide];
-        // Die Bank ist um ihren Mittelpunkt zentriert und ragt daher über die
-        // äußere Lane-Kante hinaus. Auf schmalem Canvas ist seitlich zu wenig
-        // Bühne dafür da – dann rückt sie nach innen, analog zu
-        // responsiveZoneScale direkt darüber.
-        const zoneInset = 0.1 + (1 - responsiveZoneScale) * 1.6;
-        ownZone.group.position.set(rightX - laneStep * zoneInset, 0, nearZ - laneStep * 0.42);
-        opponentZone.group.position.set(leftX + laneStep * zoneInset, 0, farZ + laneStep * 0.25);
-        ownZone.group.scale.setScalar(zoneScale);
-        opponentZone.group.scale.setScalar(zoneScale * 0.9);
-        ownZone.group.visible = true;
-        opponentZone.group.visible = true;
-        ownZone.group.updateMatrixWorld(true);
-        opponentZone.group.updateMatrixWorld(true);
 
-        const positionBase = (zone: TeamZoneRec, target: THREE.Vector3) => {
-          const local = zone.group.worldToLocal(target.clone());
-          zone.base.position.copy(local);
-          zone.core.position.copy(local);
-          zone.shield.position.copy(local);
-        };
-        positionBase(
-          ownZone,
-          new THREE.Vector3(leftX + laneStep * 0.1, 0.2, nearZ - laneStep * 0.34)
+        // Bank und Basis stehen mittig vor bzw. hinter den Lanes – dort, wo im
+        // Vorbild der Held steht. Die Basis sitzt im lokalen Raum der Zone bei
+        // z = +2.4, also HINTER der Bank; die 180°-Drehung der Gegnerzone dreht
+        // dieses „dahinter" dort korrekt nach hinten.
+        //
+        // Die eigene Zone hängt vollständig am DOM-Anker `[data-zone="<seite>"]`
+        // (Position und Größe), den auch der 2D-Fallback bespielt. Bei der
+        // gegnerischen Zone geht das nicht: Ihr Anker sitzt am oberen Bildrand,
+        // wo der Boden in den Horizont läuft – der Raycast landet dort zig
+        // Einheiten hinter dem Feld und die Bank würde riesig. Sie übernimmt
+        // deshalb nur die x-Mitte; Tiefe und Größe kommen aus der
+        // Feldgeometrie, verkleinert um genau den Faktor, um den auch die
+        // Figuren der hinteren Reihe kleiner sind.
+        const mitteX = (leftX + rightX) / 2;
+        const ownSpot = elementAnchor(world, `[data-zone="${world.me}"]`);
+        const oppSpot = elementAnchor(world, `[data-zone="${farSide}"]`);
+        // Die Bank ist gut 3.4 Einheiten breit – der Anker gibt die Zielbreite vor.
+        const BANK_BREITE = 3.4;
+        const ownScale = Math.max(
+          0.25,
+          Math.min(1.6, (ownSpot ? ownSpot.breite : laneStep) / BANK_BREITE)
         );
-        positionBase(
-          opponentZone,
-          new THREE.Vector3(rightX - laneStep * 0.1, 0.2, farZ + laneStep * 0.22)
+        const tiefenFaktor = a0!.scale > 0 ? Math.min(1, f0!.scale / a0!.scale) : 0.75;
+
+        ownZone.group.position.set(
+          ownSpot ? ownSpot.pos.x : mitteX,
+          0,
+          ownSpot ? ownSpot.pos.z : nearZ + laneStep * 0.6
         );
+        ownZone.group.rotation.y = 0;
+        ownZone.group.scale.setScalar(ownScale);
+
+        opponentZone.group.position.set(
+          oppSpot ? oppSpot.pos.x : mitteX,
+          0,
+          farZ - laneStep * 0.5
+        );
+        opponentZone.group.rotation.y = Math.PI;
+        opponentZone.group.scale.setScalar(ownScale * tiefenFaktor);
+
+        for (const zone of [ownZone, opponentZone]) {
+          zone.group.visible = true;
+          zone.group.updateMatrixWorld(true);
+        }
 
         for (const zone of world.teamZones) {
           const flash =
@@ -676,18 +713,17 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
 
         for (const rec of world.teamFigures.values()) {
           const own = rec.side === world.me;
-          const xBase = own ? rightX - laneStep * 0.1 : leftX + laneStep * 0.1;
-          const zBase = own ? nearZ - laneStep * 0.42 : farZ + laneStep * 0.25;
-          const seatSpacing = laneStep * (own ? 0.34 : 0.31);
+          const zone = own ? ownZone : opponentZone;
+          const skala = zone.group.scale.x;
+          // Die drei Plätze verteilen sich auf der Bank (3.2 Einheiten breit);
+          // die Gegnerzone ist gedreht, ihre Plätze laufen daher andersherum.
+          const seatSpacing = skala * 1.05 * (own ? 1 : -1);
           const rest = new THREE.Vector3(
-            xBase + (rec.slot - 1) * seatSpacing,
-            rec.slot === 1 ? 0.18 : 0.3,
-            zBase
+            zone.group.position.x + (rec.slot - 1) * seatSpacing,
+            (rec.slot === 1 ? 0.18 : 0.3) * skala,
+            zone.group.position.z
           );
-          const figureScale = Math.min(
-            zoneScale * 0.72,
-            (laneStep * 0.62) / Math.max(rec.width, 0.2)
-          );
+          const figureScale = Math.min(skala * 0.72, (skala * 1.0) / Math.max(rec.width, 0.2));
           if (!rec.sacrificing) {
             rec.fig.root.position.copy(rest);
             rec.fig.root.scale.setScalar(figureScale);

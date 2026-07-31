@@ -59,6 +59,21 @@ davon also unberührt.
 
 **Damit ist der Cheerleader-Meilenstein vollständig.**
 
+---
+
+**Arena-Umbau fertig.** Der Spielbildschirm ist jetzt eine bildschirmfüllende
+Arena statt eines Stapels aus Leisten: Kopf- und Fußleiste sind weg, das
+Lane-Raster sitzt in einem mittleren Band, Cheerleader-Bank und Basis stehen
+mittig davor bzw. dahinter, alle Anzeigen schweben als Chips darüber, und das
+Kampf-Log ist ein antippbarer Ticker. Handkarten sind kompakt und bildlastig;
+**ausgespielt wird per Ziehen in die Lane** (`useKartenZug.ts`, Pointer-Events),
+kurzes Antippen zeigt den Karteneffekt. Der `Ausspielen`-Knopf im Detail führt
+weiterhin in die Tap-auf-Lane-Auswahl – nötig für Karten ohne Lane-Ziel und für
+die Flug-Phase. Neu ist, dass **das CSS-Layout die 3D-Positionen bestimmt**:
+`elementAnchor` projiziert `[data-slot]` und `[data-zone]` auf den Boden.
+Verifiziert im Zwei-Browser-Test (3D und `?no3d`, Handy- und Desktop-Viewport)
+bis in den Kampf hinein; sechs neue Client-Tests in `test/arena.test.tsx`.
+
 > **Offene Designfrage:** Drei der fünf Kandidaten lösen auf *jede* gegnerische
 > Kreatur aus. Mit der Standardbank öffnet damit fast jedes Ausspielen ein
 > Fenster beim Gegner. Regelkonform, aber sehr gesprächig – vor dem Client-Bau
