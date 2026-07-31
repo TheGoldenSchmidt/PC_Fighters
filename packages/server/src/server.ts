@@ -60,6 +60,12 @@ interface Room {
   state: GameState | null;
   /** Vom Raum-Ersteller gewählter Schauplatz (rein optisch). */
   topic: Topic;
+  /**
+   * Vom Raum-Ersteller gewählte Bahnenzahl. Ohne Angabe gilt `config.lanes`.
+   * Anders als der Schauplatz ist das KEINE Optik: Sie bestimmt die Breite des
+   * Feldes und damit den ganzen Spielverlauf.
+   */
+  lanes?: number;
   /** Testmodus: beide Hände starten mit allen Karten, die eine 3D-Figur
    * (visual) haben, plus viel Energie – zum schnellen Prüfen neuer Figuren,
    * ohne eine Runde durchzuspielen. Rein server-seitig, Engine bleibt unberührt. */
@@ -69,6 +75,15 @@ interface Room {
 /** Alle Kreaturen-Karten, die eine datengetriebene 3D-Figur mitbringen. */
 function testCardIds(d: GameData): string[] {
   return d.cards.filter((c) => c.type === 'creature' && d.figures[c.id]?.visual).map((c) => c.id);
+}
+
+/** Erlaubte Bahnenzahlen, die der Raum-Ersteller wählen darf. */
+const LANE_OPTIONEN = [3, 4, 5, 6] as const;
+
+/** Spieldaten mit der vom Raum gewählten Bahnenzahl. */
+function mitLanes(d: GameData, lanes: number | undefined): GameData {
+  if (!lanes || lanes === d.config.lanes) return d;
+  return { ...d, config: { ...d.config, lanes } };
 }
 
 /** Testmodus-Variante der Spieldaten: großzügige, ungedeckelte Energie. */
@@ -121,6 +136,8 @@ interface PersistedRoom {
   code: string;
   topic: Topic;
   state: GameState | null;
+  /** Bahnenzahl des Raums; fehlt bei Raeumen von vor dieser Einstellung. */
+  lanes?: number;
   testMode?: boolean;
   players: Array<{
     token: string;
@@ -143,6 +160,7 @@ function saveRooms(rooms: Map<string, Room>) {
         code: room.code,
         topic: room.topic,
         state: room.state,
+        lanes: room.lanes,
         testMode: room.testMode,
         players: room.players.map((p) => ({
           token: p.token,
@@ -221,6 +239,7 @@ function loadRooms(data: GameData): Map<string, Room> {
             code: item.code,
             topic: item.topic,
             state: item.state ? migriereZustand(item.state) : null,
+            lanes: item.lanes,
             testMode: item.testMode,
             players
           });
@@ -338,6 +357,9 @@ export function startServer(port: number): Promise<RunningServer> {
           cards: data!.cards,
           deckbuilding: data!.config.deckbuilding,
           cheerleaders: data!.config.cheerleaders,
+          // Bahnen: was der Raum-Ersteller waehlen darf und was voreingestellt
+          // ist. Der Client soll die Liste nicht hartkodieren muessen.
+          lanes: { optionen: [...LANE_OPTIONEN], standard: data!.config.lanes },
           decks: ladeDecks(data!)
         })
       );
@@ -473,6 +495,16 @@ export function startServer(port: number): Promise<RunningServer> {
       return topic;
     }
 
+    /** Bahnenzahl aus der Create-Nachricht prüfen (undefined = Standard). */
+    function validLanes(roh: unknown): number | undefined {
+      if (roh == null) return undefined;
+      const n = Number(roh);
+      if (!LANE_OPTIONEN.includes(n as (typeof LANE_OPTIONEN)[number])) {
+        throw new GameRuleError(`Ungültige Bahnenzahl. Erlaubt: ${LANE_OPTIONEN.join(', ')}`);
+      }
+      return n;
+    }
+
     function attach(room: Room, idx: PlayerIndex): void {
       ctx.room = room;
       ctx.playerIndex = idx;
@@ -485,6 +517,7 @@ export function startServer(port: number): Promise<RunningServer> {
           const { faction, deck } = resolveDeck(msg.deckSelection, msg.faction);
           const cheerleaders = resolveCheerleaders(msg.cheerleaders, deck);
           const topic = validTopic(msg.topic);
+          const lanes = validLanes(msg.lanes);
           const room: Room = {
             code: newRoomCode(),
             players: [{
@@ -496,6 +529,7 @@ export function startServer(port: number): Promise<RunningServer> {
             }],
             state: null,
             topic,
+            lanes,
             testMode: Boolean(msg.testMode)
           };
           rooms.set(room.code, room);
@@ -507,6 +541,7 @@ export function startServer(port: number): Promise<RunningServer> {
             token: room.players[0].token,
             playerIndex: 0,
             topic,
+            lanes: room.lanes,
             testMode: room.testMode,
             keywords: keywordInfo,
             abilities: abilityInfo,
@@ -539,6 +574,7 @@ export function startServer(port: number): Promise<RunningServer> {
             token: room.players[1].token,
             playerIndex: 1,
             topic: room.topic,
+            lanes: room.lanes,
             testMode: room.testMode,
             keywords: keywordInfo,
             abilities: abilityInfo
@@ -546,7 +582,7 @@ export function startServer(port: number): Promise<RunningServer> {
           // Beide Spieler da → Partie starten
           const d = requireData();
           room.state = createGame(
-            room.testMode ? testGameData(d) : d,
+            mitLanes(room.testMode ? testGameData(d) : d, room.lanes),
             [room.players[0].faction, faction],
             Math.random,
             [room.players[0].deck, deck],
@@ -580,6 +616,7 @@ export function startServer(port: number): Promise<RunningServer> {
             code: room.code,
             playerIndex: idx,
             topic: room.topic,
+            lanes: room.lanes,
             testMode: room.testMode,
             keywords: keywordInfo,
             abilities: abilityInfo

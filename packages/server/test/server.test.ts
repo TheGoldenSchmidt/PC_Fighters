@@ -364,6 +364,56 @@ describe('Server: Raum, Beitritt, Aktionen, gefilterte Sicht', () => {
   });
 });
 
+describe('Bahnenzahl je Raum', () => {
+  it('uebernimmt die Wahl des Raum-Erstellers ins Spielfeld', async () => {
+    const srv = await startServer(0);
+    const c1 = await connect(srv.port);
+    c1.send({ type: 'create', faction: 'humans', lanes: 3 });
+    const created = await c1.next('created');
+    expect(created.lanes).toBe(3);
+
+    const c2 = await connect(srv.port);
+    c2.send({ type: 'join', code: created.code, faction: 'animals' });
+    await c2.next('joined');
+    const sicht = (await c1.next('state')).view as ClientView;
+    // Nicht nur die Zahl: das Brett muss wirklich so breit sein.
+    expect(sicht.lanes).toBe(3);
+    expect(sicht.board[0]).toHaveLength(3);
+    expect(sicht.board[1]).toHaveLength(3);
+
+    c1.ws.close();
+    c2.ws.close();
+    await srv.close();
+  });
+
+  it('nimmt ohne Angabe die Voreinstellung aus der Config', async () => {
+    const srv = await startServer(0);
+    const c1 = await connect(srv.port);
+    c1.send({ type: 'create', faction: 'humans' });
+    const created = await c1.next('created');
+    const c2 = await connect(srv.port);
+    c2.send({ type: 'join', code: created.code, faction: 'animals' });
+    await c2.next('joined');
+    const sicht = (await c1.next('state')).view as ClientView;
+    expect(sicht.lanes).toBe(loadGameData().config.lanes);
+
+    c1.ws.close();
+    c2.ws.close();
+    await srv.close();
+  });
+
+  it('weist eine unerlaubte Bahnenzahl ab', async () => {
+    const srv = await startServer(0);
+    const c1 = await connect(srv.port);
+    c1.send({ type: 'create', faction: 'humans', lanes: 99 });
+    const fehler = await c1.next('error');
+    expect(String(fehler.message)).toMatch(/Bahnenzahl/);
+
+    c1.ws.close();
+    await srv.close();
+  });
+});
+
 describe('Persistenz: Version, Migration und offenes Reaktionsfenster', () => {
   const persistPfad = join(process.cwd(), 'rooms_persist.json');
   let gesichert: string | null = null;

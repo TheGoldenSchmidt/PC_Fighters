@@ -180,6 +180,7 @@ export function useGame() {
       deckSelection: DeckSelection,
       cheerleaders: CheerleaderSelection,
       topicId: string,
+      lanes: number,
       testMode = false
     ) => {
       const url = toWsUrl(serverInput);
@@ -188,7 +189,14 @@ export function useGame() {
       loadCatalog(serverInput);
       open(url, (socket) =>
         socket.send(
-          JSON.stringify({ type: 'create', deckSelection, cheerleaders, topic: topicId, testMode })
+          JSON.stringify({
+            type: 'create',
+            deckSelection,
+            cheerleaders,
+            topic: topicId,
+            lanes,
+            testMode
+          })
         )
       );
     },

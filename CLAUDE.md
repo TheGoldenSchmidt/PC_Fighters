@@ -83,6 +83,6 @@ A short tap opens the detail overlay with the card text. Its `Ausspielen` button
 - **Engine internal imports use `.js` extensions** on `.ts` files (`from './game.js'`) — ESM/NodeNext resolution. Keep this in new engine files or imports break at runtime.
 - **Keyword name ≠ behavior flag.** JSON keywords are German names (`fliegend`, `flink`, `gift`) that are *keys* in the `KEYWORDS` registry (`keywords.ts`); each maps to behavior flags. Engine code checks the **flag**, e.g. `hasKeyword(creature, 'flying')`, not the keyword name `fliegend`. Add a keyword = add a `KEYWORDS` entry (name → flags) AND implement the flag's effect; the schema rejects any keyword not in the registry.
 - User-facing strings and comments are **German** — match that in anything players or modders see (log lines, errors, card text).
-- Config knobs (`lanes`, `baseHealth`, `roundLimit`, …) live in `data/config.json`; the client renders `lanes` dynamically, so nothing is hardcoded to 3 lanes.
+- Config knobs (`lanes`, `baseHealth`, `roundLimit`, …) live in `data/config.json`; the client renders `lanes` dynamically, so nothing is hardcoded to a lane count. **`lanes` is per room**: the creator picks 3–6 in the start screen, the server stores it on the `Room` (persisted) and feeds `createGame` a `GameData` with that override via `mitLanes()` — the same trick `testGameData()` uses. `config.lanes` is only the default offered in the UI.
 
 See `README.md` for the (German, non-programmer) guide to adding cards/factions/topics and deploying to Render.

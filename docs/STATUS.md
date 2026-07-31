@@ -73,7 +73,15 @@ Auslöser-Kreatur, weil ein Block an der Basis passiert). Golden Master neu
 erzeugt, 202 Tests grün, im Zwei-Browser-Test verifiziert. Im 🧪 Testmodus ist
 der Schild nach einem Treffer voll, damit man die Kräfte sofort sieht.
 
-> **Offene Balancing-Frage (gemessen, 200 Bot-Partien):** In 81 % der Partien
+**Feld und Tempo umgestellt.** Das Spielfeld hat jetzt **5 Bahnen** statt 3, und
+die **Zermürbung setzt erst ab Runde 15** ein (vorher 13). Die Bahnenzahl ist
+zusätzlich **pro Raum wählbar**: Wer eine Partie erstellt, sucht im
+Startbildschirm 3 bis 6 Bahnen aus. Der Server legt die Wahl am Raum ab
+(inklusive Persistenz) und reicht sie über `mitLanes()` als `GameData`-Variante
+an `createGame` – dieselbe Mechanik wie beim Testmodus. `config.lanes` ist damit
+nur noch die Voreinstellung im Startbildschirm.
+
+> **Offene Balancing-Frage (gemessen, 200 Bot-Partien vor der Feldumstellung):** In 81 % der Partien
 > fällt mindestens ein Block, aber nur **0,64 Blocks pro Spieler und Partie**.
 > Von drei Bankplätzen kommt damit im Schnitt weniger als einer zum Einsatz –
 > zwei Drittel der Bank sind Deko. Stellschraube ist `schild.abschnitte`

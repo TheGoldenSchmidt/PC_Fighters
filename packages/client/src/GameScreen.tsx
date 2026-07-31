@@ -1047,7 +1047,11 @@ export function GameScreen({
 
       {/* ---- Fußbereich: Status und Hand, direkt über der Arena ---- */}
       <footer className="own-area">
-        <div className={`status-band ${myTurn ? 'my-turn' : ''}`}>{statusText}</div>
+        {/* role=status: Die Zeile ist die Live-Region der Partie – sie meldet
+            Zugwechsel, Kampf und wartende Cheerleader-Reaktionen. */}
+        <div className={`status-band ${myTurn ? 'my-turn' : ''}`} role="status">
+          {statusText}
+        </div>
 
         {showSummonConfirm && (
           <button
@@ -1135,14 +1139,6 @@ export function GameScreen({
             })
           }
         />
-      )}
-
-      {/* Gegner entscheidet: nur ein Wartehinweis, keine Angebote (die Sicht
-          des Gegners enthält sie ohnehin nicht). */}
-      {reaktion !== null && !meineReaktion && !isReplaying && view.winner === null && (
-        <div className="reaction-waiting" role="status">
-          📣 Der Gegner entscheidet über eine Cheerleader-Reaktion …
-        </div>
       )}
 
       {/* ---- Karten-Detailansicht ---- */}

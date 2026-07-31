@@ -44,6 +44,7 @@ interface Props {
     selection: DeckSelection,
     cheerleaders: CheerleaderSelection,
     topicId: string,
+    lanes: number,
     testMode?: boolean
   ) => void;
   onJoin: (
@@ -60,6 +61,8 @@ interface Info {
   cards: CardDef[];
   deckbuilding: DeckbuildingConfig;
   cheerleaders: CheerleaderConfig;
+  /** Bahnen: erlaubte Zahlen und Voreinstellung (kommt vom Server). */
+  lanes?: { optionen: number[]; standard: number };
   decks: Record<string, DeckList>;
 }
 
@@ -78,6 +81,7 @@ export function StartScreen({ status, onCreate, onJoin }: Props) {
   const [library, setLibrary] = useState(loadDeckLibrary);
   const [editor, setEditor] = useState<{ initial?: SavedDeck; sub?: string } | null>(null);
   const [topicId, setTopicId] = useState<string | null>(null);
+  const [lanes, setLanes] = useState<number | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [testMode, setTestMode] = useState(false);
   const importRef = useRef<HTMLInputElement>(null);
@@ -91,6 +95,7 @@ export function StartScreen({ status, onCreate, onJoin }: Props) {
       const loaded = json as Info;
       setInfo(loaded);
       setTopicId((current) => current ?? loaded.topics?.[0]?.id ?? null);
+      setLanes((current) => current ?? loaded.lanes?.standard ?? null);
     } catch (error) {
       setInfo(null);
       setLoadError(
@@ -421,14 +426,34 @@ export function StartScreen({ status, onCreate, onJoin }: Props) {
                   </button>
                 ))}
               </div>
+              <h3>Bahnen</h3>
+              <p className="hint">
+                Wie breit das Feld ist. Mehr Bahnen heißt mehr Kreaturen nebeneinander –
+                und mehr Wege, an denen der Gegner nichts stehen hat.
+              </p>
+              <div className="lane-grid-choice">
+                {(info.lanes?.optionen ?? [info.lanes?.standard ?? 5]).map((n) => (
+                  <button
+                    key={n}
+                    className={`lane-choice ${lanes === n ? 'selected' : ''}`}
+                    onClick={() => setLanes(n)}
+                  >
+                    <span className="lane-choice-zahl">{n}</span>
+                    <span className="lane-choice-text">Bahnen</span>
+                  </button>
+                ))}
+              </div>
+
               <label className="checkbox-row">
                 <input type="checkbox" checked={testMode} onChange={(event) => setTestMode(event.target.checked)} />
                 🧪 Testmodus
               </label>
               <button
                 className="primary big"
-                disabled={!deckValid || !cheerleadersValid || !topicId || busy}
-                onClick={() => onCreate(server, selection, cheerleaders as CheerleaderSelection, topicId!, testMode)}
+                disabled={!deckValid || !cheerleadersValid || !topicId || !lanes || busy}
+                onClick={() =>
+                  onCreate(server, selection, cheerleaders as CheerleaderSelection, topicId!, lanes!, testMode)
+                }
               >
                 {busy ? 'Verbinde …' : 'Partie erstellen'}
               </button>
