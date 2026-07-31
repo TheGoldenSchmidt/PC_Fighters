@@ -14,6 +14,7 @@ import {
   loadGameData,
   matchesScope,
   roundEnergy,
+  schildAktiv,
   spielePartie,
   topOf,
   validateCheerleaderSelection,
@@ -30,8 +31,7 @@ import type {
   GameState,
   PlayerIndex,
   PlayerState,
-  SchildEvent,
-  Superkraft
+  SchildEvent
 } from '../src/types.js';
 
 const data: GameData = loadGameData();
@@ -77,21 +77,6 @@ function emptyState(): GameState {
     reaktion: null,
     naechsteReaktionsId: 1
   };
-}
-
-/**
- * Schlägt ein offenes Cheerleader-Fenster aus. Nötig in Tests, die sich nicht
- * für die Reaktion interessieren: mit der Standard-Bank öffnet jedes
- * Ausspielen einer Kreatur ein Fenster beim Gegner.
- */
-function verzichteAufReaktion(state: GameState): GameState {
-  if (!state.reaktion) return state;
-  return applyAction(
-    state,
-    state.reaktion.spieler,
-    { type: 'cheerleaderReaction', reactionId: state.reaktion.id, slot: null },
-    data
-  );
 }
 
 /** Stellt eine Kreatur direkt aufs Feld (Standard: kampfbereit). */
@@ -377,8 +362,6 @@ describe('Ausspielen & Energie', () => {
     s.players[1].hand = ['ratte'];
     s = applyAction(s, 0, { type: 'playCreature', handIndex: 0, lane: 0 }, data);
     expect(s.board[0][0]?.exhausted).toBe(true);
-    // Die Bank des Gegners löst auf die neue Kreatur aus – hier nicht relevant.
-    s = verzichteAufReaktion(s);
     s = applyAction(s, 1, { type: 'playCreature', handIndex: 0, lane: 0 }, data);
     expect(s.board[1][0]?.exhausted).toBe(false); // flink
   });
@@ -1145,21 +1128,18 @@ describe('Balancing V2 Phase 6: neue Engine-Primitive', () => {
 describe('Basis-Schild', () => {
   const SCHILD = data.config.schild!;
 
-  /** Zustand mit genau EINER Superkraft im Katalog – macht den Block-Ausgang eindeutig. */
-  function mitSuperkraft(kraft: Superkraft): GameState {
-    const s = emptyState();
-    // Kopie statt Mutation: emptyState() teilt sich `data.config` mit allen Tests.
-    s.config = { ...data.config, schild: { ...SCHILD, superkraefte: [kraft] } };
-    return s;
-  }
-
   function schildEvents(state: GameState): SchildEvent[] {
     return state.log.flatMap((e) => (e.event?.kind === 'schild' ? [e.event] : []));
   }
 
-  it('Ein Treffer an der Basis lädt den Schild um 1–3 Abschnitte auf, Schaden kommt normal an', () => {
+  /** Bank leeren: damit gibt es fuer diesen Spieler keinen Schild mehr. */
+  function ohneBank(state: GameState, spieler: PlayerIndex): void {
+    state.players[spieler].cheerleaders = [null, null, null];
+  }
+
+  it('Ein Treffer an der Basis laedt den Schild um 1-3 Abschnitte auf, Schaden kommt normal an', () => {
     const s = emptyState();
-    put(s, 0, 0, 'rekrut'); // 2/1, Lane 0 des Gegners ist frei → Basisangriff
+    put(s, 0, 0, 'rekrut'); // 2/1, Lane 0 des Gegners ist frei -> Basisangriff
     const after = passBoth(s);
 
     expect(after.players[1].base).toBe(data.config.baseHealth - 2);
@@ -1172,10 +1152,9 @@ describe('Basis-Schild', () => {
     expect(ev[0].blockiert).toBeUndefined();
   });
 
-  it('Voller Schild blockt den Treffer, setzt sich auf 0 zurück und meldet die Superkraft', () => {
-    const s = mitSuperkraft({ kind: 'kartenZiehen', name: 'Nachschub', n: 2 });
-    s.players[1].deck = ['rekrut', 'rekrut', 'rekrut'];
-    // Ein Abschnitt unter der Schwelle: jede Ladung (≥1) löst den Block aus.
+  it('Voller Schild blockt den Treffer und oeffnet das Bank-Fenster des Verteidigers', () => {
+    const s = emptyState();
+    // Ein Abschnitt unter der Schwelle: jede Ladung (>=1) loest den Block aus.
     s.players[1].schild = SCHILD.abschnitte - 1;
     put(s, 0, 0, 'rekrut');
     const after = passBoth(s);
@@ -1185,7 +1164,11 @@ describe('Basis-Schild', () => {
 
     const ev = schildEvents(after);
     expect(ev).toHaveLength(1);
-    expect(ev[0]).toMatchObject({ owner: 1, stand: 0, blockiert: true, superkraft: 'Nachschub' });
+    expect(ev[0]).toMatchObject({ owner: 1, stand: 0, blockiert: true });
+
+    // Die Bank bezahlt den Block: der Verteidiger muss jetzt jemanden opfern.
+    expect(after.reaktion?.spieler).toBe(1);
+    expect(after.reaktion?.ausloeser).toBe('schildBlock');
 
     // Das AttackEvent muss den EFFEKTIVEN Schaden tragen, sonst rechnet der
     // Client beim Replay an der falschen Basis weiter.
@@ -1194,72 +1177,55 @@ describe('Basis-Schild', () => {
     expect(angriff.blockiert).toBe(true);
   });
 
-  it('Superkraft „Nachschub": der Schildbesitzer zieht 2 Karten (leeres Deck zieht 0)', () => {
-    const kraft: Superkraft = { kind: 'kartenZiehen', name: 'Nachschub', n: 2 };
-
-    // Direkt über basisSchaden statt über eine ganze Runde: sonst mischt sich
-    // der reguläre Kartenzug aus startRound() in die Handgröße.
-    const s = mitSuperkraft(kraft);
-    s.players[1].deck = ['rekrut', 'ritter', 'rekrut'];
-    s.players[1].schild = SCHILD.abschnitte - 1;
-    expect(basisSchaden(s, 1, 3)).toBe(0);
-    expect(s.players[1].hand).toEqual(['rekrut', 'ritter']);
-    expect(s.players[1].deck).toEqual(['rekrut']);
-
-    const leer = mitSuperkraft(kraft);
-    leer.players[1].deck = [];
-    leer.players[1].schild = SCHILD.abschnitte - 1;
-    expect(basisSchaden(leer, 1, 3)).toBe(0); // trotz leerem Deck geblockt
-    expect(leer.players[1].hand).toHaveLength(0);
-    expect(leer.players[1].base).toBe(data.config.baseHealth);
-  });
-
-  it('Superkraft „Schutzschild": weiterer Basisschaden derselben Runde verpufft, ab der nächsten Runde nicht mehr', () => {
-    const s = mitSuperkraft({ kind: 'keinSchaden', name: 'Schutzschild' });
-    s.players[1].schild = SCHILD.abschnitte - 1;
-    // Lane 0 blockt und löst Schutzschild aus, Lane 1 trifft danach ins Leere.
-    put(s, 0, 0, 'rekrut');
-    put(s, 0, 1, 'ritter');
-    const after = passBoth(s);
-
-    expect(after.players[1].base).toBe(data.config.baseHealth);
-    // startRound() nach dem Kampf hebt die Immunität wieder auf.
-    expect(after.players[1].basisImmun).toBe(false);
-    // Der verpuffte zweite Treffer lädt den Schild NICHT auf.
-    expect(after.players[1].schild).toBe(0);
-  });
-
-  it('Superkraft „Störfeuer": gegnerische Kreaturen erhalten dauerhaft -1/-1 und können daran sterben', () => {
-    const s = mitSuperkraft({ kind: 'schwaechung', name: 'Störfeuer', atk: 1, hp: 1 });
-    // Spieler 1 blockt → Störfeuer trifft Spieler 0.
-    s.players[1].schild = SCHILD.abschnitte - 1;
-    put(s, 0, 0, 'rekrut'); // 2/1 – stirbt an -1/-1
-    put(s, 0, 1, 'ritter'); // 4/5 – überlebt als 3/4
-    const after = passBoth(s);
-
-    expect(after.board[0][0]).toBeNull();
-    expect(after.log.some((e) => e.event?.kind === 'death' && e.event.owner === 0)).toBe(true);
-    const ritter = after.board[0][1]!;
-    expect(ritter.permAttackBonus).toBe(-1);
-    expect(ritter.permHealthBonus).toBe(-1);
-    expect(getEffectiveAttack(after, 0, 1)).toBe(3);
-    expect(getMaxHealth(after, 0, 1)).toBe(4);
-  });
-
-  it('Wucht-Überschuss läuft ebenfalls durch den Schild', () => {
+  it('Ohne Cheerleader auf der Bank gibt es keinen Schild mehr', () => {
     const s = emptyState();
-    // eisbaer (5/8) hat Wucht? Unabhängig davon: Überschuss nur, wenn die
-    // Fähigkeit vorhanden ist – deshalb explizit setzen.
+    ohneBank(s, 1);
+    s.players[1].schild = SCHILD.abschnitte - 1; // wuerde sonst sofort blocken
+    put(s, 0, 0, 'rekrut');
+    const after = passBoth(s);
+
+    expect(after.players[1].base).toBe(data.config.baseHealth - 2);
+    // Der Ladebalken bewegt sich nicht mehr, und es entsteht kein Ereignis.
+    expect(after.players[1].schild).toBe(SCHILD.abschnitte - 1);
+    expect(schildEvents(after)).toHaveLength(0);
+    expect(after.reaktion).toBeNull();
+  });
+
+  it('Der letzte Cheerleader schaltet den Schild mit seinem Opfer ab', () => {
+    const s = emptyState();
+    s.players[1].cheerleaders = ['pc_principal', null, null];
+    s.players[1].schild = SCHILD.abschnitte - 1;
+    put(s, 0, 0, 'rekrut');
+    let after = passBoth(s);
+    expect(after.reaktion?.spieler).toBe(1);
+
+    after = applyAction(
+      after,
+      1,
+      { type: 'cheerleaderReaction', reactionId: after.reaktion!.id, slot: 0 },
+      data
+    );
+    expect(after.players[1].cheerleaders).toEqual([null, null, null]);
+    expect(schildAktiv(after, 1)).toBe(false);
+
+    // Naechster Treffer geht ungehindert durch.
+    const vorher = after.players[1].base;
+    expect(basisSchaden(after, 1, 3)).toBe(3);
+    expect(after.players[1].base).toBe(vorher - 3);
+  });
+
+  it('Wucht-Ueberschuss laeuft ebenfalls durch den Schild', () => {
+    const s = emptyState();
     const angreifer = put(s, 0, 0, 'ritter'); // 4/5
     angreifer.abilities = [{ kind: 'wucht' }];
-    put(s, 1, 0, 'rekrut'); // 2/1 → 3 Überschuss auf die Basis
+    put(s, 1, 0, 'rekrut'); // 2/1 -> 3 Ueberschuss auf die Basis
     const after = passBoth(s);
 
     expect(after.players[1].base).toBe(data.config.baseHealth - 3);
     expect(after.players[1].schild).toBeGreaterThanOrEqual(SCHILD.ladung.min);
   });
 
-  it('Ohne config.schild verhält sich die Basis wie vor dem Feature', () => {
+  it('Ohne config.schild verhaelt sich die Basis wie vor dem Feature', () => {
     const s = emptyState();
     const { schild: _weg, ...ohneSchild } = data.config;
     s.config = ohneSchild;
@@ -1271,9 +1237,9 @@ describe('Basis-Schild', () => {
     expect(schildEvents(after)).toHaveLength(0);
   });
 
-  it('buildClientView liefert Schild UND Cheerleader – beide Features nebeneinander', () => {
+  it('buildClientView liefert Schild UND Cheerleader - beide Features nebeneinander', () => {
     // Naht-Test: publicView ist ein Objektliteral ohne Typannotation, ein beim
-    // Zusammenführen verlorenes Feld fällt TypeScript daher NICHT auf.
+    // Zusammenfuehren verlorenes Feld faellt TypeScript daher NICHT auf.
     const s = emptyState();
     s.players[1].schild = 4;
     s.players[1].basisImmun = true;
@@ -1288,24 +1254,11 @@ describe('Basis-Schild', () => {
     expect(sicht.players[0].cheerleaders).toHaveLength(3);
     expect(sicht.players[1].cheerleaders).toEqual(s.players[1].cheerleaders);
   });
-
-  it('Der Schildverlauf ist bei gleichem Seed reproduzierbar und bei anderem Seed verschieden', () => {
-    // Wichtig: applyAction bekommt hier KEIN random – der Schild-Zufall muss
-    // allein aus state.rngState kommen, sonst wären Backtests nicht mehr
-    // reproduzierbar (simulate.ts ruft applyAction ebenfalls ohne random auf).
-    const decks = ladeDecks(data);
-    // spielePartie schaltet das Log ab (logModus 'aus'), daher über den Endstand.
-    const verlauf = (saat: number): string => {
-      const r = spielePartie(data, decks['a1_rudeljaeger'], decks['h1_solidaritaet'], { saat });
-      const p = r.endState.players;
-      return `${r.gewinner}:${r.runden}:${p[0].base}:${p[1].base}:${p[0].schild}:${p[1].schild}`;
-    };
-    expect(verlauf(4242)).toBe(verlauf(4242));
-    expect(verlauf(4242)).not.toBe(verlauf(777));
-  });
 });
 
 describe('Cheerleader-Reaktionen', () => {
+  const SCHILD = data.config.schild!;
+
   /** Zustand mit definierter Bank statt der Standardauswahl. */
   function mitBank(
     bank0: [string | null, string | null, string | null],
@@ -1317,11 +1270,19 @@ describe('Cheerleader-Reaktionen', () => {
     return s;
   }
 
-  function reagiere(
-    state: GameState,
-    slot: 0 | 1 | 2 | null,
-    choice?: 'A' | 'B'
-  ): GameState {
+  /**
+   * Bringt Spieler 1 in einen Schild-Block: der Schild steht einen Abschnitt
+   * unter der Schwelle, Spieler 0 greift die freie Lane 0 an. Danach wartet das
+   * Bank-Fenster von Spieler 1.
+   */
+  function nachBlock(bank1: [string | null, string | null, string | null]): GameState {
+    const s = mitBank([null, null, null], bank1);
+    s.players[1].schild = SCHILD.abschnitte - 1;
+    put(s, 0, 0, 'rekrut');
+    return passBoth(s);
+  }
+
+  function reagiere(state: GameState, slot: 0 | 1 | 2, choice?: 'A' | 'B'): GameState {
     const r = state.reaktion;
     if (!r) throw new Error('Kein offenes Reaktionsfenster.');
     return applyAction(
@@ -1332,171 +1293,164 @@ describe('Cheerleader-Reaktionen', () => {
     );
   }
 
-  it('eine gegnerische Kreatur oeffnet ein Fenster beim Gegner', () => {
-    let s = mitBank([null, null, null], ['pc_principal', null, null]);
-    s.players[0].hand = ['rekrut'];
-    s = applyAction(s, 0, { type: 'playCreature', handIndex: 0, lane: 0 }, data);
+  it('ein Schild-Block oeffnet das Fenster beim Schildbesitzer', () => {
+    const s = nachBlock(['pc_principal', null, null]);
     expect(s.reaktion).not.toBeNull();
     expect(s.reaktion?.spieler).toBe(1);
+    expect(s.reaktion?.ausloeser).toBe('schildBlock');
     expect(s.reaktion?.slots).toEqual([0]);
     // Waehrend des Fensters ist der reagierende Spieler am Zug.
     expect(s.active).toBe(1);
   });
 
-  it('ohne passenden Cheerleader oeffnet sich kein Fenster', () => {
-    let s = mitBank([null, null, null], ['junger_neffe', null, null]);
+  it('Ausspielen und Tode oeffnen KEIN Fenster mehr', () => {
+    let s = mitBank([null, null, null], ['pc_principal', 'junger_neffe', null]);
     s.players[0].hand = ['rekrut'];
     s = applyAction(s, 0, { type: 'playCreature', handIndex: 0, lane: 0 }, data);
     expect(s.reaktion).toBeNull();
+
+    // Und auch ein toedlicher Treffer nicht.
+    let t = mitBank([null, null, null], ['junger_neffe', null, null]);
+    put(t, 0, 0, 'ritter');
+    const opfer = put(t, 1, 0, 'rekrut');
+    opfer.currentHealth = 1;
+    t = passBoth(t);
+    expect(t.reaktion).toBeNull();
+    expect(t.board[1][0]).toBeNull();
   });
 
-  it('Verzicht laesst die Bank unveraendert und gibt den Zug frei', () => {
-    let s = mitBank([null, null, null], ['pc_principal', null, null]);
-    s.players[0].hand = ['rekrut'];
-    s = applyAction(s, 0, { type: 'playCreature', handIndex: 0, lane: 0 }, data);
-    s = reagiere(s, null);
-    expect(s.reaktion).toBeNull();
-    expect(s.players[1].cheerleaders[0]).toBe('pc_principal');
-    expect(s.active).toBe(1);
+  it('Verzichten ist nicht moeglich - der Block wird mit einem Opfer bezahlt', () => {
+    const s = nachBlock(['pc_principal', null, null]);
+    expect(() =>
+      applyAction(s, 1, { type: 'cheerleaderReaction', reactionId: s.reaktion!.id, slot: null }, data)
+    ).toThrow(/opfern/);
+    // legaleAktionen darf den Verzicht dann auch nicht mehr anbieten.
+    expect(legaleAktionen(s, 1, data).every((a) => a.type === 'cheerleaderReaction' && a.slot !== null)).toBe(true);
   });
 
   it('Machtwort deckelt alle gegnerischen Kreaturen und leert den Bankplatz', () => {
-    let s = mitBank([null, null, null], ['pc_principal', null, null]);
-    put(s, 0, 1, 'ritter');
-    s.players[0].hand = ['rekrut'];
-    s = applyAction(s, 0, { type: 'playCreature', handIndex: 0, lane: 0 }, data);
+    const vor = mitBank([null, null, null], ['pc_principal', null, null]);
+    vor.players[1].schild = SCHILD.abschnitte - 1;
+    put(vor, 0, 0, 'rekrut');
+    put(vor, 0, 1, 'ritter');
+    let s = passBoth(vor);
     s = reagiere(s, 0);
+
     expect(s.players[1].cheerleaders[0]).toBeNull();
-    // Beide Kreaturen von Spieler 0 sind gedeckelt.
-    expect(getEffectiveAttack(s, 0, 0)).toBe(0);
     expect(getEffectiveAttack(s, 0, 1)).toBe(0);
   });
 
-  it('Handgemenge trifft beide Kreaturen der Lane', () => {
-    let s = mitBank([null, null, null], ['randy_marsh', null, null]);
-    const eigene = put(s, 1, 0, 'ritter');
-    const hpVorher = eigene.currentHealth;
-    s.players[0].hand = ['ritter'];
-    s = applyAction(s, 0, { type: 'playCreature', handIndex: 0, lane: 0 }, data);
-    expect(s.reaktion?.ausloeser).toBe('gegnerischeKreaturGegenueber');
+  it('Sicherer Raum faengt die restlichen Treffer derselben Runde ab', () => {
+    const vor = mitBank([null, null, null], ['pc_babies', null, null]);
+    vor.players[1].schild = SCHILD.abschnitte - 1;
+    // Lane 0 blockt und loest Sicherer Raum aus, Lane 1 trifft danach ins Leere.
+    put(vor, 0, 0, 'rekrut');
+    put(vor, 0, 1, 'ritter');
+    let s = passBoth(vor);
+    expect(s.reaktion?.spieler).toBe(1);
+
     s = reagiere(s, 0);
-    expect(s.board[0][0]?.currentHealth).toBe((s.board[0][0]?.lastMaxHealth ?? 0) - 2);
-    expect(s.board[1][0]?.currentHealth).toBe(hpVorher - 2);
+    expect(s.players[1].base).toBe(data.config.baseHealth);
+    // Der verpuffte zweite Treffer laedt den Schild NICHT auf.
+    expect(s.players[1].schild).toBe(0);
+    // startRound() nach dem Kampf hebt die Immunitaet wieder auf.
+    expect(s.players[1].basisImmun).toBe(false);
+  });
+
+  it('Handgemenge trifft JEDE Kreatur im Feld, auch die eigenen', () => {
+    const vor = mitBank([null, null, null], ['randy_marsh', null, null]);
+    vor.players[1].schild = SCHILD.abschnitte - 1;
+    put(vor, 0, 0, 'rekrut'); // greift die freie Lane 0 an
+    // Bewusst getrennte Lanes: so kaempft keine der beiden Kreaturen gegen die
+    // andere und der einzige Schaden an ihnen ist der der Kraft. (Das Fenster
+    // haelt die Aufloesung an, Lane 1 und 2 kaempfen also erst NACH der Kraft.)
+    const eigene = put(vor, 1, 1, 'eisbaer');
+    const fremde = put(vor, 0, 2, 'eisbaer');
+    const eigeneHp = eigene.currentHealth;
+    const fremdeHp = fremde.currentHealth;
+
+    let s = passBoth(vor);
+    s = reagiere(s, 0);
+    expect(s.board[1][1]?.currentHealth).toBe(eigeneHp - 2);
+    expect(s.board[0][2]?.currentHealth).toBe(fremdeHp - 2);
+  });
+
+  it('Zweite Chance heilt die eigenen Kreaturen voll und zieht eine Karte', () => {
+    const vor = mitBank([null, null, null], ['junger_neffe', null, null]);
+    vor.players[1].schild = SCHILD.abschnitte - 1;
+    // Genau EINE Karte im Deck: so kann der Rundenzug danach nichts mehr
+    // nachlegen und die gezogene Karte ist eindeutig die der Kraft.
+    vor.players[1].deck = ['rekrut'];
+    put(vor, 0, 0, 'rekrut');
+    const verwundet = put(vor, 1, 1, 'eisbaer');
+    verwundet.currentHealth = 1;
+
+    let s = passBoth(vor);
+    const handVorher = s.players[1].hand.length;
+    expect(s.board[1][1]!.currentHealth).toBeLessThan(getMaxHealth(s, 1, 1));
+    s = reagiere(s, 0);
+    expect(s.board[1][1]?.currentHealth).toBe(getMaxHealth(s, 1, 1));
+    expect(s.players[1].hand.length).toBe(handVorher + 1);
+    expect(s.players[1].deck).toHaveLength(0);
   });
 
   it('Feldforschung verlangt eine Wahl und fuehrt beide Optionen korrekt aus', () => {
     const bauen = (): GameState => {
       const s = mitBank([null, null, null], ['alter_wissenschaftler', null, null]);
-      s.players[0].hand = ['ritter'];
+      s.players[1].schild = SCHILD.abschnitte - 1;
       s.players[1].deck = ['rekrut', 'rekrut'];
-      return applyAction(s, 0, { type: 'playCreature', handIndex: 0, lane: 0 }, data);
+      put(s, 0, 0, 'rekrut'); // Basisangriff -> Block
+      put(s, 0, 1, 'ritter'); // Ziel fuer Option B
+      return passBoth(s);
     };
 
     // Ohne Wahl abgelehnt.
     const offen = bauen();
     expect(() =>
-      applyAction(
-        offen,
-        1,
-        { type: 'cheerleaderReaction', reactionId: offen.reaktion!.id, slot: 0 },
-        data
-      )
+      applyAction(offen, 1, { type: 'cheerleaderReaction', reactionId: offen.reaktion!.id, slot: 0 }, data)
     ).toThrow(/Wahl/);
 
     const a = reagiere(bauen(), 0, 'A');
-    expect(a.players[1].hand).toHaveLength(1);
     expect(a.players[1].knowledge).toBe(1);
 
     const b = reagiere(bauen(), 0, 'B');
-    expect(b.players[1].hand).toHaveLength(0);
-    expect(b.board[0][0]?.currentHealth).toBe((b.board[0][0]?.lastMaxHealth ?? 0) - 2);
+    expect(b.board[0][1]?.currentHealth).toBe((b.board[0][1]?.lastMaxHealth ?? 0) - 2);
   });
 
   it('falscher Besitzer, leerer Slot und veraltete Id werden abgewiesen', () => {
-    let s = mitBank([null, null, null], ['pc_principal', null, null]);
-    s.players[0].hand = ['rekrut'];
-    s = applyAction(s, 0, { type: 'playCreature', handIndex: 0, lane: 0 }, data);
+    const s = nachBlock(['pc_principal', null, null]);
     const id = s.reaktion!.id;
     expect(() =>
-      applyAction(s, 0, { type: 'cheerleaderReaction', reactionId: id, slot: null }, data)
+      applyAction(s, 0, { type: 'cheerleaderReaction', reactionId: id, slot: 0 }, data)
     ).toThrow(/anderen Spieler/);
     expect(() =>
       applyAction(s, 1, { type: 'cheerleaderReaction', reactionId: id, slot: 1 }, data)
     ).toThrow(/passt nicht/);
     expect(() =>
-      applyAction(s, 1, { type: 'cheerleaderReaction', reactionId: id + 99, slot: null }, data)
+      applyAction(s, 1, { type: 'cheerleaderReaction', reactionId: id + 99, slot: 0 }, data)
     ).toThrow(/nicht mehr aktuell/);
     // Waehrend eines Fensters ist jede normale Aktion gesperrt.
     expect(() => applyAction(s, 1, { type: 'pass' }, data)).toThrow(/Cheerleader-Reaktion/);
   });
 
-  it('Zweite Chance rettet eine sterbende Kreatur im Kampf', () => {
-    let s = mitBank([null, null, null], ['junger_neffe', null, null]);
-    // Spieler 0 schlaegt toedlich zu, Spieler 1 wehrt sich nicht.
-    put(s, 0, 0, 'ritter');
-    const opfer = put(s, 1, 0, 'rekrut');
-    opfer.currentHealth = 1;
-    s.players[1].deck = ['rekrut'];
-    s = applyAction(s, 0, { type: 'pass' }, data);
-    s = applyAction(s, 1, { type: 'pass' }, data);
-    expect(s.reaktion?.ausloeser).toBe('eigenerTod');
-    s = reagiere(s, 0);
-    expect(s.board[1][0]?.currentHealth).toBe(1);
-    expect(s.players[1].cheerleaders[0]).toBeNull();
-    expect(s.players[1].hand).toHaveLength(1);
-  });
-
-  it('Verzicht auf Zweite Chance laesst die Kreatur sterben und die Runde weiterlaufen', () => {
-    let s = mitBank([null, null, null], ['junger_neffe', null, null]);
-    put(s, 0, 0, 'ritter');
-    const opfer = put(s, 1, 0, 'rekrut');
-    opfer.currentHealth = 1;
-    s = applyAction(s, 0, { type: 'pass' }, data);
-    s = applyAction(s, 1, { type: 'pass' }, data);
-    s = reagiere(s, null);
-    expect(s.reaktion).toBeNull();
-    expect(s.board[1][0]).toBeNull();
-    // Die Aufloesung ist vollstaendig durchgelaufen: naechste Runde steht.
-    expect(s.aufloesung).toHaveLength(0);
-    expect(s.round).toBe(2);
-  });
-
-  it('eingebaute Rettung hat Vorrang vor dem Cheerleader-Fenster', () => {
-    // Junger Neffe als KARTE im Feld hat "rettung" – die greift zuerst, es darf
-    // also gar kein Fenster aufgehen.
-    let s = mitBank([null, null, null], ['junger_neffe', null, null]);
-    put(s, 0, 0, 'ritter');
-    const opfer = put(s, 1, 0, 'junger_neffe');
-    opfer.currentHealth = 1;
-    s = applyAction(s, 0, { type: 'pass' }, data);
-    s = applyAction(s, 1, { type: 'pass' }, data);
-    expect(s.reaktion).toBeNull();
-    expect(s.board[1][0]?.currentHealth).toBe(1);
-    expect(s.players[1].cheerleaders[0]).toBe('junger_neffe');
-  });
-
   it('die Client-Sicht zeigt Angebote nur dem berechtigten Spieler', () => {
-    let s = mitBank([null, null, null], ['alter_wissenschaftler', null, null]);
-    s.players[0].hand = ['rekrut'];
-    s = applyAction(s, 0, { type: 'playCreature', handIndex: 0, lane: 0 }, data);
+    const s = nachBlock(['alter_wissenschaftler', null, null]);
     const sichtGegner = buildClientView(s, 0, data);
     const sichtBesitzer = buildClientView(s, 1, data);
     expect(sichtGegner.reaktion?.angebote).toEqual([]);
     expect(sichtBesitzer.reaktion?.angebote).toHaveLength(1);
     expect(sichtBesitzer.reaktion?.angebote[0].wahl).toEqual({
       a: 'Karte und Wissen',
-      b: '2 Schaden'
+      b: '2 Schaden auf alle Gegner'
     });
   });
 
   it('legaleAktionen bietet waehrend eines Fensters nur Reaktionen an', () => {
-    let s = mitBank([null, null, null], ['alter_wissenschaftler', null, null]);
-    s.players[0].hand = ['rekrut'];
-    s = applyAction(s, 0, { type: 'playCreature', handIndex: 0, lane: 0 }, data);
+    const s = nachBlock(['alter_wissenschaftler', null, null]);
     const fuerBesitzer = legaleAktionen(s, 1, data);
     expect(fuerBesitzer.every((a) => a.type === 'cheerleaderReaction')).toBe(true);
-    // Verzicht + Wahl A + Wahl B
-    expect(fuerBesitzer).toHaveLength(3);
+    // Nur noch Wahl A und Wahl B - kein Verzicht mehr.
+    expect(fuerBesitzer).toHaveLength(2);
     expect(legaleAktionen(s, 0, data)).toEqual([]);
   });
 });

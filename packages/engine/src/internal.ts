@@ -227,10 +227,7 @@ function verarbeiteTodesstatistik(state: GameState, owner: PlayerIndex, c: Creat
  * bleibt (mit ≤0 Leben) stehen und diese Funktion bricht sofort ab. Der
  * Aufrufer muss sie nach der Spielerantwort erneut aufrufen.
  */
-export function recalcBoard(
-  state: GameState,
-  todesFrage?: (owner: PlayerIndex, lane: number, creature: Creature) => boolean
-): DeathInfo[] {
+export function recalcBoard(state: GameState): DeathInfo[] {
   const deaths: DeathInfo[] = [];
   let changed = true;
   while (changed) {
@@ -255,8 +252,6 @@ export function recalcBoard(
             changed = true; // Nachbar opfert sich – neu rechnen
             continue;
           }
-          // Letzte Gelegenheit: ein Cheerleader-Opfer kann den Tod abwenden.
-          if (todesFrage?.(owner, lane, c)) return deaths;
           state.board[owner][lane] = null;
           deaths.push({ owner, lane, name: c.name, faction: c.faction, creature: c });
           verarbeiteTodesstatistik(state, owner, c);

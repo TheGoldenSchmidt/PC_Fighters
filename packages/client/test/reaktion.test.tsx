@@ -27,8 +27,9 @@ afterEach(() => {
 });
 
 /**
- * Baut einen Zustand mit offenem Reaktionsfenster: Spieler 0 spielt eine
- * Kreatur, Spieler 1 hat einen passenden Cheerleader auf der Bank.
+ * Baut einen Zustand mit offenem Reaktionsfenster: Der Schild von Spieler 1
+ * steht einen Abschnitt unter der Schwelle, ein Basisangriff von Spieler 0
+ * blockt ihn – und die Bank von Spieler 1 muss den Block bezahlen.
  */
 function zustandMitOffenemFenster(bank1: [string | null, string | null, string | null]): GameState {
   let s = createGame(
@@ -48,8 +49,14 @@ function zustandMitOffenemFenster(bank1: [string | null, string | null, string |
   s.players[0].cheerleaders = [null, null, null];
   s.players[0].hand = ['rekrut'];
   s.players[0].energy = 9;
+  s.players[1].schild = data.config.schild!.abschnitte - 1;
   s.active = 0;
   s = applyAction(s, 0, { type: 'playCreature', handIndex: 0, lane: 0 }, data);
+  // Die frisch gespielte Kreatur ist erschoepft – erst der Kampf der naechsten
+  // Runde trifft die Basis und laesst den Schild blocken.
+  for (let i = 0; i < 8 && !s.reaktion; i++) {
+    s = applyAction(s, s.active, s.phase === 'fly' ? { type: 'flyDone' } : { type: 'pass' }, data);
+  }
   if (!s.reaktion) throw new Error('Fixture öffnet kein Reaktionsfenster.');
   return s;
 }
@@ -83,7 +90,8 @@ describe('Cheerleader-Reaktion im Client', () => {
     expect(within(dialog).getByRole('button', { name: /Machtwort einsetzen/i })).toBeTruthy();
     // Feldforschung stellt eine Wahl, hat also zwei Options-Knöpfe statt einem.
     expect(within(dialog).getByRole('button', { name: /Karte und Wissen/i })).toBeTruthy();
-    expect(within(dialog).getByRole('button', { name: /Verzichten/i })).toBeTruthy();
+    // Verzichten gibt es nicht mehr: der Block wird immer mit einem Opfer bezahlt.
+    expect(within(dialog).queryByRole('button', { name: /Verzichten/i })).toBeNull();
     // Platz 2 ist leer und darf nicht auftauchen.
     expect(within(dialog).queryByText(/Platz 2/)).toBeNull();
     unmount();
@@ -105,19 +113,11 @@ describe('Cheerleader-Reaktion im Client', () => {
     expect(screen.queryByRole('button', { name: /^Passen$/ })).toBeNull();
   });
 
-  it('meldet Verzicht und Opfer mit der richtigen Reaktions-Id', async () => {
+  it('meldet das Opfer mit der richtigen Reaktions-Id', () => {
     const s = zustandMitOffenemFenster(['pc_principal', null, null]);
     const view = sicht(s, 1);
     const gesendet: PlayerAction[] = [];
 
-    const { unmount } = zeige(view, (a) => gesendet.push(a));
-    screen.getByRole('button', { name: /Verzichten/i }).click();
-    expect(gesendet).toEqual([
-      { type: 'cheerleaderReaction', reactionId: view.reaktion!.id, slot: null }
-    ]);
-    unmount();
-
-    gesendet.length = 0;
     zeige(view, (a) => gesendet.push(a));
     screen.getByRole('button', { name: /Machtwort einsetzen/i }).click();
     expect(gesendet).toEqual([
@@ -156,10 +156,10 @@ describe('Cheerleader-Reaktion im Client', () => {
     expect(neueEvents.slice(0, 2)).toEqual(['cheerleaderSacrifice', 'cheerleaderPower']);
   });
 
-  it('fragt erst NACH der Kampfabspielung, wenn ein Tod das Fenster oeffnet', async () => {
+  it('fragt erst NACH der Kampfabspielung, wenn der Schild im Kampf blockt', async () => {
     vi.useFakeTimers();
-    // Nur Spieler 1 hat eine Bank, und zwar mit dem Todes-Ausloeser. Ein
-    // Ausspielen oeffnet damit kein Fenster – erst der Kampftod.
+    // Spieler 0 stellt eine Kreatur in eine leere Lane; im Kampf trifft sie die
+    // Basis von Spieler 1, dessen Schild dabei voll wird und blockt.
     let s = createGame(
       data,
       ['humans', 'animals'],
@@ -175,15 +175,12 @@ describe('Cheerleader-Reaktion im Client', () => {
     s.players[0].cheerleaders = [null, null, null];
     s.players[1].cheerleaders = ['junger_neffe', null, null];
     s.players[0].hand = ['ritter'];
-    s.players[1].hand = ['rekrut'];
     s.players[0].energy = 9;
-    s.players[1].energy = 9;
+    s.players[1].schild = data.config.schild!.abschnitte - 1;
     s.active = 0;
     s = applyAction(s, 0, { type: 'playCreature', handIndex: 0, lane: 0 }, data);
-    s = applyAction(s, 1, { type: 'playCreature', handIndex: 0, lane: 0 }, data);
     expect(s.reaktion).toBeNull();
-    // Sicher toedlich machen, damit der Kampf das Fenster oeffnet.
-    s.board[1][0]!.currentHealth = 1;
+    // Damit die Kreatur schon in diesem Kampf zuschlaegt.
     s.board[0][0]!.exhausted = false;
 
     const vorKampf = sicht(s, 1);
@@ -202,7 +199,7 @@ describe('Cheerleader-Reaktion im Client', () => {
 
     s = applyAction(s, s.active, { type: 'pass' }, data);
     s = applyAction(s, s.active, { type: 'pass' }, data);
-    expect(s.reaktion?.ausloeser).toBe('eigenerTod');
+    expect(s.reaktion?.ausloeser).toBe('schildBlock');
     const nachKampf = sicht(s, 1);
     // Es gibt echte Kampf-Events zum Abspielen – sonst prueft dieser Test nichts.
     const frisch = nachKampf.log.filter(

@@ -61,6 +61,27 @@ davon also unberührt.
 
 ---
 
+**Regeländerung: Die Bank IST der Schild.** Cheerleader-Kräfte lösen nicht mehr
+beim Ausspielen gegnerischer Karten oder bei eigenen Toden aus, sondern
+ausschließlich, wenn der eigene Basis-Schild einen Treffer blockt. Der Block ist
+damit bezahlt: ein Cheerleader opfert sich zwingend, Verzichten gibt es nicht
+mehr. Umgekehrt gilt: **ohne Cheerleader kein Schild** – bei leerer Bank lädt
+der Balken nicht mehr und Treffer gehen ungehindert durch. Die drei zufälligen
+Schild-Superkräfte (Schutzschild/Nachschub/Störfeuer) sind ersatzlos entfallen,
+alle fünf Cheerleader-Kräfte neu geschrieben (keine braucht mehr eine
+Auslöser-Kreatur, weil ein Block an der Basis passiert). Golden Master neu
+erzeugt, 202 Tests grün, im Zwei-Browser-Test verifiziert. Im 🧪 Testmodus ist
+der Schild nach einem Treffer voll, damit man die Kräfte sofort sieht.
+
+> **Offene Balancing-Frage (gemessen, 200 Bot-Partien):** In 81 % der Partien
+> fällt mindestens ein Block, aber nur **0,64 Blocks pro Spieler und Partie**.
+> Von drei Bankplätzen kommt damit im Schnitt weniger als einer zum Einsatz –
+> zwei Drittel der Bank sind Deko. Stellschraube ist `schild.abschnitte`
+> (aktuell 7 bei Ø 14,5 Runden Spieldauer); 4–5 dürfte die Bank erst wirklich
+> zu einer Entscheidung machen. Vor dem nächsten Balancing-Backtest zu klären.
+
+---
+
 **Arena-Umbau fertig.** Der Spielbildschirm ist jetzt eine bildschirmfüllende
 Arena statt eines Stapels aus Leisten: Kopf- und Fußleiste sind weg, das
 Lane-Raster sitzt in einem mittleren Band, Cheerleader-Bank und Basis stehen

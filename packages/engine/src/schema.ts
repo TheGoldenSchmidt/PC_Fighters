@@ -20,32 +20,18 @@ import type {
 } from './types.js';
 
 /**
- * Superkräfte des Basis-Schilds. Neue Superkraft = neuer Zweig hier, eine
- * Variante in `Superkraft` (types.ts) und ein Eintrag in SUPERKRAEFTE (schild.ts).
+ * Basis-Schild. Was ein Block bewirkt, steht NICHT hier: Die Bank ist der
+ * Schild, also liefern die Cheerleader-Kräfte die Wirkung (siehe unten).
  */
-export const superkraftSchema = z.discriminatedUnion('kind', [
-  z.object({ kind: z.literal('keinSchaden'), name: z.string().min(1) }).strict(),
-  z.object({ kind: z.literal('kartenZiehen'), name: z.string().min(1), n: z.number().int().min(1) }).strict(),
-  z
-    .object({
-      kind: z.literal('schwaechung'),
-      name: z.string().min(1),
-      atk: z.number().int().min(0),
-      hp: z.number().int().min(0)
-    })
-    .strict()
-]);
-
 export const schildSchema = z
   .object({
     abschnitte: z.number().int().min(1),
     ladung: z.object({
       min: z.number().int().min(1),
       max: z.number().int().min(1)
-    }),
-    // Ohne Superkräfte würde ein Block ins Leere laufen.
-    superkraefte: z.array(superkraftSchema).min(1)
+    })
   })
+  .strict()
   .refine((s) => s.ladung.max >= s.ladung.min, {
     message: 'ladung.max muss mindestens so groß sein wie ladung.min'
   });
@@ -68,7 +54,7 @@ const einfacheWirkungSchema = z.discriminatedUnion('kind', [
       hpDeckel: z.number().int().min(1)
     })
     .strict(),
-  z.object({ kind: z.literal('schwaechungRunde'), atk: z.number().int().min(1) }).strict(),
+  z.object({ kind: z.literal('keinBasisSchaden') }).strict(),
   z
     .object({
       kind: z.literal('ziehenUndWissen'),
@@ -76,15 +62,9 @@ const einfacheWirkungSchema = z.discriminatedUnion('kind', [
       wissen: z.number().int().min(0)
     })
     .strict(),
-  z.object({ kind: z.literal('schadenAufAusloeser'), x: z.number().int().min(1) }).strict(),
-  z.object({ kind: z.literal('gegenseitigerSchaden'), x: z.number().int().min(1) }).strict(),
-  z
-    .object({
-      kind: z.literal('rettenUndZiehen'),
-      hp: z.number().int().min(1),
-      karten: z.number().int().min(0)
-    })
-    .strict()
+  z.object({ kind: z.literal('schadenAlleGegner'), x: z.number().int().min(1) }).strict(),
+  z.object({ kind: z.literal('schadenAlle'), x: z.number().int().min(1) }).strict(),
+  z.object({ kind: z.literal('heilenUndZiehen'), karten: z.number().int().min(0) }).strict()
 ]);
 
 const cheerleaderWahlOptionSchema = z
@@ -106,7 +86,7 @@ export const cheerleaderKraftSchema = z
   .object({
     name: z.string().min(1),
     text: z.string().min(1),
-    ausloeser: z.enum(['gegnerischeKreatur', 'gegnerischeKreaturGegenueber', 'eigenerTod']),
+    ausloeser: z.literal('schildBlock'),
     wirkung: cheerleaderWirkungSchema
   })
   .strict();

@@ -279,27 +279,28 @@ describe('Telemetrie-Sidecar: exakte Zählerwerte', () => {
 });
 
 describe('Cheerleader-Telemetrie', () => {
-  it('zaehlt Angebot, Verzicht, Opfer, Schaden und Rettung je Cheerleader', () => {
-    // --- Angebot und Verzicht ---
-    let s = emptyState();
+  const SCHILD = data.config.schild!;
+
+  /** Spieler 1 in einen Schild-Block bringen; danach wartet sein Bank-Fenster. */
+  function nachBlock(bank1: [string | null, string | null, string | null]): GameState {
+    const s = emptyState();
     aktiviereStatistik(s);
-    s.players[1].cheerleaders = ['pc_principal', 'alter_wissenschaftler', null];
-    s.players[0].hand = ['rekrut'];
-    s = applyAction(s, 0, { type: 'playCreature', handIndex: 0, lane: 0 }, data);
-    // Beide passenden Plaetze zaehlen als Angebot.
+    s.players[0].cheerleaders = [null, null, null];
+    s.players[1].cheerleaders = [...bank1];
+    s.players[1].schild = SCHILD.abschnitte - 1;
+    put(s, 0, 0, 'rekrut'); // Basisangriff auf die freie Lane 0
+    let t = applyAction(s, 0, { type: 'pass' }, data);
+    return applyAction(t, t.active, { type: 'pass' }, data);
+  }
+
+  it('zaehlt Angebot, Opfer und Schaden je Cheerleader', () => {
+    // --- Angebot: jeder besetzte Bankplatz taucht im Fenster auf ---
+    const s = nachBlock(['pc_principal', 'alter_wissenschaftler', null]);
+    expect(s.reaktion?.spieler).toBe(1);
     expect(s.stats!.proCheerleader[1].pc_principal.angeboten).toBe(1);
     expect(s.stats!.proCheerleader[1].alter_wissenschaftler.angeboten).toBe(1);
 
-    const verzichtet = applyAction(
-      s,
-      1,
-      { type: 'cheerleaderReaction', reactionId: s.reaktion!.id, slot: null },
-      data
-    );
-    expect(verzichtet.stats!.proCheerleader[1].pc_principal.verzichtet).toBe(1);
-    expect(verzichtet.stats!.proCheerleader[1].pc_principal.geopfert).toBe(0);
-
-    // --- Opfer mit Schaden (Feldforschung, Option B) ---
+    // --- Opfer mit Schaden (Feldforschung, Option B trifft alle Gegner) ---
     const geopfert = applyAction(
       s,
       1,
@@ -308,19 +309,24 @@ describe('Cheerleader-Telemetrie', () => {
     );
     const w = geopfert.stats!.proCheerleader[1].alter_wissenschaftler;
     expect(w.geopfert).toBe(1);
-    expect(w.verzichtet).toBe(0);
+    // Der Angreifer aus Lane 0 steht noch und kassiert die 2 Schaden.
     expect(w.schadenVerursacht).toBe(2);
+    // Der nicht gewaehlte Platz bleibt bei 0 Opfern.
+    expect(geopfert.stats!.proCheerleader[1].pc_principal.geopfert).toBe(0);
+  });
 
-    // --- Rettung (Zweite Chance) ---
-    let r = emptyState();
-    aktiviereStatistik(r);
-    r.players[1].cheerleaders = ['junger_neffe', null, null];
-    put(r, 0, 0, 'ritter');
-    const opfer = put(r, 1, 0, 'rekrut');
-    opfer.currentHealth = 1;
-    r = applyAction(r, 0, { type: 'pass' }, data);
-    r = applyAction(r, 1, { type: 'pass' }, data);
-    expect(r.reaktion?.ausloeser).toBe('eigenerTod');
+  it('zaehlt geheilten Schaden bei Zweiter Chance', () => {
+    const vor = emptyState();
+    aktiviereStatistik(vor);
+    vor.players[0].cheerleaders = [null, null, null];
+    vor.players[1].cheerleaders = ['junger_neffe', null, null];
+    vor.players[1].schild = SCHILD.abschnitte - 1;
+    put(vor, 0, 0, 'rekrut');
+    const verwundet = put(vor, 1, 1, 'eisbaer');
+    verwundet.currentHealth = 1;
+
+    let r = applyAction(vor, 0, { type: 'pass' }, data);
+    r = applyAction(r, r.active, { type: 'pass' }, data);
     r = applyAction(
       r,
       1,
@@ -329,7 +335,6 @@ describe('Cheerleader-Telemetrie', () => {
     );
     const n = r.stats!.proCheerleader[1].junger_neffe;
     expect(n.geopfert).toBe(1);
-    expect(n.rettungen).toBe(1);
     expect(n.schadenVerhindert).toBeGreaterThan(0);
   });
 });

@@ -102,11 +102,10 @@ interface FxShield {
   blockiert: boolean;
 }
 
-/** Wirkende Cheerleader-Superkraft: kurzer Effekt auf der Auslöser-Lane. */
+/** Wirkende Cheerleader-Superkraft: kurzer Effekt über der ganzen Arena. */
 interface FxPower {
   key: string;
   owner: PlayerIndex;
-  lane: number;
   kraft: string;
 }
 
@@ -217,32 +216,32 @@ function CheerleaderStrip({
 }
 
 const AUSLOESER_TEXT: Record<ReaktionsView['ausloeser'], string> = {
-  gegnerischeKreatur: 'Der Gegner hat eine Kreatur ausgespielt.',
-  gegnerischeKreaturGegenueber: 'Der Gegner hat eine Kreatur genau gegenüber deiner ausgespielt.',
-  eigenerTod: 'Eine deiner Kreaturen würde jetzt sterben.'
+  schildBlock: 'Dein Schild hat den Treffer geblockt.'
 };
 
 /**
  * Auswahl für ein offenes Reaktionsfenster. Bewusst ein DOM-Overlay statt einer
  * Interaktion auf der Bank: so ist die Bedienung in 3D und im `?no3d`-Fallback
- * exakt dieselbe. Verzichten ist immer möglich und steht deshalb fest unten.
+ * exakt dieselbe.
+ *
+ * Es gibt bewusst KEIN „Verzichten": Der Block ist bereits eingelöst und wird
+ * mit dem Bankplatz bezahlt – gewählt wird nur, wer sich opfert.
  */
 function ReaktionsAuswahl({
   reaktion,
   onEntscheiden
 }: {
   reaktion: ReaktionsView;
-  onEntscheiden: (slot: 0 | 1 | 2 | null, choice?: 'A' | 'B') => void;
+  onEntscheiden: (slot: 0 | 1 | 2, choice?: 'A' | 'B') => void;
 }) {
   return (
     <div className="overlay reaction-overlay">
       <div className="reaction-box" role="dialog" aria-label="Cheerleader-Reaktion">
         <h2 className="reaction-title">📣 Cheerleader-Reaktion</h2>
-        <p className="reaction-trigger">
-          {AUSLOESER_TEXT[reaktion.ausloeser]} (Lane {reaktion.lane + 1})
-        </p>
+        <p className="reaction-trigger">{AUSLOESER_TEXT[reaktion.ausloeser]}</p>
         <p className="reaction-cost">
-          Ein Opfer kostet weder Energie noch deinen Zug – nur den Bankplatz.
+          Ein Cheerleader opfert sich dafür. Wähle, wer – das kostet weder
+          Energie noch deinen Zug, nur den Bankplatz.
         </p>
 
         <div className="reaction-offers">
@@ -270,13 +269,9 @@ function ReaktionsAuswahl({
             </div>
           ))}
           {reaktion.angebote.length === 0 && (
-            <p className="hint">Kein passender Cheerleader mehr auf der Bank.</p>
+            <p className="hint">Kein Cheerleader mehr auf der Bank.</p>
           )}
         </div>
-
-        <button className="secondary reaction-decline" onClick={() => onEntscheiden(null)}>
-          Verzichten
-        </button>
       </div>
     </div>
   );
@@ -552,13 +547,13 @@ export function GameScreen({
           dying: f.dying.filter((x) => !deaths.some((d) => d.lane === x.lane && d.owner === x.owner))
         }));
       } else if (ev.kind === 'schild') {
-        // Basis-Schild: Ladebalken auf den Stand aus dem Event setzen. Beim Block
-        // zusätzlich das Banner mit der ausgelösten Superkraft.
+        // Basis-Schild: Ladebalken auf den Stand aus dem Event setzen. Was der
+        // Block bewirkt, folgt gleich als eigenes Cheerleader-Ereignis.
         const next = structuredClone(shownViewRef.current);
         next.players[ev.owner].schild = ev.stand;
         setShown(next);
         setFx((f) => ({ ...f, shield: { owner: ev.owner, blockiert: Boolean(ev.blockiert) } }));
-        if (ev.blockiert) showBanner(`🛡️ ${ev.superkraft ?? 'Angriff geblockt'}!`);
+        if (ev.blockiert) showBanner('🛡️ Angriff geblockt!');
         await sleep(ev.blockiert ? SHIELD_BLOCK_MS : SHIELD_MS);
         if (cancelledRef.current) break;
         setFx((f) => ({ ...f, shield: null }));
@@ -607,14 +602,16 @@ export function GameScreen({
         // dann wirkt die Kraft. Die Lage wird hier BEWUSST nicht auf den
         // Serverstand gezogen – was die Kraft anrichtet, kommt gleich als
         // eigene Angriffs- und Sterbe-Events bzw. am Ende der Abspielung.
+        //
+        // Kein Lane-Bezug mehr: Ein Schild-Block passiert an der Basis, und
+        // alle Kräfte wirken auf das Feld als Ganzes. Der Effekt liegt deshalb
+        // über der ganzen Arena statt auf einer Lane.
         const power: CheerleaderPowerEvent = ev;
         setFx((current) => ({
           ...current,
-          activeLane: power.lane,
           power: {
-            key: `k-${power.owner}-${power.lane}-${Date.now()}`,
+            key: `k-${power.owner}-${Date.now()}`,
             owner: power.owner,
-            lane: power.lane,
             kraft: power.kraft
           }
         }));
@@ -967,8 +964,6 @@ export function GameScreen({
                   {!use3d && spellOnLane(lane) && (
                     <span className={`spell-burst spell-${spellOnLane(lane)!.effect}`} aria-hidden />
                   )}
-                  {/* Cheerleader-Kraft auf dieser Lane (2D-Fallback) */}
-                  {!use3d && fx.power?.lane === lane && <span className="power-burst" aria-hidden />}
                 </button>
                 {/* Fliegende Projektile dieser Lane (2D-Fallback – in 3D
                     übernehmen die Leucht-Geschosse des Schlachtfelds) */}
@@ -1035,6 +1030,9 @@ export function GameScreen({
           </div>
         </div>
       </div>
+
+      {/* ---- Wirkende Cheerleader-Kraft: Aufblitzen über der ganzen Arena ---- */}
+      {fx.power && <span key={fx.power.key} className="power-burst" aria-hidden />}
 
       {/* ---- Kampf-Log: nur die letzte Zeile schwebt mit, Tippen klappt auf ---- */}
       {letzteLogZeile && (

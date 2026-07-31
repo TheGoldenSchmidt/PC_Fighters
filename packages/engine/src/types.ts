@@ -27,21 +27,22 @@ export interface DeckbuildingConfig {
 }
 
 /**
- * Wann eine Cheerleader-Kraft angeboten wird. Reaktionen sind immer optional:
- * der Preis ist nicht Energie oder ein Zug, sondern der Bankplatz selbst.
+ * Wann eine Cheerleader-Kraft angeboten wird.
+ *
+ * Es gibt genau einen Auslöser: Die Bank IST der Basis-Schild. Läuft er voll,
+ * blockt er den Treffer, und ein Cheerleader opfert sich, um seine Kraft zu
+ * wirken. Der Union bleibt als solcher bestehen, damit später weitere Auslöser
+ * ohne Umbau der Fenster-Mechanik dazukommen können.
  */
 export type CheerleaderAusloeser =
-  // Der Gegner hat eine Kreatur ausgespielt (egal in welche Lane).
-  | 'gegnerischeKreatur'
-  // Der Gegner hat eine Kreatur GENAU GEGENÜBER einer eigenen ausgespielt.
-  | 'gegnerischeKreaturGegenueber'
-  // Eine eigene Kreatur würde endgültig sterben (nach Rettung und Nachbarschutz).
-  | 'eigenerTod';
+  // Der eigene Basis-Schild hat gerade einen Treffer geblockt.
+  'schildBlock';
 
 /**
- * Was eine Cheerleader-Kraft tut. Die Startwerte sind bewusst aus den
- * gleichnamigen Karten kopiert, damit die Kräfte sofort vertraut wirken – sie
- * sind aber unabhängig davon und können später frei geändert werden.
+ * Was eine Cheerleader-Kraft tut.
+ *
+ * Alle Wirkungen kommen ohne Auslöser-Kreatur aus: Ein Schild-Block hat keine
+ * „neue" oder „sterbende" Kreatur, auf die man zielen könnte.
  *
  * Neue Wirkung = Variante hier + Eintrag in CHEERLEADER_WIRKUNGEN
  * (cheerleader.ts) + Zweig im wirkungSchema (schema.ts) + Eintrag in
@@ -50,16 +51,16 @@ export type CheerleaderAusloeser =
 export type CheerleaderWirkung =
   // Alle gegnerischen Kreaturen bekommen dauerhafte Deckel auf ATK/Leben.
   | { kind: 'peinigenAlle'; atkDeckel: number; hpDeckel: number }
-  // Alle gegnerischen Kreaturen erhalten bis Rundenende -atk Angriff.
-  | { kind: 'schwaechungRunde'; atk: number }
+  // Die eigene Basis nimmt bis zum Rundenende keinen Schaden mehr.
+  | { kind: 'keinBasisSchaden' }
   // Der Besitzer zieht Karten und erhält Wissen.
   | { kind: 'ziehenUndWissen'; karten: number; wissen: number }
-  // Schaden auf die Kreatur, die den Auslöser verursacht hat.
-  | { kind: 'schadenAufAusloeser'; x: number }
-  // Auslöser-Kreatur UND die eigene Kreatur gegenüber nehmen je x Schaden.
-  | { kind: 'gegenseitigerSchaden'; x: number }
-  // Die sterbende Kreatur überlebt mit hp Leben; der Besitzer zieht Karten.
-  | { kind: 'rettenUndZiehen'; hp: number; karten: number }
+  // x Schaden auf jede gegnerische Kreatur.
+  | { kind: 'schadenAlleGegner'; x: number }
+  // x Schaden auf JEDE Kreatur im Feld – auch die eigenen.
+  | { kind: 'schadenAlle'; x: number }
+  // Alle eigenen Kreaturen werden voll geheilt; der Besitzer zieht Karten.
+  | { kind: 'heilenUndZiehen'; karten: number }
   // Der Spieler wählt beim Einlösen zwischen zwei Wirkungen (A oder B).
   | {
       kind: 'wahl';
@@ -102,30 +103,19 @@ export interface ZermuerbungConfig {
 }
 
 /**
- * Eine Superkraft, die auslöst, wenn der Schild einen Treffer blockt. Neue
- * Superkraft = neue Variante hier + Eintrag in SUPERKRAEFTE (schild.ts) +
- * Zweig im superkraftSchema (schema.ts) + Eintrag in config.json.
- */
-export type Superkraft =
-  // Der Schildbesitzer nimmt bis zum Rundenende keinen Basisschaden mehr.
-  | { kind: 'keinSchaden'; name: string }
-  // Der Schildbesitzer zieht n Karten.
-  | { kind: 'kartenZiehen'; name: string; n: number }
-  // Alle gegnerischen Kreaturen verlieren dauerhaft atk Angriff und hp Leben.
-  | { kind: 'schwaechung'; name: string; atk: number; hp: number };
-
-/**
  * Schild der Basis: jeder Treffer lädt ihn zufällig um `ladung.min`–`ladung.max`
  * Abschnitte auf. Erreicht er `abschnitte`, wird DIESER Treffer komplett
- * geblockt, eine zufällige Superkraft löst aus und der Schild geht auf 0.
+ * geblockt und der Schild geht auf 0 zurück.
+ *
+ * Die Bank IST der Schild: Was der Block bewirkt, entscheidet der Cheerleader,
+ * der sich dafür opfert (`config.cheerleaders.kraefte`). Ist die Bank leer,
+ * gibt es keinen Schild mehr – Treffer gehen dann ungehindert durch.
  */
 export interface SchildConfig {
   /** Wie viele Abschnitte der Schild hat (Standard-Regel: 7). */
   abschnitte: number;
   /** Spanne, um die ein Treffer den Schild auflädt (Standard-Regel: 1–3). */
   ladung: { min: number; max: number };
-  /** Katalog der Superkräfte – beim Block wird eine davon zufällig gezogen. */
-  superkraefte: Superkraft[];
 }
 
 export interface GameConfig {
@@ -546,14 +536,6 @@ export interface Creature {
   /** Schadensübernahme (`nachbar` schadensuebernahme) bereits verbraucht? */
   schutzUsed: boolean;
   /**
-   * Für DIESEN Todesfall wurde bereits ein Cheerleader-Fenster geöffnet.
-   * Verhindert, dass dieselbe sterbende Kreatur die Auflösung endlos anhält,
-   * wenn der Spieler verzichtet. Wird nach einer erfolgreichen Rettung und am
-   * Rundenende zurückgesetzt – ein späterer tödlicher Treffer ist ein neuer
-   * Auslöser und darf wieder gefragt werden.
-   */
-  todesReaktionAngeboten?: boolean;
-  /**
    * Generische SPIELWEITE Auslöse-Zähler (für `maxTriggers` u. ä.). Schlüssel:
    * `${abilityIndex}:${kind}` – nicht nur `kind`, damit zwei gleichartige
    * Fähigkeiten auf derselben Karte getrennt zählen. Wird NIE zurückgesetzt.
@@ -626,22 +608,22 @@ export interface SpielerStatistik {
 
 /**
  * Telemetrie je Cheerleader (Schlüssel ist die cardId). Beantwortet die Frage,
- * ob eine Kraft überhaupt zum Zug kommt und ob sie sich lohnt: eine Kraft, die
- * oft angeboten und fast immer ausgeschlagen wird, ist zu schwach oder zu teuer.
+ * welche Kraft der Spieler beim Schild-Block tatsächlich wählt: ein
+ * Cheerleader, der oft danebensitzt und selten geopfert wird, ist die
+ * schwächste Option auf der Bank.
+ *
+ * Es gibt bewusst KEIN `verzichtet` mehr: Verzichten ist unmöglich, der Block
+ * wird immer mit einem Opfer bezahlt.
  */
 export interface CheerleaderStatistik {
   /** Wie oft dieser Bankplatz in einem Fenster als Option auftauchte. */
   angeboten: number;
-  /** Wie oft ein Fenster mit diesem Angebot ungenutzt geschlossen wurde. */
-  verzichtet: number;
   /** Wie oft dieser Cheerleader tatsächlich geopfert wurde. */
   geopfert: number;
   /** Direkt zugefügter Schaden (Handgemenge, Feldforschung-Option B). */
   schadenVerursacht: number;
-  /** Verhinderter Schaden (Zweite Chance). */
+  /** Verhinderter bzw. geheilter Schaden (Zweite Chance). */
   schadenVerhindert: number;
-  /** Wie oft eine eigene Kreatur vor dem Tod bewahrt wurde. */
-  rettungen: number;
 }
 
 export interface KartenInstanzStatistik {
@@ -749,8 +731,6 @@ export interface CheerleaderPowerEvent {
   kraft: string;
   /** Art der Wirkung – bestimmt Farbe/Form der Animation. */
   wirkung: CheerleaderWirkung['kind'];
-  /** Lane des Auslösers, auf der die Kraft optisch verankert wird. */
-  lane: number;
   /** Gewählte Option, falls die Kraft eine Wahl gestellt hat. */
   wahl?: 'A' | 'B';
 }
@@ -777,8 +757,9 @@ export interface SpellEvent {
 
 /**
  * Schild-Ereignis: entsteht bei JEDEM Treffer auf eine Basis, solange
- * `config.schild` gesetzt ist. Die UI zeigt damit den Ladebalken animiert und
- * bei `blockiert` den Block plus die ausgelöste Superkraft.
+ * `config.schild` gesetzt ist UND der Verteidiger noch Cheerleader auf der Bank
+ * hat. Die UI zeigt damit den Ladebalken animiert und bei `blockiert` den
+ * Block; was der Block bewirkt, folgt als eigenes Cheerleader-Ereignis.
  */
 export interface SchildEvent {
   kind: 'schild';
@@ -792,8 +773,6 @@ export interface SchildEvent {
   abschnitte: number;
   /** Gesetzt, wenn der Treffer komplett abgefangen wurde. */
   blockiert?: boolean;
-  /** Name der ausgelösten Superkraft (nur zusammen mit `blockiert`). */
-  superkraft?: string;
 }
 
 /** Alles, was als strukturiertes Ereignis an einem Log-Eintrag hängen kann. */
@@ -827,13 +806,23 @@ export type AufloesungsSchritt =
   | { art: 'rundenAbschluss' }
   /** Zermürbungsschaden, Rundenlimit, nächste Runde starten. */
   | { art: 'zermuerbung' }
-  /** Tode auflösen, bis das Feld stabil ist (kann ein Fenster öffnen). */
-  | { art: 'todeStabilisieren' };
+  /** Tode auflösen, bis das Feld stabil ist. */
+  | { art: 'todeStabilisieren' }
+  /**
+   * Der Schild von `spieler` hat geblockt: Bank-Fenster öffnen, damit ein
+   * Cheerleader sich opfert. `basisSchaden()` plant diesen Schritt ein, statt
+   * das Fenster selbst zu öffnen – sonst stünde mitten in einer laufenden
+   * Schadensabrechnung plötzlich ein Fenster offen.
+   */
+  | { art: 'schildFenster'; spieler: PlayerIndex };
 
 /**
  * Ein offenes Reaktionsfenster. Solange es steht, sind ALLE normalen Aktionen
  * gesperrt und nur `cheerleaderReaction` von `spieler` ist erlaubt. Es gibt
  * bewusst keinen Timeout: der Zug wartet, bis der Spieler entscheidet.
+ *
+ * Verzichten ist NICHT möglich: Der Block ist bereits passiert und wird durch
+ * das Opfer bezahlt. Der Spieler wählt nur, WELCHER Cheerleader sich opfert.
  */
 export interface OffeneReaktion {
   /** Monoton steigend über die Partie – verhindert doppelt gesendete Antworten. */
@@ -843,12 +832,6 @@ export interface OffeneReaktion {
   ausloeser: CheerleaderAusloeser;
   /** Belegte Bankplätze, deren Kraft zu diesem Auslöser passt. */
   slots: (0 | 1 | 2)[];
-  /** Lane des Auslösers (neue bzw. sterbende Kreatur). */
-  lane: number;
-  /** uid der Auslöser-Kreatur – stabil auch über Lane-Wechsel hinweg. */
-  ausloeserUid: number;
-  /** Besitzer der Auslöser-Kreatur. */
-  ausloeserOwner: PlayerIndex;
   /** Auf welchen Spieler `active` nach dem Fenster zurückfällt. */
   fortsetzenMit: PlayerIndex;
 }
@@ -967,7 +950,6 @@ export interface ReaktionsView {
   /** Wer entscheiden muss. Ist das nicht `you`, zeigt die UI einen Wartezustand. */
   spieler: PlayerIndex;
   ausloeser: CheerleaderAusloeser;
-  lane: number;
   /** Nur für `spieler` gefüllt. */
   angebote: ReaktionsAngebot[];
 }

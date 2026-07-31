@@ -104,7 +104,9 @@ export function legaleAktionen(state: GameState, player: PlayerIndex, data: Game
   if (state.reaktion) {
     if (state.reaktion.spieler !== player) return [];
     const reactionId = state.reaktion.id;
-    const actions: PlayerAction[] = [{ type: 'cheerleaderReaction', reactionId, slot: null }];
+    // Kein Verzicht: der Block ist schon eingelöst, es geht nur noch darum,
+    // WER sich dafür opfert.
+    const actions: PlayerAction[] = [];
     for (const slot of state.reaktion.slots) {
       const eintrag = kraftVonSlot(state, player, slot);
       if (!eintrag) continue;

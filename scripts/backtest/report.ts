@@ -88,11 +88,9 @@ export interface CheerleaderKennzahl {
   cardId: string;
   name: string;
   angeboten: number;
-  verzichtet: number;
   geopfert: number;
   schadenVerursacht: number;
   schadenVerhindert: number;
-  rettungen: number;
 }
 
 function pct(x: number): string {
@@ -347,18 +345,19 @@ export function erzeugeReport(ergebnis: BacktestErgebnis, korridore: Korridore):
   if (ergebnis.cheerleader && ergebnis.cheerleader.length > 0) {
     push(`## Cheerleader-Reaktionen`);
     push();
-    push('> Die Einlösequote ist die interessanteste Spalte: ein Cheerleader, der oft angeboten und ' +
-      'fast nie eingelöst wird, ist zu schwach für den Preis eines Bankplatzes. Eine Quote nahe ' +
-      '100 % heißt umgekehrt, dass die Entscheidung gar keine ist. Achtung: gemessen mit dem ' +
-      'heuristischen Backtest-Bot – für die tatsächliche Attraktivität zählt menschliches Playtesting.');
+    push('> Verzichten ist unmöglich – ein Schild-Block wird immer mit einem Opfer bezahlt. Die ' +
+      'Wahlquote sagt deshalb, wie oft ein Cheerleader gegen die anderen auf der Bank gewinnt: ' +
+      'ein Wert nahe 0 % heißt, dass er nur genommen wird, wenn sonst niemand mehr da ist. ' +
+      'Achtung: gemessen mit dem heuristischen Backtest-Bot – für die tatsächliche ' +
+      'Attraktivität zählt menschliches Playtesting.');
     push();
-    push('| Cheerleader | angeboten | geopfert | Einlösequote | verzichtet | Schaden verursacht | Schaden verhindert | Rettungen |');
-    push('|---|---|---|---|---|---|---|---|');
+    push('| Cheerleader | angeboten | geopfert | Wahlquote | Schaden verursacht | Schaden verhindert |');
+    push('|---|---|---|---|---|---|');
     for (const c of [...ergebnis.cheerleader].sort((a, b) => b.angeboten - a.angeboten)) {
       const quote = c.angeboten > 0 ? c.geopfert / c.angeboten : 0;
       push(
-        `| ${c.name} | ${c.angeboten} | ${c.geopfert} | ${pct(quote)} | ${c.verzichtet} | ` +
-          `${c.schadenVerursacht} | ${c.schadenVerhindert} | ${c.rettungen} |`
+        `| ${c.name} | ${c.angeboten} | ${c.geopfert} | ${pct(quote)} | ` +
+          `${c.schadenVerursacht} | ${c.schadenVerhindert} |`
       );
     }
     push();

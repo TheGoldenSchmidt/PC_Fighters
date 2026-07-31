@@ -203,11 +203,9 @@ export function zaehleCheerleader(
   const je = state.stats.proCheerleader[owner];
   je[cardId] ??= {
     angeboten: 0,
-    verzichtet: 0,
     geopfert: 0,
     schadenVerursacht: 0,
-    schadenVerhindert: 0,
-    rettungen: 0
+    schadenVerhindert: 0
   };
   je[cardId][feld] += n;
 }
