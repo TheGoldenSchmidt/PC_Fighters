@@ -50,6 +50,67 @@ export const schildSchema = z
     message: 'ladung.max muss mindestens so groß sein wie ladung.min'
   });
 
+/**
+ * Wirkung einer Cheerleader-Kraft. Neue Wirkung = neuer Zweig hier, eine
+ * Variante in `CheerleaderWirkung` (types.ts) und ein Eintrag in
+ * CHEERLEADER_WIRKUNGEN (cheerleader.ts).
+ *
+ * `wahl` verschachtelt zwei weitere Wirkungen, deshalb z.lazy: das Schema
+ * referenziert sich selbst und kann erst beim Prüfen aufgelöst werden.
+ * Verschachtelte `wahl`-Wirkungen sind bewusst NICHT erlaubt (siehe unten) –
+ * eine Kraft stellt höchstens eine Frage.
+ */
+const einfacheWirkungSchema = z.discriminatedUnion('kind', [
+  z
+    .object({
+      kind: z.literal('peinigenAlle'),
+      atkDeckel: z.number().int().min(0),
+      hpDeckel: z.number().int().min(1)
+    })
+    .strict(),
+  z.object({ kind: z.literal('schwaechungRunde'), atk: z.number().int().min(1) }).strict(),
+  z
+    .object({
+      kind: z.literal('ziehenUndWissen'),
+      karten: z.number().int().min(0),
+      wissen: z.number().int().min(0)
+    })
+    .strict(),
+  z.object({ kind: z.literal('schadenAufAusloeser'), x: z.number().int().min(1) }).strict(),
+  z.object({ kind: z.literal('gegenseitigerSchaden'), x: z.number().int().min(1) }).strict(),
+  z
+    .object({
+      kind: z.literal('rettenUndZiehen'),
+      hp: z.number().int().min(1),
+      karten: z.number().int().min(0)
+    })
+    .strict()
+]);
+
+const cheerleaderWahlOptionSchema = z
+  .object({ name: z.string().min(1), wirkung: einfacheWirkungSchema })
+  .strict();
+
+export const cheerleaderWirkungSchema = z.union([
+  einfacheWirkungSchema,
+  z
+    .object({
+      kind: z.literal('wahl'),
+      optionA: cheerleaderWahlOptionSchema,
+      optionB: cheerleaderWahlOptionSchema
+    })
+    .strict()
+]);
+
+export const cheerleaderKraftSchema = z
+  .object({
+    name: z.string().min(1),
+    text: z.string().min(1),
+    ausloeser: z.enum(['gegnerischeKreatur', 'gegnerischeKreaturGegenueber', 'eigenerTod']),
+    wirkung: cheerleaderWirkungSchema
+  })
+  .strict();
+
 export const configSchema = z.object({
   lanes: z.number().int().min(1).max(6),
   baseHealth: z.number().int().min(1),
@@ -73,7 +134,9 @@ export const configSchema = z.object({
   cheerleaders: z.object({
     candidates: z.array(z.string().min(1)).min(3),
     selectionSize: z.literal(3),
-    maxInDeck: z.number().int().min(0)
+    maxInDeck: z.number().int().min(0),
+    // Ohne Eintrag sitzt ein Cheerleader nur dekorativ auf der Bank.
+    kraefte: z.record(z.string().min(1), cheerleaderKraftSchema).default({})
   }),
   zermuerbung: z
     .object({
@@ -524,6 +587,16 @@ export function validateGameData(raw: {
   }
   if (configResult.data.cheerleaders.maxInDeck > cheerleaderIds.length) {
     cheerleaderProblems.push('"maxInDeck" darf nicht größer als der Kandidatenpool sein.');
+  }
+  // Eine Kraft ohne zugehörigen Kandidaten wäre stumm: sie könnte nie auf der
+  // Bank landen und damit auch nie ausgelöst werden. Das ist fast immer ein
+  // Tippfehler in der cardId, deshalb ein harter Datenfehler.
+  for (const id of Object.keys(configResult.data.cheerleaders.kraefte)) {
+    if (!cheerleaderIds.includes(id)) {
+      cheerleaderProblems.push(
+        `Superkraft für "${id}" konfiguriert, aber "${id}" steht nicht in "candidates".`
+      );
+    }
   }
   if (cheerleaderProblems.length > 0) throw new DataError('config.json', cheerleaderProblems);
 

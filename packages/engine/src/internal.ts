@@ -219,8 +219,18 @@ function verarbeiteTodesstatistik(state: GameState, owner: PlayerIndex, c: Creat
 /**
  * Nach jeder Zustandsänderung aufrufen: gleicht Lebenspunkte an geänderte
  * Auren an und entfernt tote Kreaturen (außer Todes-Rettung/Schutz greift).
+ *
+ * `todesFrage` wird gestellt, kurz BEVOR eine Kreatur endgültig vom Feld
+ * verschwindet – also nach `rettung` und `nachbar`-Schutz, damit die
+ * eingebauten Kartenmechaniken Vorrang vor einem Cheerleader-Opfer haben.
+ * Antwortet der Hook `true`, hat er ein Reaktionsfenster geöffnet: die Kreatur
+ * bleibt (mit ≤0 Leben) stehen und diese Funktion bricht sofort ab. Der
+ * Aufrufer muss sie nach der Spielerantwort erneut aufrufen.
  */
-export function recalcBoard(state: GameState): DeathInfo[] {
+export function recalcBoard(
+  state: GameState,
+  todesFrage?: (owner: PlayerIndex, lane: number, creature: Creature) => boolean
+): DeathInfo[] {
   const deaths: DeathInfo[] = [];
   let changed = true;
   while (changed) {
@@ -245,6 +255,8 @@ export function recalcBoard(state: GameState): DeathInfo[] {
             changed = true; // Nachbar opfert sich – neu rechnen
             continue;
           }
+          // Letzte Gelegenheit: ein Cheerleader-Opfer kann den Tod abwenden.
+          if (todesFrage?.(owner, lane, c)) return deaths;
           state.board[owner][lane] = null;
           deaths.push({ owner, lane, name: c.name, faction: c.faction, creature: c });
           verarbeiteTodesstatistik(state, owner, c);

@@ -30,7 +30,7 @@ import {
 } from '../../packages/engine/src/index.js';
 import type { BotProfil, DeckList, GameData } from '../../packages/engine/src/index.js';
 import { erzeugeReport, sammleVerletzungen } from './report.js';
-import type { BacktestErgebnis, BotSensitivitaet, KartenKennzahl, Korridore, MatchupErgebnis, ZufallsGrundlinie } from './report.js';
+import type { BacktestErgebnis, BotSensitivitaet, CheerleaderKennzahl, KartenKennzahl, Korridore, MatchupErgebnis, ZufallsGrundlinie } from './report.js';
 
 const HIER = dirname(fileURLToPath(import.meta.url));
 const korridoreJson = JSON.parse(readFileSync(join(HIER, 'korridore.json'), 'utf8'));
@@ -329,7 +329,10 @@ async function main() {
   // Karte, die sie mindestens einmal enthalten.
   const factionTree = buildFactionTree(data.factions);
   const karten: KartenKennzahl[] = [...kartenAggregat.entries()]
-    .filter(([cardId]) => !cardId.startsWith('token:'))
+    // Tokens sind keine Deckkarten. Ebenso wenig die Pseudo-Quellen, unter
+    // denen Effektschaden verbucht wird ("schild", "cheerleader") – die
+    // tauchten sonst als Karten mit Kills, aber ohne Deck-Präsenz auf.
+    .filter(([cardId]) => !cardId.startsWith('token:') && data.cardsById[cardId] != null)
     .map(([cardId, acc]) => {
     const card = data.cardsById[cardId];
     const name = card?.name ?? cardId;
@@ -366,6 +369,38 @@ async function main() {
     };
   });
 
+  // Cheerleader-Nutzung über alle Partien und beide Seiten summieren.
+  const cheerleaderAggregat = new Map<
+    string,
+    { angeboten: number; verzichtet: number; geopfert: number; schadenVerursacht: number; schadenVerhindert: number; rettungen: number }
+  >();
+  for (const stats of kartenStatsGesamt) {
+    for (const seite of [0, 1] as const) {
+      for (const [cardId, c] of Object.entries(stats.proCheerleader?.[seite] ?? {})) {
+        const acc = cheerleaderAggregat.get(cardId) ?? {
+          angeboten: 0,
+          verzichtet: 0,
+          geopfert: 0,
+          schadenVerursacht: 0,
+          schadenVerhindert: 0,
+          rettungen: 0
+        };
+        acc.angeboten += c.angeboten;
+        acc.verzichtet += c.verzichtet;
+        acc.geopfert += c.geopfert;
+        acc.schadenVerursacht += c.schadenVerursacht;
+        acc.schadenVerhindert += c.schadenVerhindert;
+        acc.rettungen += c.rettungen;
+        cheerleaderAggregat.set(cardId, acc);
+      }
+    }
+  }
+  const cheerleader: CheerleaderKennzahl[] = [...cheerleaderAggregat.entries()].map(([cardId, acc]) => ({
+    cardId,
+    name: data.cardsById[cardId]?.name ?? cardId,
+    ...acc
+  }));
+
   const ergebnis: BacktestErgebnis = {
     erzeugtAm: new Date().toISOString(),
     saat: grundSaat,
@@ -375,7 +410,8 @@ async function main() {
     karten,
     botSensitivitaet,
     zufallsGrundlinien,
-    deckFraktion
+    deckFraktion,
+    cheerleader
   };
 
   const korridore = korridoreJson as unknown as Korridore;

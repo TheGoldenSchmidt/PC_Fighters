@@ -10,6 +10,7 @@ import {
   getEffectiveAttack,
   getMaxHealth,
   ladeDecks,
+  legaleAktionen,
   loadGameData,
   matchesScope,
   roundEnergy,
@@ -71,8 +72,26 @@ function emptyState(): GameState {
     winner: null,
     uidCounter: 0,
     // Fester Seed: macht die Schild-Zufallszahlen im Test reproduzierbar.
-    rngState: 1
+    rngState: 1,
+    aufloesung: [],
+    reaktion: null,
+    naechsteReaktionsId: 1
   };
+}
+
+/**
+ * Schlägt ein offenes Cheerleader-Fenster aus. Nötig in Tests, die sich nicht
+ * für die Reaktion interessieren: mit der Standard-Bank öffnet jedes
+ * Ausspielen einer Kreatur ein Fenster beim Gegner.
+ */
+function verzichteAufReaktion(state: GameState): GameState {
+  if (!state.reaktion) return state;
+  return applyAction(
+    state,
+    state.reaktion.spieler,
+    { type: 'cheerleaderReaction', reactionId: state.reaktion.id, slot: null },
+    data
+  );
 }
 
 /** Stellt eine Kreatur direkt aufs Feld (Standard: kampfbereit). */
@@ -358,6 +377,8 @@ describe('Ausspielen & Energie', () => {
     s.players[1].hand = ['ratte'];
     s = applyAction(s, 0, { type: 'playCreature', handIndex: 0, lane: 0 }, data);
     expect(s.board[0][0]?.exhausted).toBe(true);
+    // Die Bank des Gegners löst auf die neue Kreatur aus – hier nicht relevant.
+    s = verzichteAufReaktion(s);
     s = applyAction(s, 1, { type: 'playCreature', handIndex: 0, lane: 0 }, data);
     expect(s.board[1][0]?.exhausted).toBe(false); // flink
   });
@@ -1281,5 +1302,201 @@ describe('Basis-Schild', () => {
     };
     expect(verlauf(4242)).toBe(verlauf(4242));
     expect(verlauf(4242)).not.toBe(verlauf(777));
+  });
+});
+
+describe('Cheerleader-Reaktionen', () => {
+  /** Zustand mit definierter Bank statt der Standardauswahl. */
+  function mitBank(
+    bank0: [string | null, string | null, string | null],
+    bank1: [string | null, string | null, string | null]
+  ): GameState {
+    const s = emptyState();
+    s.players[0].cheerleaders = [...bank0];
+    s.players[1].cheerleaders = [...bank1];
+    return s;
+  }
+
+  function reagiere(
+    state: GameState,
+    slot: 0 | 1 | 2 | null,
+    choice?: 'A' | 'B'
+  ): GameState {
+    const r = state.reaktion;
+    if (!r) throw new Error('Kein offenes Reaktionsfenster.');
+    return applyAction(
+      state,
+      r.spieler,
+      { type: 'cheerleaderReaction', reactionId: r.id, slot, ...(choice ? { choice } : {}) },
+      data
+    );
+  }
+
+  it('eine gegnerische Kreatur oeffnet ein Fenster beim Gegner', () => {
+    let s = mitBank([null, null, null], ['pc_principal', null, null]);
+    s.players[0].hand = ['rekrut'];
+    s = applyAction(s, 0, { type: 'playCreature', handIndex: 0, lane: 0 }, data);
+    expect(s.reaktion).not.toBeNull();
+    expect(s.reaktion?.spieler).toBe(1);
+    expect(s.reaktion?.slots).toEqual([0]);
+    // Waehrend des Fensters ist der reagierende Spieler am Zug.
+    expect(s.active).toBe(1);
+  });
+
+  it('ohne passenden Cheerleader oeffnet sich kein Fenster', () => {
+    let s = mitBank([null, null, null], ['junger_neffe', null, null]);
+    s.players[0].hand = ['rekrut'];
+    s = applyAction(s, 0, { type: 'playCreature', handIndex: 0, lane: 0 }, data);
+    expect(s.reaktion).toBeNull();
+  });
+
+  it('Verzicht laesst die Bank unveraendert und gibt den Zug frei', () => {
+    let s = mitBank([null, null, null], ['pc_principal', null, null]);
+    s.players[0].hand = ['rekrut'];
+    s = applyAction(s, 0, { type: 'playCreature', handIndex: 0, lane: 0 }, data);
+    s = reagiere(s, null);
+    expect(s.reaktion).toBeNull();
+    expect(s.players[1].cheerleaders[0]).toBe('pc_principal');
+    expect(s.active).toBe(1);
+  });
+
+  it('Machtwort deckelt alle gegnerischen Kreaturen und leert den Bankplatz', () => {
+    let s = mitBank([null, null, null], ['pc_principal', null, null]);
+    put(s, 0, 1, 'ritter');
+    s.players[0].hand = ['rekrut'];
+    s = applyAction(s, 0, { type: 'playCreature', handIndex: 0, lane: 0 }, data);
+    s = reagiere(s, 0);
+    expect(s.players[1].cheerleaders[0]).toBeNull();
+    // Beide Kreaturen von Spieler 0 sind gedeckelt.
+    expect(getEffectiveAttack(s, 0, 0)).toBe(0);
+    expect(getEffectiveAttack(s, 0, 1)).toBe(0);
+  });
+
+  it('Handgemenge trifft beide Kreaturen der Lane', () => {
+    let s = mitBank([null, null, null], ['randy_marsh', null, null]);
+    const eigene = put(s, 1, 0, 'ritter');
+    const hpVorher = eigene.currentHealth;
+    s.players[0].hand = ['ritter'];
+    s = applyAction(s, 0, { type: 'playCreature', handIndex: 0, lane: 0 }, data);
+    expect(s.reaktion?.ausloeser).toBe('gegnerischeKreaturGegenueber');
+    s = reagiere(s, 0);
+    expect(s.board[0][0]?.currentHealth).toBe((s.board[0][0]?.lastMaxHealth ?? 0) - 2);
+    expect(s.board[1][0]?.currentHealth).toBe(hpVorher - 2);
+  });
+
+  it('Feldforschung verlangt eine Wahl und fuehrt beide Optionen korrekt aus', () => {
+    const bauen = (): GameState => {
+      const s = mitBank([null, null, null], ['alter_wissenschaftler', null, null]);
+      s.players[0].hand = ['ritter'];
+      s.players[1].deck = ['rekrut', 'rekrut'];
+      return applyAction(s, 0, { type: 'playCreature', handIndex: 0, lane: 0 }, data);
+    };
+
+    // Ohne Wahl abgelehnt.
+    const offen = bauen();
+    expect(() =>
+      applyAction(
+        offen,
+        1,
+        { type: 'cheerleaderReaction', reactionId: offen.reaktion!.id, slot: 0 },
+        data
+      )
+    ).toThrow(/Wahl/);
+
+    const a = reagiere(bauen(), 0, 'A');
+    expect(a.players[1].hand).toHaveLength(1);
+    expect(a.players[1].knowledge).toBe(1);
+
+    const b = reagiere(bauen(), 0, 'B');
+    expect(b.players[1].hand).toHaveLength(0);
+    expect(b.board[0][0]?.currentHealth).toBe((b.board[0][0]?.lastMaxHealth ?? 0) - 2);
+  });
+
+  it('falscher Besitzer, leerer Slot und veraltete Id werden abgewiesen', () => {
+    let s = mitBank([null, null, null], ['pc_principal', null, null]);
+    s.players[0].hand = ['rekrut'];
+    s = applyAction(s, 0, { type: 'playCreature', handIndex: 0, lane: 0 }, data);
+    const id = s.reaktion!.id;
+    expect(() =>
+      applyAction(s, 0, { type: 'cheerleaderReaction', reactionId: id, slot: null }, data)
+    ).toThrow(/anderen Spieler/);
+    expect(() =>
+      applyAction(s, 1, { type: 'cheerleaderReaction', reactionId: id, slot: 1 }, data)
+    ).toThrow(/passt nicht/);
+    expect(() =>
+      applyAction(s, 1, { type: 'cheerleaderReaction', reactionId: id + 99, slot: null }, data)
+    ).toThrow(/nicht mehr aktuell/);
+    // Waehrend eines Fensters ist jede normale Aktion gesperrt.
+    expect(() => applyAction(s, 1, { type: 'pass' }, data)).toThrow(/Cheerleader-Reaktion/);
+  });
+
+  it('Zweite Chance rettet eine sterbende Kreatur im Kampf', () => {
+    let s = mitBank([null, null, null], ['junger_neffe', null, null]);
+    // Spieler 0 schlaegt toedlich zu, Spieler 1 wehrt sich nicht.
+    put(s, 0, 0, 'ritter');
+    const opfer = put(s, 1, 0, 'rekrut');
+    opfer.currentHealth = 1;
+    s.players[1].deck = ['rekrut'];
+    s = applyAction(s, 0, { type: 'pass' }, data);
+    s = applyAction(s, 1, { type: 'pass' }, data);
+    expect(s.reaktion?.ausloeser).toBe('eigenerTod');
+    s = reagiere(s, 0);
+    expect(s.board[1][0]?.currentHealth).toBe(1);
+    expect(s.players[1].cheerleaders[0]).toBeNull();
+    expect(s.players[1].hand).toHaveLength(1);
+  });
+
+  it('Verzicht auf Zweite Chance laesst die Kreatur sterben und die Runde weiterlaufen', () => {
+    let s = mitBank([null, null, null], ['junger_neffe', null, null]);
+    put(s, 0, 0, 'ritter');
+    const opfer = put(s, 1, 0, 'rekrut');
+    opfer.currentHealth = 1;
+    s = applyAction(s, 0, { type: 'pass' }, data);
+    s = applyAction(s, 1, { type: 'pass' }, data);
+    s = reagiere(s, null);
+    expect(s.reaktion).toBeNull();
+    expect(s.board[1][0]).toBeNull();
+    // Die Aufloesung ist vollstaendig durchgelaufen: naechste Runde steht.
+    expect(s.aufloesung).toHaveLength(0);
+    expect(s.round).toBe(2);
+  });
+
+  it('eingebaute Rettung hat Vorrang vor dem Cheerleader-Fenster', () => {
+    // Junger Neffe als KARTE im Feld hat "rettung" – die greift zuerst, es darf
+    // also gar kein Fenster aufgehen.
+    let s = mitBank([null, null, null], ['junger_neffe', null, null]);
+    put(s, 0, 0, 'ritter');
+    const opfer = put(s, 1, 0, 'junger_neffe');
+    opfer.currentHealth = 1;
+    s = applyAction(s, 0, { type: 'pass' }, data);
+    s = applyAction(s, 1, { type: 'pass' }, data);
+    expect(s.reaktion).toBeNull();
+    expect(s.board[1][0]?.currentHealth).toBe(1);
+    expect(s.players[1].cheerleaders[0]).toBe('junger_neffe');
+  });
+
+  it('die Client-Sicht zeigt Angebote nur dem berechtigten Spieler', () => {
+    let s = mitBank([null, null, null], ['alter_wissenschaftler', null, null]);
+    s.players[0].hand = ['rekrut'];
+    s = applyAction(s, 0, { type: 'playCreature', handIndex: 0, lane: 0 }, data);
+    const sichtGegner = buildClientView(s, 0, data);
+    const sichtBesitzer = buildClientView(s, 1, data);
+    expect(sichtGegner.reaktion?.angebote).toEqual([]);
+    expect(sichtBesitzer.reaktion?.angebote).toHaveLength(1);
+    expect(sichtBesitzer.reaktion?.angebote[0].wahl).toEqual({
+      a: 'Karte und Wissen',
+      b: '2 Schaden'
+    });
+  });
+
+  it('legaleAktionen bietet waehrend eines Fensters nur Reaktionen an', () => {
+    let s = mitBank([null, null, null], ['alter_wissenschaftler', null, null]);
+    s.players[0].hand = ['rekrut'];
+    s = applyAction(s, 0, { type: 'playCreature', handIndex: 0, lane: 0 }, data);
+    const fuerBesitzer = legaleAktionen(s, 1, data);
+    expect(fuerBesitzer.every((a) => a.type === 'cheerleaderReaction')).toBe(true);
+    // Verzicht + Wahl A + Wahl B
+    expect(fuerBesitzer).toHaveLength(3);
+    expect(legaleAktionen(s, 0, data)).toEqual([]);
   });
 });

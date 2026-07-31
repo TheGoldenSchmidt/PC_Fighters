@@ -5,7 +5,7 @@
 import { createServer, type Server } from 'node:http';
 import { randomBytes } from 'node:crypto';
 import { WebSocketServer, WebSocket } from 'ws';
-import { writeFileSync, readFileSync, existsSync } from 'node:fs';
+import { writeFileSync, readFileSync, existsSync, renameSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sirv from 'sirv';
@@ -93,27 +93,77 @@ function send(socket: WebSocket, message: unknown): void {
 }
 
 const persistFilePath = join(process.cwd(), 'rooms_persist.json');
+/** Wird atomar über persistFilePath umbenannt – siehe saveRooms(). */
+const persistTempPath = persistFilePath + '.tmp';
+
+/**
+ * Aktuelle Version des Dateiformats.
+ *
+ * 1 (implizit) – nacktes Array von Räumen, ohne Versionsfeld. Der Loader
+ *   erkennt es daran, dass die geparste Wurzel ein Array ist.
+ * 2 – { version, rooms }. Eingeführt mit den Cheerleader-Reaktionen: seitdem
+ *   trägt GameState einen Auflösungszustand, der ein offenes Reaktionsfenster
+ *   über einen Serverneustart hinweg erhalten muss.
+ */
+const PERSIST_VERSION = 2;
+
+interface PersistedRoom {
+  code: string;
+  topic: Topic;
+  state: GameState | null;
+  testMode?: boolean;
+  players: Array<{
+    token: string;
+    faction: string;
+    deck?: DeckList | null;
+    cheerleaders?: unknown;
+  }>;
+}
+
+interface PersistedFile {
+  version: number;
+  rooms: PersistedRoom[];
+}
 
 function saveRooms(rooms: Map<string, Room>) {
   try {
-    const dataToSave = Array.from(rooms.entries()).map(([code, room]) => {
-      return {
+    const dataToSave: PersistedFile = {
+      version: PERSIST_VERSION,
+      rooms: Array.from(rooms.values()).map((room) => ({
         code: room.code,
         topic: room.topic,
         state: room.state,
         testMode: room.testMode,
-        players: room.players.map(p => ({
+        players: room.players.map((p) => ({
           token: p.token,
           faction: p.faction,
           deck: p.deck,
           cheerleaders: p.cheerleaders
         }))
-      };
-    });
-    writeFileSync(persistFilePath, JSON.stringify(dataToSave, null, 2), 'utf-8');
+      }))
+    };
+    // Atomar schreiben: erst vollständig in eine temporäre Datei, dann
+    // umbenennen. Ein Absturz mitten im Schreiben kann so nicht mehr eine halb
+    // geschriebene und damit unlesbare Datei hinterlassen – bisher wäre in dem
+    // Fall jeder laufende Raum verloren gewesen.
+    writeFileSync(persistTempPath, JSON.stringify(dataToSave, null, 2), 'utf-8');
+    renameSync(persistTempPath, persistFilePath);
   } catch (err) {
     console.error('Failed to persist rooms:', err);
   }
+}
+
+/**
+ * Bringt einen persistierten GameState auf den aktuellen Stand. Räume, die vor
+ * den Cheerleader-Reaktionen gespeichert wurden, kennen die Felder der
+ * Auflösungssteuerung nicht; ohne sie würde applyAction über `undefined`
+ * stolpern. Ein alter Zustand hat nie ein offenes Fenster.
+ */
+function migriereZustand(state: GameState): GameState {
+  state.aufloesung ??= [];
+  state.reaktion ??= null;
+  state.naechsteReaktionsId ??= 1;
+  return state;
 }
 
 function loadRooms(data: GameData): Map<string, Room> {
@@ -121,18 +171,19 @@ function loadRooms(data: GameData): Map<string, Room> {
   try {
     if (existsSync(persistFilePath)) {
       const content = readFileSync(persistFilePath, 'utf-8');
-      const parsed = JSON.parse(content) as Array<{
-        code: string;
-        topic: Topic;
-        state: GameState | null;
-        testMode?: boolean;
-        players: Array<{
-          token: string;
-          faction: string;
-          deck?: DeckList | null;
-          cheerleaders?: unknown;
-        }>;
-      }>;
+      const wurzel = JSON.parse(content) as PersistedFile | PersistedRoom[];
+      // Version 1 war ein nacktes Array ohne Versionsfeld – daran wird sie
+      // erkannt. Neuere Versionen tragen { version, rooms }.
+      const parsed: PersistedRoom[] = Array.isArray(wurzel) ? wurzel : (wurzel.rooms ?? []);
+      const version = Array.isArray(wurzel) ? 1 : wurzel.version;
+      if (!Array.isArray(wurzel) && version > PERSIST_VERSION) {
+        // Neuere Datei als dieser Server sie versteht: lieber mit leerem
+        // Raumverzeichnis starten, als Zustände halb interpretiert zu laden.
+        console.warn(
+          `rooms_persist.json hat Version ${version}, dieser Server kennt nur bis ${PERSIST_VERSION}. Räume werden ignoriert.`
+        );
+        return map;
+      }
       for (const item of parsed) {
         try {
           const players = item.players.map((p, idx) => {
@@ -159,7 +210,7 @@ function loadRooms(data: GameData): Map<string, Room> {
           map.set(item.code, {
             code: item.code,
             topic: item.topic,
-            state: item.state,
+            state: item.state ? migriereZustand(item.state) : null,
             testMode: item.testMode,
             players
           });

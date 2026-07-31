@@ -12,6 +12,15 @@ import {
   onRoundStartAbilities,
   resolvePoison
 } from './abilities.js';
+import {
+  angebote,
+  fuehreWirkungAus,
+  kraftVonSlot,
+  oeffneFenster,
+  passendeSlots,
+  wirkungsKontext,
+  zaehleVerzicht
+} from './cheerleader.js';
 import { resolveEffect } from './effects.js';
 import { buildFactionTree, matchesScope } from './factions.js';
 import { defaultCheerleaderSelection, maxCopiesOf, validateDeck } from './schema.js';
@@ -27,8 +36,9 @@ import {
 } from './internal.js';
 import { hasKeyword } from './keywords.js';
 import { basisSchaden } from './schild.js';
-import { registriereAusspielen, registriereEnergie, registriereMulligan, registriereZug, zaehleKarte, zaehleSpieler } from './stats.js';
+import { registriereAusspielen, registriereEnergie, registriereMulligan, registriereZug, zaehleCheerleader, zaehleKarte, zaehleSpieler } from './stats.js';
 import type {
+  AufloesungsSchritt,
   CardDef,
   CheerleaderSelection,
   CheerleaderSlots,
@@ -50,16 +60,30 @@ export { GameRuleError, getEffectiveAttack, getMaxHealth };
  * Auren neu berechnen, Tote entfernen und als Sterbe-Events loggen. Beim-Tod-
  * Effekte (todesfluch, beschwoeren, sammeln) können neue Tode auslösen – daher
  * bis zur Stabilität wiederholen.
+ *
+ * Kann unterbrechen: hat der Besitzer einer sterbenden Kreatur einen passenden
+ * Cheerleader auf der Bank, öffnet sich ein Reaktionsfenster und die Funktion
+ * kehrt vorzeitig zurück. Der Aufrufer erkennt das an `state.reaktion` und muss
+ * den Schritt `todeStabilisieren` erneut einplanen.
  */
 function logDeaths(state: GameState): void {
-  let deaths = recalcBoard(state);
+  const frage = (owner: PlayerIndex, lane: number, c: Creature): boolean => {
+    if (c.todesReaktionAngeboten) return false;
+    const geoeffnet = oeffneFenster(state, owner, 'eigenerTod', c, lane, owner, state.active);
+    if (geoeffnet) c.todesReaktionAngeboten = true;
+    return geoeffnet;
+  };
+
   let guard = 0;
-  while (deaths.length > 0 && guard < 100) {
+  while (guard < 100) {
+    const deaths = recalcBoard(state, frage);
     for (const d of deaths) {
       log(state, `${d.name} wird zerstört.`, { kind: 'death', lane: d.lane, owner: d.owner });
     }
-    onDeathTriggers(state, deaths);
-    deaths = recalcBoard(state);
+    if (deaths.length > 0) onDeathTriggers(state, deaths);
+    // Fenster offen: hier abbrechen, der Rest läuft nach der Spielerantwort.
+    if (state.reaktion) return;
+    if (deaths.length === 0) return;
     guard += 1;
   }
 }
@@ -202,6 +226,9 @@ export function createGame(
     log: [],
     winner: null,
     uidCounter: 0,
+    aufloesung: [],
+    reaktion: null,
+    naechsteReaktionsId: 1,
     // Einmalig aus der injizierten Zufallsquelle gezogen: ab hier bezieht die
     // Engine jeden weiteren Zufall aus diesem Feld (wuerfle(), siehe rng.ts),
     // damit ein gesetzter Seed die ganze Partie deterministisch macht.
@@ -285,7 +312,12 @@ function startRound(state: GameState): void {
   log(state, `— Runde ${state.round} beginnt (${energy} Energie, Spieler ${state.startingPlayer + 1} fängt an) —`);
 }
 
-function endRound(state: GameState): void {
+/**
+ * Erster Teil des Rundenendes: Rundenende-Effekte und Zurücksetzen der
+ * temporären Werte. Die anschließende Todesauflösung und die Zermürbung sind
+ * eigene Schritte, weil dazwischen ein Reaktionsfenster aufgehen kann.
+ */
+function rundenAbschluss(state: GameState): void {
   onRoundEndAbilities(state);
   // Temporäre Buffs entfernen, Erschöpfung aufheben, Rundenzustand zurücksetzen.
   for (const row of state.board) {
@@ -299,10 +331,13 @@ function endRound(state: GameState): void {
       // "hat noch nie angegriffen" statt "diese Runde nicht angegriffen" prüfte.
       creature.attackedThisRound = false;
       creature.rundenZaehler = {};
+      // Ein Todesfall der nächsten Runde ist ein neuer Auslöser.
+      creature.todesReaktionAngeboten = false;
     }
   }
-  logDeaths(state);
+}
 
+function zermuerbungUndNaechsteRunde(state: GameState): void {
   // Zermürbung (Regelwerk V2): ab config.zermuerbung.abRunde verlieren beide
   // Basen am Rundenende Leben – das ist die REGULÄRE Terminierung für lange
   // Partien (eine echte Spielentscheidung statt eines harten Abbruchs).
@@ -319,6 +354,8 @@ function endRound(state: GameState): void {
   if (state.round >= state.config.roundLimit) {
     const [a, b] = state.players;
     state.phase = 'ended';
+    state.aufloesung = [];
+    state.reaktion = null;
     state.winner = a.base > b.base ? 0 : b.base > a.base ? 1 : 'draw';
     log(
       state,
@@ -334,11 +371,17 @@ function endRound(state: GameState): void {
 // ---------------------------------------------------------------- Kampfphase
 
 function checkBaseDestroyed(state: GameState): boolean {
+  // Bereits beendet: nicht erneut prüfen, sonst stünde die Sieg-Meldung doppelt
+  // im Log (die Basis bleibt ja auf ≤0 stehen).
+  if (state.phase === 'ended') return false;
   const dead0 = state.players[0].base <= 0;
   const dead1 = state.players[1].base <= 0;
   if (!dead0 && !dead1) return false;
   state.phase = 'ended';
   state.winner = dead0 && dead1 ? 'draw' : dead0 ? 1 : 0;
+  // Nichts mehr auflösen und kein Fenster offen lassen – die Partie ist vorbei.
+  state.aufloesung = [];
+  state.reaktion = null;
   log(
     state,
     state.winner === 'draw'
@@ -413,88 +456,98 @@ function kampfAngriffsBonus(state: GameState, attackerOwner: PlayerIndex, lane: 
   return getAbilities(attacker, 'hunter').reduce((sum, h) => sum + h.bonusAtk, 0);
 }
 
-function resolveCombat(state: GameState): void {
-  log(state, '— Kampfphase —');
-  for (let lane = 0; lane < state.config.lanes; lane++) {
-    if (state.phase === 'ended') return;
-    const a = state.board[0][lane];
-    const b = state.board[1][lane];
+/**
+ * Kampf EINER Lane. Räumt bewusst keine Toten ab – das erledigt der direkt
+ * danach eingeplante Schritt `todeStabilisieren`, der dabei ein
+ * Reaktionsfenster öffnen kann.
+ */
+function kampfLane(state: GameState, lane: number): void {
+  const a = state.board[0][lane];
+  const b = state.board[1][lane];
 
-    if (a && b) {
-      // Beide Lanes besetzt: kampfbereite Kreaturen schlagen GLEICHZEITIG zu.
-      // Erschöpfte Kreaturen greifen nicht an, verteidigen aber normal.
-      const atkA = a.exhausted ? 0 : getEffectiveAttack(state, 0, lane) + kampfAngriffsBonus(state, 0, lane);
-      const atkB = b.exhausted ? 0 : getEffectiveAttack(state, 1, lane) + kampfAngriffsBonus(state, 1, lane);
-      if (atkA === 0 && atkB === 0) continue;
+  if (a && b) {
+    // Beide Lanes besetzt: kampfbereite Kreaturen schlagen GLEICHZEITIG zu.
+    // Erschöpfte Kreaturen greifen nicht an, verteidigen aber normal.
+    const atkA = a.exhausted ? 0 : getEffectiveAttack(state, 0, lane) + kampfAngriffsBonus(state, 0, lane);
+    const atkB = b.exhausted ? 0 : getEffectiveAttack(state, 1, lane) + kampfAngriffsBonus(state, 1, lane);
+    if (atkA === 0 && atkB === 0) return;
 
-      // Hinrichten (beim Angriff, vor dem Schaden). Mehrere hinrichten-Einträge
-      // auf derselben Karte lösen nacheinander aus (applyHinrichten überspringt
-      // bereits getroffene Ziele, siehe dortiger Kommentar).
-      if (atkA > 0) {
-        for (const h of getAbilities(a, 'hinrichten')) applyHinrichten(state, 0, lane, h.maxHp);
-      }
-      if (atkB > 0) {
-        for (const h of getAbilities(b, 'hinrichten')) applyHinrichten(state, 1, lane, h.maxHp);
-      }
-
-      if (atkA > 0) creatureStrike(state, a, b, atkA, 0, lane);
-      if (atkB > 0) creatureStrike(state, b, a, atkB, 1, lane);
-      // Häutung (`shedding`) VOR logDeaths: proaktive Heilung bei niedrigem
-      // Leben, bevor recalcBoard über Tod/Rettung entscheidet. Läuft bewusst
-      // außerhalb der recalcBoard-Fixpunktschleife (siehe Kommentar an
-      // Creature.zaehler in types.ts).
-      applyShedding(state);
-      logDeaths(state);
-      if (checkBaseDestroyed(state)) return; // Wucht kann die Basis zerstören
-    } else if (a && !b && !a.exhausted) {
-      const dmg = getEffectiveAttack(state, 0, lane) + soloBasisschaden(a);
-      a.attackedThisRound = true;
-      // Der Schild entscheidet, wie viel wirklich ankommt. Das AttackEvent trägt
-      // den effektiven Schaden, weil der Client damit direkt weiterrechnet.
-      const echt = basisSchaden(state, 1, dmg);
-      zaehleKarte(state, 0, a.cardId, 'schadenBasis', echt);
-      if (a.spawnRound === state.round) {
-        zaehleSpieler(state, 0, 'flinkAngriffe');
-        zaehleKarte(state, 0, a.cardId, 'flinkAngriffe');
-      }
-      log(
-        state,
-        echt > 0
-          ? `Lane ${lane + 1}: ${a.name} trifft die gegnerische Basis für ${echt}.`
-          : `Lane ${lane + 1}: ${a.name} greift die gegnerische Basis an – abgewehrt.`,
-        { kind: 'attack', lane, attacker: 0, damage: echt, toBase: true, ...(echt === 0 ? { blockiert: true } : {}) }
-      );
-      // Superkraft „Störfeuer" kann Kreaturen getötet haben – sofort auflösen,
-      // damit die Tode in dieser Lane-Reihenfolge animiert werden.
-      logDeaths(state);
-      if (checkBaseDestroyed(state)) return;
-    } else if (b && !a && !b.exhausted) {
-      const dmg = getEffectiveAttack(state, 1, lane) + soloBasisschaden(b);
-      b.attackedThisRound = true;
-      const echt = basisSchaden(state, 0, dmg);
-      zaehleKarte(state, 1, b.cardId, 'schadenBasis', echt);
-      if (b.spawnRound === state.round) {
-        zaehleSpieler(state, 1, 'flinkAngriffe');
-        zaehleKarte(state, 1, b.cardId, 'flinkAngriffe');
-      }
-      log(
-        state,
-        echt > 0
-          ? `Lane ${lane + 1}: ${b.name} trifft die gegnerische Basis für ${echt}.`
-          : `Lane ${lane + 1}: ${b.name} greift die gegnerische Basis an – abgewehrt.`,
-        { kind: 'attack', lane, attacker: 1, damage: echt, toBase: true, ...(echt === 0 ? { blockiert: true } : {}) }
-      );
-      logDeaths(state);
-      if (checkBaseDestroyed(state)) return;
+    // Hinrichten (beim Angriff, vor dem Schaden). Mehrere hinrichten-Einträge
+    // auf derselben Karte lösen nacheinander aus (applyHinrichten überspringt
+    // bereits getroffene Ziele, siehe dortiger Kommentar).
+    if (atkA > 0) {
+      for (const h of getAbilities(a, 'hinrichten')) applyHinrichten(state, 0, lane, h.maxHp);
     }
+    if (atkB > 0) {
+      for (const h of getAbilities(b, 'hinrichten')) applyHinrichten(state, 1, lane, h.maxHp);
+    }
+
+    if (atkA > 0) creatureStrike(state, a, b, atkA, 0, lane);
+    if (atkB > 0) creatureStrike(state, b, a, atkB, 1, lane);
+    // Häutung (`shedding`) VOR der Todesauflösung: proaktive Heilung bei
+    // niedrigem Leben, bevor recalcBoard über Tod/Rettung entscheidet. Läuft
+    // bewusst außerhalb der recalcBoard-Fixpunktschleife (siehe Kommentar an
+    // Creature.zaehler in types.ts).
+    applyShedding(state);
+    return;
   }
 
+  if (a && !b && !a.exhausted) {
+    const dmg = getEffectiveAttack(state, 0, lane) + soloBasisschaden(a);
+    a.attackedThisRound = true;
+    // Der Schild entscheidet, wie viel wirklich ankommt. Das AttackEvent trägt
+    // den effektiven Schaden, weil der Client damit direkt weiterrechnet.
+    const echt = basisSchaden(state, 1, dmg);
+    zaehleKarte(state, 0, a.cardId, 'schadenBasis', echt);
+    if (a.spawnRound === state.round) {
+      zaehleSpieler(state, 0, 'flinkAngriffe');
+      zaehleKarte(state, 0, a.cardId, 'flinkAngriffe');
+    }
+    log(
+      state,
+      echt > 0
+        ? `Lane ${lane + 1}: ${a.name} trifft die gegnerische Basis für ${echt}.`
+        : `Lane ${lane + 1}: ${a.name} greift die gegnerische Basis an – abgewehrt.`,
+      { kind: 'attack', lane, attacker: 0, damage: echt, toBase: true, ...(echt === 0 ? { blockiert: true } : {}) }
+    );
+    return;
+  }
+
+  if (b && !a && !b.exhausted) {
+    const dmg = getEffectiveAttack(state, 1, lane) + soloBasisschaden(b);
+    b.attackedThisRound = true;
+    const echt = basisSchaden(state, 0, dmg);
+    zaehleKarte(state, 1, b.cardId, 'schadenBasis', echt);
+    if (b.spawnRound === state.round) {
+      zaehleSpieler(state, 1, 'flinkAngriffe');
+      zaehleKarte(state, 1, b.cardId, 'flinkAngriffe');
+    }
+    log(
+      state,
+      echt > 0
+        ? `Lane ${lane + 1}: ${b.name} trifft die gegnerische Basis für ${echt}.`
+        : `Lane ${lane + 1}: ${b.name} greift die gegnerische Basis an – abgewehrt.`,
+      { kind: 'attack', lane, attacker: 1, damage: echt, toBase: true, ...(echt === 0 ? { blockiert: true } : {}) }
+    );
+  }
+}
+
+/** Nach allen Lanes: Gift-Zermürbung und Häutung, danach wieder Tode auflösen. */
+function kampfAbschluss(state: GameState): void {
   // Gift-Zermürbung am Ende der Kampfphase: bei ≥3 Marken sofortiger Tod
-  // (Marken bleiben sonst bestehen). Häutung VOR logDeaths, damit sie noch
-  // eingreifen kann.
+  // (Marken bleiben sonst bestehen). Häutung davor, damit sie noch eingreifen kann.
   resolvePoison(state);
   applyShedding(state);
-  logDeaths(state);
+}
+
+/** Die vollständige Kampfauflösung als Schrittfolge (Lane für Lane). */
+function kampfSchritte(state: GameState): AufloesungsSchritt[] {
+  const schritte: AufloesungsSchritt[] = [];
+  for (let lane = 0; lane < state.config.lanes; lane++) {
+    schritte.push({ art: 'kampfLane', lane }, { art: 'todeStabilisieren' });
+  }
+  schritte.push({ art: 'kampfAbschluss' }, { art: 'todeStabilisieren' }, { art: 'nachKampf' });
+  return schritte;
 }
 
 // ---------------------------------------------------------------- Flug-Phase
@@ -509,7 +562,7 @@ function afterCombat(state: GameState): void {
   state.players[0].flyDone = !playerHasFlyers(state, 0);
   state.players[1].flyDone = !playerHasFlyers(state, 1);
   if (state.players[0].flyDone && state.players[1].flyDone) {
-    endRound(state);
+    state.aufloesung.unshift(...rundenSchritte());
     return;
   }
   state.phase = 'fly';
@@ -519,14 +572,60 @@ function afterCombat(state: GameState): void {
   log(state, 'Fliegende Kreaturen dürfen jetzt die Lane wechseln.');
 }
 
+/** Rundenende als Schrittfolge – dazwischen kann ein Fenster aufgehen. */
+function rundenSchritte(): AufloesungsSchritt[] {
+  return [{ art: 'rundenAbschluss' }, { art: 'todeStabilisieren' }, { art: 'zermuerbung' }];
+}
+
 function advanceFlyPhase(state: GameState): void {
   const [a, b] = state.players;
   if (a.flyDone && b.flyDone) {
-    endRound(state);
+    state.aufloesung.push(...rundenSchritte());
     return;
   }
   if (state.players[state.active].flyDone) {
     state.active = otherPlayer(state.active);
+  }
+}
+
+// ---------------------------------------------------------------- Schrittmaschine
+
+/**
+ * Arbeitet die eingeplanten Auflösungsschritte ab, bis entweder nichts mehr
+ * offen ist, ein Reaktionsfenster aufgeht oder die Partie endet. Jeder Aufruf
+ * von applyAction endet hier – dadurch steht der Zustand danach IMMER entweder
+ * auf "ein Spieler ist normal am Zug" oder auf "ein Fenster wartet".
+ */
+function fahreAufloesungFort(state: GameState): void {
+  let guard = 0;
+  while (state.aufloesung.length > 0 && !state.reaktion && state.phase !== 'ended' && guard < 500) {
+    guard += 1;
+    const schritt = state.aufloesung.shift();
+    if (!schritt) break;
+    switch (schritt.art) {
+      case 'kampfLane':
+        kampfLane(state, schritt.lane);
+        break;
+      case 'kampfAbschluss':
+        kampfAbschluss(state);
+        break;
+      case 'todeStabilisieren':
+        logDeaths(state);
+        // Fenster offen: den Schritt erneut vornean einplanen, damit die
+        // Stabilisierung nach der Spielerantwort exakt hier weiterläuft.
+        if (state.reaktion) state.aufloesung.unshift({ art: 'todeStabilisieren' });
+        break;
+      case 'nachKampf':
+        afterCombat(state);
+        break;
+      case 'rundenAbschluss':
+        rundenAbschluss(state);
+        break;
+      case 'zermuerbung':
+        zermuerbungUndNaechsteRunde(state);
+        break;
+    }
+    checkBaseDestroyed(state);
   }
 }
 
@@ -541,8 +640,8 @@ function playPhaseAction(state: GameState, player: PlayerIndex, action: PlayerAc
     state.consecutivePasses += 1;
     log(state, `Spieler ${player + 1} passt.`);
     if (state.consecutivePasses >= 2) {
-      resolveCombat(state);
-      afterCombat(state);
+      log(state, '— Kampfphase —');
+      state.aufloesung.push(...kampfSchritte(state));
     } else {
       state.active = otherPlayer(player);
     }
@@ -599,6 +698,96 @@ function playPhaseAction(state: GameState, player: PlayerIndex, action: PlayerAc
   p.gespieltDieseRunde.push(card.faction);
   logDeaths(state);
   state.active = otherPlayer(player);
+
+  // Erst NACH der kompletten Buchhaltung fragen: so gibt es keinen halb
+  // abgeschlossenen Ausspiel-Zug, der über ein Fenster hinweg fortgesetzt
+  // werden müsste. Der Gegner ist bereits am Zug – reagiert er, bleibt er es.
+  if (action.type === 'playCreature' && !state.reaktion) {
+    const neue = state.board[player][action.lane];
+    const gegner = otherPlayer(player);
+    if (neue) {
+      // Der spezifischere Auslöser zuerst: steht dem Gegner in dieser Lane eine
+      // eigene Kreatur gegenüber, gilt „gegenüber", sonst der allgemeine Fall.
+      const gegenueber = state.board[gegner][action.lane] != null;
+      const ausloeser = gegenueber && passendeSlots(state, gegner, 'gegnerischeKreaturGegenueber').length > 0
+        ? 'gegnerischeKreaturGegenueber'
+        : 'gegnerischeKreatur';
+      oeffneFenster(state, gegner, ausloeser, neue, action.lane, player, gegner);
+    }
+  }
+}
+
+// ---------------------------------------------------------------- Reaktion
+
+/**
+ * Antwort auf ein offenes Reaktionsfenster. Verzicht (`slot: null`) ist immer
+ * erlaubt; ein Opfer kostet weder Energie noch einen Zug – nur den Bankplatz.
+ */
+function reaktionsAktion(
+  state: GameState,
+  player: PlayerIndex,
+  action: Extract<PlayerAction, { type: 'cheerleaderReaction' }>,
+  data: GameData
+): void {
+  const reaktion = state.reaktion;
+  if (!reaktion) throw new GameRuleError('Gerade wartet keine Cheerleader-Reaktion.');
+  if (reaktion.spieler !== player) {
+    throw new GameRuleError('Diese Cheerleader-Reaktion gehört dem anderen Spieler.');
+  }
+  // Schützt gegen doppelt gesendete oder verspätete Antworten nach Reconnect.
+  if (action.reactionId !== reaktion.id) {
+    throw new GameRuleError('Diese Reaktion ist nicht mehr aktuell.');
+  }
+
+  const fortsetzenMit = reaktion.fortsetzenMit;
+
+  if (action.slot == null) {
+    log(state, `Spieler ${player + 1} verzichtet auf eine Cheerleader-Reaktion.`);
+    zaehleVerzicht(state, reaktion);
+    state.reaktion = null;
+    state.active = fortsetzenMit;
+    return;
+  }
+
+  if (!reaktion.slots.includes(action.slot)) {
+    throw new GameRuleError('Dieser Bankplatz passt nicht zu diesem Auslöser.');
+  }
+  const eintrag = kraftVonSlot(state, player, action.slot);
+  if (!eintrag) throw new GameRuleError('Auf diesem Bankplatz sitzt kein Cheerleader.');
+  const { cardId, kraft } = eintrag;
+  if (kraft.wirkung.kind === 'wahl' && action.choice !== 'A' && action.choice !== 'B') {
+    throw new GameRuleError(`${kraft.name} verlangt eine Wahl zwischen A und B.`);
+  }
+
+  // Fenster VOR der Wirkung schließen: die Wirkung darf ein neues öffnen.
+  state.reaktion = null;
+  state.active = fortsetzenMit;
+
+  // Reihenfolge ist der Replay-Vertrag: erst der Bankplatz leert sich, dann
+  // wirkt die Kraft, dann erst folgen Schaden, Rettung und Tode.
+  state.players[player].cheerleaders[action.slot] = null;
+  // Kartenname statt cardId: Log-Zeilen sieht der Spieler.
+  const anzeigeName = data.cardsById[cardId]?.name ?? cardId;
+  log(state, `Spieler ${player + 1} opfert ${anzeigeName} von der Bank.`, {
+    kind: 'cheerleaderSacrifice',
+    owner: player,
+    slot: action.slot,
+    cardId
+  });
+  log(state, `Superkraft: ${kraft.name}!`, {
+    kind: 'cheerleaderPower',
+    owner: player,
+    cardId,
+    kraft: kraft.name,
+    wirkung: kraft.wirkung.kind,
+    lane: reaktion.lane,
+    ...(kraft.wirkung.kind === 'wahl' ? { wahl: action.choice } : {})
+  });
+  zaehleCheerleader(state, player, cardId, 'geopfert');
+  fuehreWirkungAus(wirkungsKontext(state, reaktion, cardId), kraft.wirkung, action.choice);
+  // Die Kraft kann getötet ODER gerettet haben – in beiden Fällen muss das Feld
+  // neu stabilisiert werden, bevor es normal weitergeht.
+  state.aufloesung.unshift({ art: 'todeStabilisieren' });
 }
 
 function flyPhaseAction(state: GameState, player: PlayerIndex, action: PlayerAction): void {
@@ -660,7 +849,25 @@ export function applyAction(
     throw new GameRuleError('Die Partie ist bereits beendet.');
   }
   const next = structuredClone(state);
-  if (next.phase === 'mulligan') {
+  // Verteidigung gegen Zustände aus älteren Persistenz-Ständen, die diese
+  // Felder noch nicht kannten (der Server migriert sie ebenfalls, siehe dort).
+  next.aufloesung ??= [];
+  next.reaktion ??= null;
+  next.naechsteReaktionsId ??= 1;
+
+  if (next.reaktion) {
+    // Ein offenes Fenster sperrt JEDE andere Aktion – auch die des Gegners.
+    if (action.type !== 'cheerleaderReaction') {
+      throw new GameRuleError('Es wartet eine Cheerleader-Reaktion – bitte zuerst entscheiden.');
+    }
+    reaktionsAktion(next, player, action, data);
+  } else if (action.type === 'cheerleaderReaction') {
+    throw new GameRuleError('Gerade wartet keine Cheerleader-Reaktion.');
+  } else if (next.aufloesung.length > 0) {
+    // Sollte nicht vorkommen: applyAction endet immer mit leerer Warteschlange
+    // oder offenem Fenster. Lieber laut scheitern als still Züge verschlucken.
+    throw new GameRuleError('Die Auflösung läuft noch – bitte kurz warten.');
+  } else if (next.phase === 'mulligan') {
     if (action.type !== 'mulligan') throw new GameRuleError('Bitte zuerst den Mulligan bestätigen.');
     mulliganAction(next, player, action, random);
   } else if (next.phase === 'play') {
@@ -668,6 +875,8 @@ export function applyAction(
   } else {
     flyPhaseAction(next, player, action);
   }
+
+  fahreAufloesungFort(next);
   // Sicherheitsnetz: resolveCombat prüft checkBaseDestroyed nur innerhalb der
   // Kampfphase. Basisschaden AUSSERHALB des Kampfes (z. B. sturzflug/experiment
   // beim Ausspielen) konnte die Basis bisher auf ≤0 senken, ohne die Partie zu
@@ -747,6 +956,19 @@ export function buildClientView(state: GameState, player: PlayerIndex, data: Gam
       state.board[0].map((_, lane) => creatureView(0, lane)),
       state.board[1].map((_, lane) => creatureView(1, lane))
     ],
-    log: state.log.slice(-60)
+    log: state.log.slice(-60),
+    // Der Gegner erfährt DASS gewartet wird, aber nicht, welche Optionen der
+    // andere hat – `angebote` bleibt für ihn leer.
+    ...(state.reaktion
+      ? {
+          reaktion: {
+            id: state.reaktion.id,
+            spieler: state.reaktion.spieler,
+            ausloeser: state.reaktion.ausloeser,
+            lane: state.reaktion.lane,
+            angebote: state.reaktion.spieler === player ? angebote(state, state.reaktion) : []
+          }
+        }
+      : {})
   };
 }

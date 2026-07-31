@@ -18,11 +18,50 @@ Fertig ist die Infrastruktur: datengetriebener Kandidatenpool
 Bankplätze je Spieler, Persistenz mit Migration, `CheerleaderSacrificeEvent` als
 Replay-Vertrag, 3D-Teamzonen samt 2D-Fallback und eigene `cheer`/`sacrifice`-Clips.
 
-Offen ist die eigentliche Wirkung: die fünf Reaktionskräfte und die dafür nötige
-**serialisierbare Auflösungssteuerung** in der Engine. Heute löst `applyAction`
-Kampf und Effekte vollständig in einem Aufruf auf; eine Reaktion auf tödlichen
-Schaden braucht einen pausierbaren, persistierbaren Auflösungszustand, der nach
-der Spielerwahl exakt an der unterbrochenen Stelle weiterläuft.
+**Engine fertig** (Branch `cheerleader-reaktionen`): die pausierbare
+Auflösungssteuerung steht als Schrittmaschine (`GameState.aufloesung`, reine
+Daten), alle fünf Kräfte sind datengetrieben in `config.cheerleaders.kraefte`,
+Reaktionsfenster sperren jede andere Aktion, `legaleAktionen` und der Bot
+kennen die neue Aktion. 189 Tests grün, 420 Backtest-Partien terminieren.
+
+**Client fertig.** Die Auswahl ist ein DOM-Overlay (kein 3D-Element), damit
+Bedienung mit und ohne WebGL identisch ist; der Gegner sieht einen
+Wartehinweis, normale Aktionen sind gesperrt. Der Replay-Zweig für
+`cheerleaderPower` hält die Reihenfolge Opfer → Kraft-Banner → Wirkung ein.
+Im Zwei-Browser-Test verifiziert (3D **und** `?no3d`): Fenster öffnet, Wahl
+A/B wirkt unterschiedlich, Bankplatz leert sich, Angebote verschwinden mit
+verbrauchten Plätzen.
+
+**Persistenz fertig.** `rooms_persist.json` hat jetzt das Format
+`{ version: 2, rooms: [...] }`, wird atomar über eine temporäre Datei
+geschrieben und lädt das alte unversionierte Array weiterhin (dabei werden die
+Felder der Auflösungssteuerung nachgezogen). Ein Servertest fährt eine echte
+Partie bis zu einem offenen Fenster, startet den Server neu, verbindet beide
+Spieler per Token wieder und antwortet dann – das Fenster überlebt vollständig.
+
+**Backtest-Kennzahlen fertig.** Der Report hat eine Sektion
+*Cheerleader-Reaktionen* mit Angeboten, Opfern, Einlösequote, Verzicht,
+verursachtem/verhindertem Schaden und Rettungen je Cheerleader.
+
+Noch offen, bevor der Meilenstein steht:
+
+1. **Client-Tests** – es gibt bis heute keine Client-Testsuite; die
+   Replay-Reihenfolge ist nur manuell abgesichert.
+2. **Zwei Kräfte sind unvermessen.** Der Backtest nutzt die Standardauswahl
+   (die ersten drei Kandidaten), deshalb kommen `junger_neffe` (Auslöser
+   `eigenerTod`) und `randy_marsh` (`gegnerischeKreaturGegenueber`) in keiner
+   simulierten Partie vor. Beide sind durch Engine-Tests abgedeckt, aber ohne
+   Balancing-Daten.
+
+> **Offene Designfrage:** Drei der fünf Kandidaten lösen auf *jede* gegnerische
+> Kreatur aus. Mit der Standardbank öffnet damit fast jedes Ausspielen ein
+> Fenster beim Gegner. Regelkonform, aber sehr gesprächig – vor dem Client-Bau
+> zu entscheiden, ob Auslöser seltener greifen sollen.
+
+> **Geklärt:** Die Basis-Schild-Superkraft feuert bereits heute sofort beim
+> Aktivieren des Schilds (`schild.ts::basisSchaden` ruft `fuehreSuperkraftAus`
+> direkt nach dem Block-Log auf, nicht verzögert). Kein Code-Änderungsbedarf –
+> nur hier festgehalten, damit es nicht erneut als offen missverstanden wird.
 
 ## Next – direkt danach
 
@@ -58,7 +97,7 @@ der Spielerwahl exakt an der unterbrochenen Stelle weiterläuft.
 
 | Prüfung | Stand 2026-07-30 |
 |---|---|
-| `npm test` | 🟢 177 Tests (163 Engine + 14 Server), 6+1 Dateien |
+| `npm test` | 🟢 192 Tests (176 Engine + 16 Server), 6+1 Dateien |
 | `npm run typecheck` | 🟢 alle drei Workspaces fehlerfrei |
 | `npm run build` | 🟢 – aber **ein** JS-Chunk mit 796 kB (222 kB gzip) |
 | CI | 🟢 [`.github/workflows/ci.yml`](../.github/workflows/ci.yml): `npm ci` → Tests → Typecheck → Build → Backtest-Smoke |
@@ -112,6 +151,24 @@ sich mit einem Vergleichslauf ohne Schild.
 
 Der Plan sieht das Balancing erst **nach** den Cheerleader-Kräften vor. Diese
 Messung ist deshalb bewusst nur festgehalten, nicht behoben.
+
+Mit Cheerleader-Kräften (Engine-Stand, Smoke-Lauf `--schnell`): Ø 14,45 Runden,
+83,3 % erreichen Zermürbung – der Trend setzt sich fort. Kein Volllauf, weil
+das Balancing ohnehin erst nach der Client-Anbindung ansteht.
+
+**Geplante 5-Lane-Erweiterung.** Der Konsolidierungsplan sieht perspektivisch
+mehr Lanes vor (`config.lanes`, aktuell 3 – die Engine ist bereits generisch
+darauf ausgelegt, siehe `CLAUDE.md`). Mehr Lanes bedeuten mehr gleichzeitige
+Angriffe pro Runde und damit **kürzere**, nicht längere Partien – das dürfte
+der Zermürbungs-Häufung entgegenwirken, ist aber unbestätigt.
+
+**Wichtiger Vorbehalt zum Bot-Balancing insgesamt:** Der Backtest-Bot bewertet
+kartenblind und heuristisch (`bot.ts`) – er taugt für grobe Regressionsprüfung
+und Terminierungsnachweise, aber nicht als Ersatz für menschliches Playtesting.
+Zug- und Cheerleader-Entscheidungen, die von echtem taktischem Verständnis
+abhängen (wann opfern, wann bluffen, Lane-Priorisierung bei 5 Lanes), kann nur
+ein spielender Mensch beurteilen. Bot-Zahlen in diesem Dokument sind daher
+**grobe Einschätzung, kein Abnahmekriterium**.
 
 ---
 

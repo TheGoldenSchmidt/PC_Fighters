@@ -27,7 +27,49 @@
       "randy_marsh"
     ],
     "selectionSize": 3,
-    "maxInDeck": 2
+    "maxInDeck": 2,
+    "kraefte": {
+      "pc_principal": {
+        "name": "Machtwort",
+        "text": "Wenn der Gegner eine Kreatur ausspielt: Peinige alle gegnerischen Kreaturen – ATK 0, Verteidigung 1.",
+        "ausloeser": "gegnerischeKreatur",
+        "wirkung": { "kind": "peinigenAlle", "atkDeckel": 0, "hpDeckel": 1 }
+      },
+      "pc_babies": {
+        "name": "Sicherer Raum",
+        "text": "Wenn der Gegner eine Kreatur ausspielt: Alle gegnerischen Kreaturen erhalten bis Rundenende −1 ATK.",
+        "ausloeser": "gegnerischeKreatur",
+        "wirkung": { "kind": "schwaechungRunde", "atk": 1 }
+      },
+      "alter_wissenschaftler": {
+        "name": "Feldforschung",
+        "text": "Wenn der Gegner eine Kreatur ausspielt – wähle eins: Ziehe 1 Karte und erhalte 1 Wissen; oder füge der neuen Kreatur 2 Schaden zu.",
+        "ausloeser": "gegnerischeKreatur",
+        "wirkung": {
+          "kind": "wahl",
+          "optionA": {
+            "name": "Karte und Wissen",
+            "wirkung": { "kind": "ziehenUndWissen", "karten": 1, "wissen": 1 }
+          },
+          "optionB": {
+            "name": "2 Schaden",
+            "wirkung": { "kind": "schadenAufAusloeser", "x": 2 }
+          }
+        }
+      },
+      "randy_marsh": {
+        "name": "Handgemenge",
+        "text": "Wenn der Gegner eine Kreatur genau gegenüber einer eigenen ausspielt: Beide Kreaturen erleiden 2 Schaden.",
+        "ausloeser": "gegnerischeKreaturGegenueber",
+        "wirkung": { "kind": "gegenseitigerSchaden", "x": 2 }
+      },
+      "junger_neffe": {
+        "name": "Zweite Chance",
+        "text": "Bevor eine eigene Kreatur endgültig stirbt: Sie überlebt mit 1 Leben und du ziehst 1 Karte.",
+        "ausloeser": "eigenerTod",
+        "wirkung": { "kind": "rettenUndZiehen", "hp": 1, "karten": 1 }
+      }
+    }
   },
   "zermuerbung": {
     "abRunde": 13,

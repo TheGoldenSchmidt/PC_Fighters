@@ -79,6 +79,20 @@ export interface BacktestErgebnis {
   zufallsGrundlinien: ZufallsGrundlinie[];
   /** deckId -> Oberfraktion, für die gesamtWinrateOberfraktion-Auswertung. */
   deckFraktion: Record<string, string>;
+  /** Nutzung der Cheerleader-Reaktionen, über alle Partien summiert. */
+  cheerleader?: CheerleaderKennzahl[];
+}
+
+/** Aggregierte Cheerleader-Nutzung über alle Partien (beide Seiten zusammen). */
+export interface CheerleaderKennzahl {
+  cardId: string;
+  name: string;
+  angeboten: number;
+  verzichtet: number;
+  geopfert: number;
+  schadenVerursacht: number;
+  schadenVerhindert: number;
+  rettungen: number;
 }
 
 function pct(x: number): string {
@@ -326,6 +340,26 @@ export function erzeugeReport(ergebnis: BacktestErgebnis, korridore: Korridore):
     for (const z of ergebnis.zufallsGrundlinien) {
       const ok = z.winrateGegenZufall >= 0.8;
       push(`| ${z.deck} | ${pct(z.winrateGegenZufall)} | ${z.partien} | ${ampel(ok)} |`);
+    }
+    push();
+  }
+
+  if (ergebnis.cheerleader && ergebnis.cheerleader.length > 0) {
+    push(`## Cheerleader-Reaktionen`);
+    push();
+    push('> Die Einlösequote ist die interessanteste Spalte: ein Cheerleader, der oft angeboten und ' +
+      'fast nie eingelöst wird, ist zu schwach für den Preis eines Bankplatzes. Eine Quote nahe ' +
+      '100 % heißt umgekehrt, dass die Entscheidung gar keine ist. Achtung: gemessen mit dem ' +
+      'heuristischen Backtest-Bot – für die tatsächliche Attraktivität zählt menschliches Playtesting.');
+    push();
+    push('| Cheerleader | angeboten | geopfert | Einlösequote | verzichtet | Schaden verursacht | Schaden verhindert | Rettungen |');
+    push('|---|---|---|---|---|---|---|---|');
+    for (const c of [...ergebnis.cheerleader].sort((a, b) => b.angeboten - a.angeboten)) {
+      const quote = c.angeboten > 0 ? c.geopfert / c.angeboten : 0;
+      push(
+        `| ${c.name} | ${c.angeboten} | ${c.geopfert} | ${pct(quote)} | ${c.verzichtet} | ` +
+          `${c.schadenVerursacht} | ${c.schadenVerhindert} | ${c.rettungen} |`
+      );
     }
     push();
   }

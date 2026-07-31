@@ -53,7 +53,10 @@ function emptyState(): GameState {
     winner: null,
     uidCounter: 0,
     // Fester Seed: macht die Schild-Zufallszahlen im Test reproduzierbar.
-    rngState: 1
+    rngState: 1,
+    aufloesung: [],
+    reaktion: null,
+    naechsteReaktionsId: 1
   };
 }
 
