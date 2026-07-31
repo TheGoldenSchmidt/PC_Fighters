@@ -277,3 +277,59 @@ describe('Telemetrie-Sidecar: exakte Zählerwerte', () => {
     expect(kartenwerte.some((k) => k.mulliganAngeboten > 0)).toBe(true);
   });
 });
+
+describe('Cheerleader-Telemetrie', () => {
+  it('zaehlt Angebot, Verzicht, Opfer, Schaden und Rettung je Cheerleader', () => {
+    // --- Angebot und Verzicht ---
+    let s = emptyState();
+    aktiviereStatistik(s);
+    s.players[1].cheerleaders = ['pc_principal', 'alter_wissenschaftler', null];
+    s.players[0].hand = ['rekrut'];
+    s = applyAction(s, 0, { type: 'playCreature', handIndex: 0, lane: 0 }, data);
+    // Beide passenden Plaetze zaehlen als Angebot.
+    expect(s.stats!.proCheerleader[1].pc_principal.angeboten).toBe(1);
+    expect(s.stats!.proCheerleader[1].alter_wissenschaftler.angeboten).toBe(1);
+
+    const verzichtet = applyAction(
+      s,
+      1,
+      { type: 'cheerleaderReaction', reactionId: s.reaktion!.id, slot: null },
+      data
+    );
+    expect(verzichtet.stats!.proCheerleader[1].pc_principal.verzichtet).toBe(1);
+    expect(verzichtet.stats!.proCheerleader[1].pc_principal.geopfert).toBe(0);
+
+    // --- Opfer mit Schaden (Feldforschung, Option B) ---
+    const geopfert = applyAction(
+      s,
+      1,
+      { type: 'cheerleaderReaction', reactionId: s.reaktion!.id, slot: 1, choice: 'B' },
+      data
+    );
+    const w = geopfert.stats!.proCheerleader[1].alter_wissenschaftler;
+    expect(w.geopfert).toBe(1);
+    expect(w.verzichtet).toBe(0);
+    expect(w.schadenVerursacht).toBe(2);
+
+    // --- Rettung (Zweite Chance) ---
+    let r = emptyState();
+    aktiviereStatistik(r);
+    r.players[1].cheerleaders = ['junger_neffe', null, null];
+    put(r, 0, 0, 'ritter');
+    const opfer = put(r, 1, 0, 'rekrut');
+    opfer.currentHealth = 1;
+    r = applyAction(r, 0, { type: 'pass' }, data);
+    r = applyAction(r, 1, { type: 'pass' }, data);
+    expect(r.reaktion?.ausloeser).toBe('eigenerTod');
+    r = applyAction(
+      r,
+      1,
+      { type: 'cheerleaderReaction', reactionId: r.reaktion!.id, slot: 0 },
+      data
+    );
+    const n = r.stats!.proCheerleader[1].junger_neffe;
+    expect(n.geopfert).toBe(1);
+    expect(n.rettungen).toBe(1);
+    expect(n.schadenVerhindert).toBeGreaterThan(0);
+  });
+});

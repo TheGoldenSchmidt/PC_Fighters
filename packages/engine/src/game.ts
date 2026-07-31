@@ -18,7 +18,8 @@ import {
   kraftVonSlot,
   oeffneFenster,
   passendeSlots,
-  wirkungsKontext
+  wirkungsKontext,
+  zaehleVerzicht
 } from './cheerleader.js';
 import { resolveEffect } from './effects.js';
 import { buildFactionTree, matchesScope } from './factions.js';
@@ -35,7 +36,7 @@ import {
 } from './internal.js';
 import { hasKeyword } from './keywords.js';
 import { basisSchaden } from './schild.js';
-import { registriereAusspielen, registriereEnergie, registriereMulligan, registriereZug, zaehleKarte, zaehleSpieler } from './stats.js';
+import { registriereAusspielen, registriereEnergie, registriereMulligan, registriereZug, zaehleCheerleader, zaehleKarte, zaehleSpieler } from './stats.js';
 import type {
   AufloesungsSchritt,
   CardDef,
@@ -742,6 +743,7 @@ function reaktionsAktion(
 
   if (action.slot == null) {
     log(state, `Spieler ${player + 1} verzichtet auf eine Cheerleader-Reaktion.`);
+    zaehleVerzicht(state, reaktion);
     state.reaktion = null;
     state.active = fortsetzenMit;
     return;
@@ -781,7 +783,8 @@ function reaktionsAktion(
     lane: reaktion.lane,
     ...(kraft.wirkung.kind === 'wahl' ? { wahl: action.choice } : {})
   });
-  fuehreWirkungAus(wirkungsKontext(state, reaktion), kraft.wirkung, action.choice);
+  zaehleCheerleader(state, player, cardId, 'geopfert');
+  fuehreWirkungAus(wirkungsKontext(state, reaktion, cardId), kraft.wirkung, action.choice);
   // Die Kraft kann getötet ODER gerettet haben – in beiden Fällen muss das Feld
   // neu stabilisiert werden, bevor es normal weitergeht.
   state.aufloesung.unshift({ art: 'todeStabilisieren' });

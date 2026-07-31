@@ -6,6 +6,7 @@
 // nur einen Feldzugriff.
 
 import type {
+  CheerleaderStatistik,
   GameState,
   KartenStatistik,
   MatchStatistik,
@@ -59,6 +60,7 @@ export function leereStatistik(): MatchStatistik {
   return {
     proKarte: [{}, {}],
     proSpieler: [leereSpielerStatistik(), leereSpielerStatistik()],
+    proCheerleader: [{}, {}],
     instanzen: {},
     deckInstanzen: [[], []],
     handInstanzen: [[], []],
@@ -187,4 +189,25 @@ export function zaehleSpieler(
 ): void {
   if (!state.stats) return;
   state.stats.proSpieler[owner][feld] += n;
+}
+
+/** Zählt ein Cheerleader-Feld hoch – No-Op ohne aktivierte Statistik. */
+export function zaehleCheerleader(
+  state: GameState,
+  owner: PlayerIndex,
+  cardId: string,
+  feld: keyof CheerleaderStatistik,
+  n = 1
+): void {
+  if (!state.stats) return;
+  const je = state.stats.proCheerleader[owner];
+  je[cardId] ??= {
+    angeboten: 0,
+    verzichtet: 0,
+    geopfert: 0,
+    schadenVerursacht: 0,
+    schadenVerhindert: 0,
+    rettungen: 0
+  };
+  je[cardId][feld] += n;
 }

@@ -3,6 +3,8 @@
 // Spieler B NIE im Netzwerkverkehr sieht.
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import WebSocket from 'ws';
 import type { ClientView } from '@pcf/engine';
 import { buildFactionTree, loadGameData, topOf } from '@pcf/engine';
@@ -360,4 +362,154 @@ describe('Server: Raum, Beitritt, Aktionen, gefilterte Sicht', () => {
     c1.ws.close();
     c2.ws.close();
   });
+});
+
+describe('Persistenz: Version, Migration und offenes Reaktionsfenster', () => {
+  const persistPfad = join(process.cwd(), 'rooms_persist.json');
+  let gesichert: string | null = null;
+
+  beforeAll(() => {
+    // Die Datei liegt im Arbeitsverzeichnis und wird von diesen Tests
+    // ueberschrieben - vorher sichern, hinterher zurueckspielen.
+    gesichert = existsSync(persistPfad) ? readFileSync(persistPfad, 'utf-8') : null;
+  });
+
+  afterAll(() => {
+    if (gesichert !== null) writeFileSync(persistPfad, gesichert, 'utf-8');
+    else if (existsSync(persistPfad)) rmSync(persistPfad);
+  });
+
+  /** Beide Spieler passen, bis der Spieler am Zug eine Kreatur bezahlen kann. */
+  async function spieleBisKreaturBezahlbar(
+    c1: TestClient,
+    c2: TestClient
+  ): Promise<{ aktiv: TestClient; passiv: TestClient; handIndex: number; lane: number }> {
+    for (let versuch = 0; versuch < 40; versuch++) {
+      const sicht = c1.lastView!;
+      const amZug = sicht.active === sicht.you ? c1 : c2;
+      const anderer = amZug === c1 ? c2 : c1;
+      const v = amZug.lastView!;
+      const energie = v.players[v.you].energy;
+      const idx = v.hand.findIndex((k) => k.type === 'creature' && k.cost <= energie);
+      const freieLane = v.board[v.you].findIndex((slot) => slot === null);
+      if (idx >= 0 && freieLane >= 0 && v.phase === 'play') {
+        return { aktiv: amZug, passiv: anderer, handIndex: idx, lane: freieLane };
+      }
+      // Nichts bezahlbar: passen und weiter (Energie waechst je Runde).
+      amZug.send({ type: 'action', action: { type: 'pass' } });
+      await c1.next('state');
+      await c2.next('state');
+    }
+    throw new Error('Keine bezahlbare Kreatur nach 40 Zuegen.');
+  }
+
+  it('haelt ein offenes Fenster ueber Serverneustart und Reconnect', async () => {
+    if (existsSync(persistPfad)) rmSync(persistPfad);
+    let srv = await startServer(0);
+    let c1 = await connect(srv.port);
+    c1.send({ type: 'create', faction: 'humans' });
+    const created = await c1.next('created');
+    const raumCode = created.code as string;
+    const token1 = created.token as string;
+
+    let c2 = await connect(srv.port);
+    c2.send({ type: 'join', code: raumCode, faction: 'animals' });
+    const token2 = (await c2.next('joined')).token as string;
+    await c1.next('state');
+    await c2.next('state');
+    c1.send({ type: 'action', action: { type: 'mulligan', handIndices: [] } });
+    await c1.next('state'); await c2.next('state');
+    c2.send({ type: 'action', action: { type: 'mulligan', handIndices: [] } });
+    await c1.next('state'); await c2.next('state');
+
+    const { aktiv, passiv, handIndex, lane } = await spieleBisKreaturBezahlbar(c1, c2);
+    aktiv.send({ type: 'action', action: { type: 'playCreature', handIndex, lane } });
+    await c1.next('state');
+    await c2.next('state');
+
+    // Der Gegner des Ausspielenden darf reagieren; er sieht die Angebote,
+    // der andere nur, DASS gewartet wird.
+    const sichtPassiv = passiv.lastView!;
+    const sichtAktiv = aktiv.lastView!;
+    expect(sichtPassiv.reaktion).toBeTruthy();
+    expect(sichtPassiv.reaktion!.spieler).toBe(sichtPassiv.you);
+    expect(sichtPassiv.reaktion!.angebote.length).toBeGreaterThan(0);
+    expect(sichtAktiv.reaktion).toBeTruthy();
+    expect(sichtAktiv.reaktion!.angebote).toEqual([]);
+    const reaktionsId = sichtPassiv.reaktion!.id;
+
+    // Waehrend des Fensters ist jede normale Aktion gesperrt.
+    passiv.send({ type: 'action', action: { type: 'pass' } });
+    const fehler = await passiv.next('error');
+    expect(String(fehler.message)).toMatch(/Cheerleader-Reaktion/);
+
+    // ---- Serverneustart ----
+    const wardPassivSpieler = sichtPassiv.you;
+    c1.ws.close();
+    c2.ws.close();
+    await srv.close();
+
+    // Die Datei muss versioniert sein und darf keine .tmp-Reste hinterlassen.
+    const roh = JSON.parse(readFileSync(persistPfad, 'utf-8'));
+    expect(Array.isArray(roh)).toBe(false);
+    expect(roh.version).toBe(2);
+    expect(existsSync(persistPfad + '.tmp')).toBe(false);
+
+    srv = await startServer(0);
+    c1 = await connect(srv.port);
+    c2 = await connect(srv.port);
+    c1.send({ type: 'rejoin', code: raumCode, token: token1 });
+    c2.send({ type: 'rejoin', code: raumCode, token: token2 });
+    await c1.next('rejoined');
+    await c2.next('rejoined');
+    await c1.next('state');
+    await c2.next('state');
+
+    const neuPassiv = (c1.lastView!.you === wardPassivSpieler ? c1 : c2).lastView!;
+    expect(neuPassiv.reaktion).toBeTruthy();
+    expect(neuPassiv.reaktion!.id).toBe(reaktionsId);
+    expect(neuPassiv.reaktion!.angebote.length).toBeGreaterThan(0);
+
+    // Und die Antwort wirkt nach dem Neustart normal weiter.
+    const clientPassiv = c1.lastView!.you === wardPassivSpieler ? c1 : c2;
+    clientPassiv.send({
+      type: 'action',
+      action: { type: 'cheerleaderReaction', reactionId: reaktionsId, slot: null }
+    });
+    await c1.next('state');
+    await c2.next('state');
+    expect(clientPassiv.lastView!.reaktion).toBeUndefined();
+
+    c1.ws.close();
+    c2.ws.close();
+    await srv.close();
+  }, 30000);
+
+  it('laedt das alte unversionierte Array-Format weiter', async () => {
+    // Aus dem eben geschriebenen v2-Stand ein v1-Dokument bauen.
+    const v2 = JSON.parse(readFileSync(persistPfad, 'utf-8'));
+    expect(v2.rooms.length).toBeGreaterThan(0);
+    const code0 = v2.rooms[0].code as string;
+    const token0 = v2.rooms[0].players[0].token as string;
+    // Zusaetzlich die Felder der Aufloesungssteuerung entfernen - genau so
+    // sahen Zustaende vor den Cheerleader-Reaktionen aus.
+    for (const raum of v2.rooms) {
+      if (!raum.state) continue;
+      delete raum.state.aufloesung;
+      delete raum.state.reaktion;
+      delete raum.state.naechsteReaktionsId;
+    }
+    writeFileSync(persistPfad, JSON.stringify(v2.rooms, null, 2), 'utf-8');
+
+    const srv = await startServer(0);
+    const c = await connect(srv.port);
+    c.send({ type: 'rejoin', code: code0, token: token0 });
+    await c.next('rejoined');
+    const sicht = (await c.next('state')).view as ClientView;
+    // Migriert: kein offenes Fenster, Partie normal weiterspielbar.
+    expect(sicht.reaktion).toBeUndefined();
+    expect(sicht.round).toBeGreaterThanOrEqual(1);
+    c.ws.close();
+    await srv.close();
+  }, 20000);
 });

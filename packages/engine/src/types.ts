@@ -624,6 +624,26 @@ export interface SpielerStatistik {
   endhand: string[];
 }
 
+/**
+ * Telemetrie je Cheerleader (Schlüssel ist die cardId). Beantwortet die Frage,
+ * ob eine Kraft überhaupt zum Zug kommt und ob sie sich lohnt: eine Kraft, die
+ * oft angeboten und fast immer ausgeschlagen wird, ist zu schwach oder zu teuer.
+ */
+export interface CheerleaderStatistik {
+  /** Wie oft dieser Bankplatz in einem Fenster als Option auftauchte. */
+  angeboten: number;
+  /** Wie oft ein Fenster mit diesem Angebot ungenutzt geschlossen wurde. */
+  verzichtet: number;
+  /** Wie oft dieser Cheerleader tatsächlich geopfert wurde. */
+  geopfert: number;
+  /** Direkt zugefügter Schaden (Handgemenge, Feldforschung-Option B). */
+  schadenVerursacht: number;
+  /** Verhinderter Schaden (Zweite Chance). */
+  schadenVerhindert: number;
+  /** Wie oft eine eigene Kreatur vor dem Tod bewahrt wurde. */
+  rettungen: number;
+}
+
 export interface KartenInstanzStatistik {
   id: number;
   cardId: string;
@@ -636,6 +656,8 @@ export interface MatchStatistik {
   /** proKarte[spieler][cardId] – nur Karten, die tatsächlich vorkamen. */
   proKarte: [Record<string, KartenStatistik>, Record<string, KartenStatistik>];
   proSpieler: [SpielerStatistik, SpielerStatistik];
+  /** proCheerleader[spieler][cardId] – nur Cheerleader, die vorkamen. */
+  proCheerleader: [Record<string, CheerleaderStatistik>, Record<string, CheerleaderStatistik>];
   /** Interne Zuordnung physischer Kartenkopien; nur während einer Simulation. */
   instanzen: Record<number, KartenInstanzStatistik>;
   deckInstanzen: [number[], number[]];

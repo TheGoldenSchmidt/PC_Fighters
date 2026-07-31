@@ -32,15 +32,26 @@ Im Zwei-Browser-Test verifiziert (3D **und** `?no3d`): Fenster öffnet, Wahl
 A/B wirkt unterschiedlich, Bankplatz leert sich, Angebote verschwinden mit
 verbrauchten Plätzen.
 
+**Persistenz fertig.** `rooms_persist.json` hat jetzt das Format
+`{ version: 2, rooms: [...] }`, wird atomar über eine temporäre Datei
+geschrieben und lädt das alte unversionierte Array weiterhin (dabei werden die
+Felder der Auflösungssteuerung nachgezogen). Ein Servertest fährt eine echte
+Partie bis zu einem offenen Fenster, startet den Server neu, verbindet beide
+Spieler per Token wieder und antwortet dann – das Fenster überlebt vollständig.
+
+**Backtest-Kennzahlen fertig.** Der Report hat eine Sektion
+*Cheerleader-Reaktionen* mit Angeboten, Opfern, Einlösequote, Verzicht,
+verursachtem/verhindertem Schaden und Rettungen je Cheerleader.
+
 Noch offen, bevor der Meilenstein steht:
 
-1. **Versionierte Raum-Persistenz** mit atomarem Schreiben, damit ein offenes
-   Fenster einen Serverneustart übersteht. Reconnect im laufenden Fenster ist
-   noch ungetestet.
-2. **Cheerleader-Kennzahlen** im Backtest-Report (Angebote, Verzicht, Opfer,
-   verursachter/verhinderter Schaden, Rettungen je Cheerleader).
-3. **Client-Tests** – es gibt bis heute keine Client-Testsuite; die
+1. **Client-Tests** – es gibt bis heute keine Client-Testsuite; die
    Replay-Reihenfolge ist nur manuell abgesichert.
+2. **Zwei Kräfte sind unvermessen.** Der Backtest nutzt die Standardauswahl
+   (die ersten drei Kandidaten), deshalb kommen `junger_neffe` (Auslöser
+   `eigenerTod`) und `randy_marsh` (`gegnerischeKreaturGegenueber`) in keiner
+   simulierten Partie vor. Beide sind durch Engine-Tests abgedeckt, aber ohne
+   Balancing-Daten.
 
 > **Offene Designfrage:** Drei der fünf Kandidaten lösen auf *jede* gegnerische
 > Kreatur aus. Mit der Standardbank öffnet damit fast jedes Ausspielen ein
@@ -86,7 +97,7 @@ Noch offen, bevor der Meilenstein steht:
 
 | Prüfung | Stand 2026-07-30 |
 |---|---|
-| `npm test` | 🟢 189 Tests (175 Engine + 14 Server), 6+1 Dateien |
+| `npm test` | 🟢 192 Tests (176 Engine + 16 Server), 6+1 Dateien |
 | `npm run typecheck` | 🟢 alle drei Workspaces fehlerfrei |
 | `npm run build` | 🟢 – aber **ein** JS-Chunk mit 796 kB (222 kB gzip) |
 | CI | 🟢 [`.github/workflows/ci.yml`](../.github/workflows/ci.yml): `npm ci` → Tests → Typecheck → Build → Backtest-Smoke |

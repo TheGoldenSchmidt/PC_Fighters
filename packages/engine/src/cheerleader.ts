@@ -10,7 +10,7 @@
 // ausgeschrieben, so wie schild.ts es für die Schild-Superkräfte tut.
 
 import { log, otherPlayer } from './internal.js';
-import { zaehleSpieler } from './stats.js';
+import { zaehleCheerleader, zaehleSpieler } from './stats.js';
 import type {
   CheerleaderAusloeser,
   CheerleaderKraft,
@@ -87,6 +87,10 @@ export function oeffneFenster(
   if (state.reaktion) return false; // es kann immer nur ein Fenster offen sein
   const slots = passendeSlots(state, spieler, ausloeser);
   if (slots.length === 0) return false;
+  for (const slot of slots) {
+    const eintrag = kraftVonSlot(state, spieler, slot);
+    if (eintrag) zaehleCheerleader(state, spieler, eintrag.cardId, 'angeboten');
+  }
   state.reaktion = {
     id: state.naechsteReaktionsId,
     spieler,
@@ -122,6 +126,8 @@ interface WirkungsKontext {
   state: GameState;
   /** Besitzer des geopferten Cheerleaders. */
   spieler: PlayerIndex;
+  /** cardId des geopferten Cheerleaders – nur für die Telemetrie. */
+  cardId: string;
   /** Auslöser-Kreatur, falls sie noch im Feld steht. */
   ausloeser?: { creature: Creature; owner: PlayerIndex; lane: number };
 }
@@ -194,23 +200,25 @@ export const CHEERLEADER_WIRKUNGEN: {
     );
   },
 
-  schadenAufAusloeser({ state, spieler, ausloeser }, wirkung) {
+  schadenAufAusloeser({ state, spieler, cardId, ausloeser }, wirkung) {
     if (!ausloeser) {
       log(state, 'Feldforschung: das Ziel steht nicht mehr im Feld.');
       return;
     }
     ausloeser.creature.currentHealth -= wirkung.x;
     ausloeser.creature.letzterSchaden = { art: 'effekt', quelle: 'cheerleader', owner: spieler };
+    zaehleCheerleader(state, spieler, cardId, 'schadenVerursacht', wirkung.x);
     log(state, `Feldforschung: ${ausloeser.creature.name} erleidet ${wirkung.x} Schaden.`);
   },
 
-  gegenseitigerSchaden({ state, spieler, ausloeser }, wirkung) {
+  gegenseitigerSchaden({ state, spieler, cardId, ausloeser }, wirkung) {
     if (!ausloeser) {
       log(state, 'Handgemenge: das Ziel steht nicht mehr im Feld.');
       return;
     }
     ausloeser.creature.currentHealth -= wirkung.x;
     ausloeser.creature.letzterSchaden = { art: 'effekt', quelle: 'cheerleader', owner: spieler };
+    zaehleCheerleader(state, spieler, cardId, 'schadenVerursacht', wirkung.x);
     // „gegenüber" heißt: dieselbe Lane auf der eigenen Seite. Steht dort nichts
     // (mehr), trifft es nur den Auslöser – die Kraft verpufft nicht komplett.
     const eigene = state.board[spieler][ausloeser.lane];
@@ -226,7 +234,7 @@ export const CHEERLEADER_WIRKUNGEN: {
     log(state, `Handgemenge: ${ausloeser.creature.name} erleidet ${wirkung.x} Schaden.`);
   },
 
-  rettenUndZiehen({ state, spieler, ausloeser }, wirkung) {
+  rettenUndZiehen({ state, spieler, cardId, ausloeser }, wirkung) {
     if (!ausloeser) {
       log(state, 'Zweite Chance: die Kreatur ist nicht mehr zu retten.');
       return;
@@ -238,6 +246,8 @@ export const CHEERLEADER_WIRKUNGEN: {
     c.todesReaktionAngeboten = false;
     const verhindert = Math.max(1, wirkung.hp);
     zaehleSpieler(state, spieler, 'verhinderterSchaden', verhindert);
+    zaehleCheerleader(state, spieler, cardId, 'schadenVerhindert', verhindert);
+    zaehleCheerleader(state, spieler, cardId, 'rettungen');
     let gezogen = 0;
     for (let i = 0; i < wirkung.karten; i++) {
       const card = state.players[spieler].deck.shift();
@@ -279,10 +289,23 @@ export function fuehreWirkungAus(
 }
 
 /** Baut den Kontext für eine Wirkung aus dem offenen Fenster. */
-export function wirkungsKontext(state: GameState, reaktion: OffeneReaktion): WirkungsKontext {
+export function wirkungsKontext(
+  state: GameState,
+  reaktion: OffeneReaktion,
+  cardId: string
+): WirkungsKontext {
   return {
     state,
     spieler: reaktion.spieler,
+    cardId,
     ausloeser: findeKreatur(state, reaktion.ausloeserUid)
   };
+}
+
+/** Telemetrie: ein Fenster wurde ungenutzt geschlossen. */
+export function zaehleVerzicht(state: GameState, reaktion: OffeneReaktion): void {
+  for (const slot of reaktion.slots) {
+    const eintrag = kraftVonSlot(state, reaktion.spieler, slot);
+    if (eintrag) zaehleCheerleader(state, reaktion.spieler, eintrag.cardId, 'verzichtet');
+  }
 }
