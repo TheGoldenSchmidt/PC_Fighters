@@ -35,6 +35,17 @@ The server holds the complete `GameState`. It never sends it raw. `buildClientVi
 
 `resolveCombat`/`applyAction` mutate state to the post-combat result in one step, but each attack/death is also appended to `state.log` as a `LogEntry` carrying a structured `event` (`AttackEvent` | `DeathEvent`). The server sends the final state plus this log. The client (`GameScreen.tsx`) keeps showing the *old* board (`shownView`) and replays the events lane-by-lane — projectile → damage → death → next lane — before switching to the server's new state. Consequence: if you add a combat mechanic in the engine, emit a matching `CombatEvent` or the client will silently jump instead of animating it. New event kinds must be handled in the `runReplay` loop.
 
+### The bench IS the base shield (`schild.ts` + `cheerleader.ts`)
+
+Every hit on a base goes through `basisSchaden(state, ziel, menge)` — the single funnel that owns `player.base`. It charges the defender's shield by a random 1–3 segments; on reaching `config.schild.abschnitte` (7) it blocks that hit entirely and resets to 0. It returns the damage that actually landed, so callers must use the return value for both `base` bookkeeping and telemetry. Deliberate exception: attrition (`zermuerbung` in `endRound`) writes `base` directly and stays unblockable.
+
+The shield has no powers of its own. **A block is paid for with a cheerleader**: it is the one and only trigger (`CheerleaderAusloeser = 'schildBlock'`), the defender picks *which* bench slot sacrifices itself, and declining is impossible — the block already happened. The flip side is `schildAktiv()`: an empty bench means no shield at all, so the meter stops charging and hits go straight through. Three bench slots = at most three blocks per game.
+
+Two consequences for the code:
+
+- `basisSchaden` must not open the window itself — it runs deep inside a damage pass. It queues an `{ art: 'schildFenster' }` step instead, which `fahreAufloesungFort` picks up. Because `applyAction` always drains that queue, this works for combat *and* for card effects during the play phase.
+- No power may reference a "trigger creature": a block happens at the base, so there is no newly played or dying creature to aim at. All five powers act on the board as a whole. `schild.ts` sits *below* `abilities.ts` in the import order (it's used by `game.ts`, `abilities.ts` and `effects.ts`), so neither it nor `cheerleader.ts` may import them — that's why `cheerleader.ts` inlines its own card draw and never calls `getMaxHealth`.
+
 ### Turn phases
 
 `Phase = 'play' | 'fly' | 'ended'`. A round is: both players take play turns (creatures/actions/pass) → automatic combat resolution → an optional `fly` phase (creatures with the flying behavior may relocate to a free lane) → round end (auras/healing recomputed, cards drawn). `game.ts` sequences this; `startRound`/`endRound`/`afterCombat`/`advanceFlyPhase` are the phase transitions.

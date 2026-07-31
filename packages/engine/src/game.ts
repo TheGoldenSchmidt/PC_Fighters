@@ -17,9 +17,7 @@ import {
   fuehreWirkungAus,
   kraftVonSlot,
   oeffneFenster,
-  passendeSlots,
-  wirkungsKontext,
-  zaehleVerzicht
+  wirkungsKontext
 } from './cheerleader.js';
 import { resolveEffect } from './effects.js';
 import { buildFactionTree, matchesScope } from './factions.js';
@@ -61,28 +59,17 @@ export { GameRuleError, getEffectiveAttack, getMaxHealth };
  * Effekte (todesfluch, beschwoeren, sammeln) können neue Tode auslösen – daher
  * bis zur Stabilität wiederholen.
  *
- * Kann unterbrechen: hat der Besitzer einer sterbenden Kreatur einen passenden
- * Cheerleader auf der Bank, öffnet sich ein Reaktionsfenster und die Funktion
- * kehrt vorzeitig zurück. Der Aufrufer erkennt das an `state.reaktion` und muss
- * den Schritt `todeStabilisieren` erneut einplanen.
+ * Tode öffnen KEIN Cheerleader-Fenster mehr: Die Bank ist der Basis-Schild und
+ * wird ausschließlich von einem Block angezapft (siehe schild.ts).
  */
 function logDeaths(state: GameState): void {
-  const frage = (owner: PlayerIndex, lane: number, c: Creature): boolean => {
-    if (c.todesReaktionAngeboten) return false;
-    const geoeffnet = oeffneFenster(state, owner, 'eigenerTod', c, lane, owner, state.active);
-    if (geoeffnet) c.todesReaktionAngeboten = true;
-    return geoeffnet;
-  };
-
   let guard = 0;
   while (guard < 100) {
-    const deaths = recalcBoard(state, frage);
+    const deaths = recalcBoard(state);
     for (const d of deaths) {
       log(state, `${d.name} wird zerstört.`, { kind: 'death', lane: d.lane, owner: d.owner });
     }
     if (deaths.length > 0) onDeathTriggers(state, deaths);
-    // Fenster offen: hier abbrechen, der Rest läuft nach der Spielerantwort.
-    if (state.reaktion) return;
     if (deaths.length === 0) return;
     guard += 1;
   }
@@ -331,8 +318,6 @@ function rundenAbschluss(state: GameState): void {
       // "hat noch nie angegriffen" statt "diese Runde nicht angegriffen" prüfte.
       creature.attackedThisRound = false;
       creature.rundenZaehler = {};
-      // Ein Todesfall der nächsten Runde ist ein neuer Auslöser.
-      creature.todesReaktionAngeboten = false;
     }
   }
 }
@@ -611,9 +596,11 @@ function fahreAufloesungFort(state: GameState): void {
         break;
       case 'todeStabilisieren':
         logDeaths(state);
-        // Fenster offen: den Schritt erneut vornean einplanen, damit die
-        // Stabilisierung nach der Spielerantwort exakt hier weiterläuft.
-        if (state.reaktion) state.aufloesung.unshift({ art: 'todeStabilisieren' });
+        break;
+      case 'schildFenster':
+        // Der Block ist bereits passiert; hier wird nur noch bezahlt. Öffnet
+        // sich kein Fenster (Bank inzwischen leer), geht es einfach weiter.
+        oeffneFenster(state, schritt.spieler, 'schildBlock', state.active);
         break;
       case 'nachKampf':
         afterCombat(state);
@@ -699,29 +686,17 @@ function playPhaseAction(state: GameState, player: PlayerIndex, action: PlayerAc
   logDeaths(state);
   state.active = otherPlayer(player);
 
-  // Erst NACH der kompletten Buchhaltung fragen: so gibt es keinen halb
-  // abgeschlossenen Ausspiel-Zug, der über ein Fenster hinweg fortgesetzt
-  // werden müsste. Der Gegner ist bereits am Zug – reagiert er, bleibt er es.
-  if (action.type === 'playCreature' && !state.reaktion) {
-    const neue = state.board[player][action.lane];
-    const gegner = otherPlayer(player);
-    if (neue) {
-      // Der spezifischere Auslöser zuerst: steht dem Gegner in dieser Lane eine
-      // eigene Kreatur gegenüber, gilt „gegenüber", sonst der allgemeine Fall.
-      const gegenueber = state.board[gegner][action.lane] != null;
-      const ausloeser = gegenueber && passendeSlots(state, gegner, 'gegnerischeKreaturGegenueber').length > 0
-        ? 'gegnerischeKreaturGegenueber'
-        : 'gegnerischeKreatur';
-      oeffneFenster(state, gegner, ausloeser, neue, action.lane, player, gegner);
-    }
-  }
 }
 
 // ---------------------------------------------------------------- Reaktion
 
 /**
- * Antwort auf ein offenes Reaktionsfenster. Verzicht (`slot: null`) ist immer
- * erlaubt; ein Opfer kostet weder Energie noch einen Zug – nur den Bankplatz.
+ * Antwort auf ein offenes Reaktionsfenster.
+ *
+ * Verzichten gibt es NICHT: Das Fenster geht nur auf, wenn der Schild gerade
+ * einen Treffer geblockt hat – der Block ist also schon eingelöst und wird mit
+ * dem Bankplatz bezahlt. Gewählt wird nur, WER sich opfert. Ein Opfer kostet
+ * weiterhin weder Energie noch einen Zug.
  */
 function reaktionsAktion(
   state: GameState,
@@ -742,13 +717,8 @@ function reaktionsAktion(
   const fortsetzenMit = reaktion.fortsetzenMit;
 
   if (action.slot == null) {
-    log(state, `Spieler ${player + 1} verzichtet auf eine Cheerleader-Reaktion.`);
-    zaehleVerzicht(state, reaktion);
-    state.reaktion = null;
-    state.active = fortsetzenMit;
-    return;
+    throw new GameRuleError('Der Schild hat geblockt – ein Cheerleader muss sich dafür opfern.');
   }
-
   if (!reaktion.slots.includes(action.slot)) {
     throw new GameRuleError('Dieser Bankplatz passt nicht zu diesem Auslöser.');
   }
@@ -780,13 +750,12 @@ function reaktionsAktion(
     cardId,
     kraft: kraft.name,
     wirkung: kraft.wirkung.kind,
-    lane: reaktion.lane,
     ...(kraft.wirkung.kind === 'wahl' ? { wahl: action.choice } : {})
   });
   zaehleCheerleader(state, player, cardId, 'geopfert');
   fuehreWirkungAus(wirkungsKontext(state, reaktion, cardId), kraft.wirkung, action.choice);
-  // Die Kraft kann getötet ODER gerettet haben – in beiden Fällen muss das Feld
-  // neu stabilisiert werden, bevor es normal weitergeht.
+  // Die Kraft kann Kreaturen getötet oder geheilt haben – in beiden Fällen muss
+  // das Feld neu stabilisiert werden, bevor es normal weitergeht.
   state.aufloesung.unshift({ art: 'todeStabilisieren' });
 }
 
@@ -965,7 +934,6 @@ export function buildClientView(state: GameState, player: PlayerIndex, data: Gam
             id: state.reaktion.id,
             spieler: state.reaktion.spieler,
             ausloeser: state.reaktion.ausloeser,
-            lane: state.reaktion.lane,
             angebote: state.reaktion.spieler === player ? angebote(state, state.reaktion) : []
           }
         }

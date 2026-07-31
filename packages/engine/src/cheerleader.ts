@@ -1,8 +1,12 @@
 // Cheerleader-Superkräfte: welches Fenster wann aufgeht und was das Opfer bewirkt.
 //
-// Reaktionen sind immer OPTIONAL und kosten weder Energie noch einen Zug – der
-// Preis ist der Bankplatz. Pro Auslöser darf höchstens ein Cheerleader geopfert
-// werden; die Folgewirkung darf aber neue Auslöser erzeugen.
+// Die Bank IST der Basis-Schild. Es gibt genau einen Auslöser: der Schild hat
+// einen Treffer geblockt. Der Block ist damit schon bezahlt – der Spieler wählt
+// nur noch, WELCHER Cheerleader sich dafür opfert. Verzichten geht nicht.
+//
+// Daraus folgt, dass keine Wirkung eine Auslöser-Kreatur haben darf: Ein Block
+// hat weder eine neu ausgespielte noch eine sterbende Kreatur, auf die man
+// zielen könnte. Alle Kräfte wirken deshalb auf das Feld als Ganzes.
 //
 // Warum ein eigenes Modul: game.ts sequenziert die Auflösung, diese Datei kennt
 // nur die Kräfte. Sie importiert bewusst NICHT aus game.ts (Zirkelimport) und
@@ -15,8 +19,6 @@ import type {
   CheerleaderAusloeser,
   CheerleaderKraft,
   CheerleaderWirkung,
-  Creature,
-  GameData,
   GameState,
   OffeneReaktion,
   PlayerIndex,
@@ -79,9 +81,6 @@ export function oeffneFenster(
   state: GameState,
   spieler: PlayerIndex,
   ausloeser: CheerleaderAusloeser,
-  ausloeserKreatur: Creature,
-  lane: number,
-  ausloeserOwner: PlayerIndex,
   fortsetzenMit: PlayerIndex
 ): boolean {
   if (state.reaktion) return false; // es kann immer nur ein Fenster offen sein
@@ -96,28 +95,11 @@ export function oeffneFenster(
     spieler,
     ausloeser,
     slots,
-    lane,
-    ausloeserUid: ausloeserKreatur.uid,
-    ausloeserOwner,
     fortsetzenMit
   };
   state.naechsteReaktionsId += 1;
   state.active = spieler;
   return true;
-}
-
-/** Findet eine Kreatur über ihre uid – sie kann die Lane gewechselt haben. */
-function findeKreatur(
-  state: GameState,
-  uid: number
-): { creature: Creature; owner: PlayerIndex; lane: number } | undefined {
-  for (const owner of [0, 1] as PlayerIndex[]) {
-    for (let lane = 0; lane < state.board[owner].length; lane++) {
-      const c = state.board[owner][lane];
-      if (c && c.uid === uid) return { creature: c, owner, lane };
-    }
-  }
-  return undefined;
 }
 
 // ---------------------------------------------------------------- Wirkungen
@@ -128,14 +110,26 @@ interface WirkungsKontext {
   spieler: PlayerIndex;
   /** cardId des geopferten Cheerleaders – nur für die Telemetrie. */
   cardId: string;
-  /** Auslöser-Kreatur, falls sie noch im Feld steht. */
-  ausloeser?: { creature: Creature; owner: PlayerIndex; lane: number };
 }
 
 type WirkungsResolver<K extends CheerleaderWirkung['kind']> = (
   ctx: WirkungsKontext,
   wirkung: Extract<CheerleaderWirkung, { kind: K }>
 ) => void;
+
+/** Karten ins Blatt ziehen. Bewusst inline: diese Datei importiert nicht aus
+ *  abilities.ts (Zirkelimport, siehe Kopfkommentar von schild.ts). */
+function ziehe(state: GameState, spieler: PlayerIndex, n: number): number {
+  let gezogen = 0;
+  for (let i = 0; i < n; i++) {
+    const card = state.players[spieler].deck.shift();
+    if (!card) break;
+    state.players[spieler].hand.push(card);
+    zaehleSpieler(state, spieler, 'kartenGezogen');
+    gezogen += 1;
+  }
+  return gezogen;
+}
 
 /**
  * Registry der Wirkungen. Der Mapped Type erzwingt Vollständigkeit: eine neue
@@ -166,33 +160,13 @@ export const CHEERLEADER_WIRKUNGEN: {
     );
   },
 
-  schwaechungRunde({ state, spieler }, wirkung) {
-    const gegner = otherPlayer(spieler);
-    let getroffen = 0;
-    for (const c of state.board[gegner]) {
-      if (!c) continue;
-      c.tempAttackBonus -= wirkung.atk;
-      getroffen += 1;
-    }
-    log(
-      state,
-      getroffen === 0
-        ? 'Sicherer Raum: der Gegner hat keine Kreaturen im Feld.'
-        : getroffen === 1
-          ? `Sicherer Raum: 1 gegnerische Kreatur erhält bis Rundenende −${wirkung.atk} ATK.`
-          : `Sicherer Raum: ${getroffen} gegnerische Kreaturen erhalten bis Rundenende −${wirkung.atk} ATK.`
-    );
+  keinBasisSchaden({ state, spieler }) {
+    state.players[spieler].basisImmun = true;
+    log(state, `Sicherer Raum: Spieler ${spieler + 1} nimmt in dieser Runde keinen Basisschaden mehr.`);
   },
 
   ziehenUndWissen({ state, spieler }, wirkung) {
-    let gezogen = 0;
-    for (let i = 0; i < wirkung.karten; i++) {
-      const card = state.players[spieler].deck.shift();
-      if (!card) break;
-      state.players[spieler].hand.push(card);
-      zaehleSpieler(state, spieler, 'kartenGezogen');
-      gezogen += 1;
-    }
+    const gezogen = ziehe(state, spieler, wirkung.karten);
     state.players[spieler].knowledge += wirkung.wissen;
     log(
       state,
@@ -200,65 +174,60 @@ export const CHEERLEADER_WIRKUNGEN: {
     );
   },
 
-  schadenAufAusloeser({ state, spieler, cardId, ausloeser }, wirkung) {
-    if (!ausloeser) {
-      log(state, 'Feldforschung: das Ziel steht nicht mehr im Feld.');
-      return;
-    }
-    ausloeser.creature.currentHealth -= wirkung.x;
-    ausloeser.creature.letzterSchaden = { art: 'effekt', quelle: 'cheerleader', owner: spieler };
-    zaehleCheerleader(state, spieler, cardId, 'schadenVerursacht', wirkung.x);
-    log(state, `Feldforschung: ${ausloeser.creature.name} erleidet ${wirkung.x} Schaden.`);
-  },
-
-  gegenseitigerSchaden({ state, spieler, cardId, ausloeser }, wirkung) {
-    if (!ausloeser) {
-      log(state, 'Handgemenge: das Ziel steht nicht mehr im Feld.');
-      return;
-    }
-    ausloeser.creature.currentHealth -= wirkung.x;
-    ausloeser.creature.letzterSchaden = { art: 'effekt', quelle: 'cheerleader', owner: spieler };
-    zaehleCheerleader(state, spieler, cardId, 'schadenVerursacht', wirkung.x);
-    // „gegenüber" heißt: dieselbe Lane auf der eigenen Seite. Steht dort nichts
-    // (mehr), trifft es nur den Auslöser – die Kraft verpufft nicht komplett.
-    const eigene = state.board[spieler][ausloeser.lane];
-    if (eigene) {
-      eigene.currentHealth -= wirkung.x;
-      eigene.letzterSchaden = { art: 'effekt', quelle: 'cheerleader', owner: spieler };
-      log(
-        state,
-        `Handgemenge: ${ausloeser.creature.name} und ${eigene.name} erleiden je ${wirkung.x} Schaden.`
-      );
-      return;
-    }
-    log(state, `Handgemenge: ${ausloeser.creature.name} erleidet ${wirkung.x} Schaden.`);
-  },
-
-  rettenUndZiehen({ state, spieler, cardId, ausloeser }, wirkung) {
-    if (!ausloeser) {
-      log(state, 'Zweite Chance: die Kreatur ist nicht mehr zu retten.');
-      return;
-    }
-    const c = ausloeser.creature;
-    c.currentHealth = wirkung.hp;
-    // Ein späterer tödlicher Treffer ist ein NEUER Auslöser und darf wieder
-    // gefragt werden – deshalb die Sperre hier aufheben.
-    c.todesReaktionAngeboten = false;
-    const verhindert = Math.max(1, wirkung.hp);
-    zaehleSpieler(state, spieler, 'verhinderterSchaden', verhindert);
-    zaehleCheerleader(state, spieler, cardId, 'schadenVerhindert', verhindert);
-    zaehleCheerleader(state, spieler, cardId, 'rettungen');
-    let gezogen = 0;
-    for (let i = 0; i < wirkung.karten; i++) {
-      const card = state.players[spieler].deck.shift();
-      if (!card) break;
-      state.players[spieler].hand.push(card);
-      zaehleSpieler(state, spieler, 'kartenGezogen');
-      gezogen += 1;
+  schadenAlleGegner({ state, spieler, cardId }, wirkung) {
+    const gegner = otherPlayer(spieler);
+    let getroffen = 0;
+    for (const c of state.board[gegner]) {
+      if (!c) continue;
+      c.currentHealth -= wirkung.x;
+      c.letzterSchaden = { art: 'effekt', quelle: 'cheerleader', owner: spieler };
+      zaehleCheerleader(state, spieler, cardId, 'schadenVerursacht', wirkung.x);
+      getroffen += 1;
     }
     log(
       state,
-      `Zweite Chance: ${c.name} überlebt mit ${wirkung.hp} Leben` +
+      getroffen === 0
+        ? 'Feldversuch: der Gegner hat keine Kreaturen im Feld.'
+        : `Feldversuch: ${getroffen} gegnerische Kreatur${getroffen === 1 ? '' : 'en'} erleide${getroffen === 1 ? 't' : 'n'} je ${wirkung.x} Schaden.`
+    );
+  },
+
+  schadenAlle({ state, spieler, cardId }, wirkung) {
+    let getroffen = 0;
+    for (const seite of [0, 1] as PlayerIndex[]) {
+      for (const c of state.board[seite]) {
+        if (!c) continue;
+        c.currentHealth -= wirkung.x;
+        c.letzterSchaden = { art: 'effekt', quelle: 'cheerleader', owner: spieler };
+        if (seite !== spieler) zaehleCheerleader(state, spieler, cardId, 'schadenVerursacht', wirkung.x);
+        getroffen += 1;
+      }
+    }
+    log(
+      state,
+      getroffen === 0
+        ? 'Handgemenge: es steht keine Kreatur im Feld.'
+        : `Handgemenge: alle ${getroffen} Kreaturen im Feld erleiden je ${wirkung.x} Schaden.`
+    );
+  },
+
+  heilenUndZiehen({ state, spieler, cardId }, wirkung) {
+    let geheilt = 0;
+    for (const c of state.board[spieler]) {
+      if (!c) continue;
+      // getMaxHealth() lebt in abilities.ts und ist hier nicht erreichbar. Die
+      // Boni sind aber dieselbe Rechnung, und recalcBoard() zieht ohnehin
+      // gleich nach – ein zu hoher Zwischenwert kann also nicht stehen bleiben.
+      const max = Math.max(1, c.baseMaxHealth + c.permHealthBonus + c.tempHealthBonus);
+      if (c.currentHealth >= max) continue;
+      zaehleCheerleader(state, spieler, cardId, 'schadenVerhindert', max - c.currentHealth);
+      c.currentHealth = max;
+      geheilt += 1;
+    }
+    const gezogen = ziehe(state, spieler, wirkung.karten);
+    log(
+      state,
+      `Zweite Chance: ${geheilt === 0 ? 'keine eigene Kreatur war verwundet' : `${geheilt} eigene Kreatur${geheilt === 1 ? ' wird' : 'en werden'} voll geheilt`}` +
         (gezogen > 0 ? ` – Spieler ${spieler + 1} zieht ${gezogen} Karte${gezogen === 1 ? '' : 'n'}.` : '.')
     );
   },
@@ -294,18 +263,5 @@ export function wirkungsKontext(
   reaktion: OffeneReaktion,
   cardId: string
 ): WirkungsKontext {
-  return {
-    state,
-    spieler: reaktion.spieler,
-    cardId,
-    ausloeser: findeKreatur(state, reaktion.ausloeserUid)
-  };
-}
-
-/** Telemetrie: ein Fenster wurde ungenutzt geschlossen. */
-export function zaehleVerzicht(state: GameState, reaktion: OffeneReaktion): void {
-  for (const slot of reaktion.slots) {
-    const eintrag = kraftVonSlot(state, reaktion.spieler, slot);
-    if (eintrag) zaehleCheerleader(state, reaktion.spieler, eintrag.cardId, 'verzichtet');
-  }
+  return { state, spieler: reaktion.spieler, cardId };
 }

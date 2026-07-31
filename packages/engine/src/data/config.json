@@ -31,43 +31,62 @@
     "kraefte": {
       "pc_principal": {
         "name": "Machtwort",
-        "text": "Wenn der Gegner eine Kreatur ausspielt: Peinige alle gegnerischen Kreaturen – ATK 0, Verteidigung 1.",
-        "ausloeser": "gegnerischeKreatur",
-        "wirkung": { "kind": "peinigenAlle", "atkDeckel": 0, "hpDeckel": 1 }
+        "text": "Wenn dein Schild blockt: Peinige alle gegnerischen Kreaturen – ATK 0, Verteidigung 1.",
+        "ausloeser": "schildBlock",
+        "wirkung": {
+          "kind": "peinigenAlle",
+          "atkDeckel": 0,
+          "hpDeckel": 1
+        }
       },
       "pc_babies": {
         "name": "Sicherer Raum",
-        "text": "Wenn der Gegner eine Kreatur ausspielt: Alle gegnerischen Kreaturen erhalten bis Rundenende −1 ATK.",
-        "ausloeser": "gegnerischeKreatur",
-        "wirkung": { "kind": "schwaechungRunde", "atk": 1 }
+        "text": "Wenn dein Schild blockt: Deine Basis nimmt in dieser Runde keinen Schaden mehr.",
+        "ausloeser": "schildBlock",
+        "wirkung": {
+          "kind": "keinBasisSchaden"
+        }
       },
       "alter_wissenschaftler": {
         "name": "Feldforschung",
-        "text": "Wenn der Gegner eine Kreatur ausspielt – wähle eins: Ziehe 1 Karte und erhalte 1 Wissen; oder füge der neuen Kreatur 2 Schaden zu.",
-        "ausloeser": "gegnerischeKreatur",
+        "text": "Wenn dein Schild blockt – wähle eins: Ziehe 1 Karte und erhalte 1 Wissen; oder füge jeder gegnerischen Kreatur 2 Schaden zu.",
+        "ausloeser": "schildBlock",
         "wirkung": {
           "kind": "wahl",
           "optionA": {
             "name": "Karte und Wissen",
-            "wirkung": { "kind": "ziehenUndWissen", "karten": 1, "wissen": 1 }
+            "wirkung": {
+              "kind": "ziehenUndWissen",
+              "karten": 1,
+              "wissen": 1
+            }
           },
           "optionB": {
-            "name": "2 Schaden",
-            "wirkung": { "kind": "schadenAufAusloeser", "x": 2 }
+            "name": "2 Schaden auf alle Gegner",
+            "wirkung": {
+              "kind": "schadenAlleGegner",
+              "x": 2
+            }
           }
         }
       },
       "randy_marsh": {
         "name": "Handgemenge",
-        "text": "Wenn der Gegner eine Kreatur genau gegenüber einer eigenen ausspielt: Beide Kreaturen erleiden 2 Schaden.",
-        "ausloeser": "gegnerischeKreaturGegenueber",
-        "wirkung": { "kind": "gegenseitigerSchaden", "x": 2 }
+        "text": "Wenn dein Schild blockt: Jede Kreatur im Feld erleidet 2 Schaden – auch deine eigenen.",
+        "ausloeser": "schildBlock",
+        "wirkung": {
+          "kind": "schadenAlle",
+          "x": 2
+        }
       },
       "junger_neffe": {
         "name": "Zweite Chance",
-        "text": "Bevor eine eigene Kreatur endgültig stirbt: Sie überlebt mit 1 Leben und du ziehst 1 Karte.",
-        "ausloeser": "eigenerTod",
-        "wirkung": { "kind": "rettenUndZiehen", "hp": 1, "karten": 1 }
+        "text": "Wenn dein Schild blockt: Alle deine Kreaturen werden voll geheilt und du ziehst 1 Karte.",
+        "ausloeser": "schildBlock",
+        "wirkung": {
+          "kind": "heilenUndZiehen",
+          "karten": 1
+        }
       }
     }
   },
@@ -78,11 +97,9 @@
   },
   "schild": {
     "abschnitte": 7,
-    "ladung": { "min": 1, "max": 3 },
-    "superkraefte": [
-      { "kind": "keinSchaden", "name": "Schutzschild" },
-      { "kind": "kartenZiehen", "name": "Nachschub", "n": 2 },
-      { "kind": "schwaechung", "name": "Störfeuer", "atk": 1, "hp": 1 }
-    ]
+    "ladung": {
+      "min": 1,
+      "max": 3
+    }
   }
 }

@@ -176,54 +176,74 @@ Die Datei `packages/engine/src/data/config.json` enthält alle Spielregeln als Z
 | `roundLimit` | Technische Notbremse weit über der Zermürbung (aktuell 30) – wird im Normalspiel nie erreicht; jeder Treffer ist ein Bug-Report |
 | `schild.abschnitte` | Wie viele Abschnitte der Basis-Schild hat (Standard 7) |
 | `schild.ladung.min` / `.max` | Spanne, um die ein Treffer den Schild auflädt (Standard 1–3) |
-| `schild.superkraefte` | Liste der Superkräfte, aus der beim Block zufällig eine gezogen wird (siehe unten) |
+| `cheerleaders.kraefte` | Was die einzelnen Cheerleader beim Schild-Block bewirken (siehe unten) |
 
 Zahl ändern, speichern, Server neu starten – fertig.
 
-### Der Schild
+### Der Schild – und warum die Bank sein Motor ist
 
 Neben jeder Basis (🏰) steht ein Balken aus **7 Abschnitten**. Jedes Mal, wenn diese Basis
 getroffen wird, lädt sich der Schild **zufällig um 1 bis 3 Abschnitte** auf. Sobald er dabei
 7 erreicht, passiert dreierlei:
 
 1. **Der Treffer wird komplett geblockt** – die Basis verliert kein einziges Leben.
-2. **Eine zufällige Superkraft** löst aus (der Name erscheint kurz als Banner).
+2. **Ein Cheerleader von der Bank opfert sich** und wirkt dabei seine Kraft. Wer das ist,
+   entscheidet der Besitzer des Schilds in einem kurzen Auswahlfenster.
 3. Der Schild ist wieder **leer** und muss von vorn aufgeladen werden.
 
-Weil der Schild im Schnitt alle dreieinhalb Treffer voll ist, bekommt der Spieler, der gerade
-unter Druck steht, regelmäßig etwas zurück.
+Zwei Regeln fallen daraus:
+
+- **Verzichten geht nicht.** Der Block ist schon eingelöst; bezahlt wird er mit dem Bankplatz.
+  Gewählt wird nur, *wer* sich opfert.
+- **Ohne Cheerleader gibt es keinen Schild.** Sind alle drei Bankplätze leer, lädt sich der
+  Balken gar nicht mehr auf und Treffer gehen ungehindert durch. Die Bank ist damit ein
+  Vorrat von genau drei Blocks pro Partie.
 
 **Was NICHT auf den Schild geht:** die Zermürbung am Rundenende. Die ist die Uhr, die lange
 Partien beendet – sie soll unblockbar bleiben. Alles andere (Kreaturen, die auf eine leere
 Bahn treffen, Wucht-Überschuss, Kartenschaden) lädt den Schild auf.
 
-**Die drei Superkräfte** (in `config.json` unter `schild.superkraefte`):
+**Die fünf Kräfte** (in `config.json` unter `cheerleaders.kraefte`):
 
-| Name | `kind` | Wirkung |
+| Cheerleader | Kraft | Wirkung |
 |---|---|---|
-| Schutzschild | `keinSchaden` | Die eigene Basis nimmt in dieser Runde gar keinen Schaden mehr. |
-| Nachschub | `kartenZiehen` | Man zieht `n` Karten (Standard 2). |
-| Störfeuer | `schwaechung` | Alle gegnerischen Kreaturen bekommen dauerhaft `-atk`/`-hp`. Kreaturen mit wenig Leben sterben daran. |
+| PC Principal | Machtwort | Alle gegnerischen Kreaturen werden dauerhaft auf 0 ATK und 1 Verteidigung gedeckelt. |
+| PC Babies | Sicherer Raum | Die eigene Basis nimmt in dieser Runde gar keinen Schaden mehr. |
+| Alter Wissenschaftler | Feldforschung | Wahl: 1 Karte + 1 Wissen – oder 2 Schaden auf jede gegnerische Kreatur. |
+| Randy Marsh | Handgemenge | Jede Kreatur im Feld nimmt 2 Schaden, auch die eigenen. |
+| Junger Neffe | Zweite Chance | Alle eigenen Kreaturen werden voll geheilt, dazu 1 Karte. |
+
+Alle fünf wirken auf das Feld als Ganzes. Das ist kein Zufall: Ein Schild-Block passiert an
+der Basis, es gibt also keine „neue" oder „sterbende" Kreatur, auf die eine Kraft zielen
+könnte.
 
 Den Schild ganz abschalten geht, indem man den kompletten `"schild"`-Block aus `config.json`
 löscht – dann spielt sich alles wie vorher.
 
-### Eine neue Superkraft hinzufügen
+**Im 🧪 Testmodus** ist der Schild schon nach *einem* Treffer voll. So sieht man die Kräfte
+sofort, ohne auf einen Block warten zu müssen.
+
+### Eine neue Cheerleader-Kraft hinzufügen
 
 Das braucht drei kleine Code-Stellen (mehr nicht):
 
-1. **`packages/engine/src/types.ts`** – eine Variante beim Typ `Superkraft` ergänzen, z. B.
-   `| { kind: 'heilung'; name: string; menge: number }`.
-2. **`packages/engine/src/schild.ts`** – einen Eintrag in `SUPERKRAEFTE` mit demselben Namen
-   schreiben; dort steht, was die Superkraft tut. (Vergisst man das, meckert TypeScript –
-   die Liste muss vollständig sein.)
-3. **`packages/engine/src/schema.ts`** – im `superkraftSchema` einen Zweig ergänzen, damit die
-   Prüfung die neue Art kennt.
+1. **`packages/engine/src/types.ts`** – eine Variante beim Typ `CheerleaderWirkung` ergänzen,
+   z. B. `| { kind: 'heilung'; menge: number }`.
+2. **`packages/engine/src/cheerleader.ts`** – einen Eintrag in `CHEERLEADER_WIRKUNGEN` mit
+   demselben Namen schreiben; dort steht, was die Kraft tut. (Vergisst man das, meckert
+   TypeScript – die Liste muss vollständig sein.)
+3. **`packages/engine/src/schema.ts`** – im `einfacheWirkungSchema` einen Zweig ergänzen,
+   damit die Prüfung die neue Art kennt.
 
-Danach nur noch in `config.json` eintragen:
+Danach nur noch in `config.json` unter `cheerleaders.kraefte` eintragen:
 
 ```json
-{ "kind": "heilung", "name": "Feldlazarett", "menge": 3 }
+"randy_marsh": {
+  "name": "Feldlazarett",
+  "text": "Wenn dein Schild blockt: Heile deine Basis um 3.",
+  "ausloeser": "schildBlock",
+  "wirkung": { "kind": "heilung", "menge": 3 }
+}
 ```
 
 ---

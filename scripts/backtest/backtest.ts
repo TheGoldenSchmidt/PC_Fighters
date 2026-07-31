@@ -413,25 +413,21 @@ async function main() {
   // Cheerleader-Nutzung über alle Partien und beide Seiten summieren.
   const cheerleaderAggregat = new Map<
     string,
-    { angeboten: number; verzichtet: number; geopfert: number; schadenVerursacht: number; schadenVerhindert: number; rettungen: number }
+    { angeboten: number; geopfert: number; schadenVerursacht: number; schadenVerhindert: number }
   >();
   for (const stats of kartenStatsGesamt) {
     for (const seite of [0, 1] as const) {
       for (const [cardId, c] of Object.entries(stats.proCheerleader?.[seite] ?? {})) {
         const acc = cheerleaderAggregat.get(cardId) ?? {
           angeboten: 0,
-          verzichtet: 0,
           geopfert: 0,
           schadenVerursacht: 0,
           schadenVerhindert: 0,
-          rettungen: 0
         };
         acc.angeboten += c.angeboten;
-        acc.verzichtet += c.verzichtet;
         acc.geopfert += c.geopfert;
         acc.schadenVerursacht += c.schadenVerursacht;
         acc.schadenVerhindert += c.schadenVerhindert;
-        acc.rettungen += c.rettungen;
         cheerleaderAggregat.set(cardId, acc);
       }
     }

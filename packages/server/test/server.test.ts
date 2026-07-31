@@ -407,7 +407,9 @@ describe('Persistenz: Version, Migration und offenes Reaktionsfenster', () => {
     if (existsSync(persistPfad)) rmSync(persistPfad);
     let srv = await startServer(0);
     let c1 = await connect(srv.port);
-    c1.send({ type: 'create', faction: 'humans' });
+    // Testmodus: der Schild ist nach EINEM Treffer voll, ein Basisangriff
+    // loest also zuverlaessig den Block und damit das Bank-Fenster aus.
+    c1.send({ type: 'create', faction: 'humans', testMode: true });
     const created = await c1.next('created');
     const raumCode = created.code as string;
     const token1 = created.token as string;
@@ -427,8 +429,24 @@ describe('Persistenz: Version, Migration und offenes Reaktionsfenster', () => {
     await c1.next('state');
     await c2.next('state');
 
-    // Der Gegner des Ausspielenden darf reagieren; er sieht die Angebote,
-    // der andere nur, DASS gewartet wird.
+    // Die Kreatur ist beim Ausspielen erschoepft. Erst der Kampf der FOLGENDEN
+    // Runde schlaegt gegen die leere Lane, trifft die Basis und laesst den
+    // Schild blocken. Bis dahin gibt der jeweils Aktive nur ab – in der
+    // Flugphase heisst das `flyDone`, sonst `pass`.
+    for (let i = 0; i < 30 && !c1.lastView!.reaktion && !c2.lastView!.reaktion; i++) {
+      const amZug = c1.lastView!.active === c1.lastView!.you ? c1 : c2;
+      const v = amZug.lastView!;
+      if (v.phase === 'ended') break;
+      amZug.send({
+        type: 'action',
+        action: v.phase === 'fly' ? { type: 'flyDone' } : { type: 'pass' }
+      });
+      await c1.next('state');
+      await c2.next('state');
+    }
+
+    // Der Schildbesitzer bezahlt den Block mit einem Bankplatz: er sieht die
+    // Angebote, der andere nur, DASS gewartet wird.
     const sichtPassiv = passiv.lastView!;
     const sichtAktiv = aktiv.lastView!;
     expect(sichtPassiv.reaktion).toBeTruthy();
@@ -470,15 +488,18 @@ describe('Persistenz: Version, Migration und offenes Reaktionsfenster', () => {
     expect(neuPassiv.reaktion!.id).toBe(reaktionsId);
     expect(neuPassiv.reaktion!.angebote.length).toBeGreaterThan(0);
 
-    // Und die Antwort wirkt nach dem Neustart normal weiter.
+    // Und die Antwort wirkt nach dem Neustart normal weiter. Verzichten gibt es
+    // nicht mehr – der Block wird mit einem konkreten Bankplatz bezahlt.
     const clientPassiv = c1.lastView!.you === wardPassivSpieler ? c1 : c2;
+    const slot = neuPassiv.reaktion!.angebote[0].slot;
     clientPassiv.send({
       type: 'action',
-      action: { type: 'cheerleaderReaction', reactionId: reaktionsId, slot: null }
+      action: { type: 'cheerleaderReaction', reactionId: reaktionsId, slot }
     });
     await c1.next('state');
     await c2.next('state');
     expect(clientPassiv.lastView!.reaktion).toBeUndefined();
+    expect(clientPassiv.lastView!.players[wardPassivSpieler].cheerleaders[slot]).toBeNull();
 
     c1.ws.close();
     c2.ws.close();
