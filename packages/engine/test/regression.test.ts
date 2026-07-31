@@ -24,7 +24,11 @@ const decks = ladeDecks(data);
 const profil: BotProfil = { ...BOT_PROFILE.ausgewogen, epsilonBand: 0 };
 
 /** deckA, deckB, Saat, erwarteter Hash `sieger:runden:basisA:basisB:uidCounter`. */
-// Neu erzeugt nach der Feld- und Tempo-Aenderung: 5 statt 3 Bahnen und
+// Neu erzeugt, nachdem der Bot Schild und Basis-Immunitaet SIEHT. Beides fehlte
+// in `bewerteZustand`; „Sicherer Raum" sah fuer ihn aus wie ein verschenkter
+// Bankplatz. Die Spielregeln sind unveraendert – nur die Zugwahl des Bots.
+//
+// Davor: neu erzeugt nach der Feld- und Tempo-Aenderung: 5 statt 3 Bahnen und
 // Zermuerbung erst ab Runde 15 statt 13. Beides sind Zahlen in config.json,
 // aendert aber jede Partie von Grund auf. Bewusste Regeländerung – Decklisten
 // und Kartenwerte sind unverändert.
@@ -53,10 +57,10 @@ const GOLDEN_MASTER: [string, string, number, string][] = [
   ['a3_gift_urgewalt', 'a4_urzeitliches_rudel', 5011, '1:9:-2:3:20'],
   ['a3_gift_urgewalt', 'h1_solidaritaet', 5012, '1:13:0:5:28'],
   ['a3_gift_urgewalt', 'h2_schicht', 5013, '1:16:-1:4:34'],
-  ['a3_gift_urgewalt', 'h3_campus', 5014, '0:17:2:-1:35'],
-  ['a4_urzeitliches_rudel', 'h1_solidaritaet', 5015, '0:12:9:0:23'],
-  ['a4_urzeitliches_rudel', 'h2_schicht', 5016, '1:13:-3:4:31'],
-  ['a4_urzeitliches_rudel', 'h3_campus', 5017, '1:13:-3:9:29'],
+  ['a3_gift_urgewalt', 'h3_campus', 5014, '1:16:-2:1:35'],
+  ['a4_urzeitliches_rudel', 'h1_solidaritaet', 5015, '1:9:-2:8:18'],
+  ['a4_urzeitliches_rudel', 'h2_schicht', 5016, '1:12:-3:3:29'],
+  ['a4_urzeitliches_rudel', 'h3_campus', 5017, '1:13:-1:9:30'],
   ['h1_solidaritaet', 'h2_schicht', 5018, '0:14:8:0:31'],
   ['h1_solidaritaet', 'h3_campus', 5019, '0:15:6:0:34']
 ];

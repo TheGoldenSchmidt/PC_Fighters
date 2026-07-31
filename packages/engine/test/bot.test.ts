@@ -184,6 +184,37 @@ describe('bewerteZustand', () => {
       bewerteZustand(schwach, 0, BOT_PROFILE.ausgewogen)
     );
   });
+
+  // Ohne diese drei Faelle war der Bot blind fuer die halbe Schild-Mechanik:
+  // „Sicherer Raum" sah aus wie ein verschenkter Bankplatz, und ein fast
+  // voller Schild war ihm nichts wert.
+  it('Basis-Immunitaet wertet besser als keine', () => {
+    const ohne = emptyState();
+    const mit = emptyState();
+    mit.players[0].basisImmun = true;
+    expect(bewerteZustand(mit, 0, BOT_PROFILE.ausgewogen)).toBeGreaterThan(
+      bewerteZustand(ohne, 0, BOT_PROFILE.ausgewogen)
+    );
+  });
+
+  it('ein weiter geladener Schild wertet besser', () => {
+    const leer = emptyState();
+    const geladen = emptyState();
+    geladen.players[0].schild = data.config.schild!.abschnitte - 1;
+    expect(bewerteZustand(geladen, 0, BOT_PROFILE.ausgewogen)).toBeGreaterThan(
+      bewerteZustand(leer, 0, BOT_PROFILE.ausgewogen)
+    );
+  });
+
+  it('bei leerer Bank ist die Schildladung wertlos - es gibt dann keinen Schild', () => {
+    const leer = emptyState();
+    const geladen = emptyState();
+    for (const s of [leer, geladen]) s.players[0].cheerleaders = [null, null, null];
+    geladen.players[0].schild = data.config.schild!.abschnitte - 1;
+    expect(bewerteZustand(geladen, 0, BOT_PROFILE.ausgewogen)).toBe(
+      bewerteZustand(leer, 0, BOT_PROFILE.ausgewogen)
+    );
+  });
 });
 
 describe('waehleAktion: Policy-Verhalten', () => {

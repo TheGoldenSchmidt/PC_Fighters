@@ -24,10 +24,13 @@ export interface BotGewichte {
   /** Strafe je Punkt ungenutzter Energie (Anreiz, Energie auszugeben). */
   energieVerfall: number;
   /**
-   * Wert eines noch besetzten Bankplatzes (Differenz Ich - Gegner). Ohne
-   * dieses Gewicht wäre ein Cheerleader-Opfer für den Bot gratis: der Bankplatz
-   * taucht sonst in keiner anderen Kennzahl auf, und er würde jedes Angebot
-   * sofort einlösen statt es für den passenden Moment aufzuheben.
+   * Wert eines noch besetzten Bankplatzes (Differenz Ich - Gegner).
+   *
+   * Seit die Bank der Schild IST, ist ein Bankplatz doppelt wertvoll: Er ist
+   * die Kraft, die man einlösen kann, UND die Bedingung dafür, dass der Schild
+   * überhaupt noch lädt. Beim Schild-Block ist ein Opfer allerdings Pflicht –
+   * dieses Gewicht steuert dann nur noch, WIE teuer der Bot den Verlust
+   * empfindet, nicht mehr OB er opfert.
    */
   bank: number;
 }
@@ -140,9 +143,47 @@ export function kampfprognose(state: GameState, ich: PlayerIndex): number {
 }
 
 /**
+ * Wie viele Basis-Leben eine Runde Unverwundbarkeit ungefähr wert ist.
+ * Grob der durchschnittliche Basisschaden, der in einer Runde durchkommt.
+ */
+const IMMUN_IN_BASISLEBEN = 2;
+
+/**
+ * Wie viele Basis-Leben ein VOLLER Schild wert ist: Er blockt einen Treffer
+ * und löst zusätzlich eine Cheerleader-Kraft aus. Ein halb geladener Schild
+ * zählt anteilig.
+ */
+const SCHILD_VOLL_IN_BASISLEBEN = 3;
+
+/**
+ * Basis-Reserve eines Spielers in Basis-Leben: das nackte Leben plus das, was
+ * Schild und Immunität faktisch davor abfangen.
+ *
+ * Ohne diese beiden Posten waere der Bot blind fuer die halbe Schild-Mechanik:
+ * „Sicherer Raum" (Immunitaet) sah fuer ihn aus wie ein verschenkter
+ * Bankplatz, und ein fast voller Schild war ihm nichts wert. Beides in
+ * Basis-Leben auszudruecken haelt die Profile frei von neuen Gewichten – ihr
+ * `basis`-Gewicht entscheidet weiterhin, wie wichtig das Ganze ist.
+ */
+function basisReserve(state: GameState, spieler: PlayerIndex): number {
+  const p = state.players[spieler];
+  let wert = p.base;
+  if (p.basisImmun) wert += IMMUN_IN_BASISLEBEN;
+  const cfg = state.config.schild;
+  // Ohne Cheerleader auf der Bank gibt es keinen Schild – die Ladung ist dann
+  // wertlos (siehe schild.ts::schildAktiv).
+  const bankBesetzt = p.cheerleaders.some((c) => c !== null);
+  if (cfg && bankBesetzt) {
+    wert += (Math.min(p.schild, cfg.abschnitte) / cfg.abschnitte) * SCHILD_VOLL_IN_BASISLEBEN;
+  }
+  return wert;
+}
+
+/**
  * Kartenblinde Zustandsbewertung aus Sicht von `ich`. Kennt keine Karten-IDs –
- * nur Basis-HP, Brettwert (aus Effektivwerten), Handgröße, Wissen und die
- * Kampf-Prognose. Gewinn/Verlust dominiert alles andere.
+ * nur Basis-Reserve (Leben + Schild + Immunität), Brettwert (aus
+ * Effektivwerten), Handgröße, Wissen und die Kampf-Prognose. Gewinn/Verlust
+ * dominiert alles andere.
  */
 export function bewerteZustand(state: GameState, ich: PlayerIndex, profil: BotProfil): number {
   if (state.phase === 'ended') {
@@ -166,7 +207,7 @@ export function bewerteZustand(state: GameState, ich: PlayerIndex, profil: BotPr
   const bankGegner = g.cheerleaders.filter((c) => c != null).length;
 
   return (
-    g_.basis * (p.base - g.base) +
+    g_.basis * (basisReserve(state, ich) - basisReserve(state, gegner)) +
     g_.brett * (brettIch - brettGegner) +
     g_.hand * (p.hand.length - g.hand.length) +
     g_.wissen * (p.knowledge - g.knowledge) +

@@ -1,6 +1,6 @@
 # PC Fighters – Balancing V2
 
-**Ziel:** Ein taktisches 3-Lane-Kartenspiel mit kurzen Partien, klaren Fraktionsidentitäten und Decks, die Unterfraktionen innerhalb von **Menschen** beziehungsweise **Tieren** frei kombinieren können.
+**Ziel:** Ein taktisches Bahnen-Kartenspiel mit kurzen Partien, klaren Fraktionsidentitäten und Decks, die Unterfraktionen innerhalb von **Menschen** beziehungsweise **Tieren** frei kombinieren können.
 
 **Status:** Theoretisch vorbalancierte Alpha-Fassung. Die Werte sind als belastbarer Ausgangspunkt für Playtests gedacht, nicht als statistisch bewiesenes Endbalancing.
 
@@ -10,17 +10,29 @@
 
 ## 1. Globale Spielparameter
 
-* **Lanes:** 3
+* **Bahnen (Lanes):** 5. Der Ersteller einer Partie darf beim Einrichten 3 bis 6 wählen; `config.lanes` ist nur die Voreinstellung.
 * **Basis-Lebenspunkte:** 15
 * **Starthand:** 4 Karten; einmaliger Mulligan empfohlen
 * **Kartenzug:** 1 pro Runde
-* **Rundenlimit:** keines
+* **Rundenlimit:** keines. Stattdessen beendet die **Zermürbung** lange Partien: ab Runde 15 verlieren beide Basen am Rundenende 1 Leben, jede weitere Runde 1 mehr. Zermürbung geht bewusst **am Schild vorbei** – sie ist die Uhr, nicht ein weiterer Angriff.
 * **Energie:** Runde 1 = 1 Energie, danach +1 pro Runde
 * **Deckgröße:** genau 20 Karten, später auf 40 erweiterbar mit eigener Deckkreation
 * **Kopien:** maximal 3 je normaler Karte, maximal 2 je Signature-Karte ★
 * **Fraktionsregel:** Ein Deck enthält ausschließlich Karten einer Oberfraktion: `humans` **oder** `animals`.
 * **Unterfraktionen:** Innerhalb der gewählten Oberfraktion dürfen alle Unterfraktionen frei kombiniert werden.
 * **Board-Annahme für diese Balance:** Pro Spieler maximal eine Kreatur je Lane.
+
+### Basis-Schild und Cheerleader-Bank
+
+Neben jeder Basis steht ein Schild aus **7 Abschnitten**. Jeder **direkte** Treffer auf diese Basis lädt ihn zufällig um **1–3** Abschnitte auf. Erreicht er 7:
+
+1. Der Treffer wird **komplett geblockt**.
+2. **Ein Cheerleader von der Bank opfert sich** und wirkt dabei seine Kraft. Der Schildbesitzer wählt nur, *wer* – verzichten ist nicht möglich, der Block ist bereits eingelöst.
+3. Der Schild geht auf 0 zurück.
+
+Daraus folgt die zentrale Kopplung: **Die Bank IST der Schild.** Sind alle drei Bankplätze leer, lädt der Schild nicht mehr und Treffer gehen ungehindert durch. Jeder Spieler hat damit höchstens drei Blocks pro Partie.
+
+Die drei Bankplätze werden vor der Partie aus einem Kandidatenpool gewählt (`config.cheerleaders`); die Reihenfolge legt die Plätze fest. Alle Kräfte wirken auf das Feld als Ganzes – ein Block passiert an der Basis, es gibt dort also weder eine neu ausgespielte noch eine sterbende Kreatur als Ziel.
 
 ### Zielwerte für Decks
 
