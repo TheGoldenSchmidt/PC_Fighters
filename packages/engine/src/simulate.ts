@@ -10,7 +10,14 @@ import { createSeededRandom } from './rng.js';
 import { aktiviereStatistik, finalisiereStatistik, markiereLegaleHandkarten } from './stats.js';
 import { legaleAktionen } from './legal.js';
 import type { BotProfil } from './bot.js';
-import type { DeckList, GameData, GameState, MatchStatistik, PlayerIndex } from './types.js';
+import type {
+  CheerleaderSelection,
+  DeckList,
+  GameData,
+  GameState,
+  MatchStatistik,
+  PlayerIndex
+} from './types.js';
 
 export interface PartieErgebnis {
   gewinner: PlayerIndex | 'draw';
@@ -28,6 +35,12 @@ export interface PartieOptionen {
   profilB?: BotProfil;
   /** Sicherheitsnetz gegen Endlosschleifen bei Datenfehlern (nicht das Spiel-roundLimit). */
   maxSchritte?: number;
+  /**
+   * Bank-Auswahl je Spieler. Ohne Angabe greift die Standardauswahl (die ersten
+   * gültigen Kandidaten) – dann kommen Kräfte am Ende des Kandidatenpools in
+   * keiner simulierten Partie vor. Der Backtest rotiert deshalb bewusst.
+   */
+  cheerleaders?: [CheerleaderSelection, CheerleaderSelection];
 }
 
 /**
@@ -45,7 +58,13 @@ export function spielePartie(
   const random = createSeededRandom(opts.saat);
   const profilA = opts.profilA ?? BOT_PROFILE.ausgewogen;
   const profilB = opts.profilB ?? BOT_PROFILE.ausgewogen;
-  let s = createGame(data, [deckA.faction ?? 'humans', deckB.faction ?? 'animals'], random, [deckA, deckB]);
+  let s = createGame(
+    data,
+    [deckA.faction ?? 'humans', deckB.faction ?? 'animals'],
+    random,
+    [deckA, deckB],
+    opts.cheerleaders
+  );
   aktiviereStatistik(s);
   s.logModus = 'aus'; // Massensimulation: Log-Wachstum ist der dominante Klon-Kostenfaktor.
   const startspieler = s.startingPlayer;

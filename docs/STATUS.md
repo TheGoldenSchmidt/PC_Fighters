@@ -50,13 +50,14 @@ Replay-Reihenfolge. Die Fixtures kommen aus der **echten Engine**
 (`createGame` + `applyAction`), damit die Suite nicht grün bleibt, während sich
 der `ClientView`-Vertrag darunter verschiebt.
 
-Noch offen, bevor der Meilenstein steht:
+**Alle fünf Kräfte vermessen.** Der Backtest rotiert die Bank-Auswahl je
+Partie (`spielePartie` nimmt jetzt `cheerleaders` entgegen). Vorher hätten
+`junger_neffe` und `randy_marsh` in keiner simulierten Partie vorkommen können,
+weil die Standardauswahl immer die ersten drei Kandidaten nimmt. Die
+Regressionstests nutzen weiterhin die Standardauswahl, der Golden Master bleibt
+davon also unberührt.
 
-1. **Zwei Kräfte sind unvermessen.** Der Backtest nutzt die Standardauswahl
-   (die ersten drei Kandidaten), deshalb kommen `junger_neffe` (Auslöser
-   `eigenerTod`) und `randy_marsh` (`gegnerischeKreaturGegenueber`) in keiner
-   simulierten Partie vor. Beide sind durch Engine-Tests abgedeckt, aber ohne
-   Balancing-Daten.
+**Damit ist der Cheerleader-Meilenstein vollständig.**
 
 > **Offene Designfrage:** Drei der fünf Kandidaten lösen auf *jede* gegnerische
 > Kreatur aus. Mit der Standardbank öffnet damit fast jedes Ausspielen ein
@@ -160,6 +161,21 @@ Messung ist deshalb bewusst nur festgehalten, nicht behoben.
 Mit Cheerleader-Kräften (Engine-Stand, Smoke-Lauf `--schnell`): Ø 14,45 Runden,
 83,3 % erreichen Zermürbung – der Trend setzt sich fort. Kein Volllauf, weil
 das Balancing ohnehin erst nach der Client-Anbindung ansteht.
+
+### Erste Cheerleader-Zahlen (Kurzlauf, 420 Partien, rotierende Bank)
+
+| Cheerleader | angeboten | Einlösequote |
+|---|---|---|
+| Junger Neffe | 545 | **92,5 %** |
+| Alter Wissenschaftler | 584 | 86,3 % |
+| PC Principal | 626 | 80,5 % |
+| PC Babies | 1620 | 30,7 % |
+| Randy Marsh | 1817 | **22,1 %** |
+
+Die Spreizung ist der interessante Teil: Junger Neffe wird fast immer
+eingelöst (die Entscheidung ist also kaum eine), Randy Marsh fast nie – seine
+Kraft trifft die eigene Kreatur mit und lohnt den Bankplatz selten. Gemessen
+mit dem heuristischen Bot, also nur eine grobe Einschätzung.
 
 **Geplante 5-Lane-Erweiterung.** Der Konsolidierungsplan sieht perspektivisch
 mehr Lanes vor (`config.lanes`, aktuell 3 – die Engine ist bereits generisch
