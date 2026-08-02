@@ -42,8 +42,8 @@ function connect(port: number): Promise<TestClient> {
           const deckSelection =
             value.deckSelection ??
             (faction === 'animals'
-              ? { kind: 'preset', id: 'a1_rudeljaeger' }
-              : { kind: 'preset', id: 'h1_solidaritaet' });
+              ? { kind: 'preset', id: 'rudeljaeger' }
+              : { kind: 'preset', id: 'solidaritaet_ueberleben' });
           ws.send(JSON.stringify({
             ...value,
             deckSelection,
@@ -172,9 +172,11 @@ describe('Server: Raum, Beitritt, Aktionen, gefilterte Sicht', () => {
     for (const view of views) {
       // Nur die eigene Hand ist enthalten – und A (Humans) darf niemals
       // Animals-Karten als Handkarten geschickt bekommen (B spielt Animals).
-      // Handkarten können Sub-Fraktionen sein, ihre Oberfraktion ist "humans".
+      // PC Principal ist die vereinbarte neutrale Ausnahme im Alpha-Deck.
       expect(view.you).toBe(0);
-      for (const card of view.hand) expect(topOf(factionTree, card.faction)).toBe('humans');
+      for (const card of view.hand) {
+        expect(['humans', 'neutral']).toContain(topOf(factionTree, card.faction));
+      }
       // Der Gegner-Eintrag enthält nur Zähler, keine Kartenlisten:
       const opponent = view.players[1] as unknown as Record<string, unknown>;
       expect(opponent.hand).toBeUndefined();
@@ -296,7 +298,11 @@ describe('Server: Raum, Beitritt, Aktionen, gefilterte Sicht', () => {
     const info = await response.json() as Record<string, unknown>;
     expect(Array.isArray(info.cards)).toBe(true);
     expect(info.deckbuilding).toBeTruthy();
-    expect(Object.keys(info.decks as object)).toContain('h1_solidaritaet');
+    const angeboteneDecks = Object.keys(info.decks as object).sort();
+    const aktiveDecks = (info.deckStatus as { active: string[] }).active.sort();
+    expect(angeboteneDecks).toEqual(aktiveDecks);
+    expect(angeboteneDecks).toHaveLength(4);
+    expect(angeboteneDecks).not.toContain('a2_luftangriff');
     expect(response.headers.get('cache-control')).toBe('no-store');
     const visuals = info.visuals as { cards: Record<string, unknown> };
     expect(Object.keys(visuals.cards)).toEqual(expect.arrayContaining([
@@ -313,12 +319,20 @@ describe('Server: Raum, Beitritt, Aktionen, gefilterte Sicht', () => {
     ]));
   });
 
+  it('nicht angebotene Preset-Decks koennen auch manipuliert nicht gestartet werden', async () => {
+    const client = await connect(server.port);
+    client.send({ type: 'create', deckSelection: { kind: 'preset', id: 'a2_luftangriff' } });
+    const error = await client.next('error');
+    expect(String(error.message)).toContain('deaktiviert');
+    client.ws.close();
+  });
+
   it('Preset-Decks werden serverseitig aufgelöst; manipulierte Custom-Decks werden abgelehnt', async () => {
     const host = await connect(server.port);
-    host.send({ type: 'create', deckSelection: { kind: 'preset', id: 'h1_solidaritaet' } });
+    host.send({ type: 'create', deckSelection: { kind: 'preset', id: 'solidaritaet_ueberleben' } });
     const created = await host.next('created');
     const guest = await connect(server.port);
-    guest.send({ type: 'join', code: created.code, deckSelection: { kind: 'preset', id: 'a1_rudeljaeger' } });
+    guest.send({ type: 'join', code: created.code, deckSelection: { kind: 'preset', id: 'rudeljaeger' } });
     await guest.next('joined');
     const hostView = (await host.next('state')).view as ClientView;
     expect(hostView.players[0].deckName).toContain('Solidarität');
@@ -327,7 +341,7 @@ describe('Server: Raum, Beitritt, Aktionen, gefilterte Sicht', () => {
     const bad = await connect(server.port);
     bad.send({ type: 'create', deckSelection: { kind: 'custom', deck: { name: 'Cheat', cards: [{ cardId: 'wolf', count: 99 }] } } });
     const err = await bad.next('error');
-    expect(String(err.message)).toContain('Deck ungültig');
+    expect(String(err.message)).toContain('Eigene Decks');
     host.ws.close(); guest.ws.close(); bad.ws.close();
   });
 
@@ -364,29 +378,29 @@ describe('Server: Raum, Beitritt, Aktionen, gefilterte Sicht', () => {
   });
 });
 
-describe('Bahnenzahl je Raum', () => {
-  it('uebernimmt die Wahl des Raum-Erstellers ins Spielfeld', async () => {
+describe('Verbindliche Bahnenzahl', () => {
+  it('erstellt das Spielfeld dauerhaft mit fuenf Bahnen', async () => {
     const srv = await startServer(0);
     const c1 = await connect(srv.port);
-    c1.send({ type: 'create', faction: 'humans', lanes: 3 });
+    c1.send({ type: 'create', faction: 'humans', lanes: 5 });
     const created = await c1.next('created');
-    expect(created.lanes).toBe(3);
+    expect(created.lanes).toBe(5);
 
     const c2 = await connect(srv.port);
     c2.send({ type: 'join', code: created.code, faction: 'animals' });
     await c2.next('joined');
     const sicht = (await c1.next('state')).view as ClientView;
     // Nicht nur die Zahl: das Brett muss wirklich so breit sein.
-    expect(sicht.lanes).toBe(3);
-    expect(sicht.board[0]).toHaveLength(3);
-    expect(sicht.board[1]).toHaveLength(3);
+    expect(sicht.lanes).toBe(5);
+    expect(sicht.board[0]).toHaveLength(5);
+    expect(sicht.board[1]).toHaveLength(5);
 
     c1.ws.close();
     c2.ws.close();
     await srv.close();
   });
 
-  it('nimmt ohne Angabe die Voreinstellung aus der Config', async () => {
+  it('verwendet auch ohne Angabe exakt fuenf Bahnen', async () => {
     const srv = await startServer(0);
     const c1 = await connect(srv.port);
     c1.send({ type: 'create', faction: 'humans' });
@@ -395,17 +409,17 @@ describe('Bahnenzahl je Raum', () => {
     c2.send({ type: 'join', code: created.code, faction: 'animals' });
     await c2.next('joined');
     const sicht = (await c1.next('state')).view as ClientView;
-    expect(sicht.lanes).toBe(loadGameData().config.lanes);
+    expect(sicht.lanes).toBe(5);
 
     c1.ws.close();
     c2.ws.close();
     await srv.close();
   });
 
-  it('weist eine unerlaubte Bahnenzahl ab', async () => {
+  it('weist jede andere Bahnenzahl ab', async () => {
     const srv = await startServer(0);
     const c1 = await connect(srv.port);
-    c1.send({ type: 'create', faction: 'humans', lanes: 99 });
+    c1.send({ type: 'create', faction: 'humans', lanes: 3 });
     const fehler = await c1.next('error');
     expect(String(fehler.message)).toMatch(/Bahnenzahl/);
 

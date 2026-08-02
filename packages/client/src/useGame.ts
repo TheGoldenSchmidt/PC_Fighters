@@ -180,7 +180,6 @@ export function useGame() {
       deckSelection: DeckSelection,
       cheerleaders: CheerleaderSelection,
       topicId: string,
-      lanes: number,
       testMode = false
     ) => {
       const url = toWsUrl(serverInput);
@@ -194,7 +193,6 @@ export function useGame() {
             deckSelection,
             cheerleaders,
             topic: topicId,
-            lanes,
             testMode
           })
         )

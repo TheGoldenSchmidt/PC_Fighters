@@ -160,8 +160,8 @@ Die Datei `packages/engine/src/data/config.json` enthält alle Spielregeln als Z
 
 | Wert | Bedeutung |
 |---|---|
-| `lanes` | **Voreingestellte** Anzahl der Kampfbahnen (Standard 5). Der Ersteller einer Partie kann davon abweichen und beim Einrichten 3 bis 6 wählen – die Zahl hier ist nur die Vorauswahl im Startbildschirm. |
-| `baseHealth` | Lebenspunkte jeder Basis (V2: 15) |
+| `lanes` | Verbindliche Anzahl der Kampfbahnen. Dieser Wert muss dauerhaft `5` sein und kann beim Erstellen einer Partie nicht geändert werden. |
+| `baseHealth` | Lebenspunkte jeder Basis (aktuell: 12) |
 | `startingHand` | Handkarten zu Spielbeginn (V2: 4) |
 | `cardsDrawnPerTurn` | Karten, die jede Runde gezogen werden |
 | `energy.start` / `energy.perRound` | Energie in Runde 1 bzw. Zuwachs pro Runde danach (V2: 1 / 1) |

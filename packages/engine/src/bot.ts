@@ -44,6 +44,16 @@ export interface BotProfil {
   epsilonBand: number;
 }
 
+export interface BotSuchGrenzen {
+  maxActionsPerTurn: number;
+  maxBranchesPerDecision: number;
+}
+
+export const STANDARD_SUCHGRENZEN: BotSuchGrenzen = {
+  maxActionsPerTurn: 3,
+  maxBranchesPerDecision: 12
+};
+
 export const BOT_PROFILE: Record<string, BotProfil> = {
   ausgewogen: {
     name: 'ausgewogen',
@@ -67,6 +77,13 @@ export const BOT_PROFILE: Record<string, BotProfil> = {
     epsilonBand: 0
   }
 };
+
+// Englische IDs aus der Balancing-Konfiguration; die historischen deutschen
+// IDs bleiben fuer bestehende Skripte und Golden Master stabil.
+BOT_PROFILE.standard = { ...BOT_PROFILE.ausgewogen, name: 'standard' };
+BOT_PROFILE.aggressive = { ...BOT_PROFILE.aggro, name: 'aggressive' };
+BOT_PROFILE.control = { ...BOT_PROFILE.kontrolle, name: 'control' };
+BOT_PROFILE.random = { ...BOT_PROFILE.zufall, name: 'random' };
 
 /**
  * Kartenblinder Mulligan für die Vierer-Starthand. Er bevorzugt eine Kurve
@@ -245,4 +262,66 @@ export function waehleAktion(
   }
   const nahAmBesten = bewertet.filter((b) => b.wert >= beste - profil.epsilonBand);
   return nahAmBesten[Math.floor(random() * nahAmBesten.length)].aktion;
+}
+
+/**
+ * One-Turn-Beam-Search: plant mehrere eigene Aktionen bis Zugende, gibt aber
+ * nur den ersten legalen Schritt zurueck. Nach jedem Engine-Schritt wird neu
+ * geplant, sodass Reaktionen und Zufall niemals am Regelwerk vorbeilaufen.
+ */
+export function waehleAktionMitAktionssuche(
+  state: GameState,
+  player: PlayerIndex,
+  data: GameData,
+  profil: BotProfil,
+  random: () => number = Math.random,
+  grenzen: BotSuchGrenzen = STANDARD_SUCHGRENZEN
+): PlayerAction {
+  const direkt = legaleAktionen(state, player, data);
+  if (profil.zufall || direkt.length <= 1 || grenzen.maxActionsPerTurn <= 1) {
+    return waehleAktion(state, player, data, profil, random);
+  }
+
+  interface Knoten { state: GameState; folge: PlayerAction[]; wert: number }
+  let frontier: Knoten[] = [{ state, folge: [], wert: bewerteZustand(state, player, profil) }];
+  const kandidaten: Knoten[] = [];
+  const gesehen = new Set<string>();
+
+  for (let tiefe = 0; tiefe < grenzen.maxActionsPerTurn; tiefe++) {
+    const erweitert: Knoten[] = [];
+    for (const knoten of frontier) {
+      for (const aktion of legaleAktionen(knoten.state, player, data)) {
+        const folgeState = applyAction(knoten.state, player, aktion, data);
+        const folge = [...knoten.folge, aktion];
+        const wert = bewerteZustand(folgeState, player, profil);
+        const next = { state: folgeState, folge, wert };
+        const beendet = folgeState.phase === 'ended' || folgeState.active !== player;
+        if (beendet || aktion.type === 'pass' || aktion.type === 'flyDone') {
+          kandidaten.push(next);
+          continue;
+        }
+        const key = JSON.stringify([
+          folgeState.round,
+          folgeState.phase,
+          folgeState.active,
+          folgeState.players,
+          folgeState.board,
+          folgeState.rngState,
+          folgeState.reaktion
+        ]);
+        if (!gesehen.has(key)) {
+          gesehen.add(key);
+          erweitert.push(next);
+        }
+      }
+    }
+    erweitert.sort((a, b) => b.wert - a.wert);
+    frontier = erweitert.slice(0, Math.max(1, grenzen.maxBranchesPerDecision));
+    if (frontier.length === 0) break;
+  }
+  kandidaten.push(...frontier);
+  if (kandidaten.length === 0) return waehleAktion(state, player, data, profil, random);
+  const beste = Math.max(...kandidaten.map((k) => k.wert));
+  const nahAmBesten = kandidaten.filter((k) => k.wert >= beste - profil.epsilonBand && k.folge.length > 0);
+  return nahAmBesten[Math.floor(random() * nahAmBesten.length)].folge[0];
 }

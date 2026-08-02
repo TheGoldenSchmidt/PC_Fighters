@@ -14,6 +14,11 @@
     "test": "npm run test --workspace @pcf/engine && npm run test --workspace @pcf/server && npm run test --workspace @pcf/client",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "list-missing-art": "node scripts/list-missing-art.mjs",
-    "backtest": "tsx scripts/backtest/backtest.ts"
+    "backtest": "tsx scripts/backtest/backtest.ts",
+    "balance": "tsx scripts/balancing/run.ts",
+    "balance:technical": "tsx scripts/balancing/run.ts --mode=technical",
+    "balance:full": "tsx scripts/balancing/run.ts --mode=full --no-mirrors",
+    "balance:pc": "tsx scripts/balancing/run.ts --mode=pc --no-mirrors",
+    "balance:replay": "tsx scripts/balancing/replay.ts"
   }
 }

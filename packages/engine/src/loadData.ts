@@ -11,6 +11,12 @@ import type { DeckList, GameData } from './types.js';
 
 const DATA_DIR = join(dirname(fileURLToPath(import.meta.url)), 'data');
 
+export interface DeckStatus {
+  active: string[];
+  allowCustomDecks: boolean;
+  disabledReason: string;
+}
+
 function readJson(file: string, path: string): unknown {
   let text: string;
   try {
@@ -82,4 +88,66 @@ export function ladeDecks(data: GameData, dataDir: string = DATA_DIR): Record<st
     decks[id] = validateDeck(raw, data); // wirft DeckError bei ungültigem Deck
   }
   return decks;
+}
+
+/** Zentrale Freischaltung der Alpha-Decks; deaktivierte Dateien bleiben erhalten. */
+export function ladeDeckStatus(data: GameData, dataDir: string = DATA_DIR): DeckStatus {
+  const decks = ladeDecks(data, dataDir);
+  const raw = readJson('deck-status.json', join(dataDir, 'deck-status.json')) as Partial<DeckStatus>;
+  const problems: string[] = [];
+  const active = Array.isArray(raw.active)
+    ? raw.active.filter((id): id is string => typeof id === 'string' && id.length > 0)
+    : [];
+  if (active.length !== raw.active?.length) {
+    problems.push('"active" muss ausschließlich nicht-leere Deck-IDs enthalten.');
+  }
+  if (new Set(active).size !== active.length) {
+    problems.push('Deck-IDs in "active" dürfen nicht doppelt vorkommen.');
+  }
+  for (const id of active) {
+    if (!decks[id]) problems.push(`Aktives Deck "${id}" existiert nicht in data/decks/.`);
+  }
+  if (active.length !== 4) {
+    problems.push(`Für die Alpha müssen genau vier Decks aktiv sein (aktuell ${active.length}).`);
+  }
+  if (typeof raw.disabledReason !== 'string' || raw.disabledReason.trim().length === 0) {
+    problems.push('"disabledReason" muss ein nicht-leerer Text sein.');
+  }
+  if (typeof raw.allowCustomDecks !== 'boolean') {
+    problems.push('"allowCustomDecks" muss true oder false sein.');
+  }
+  if (problems.length > 0) throw new DataError('deck-status.json', problems);
+  return {
+    active,
+    allowCustomDecks: raw.allowCustomDecks!,
+    disabledReason: raw.disabledReason!
+  };
+}
+
+export function ladeAktiveDecks(data: GameData, dataDir: string = DATA_DIR): Record<string, DeckList> {
+  const decks = ladeDecks(data, dataDir);
+  const status = ladeDeckStatus(data, dataDir);
+  const active = Object.fromEntries(status.active.map((id) => [id, decks[id]]));
+  for (const [id, deck] of Object.entries(active)) validateAlphaTestDeck(id, deck, data);
+  return active;
+}
+
+/** Strenger Vertrag der vier Veröffentlichungs-Testdecks, unabhängig von Legacy-Presets. */
+export function validateAlphaTestDeck(id: string, deck: DeckList, data: GameData): void {
+  const problems: string[] = [];
+  let heroes = 0;
+  let principals = 0;
+  for (const entry of deck.cards) {
+    const card = data.cardsById[entry.cardId];
+    if (!card) continue; // validateDeck meldet unbekannte IDs bereits vorher.
+    if (card.category === 'hero') heroes += entry.count;
+    if (card.category === 'principal') principals += entry.count;
+    const alphaMax = card.category === 'hero' || card.category === 'principal' || card.signature ? 1 : 2;
+    if (entry.count > alphaMax) {
+      problems.push(`${card.name}: ${entry.count} Kopien, im Alpha-Testdeck erlaubt sind ${alphaMax}.`);
+    }
+  }
+  if (heroes !== 2) problems.push(`Exakt zwei Heroes erforderlich, gefunden: ${heroes}.`);
+  if (principals !== 1) problems.push(`Exakt ein PC Principal erforderlich, gefunden: ${principals}.`);
+  if (problems.length > 0) throw new DataError(`decks/${id}.json`, problems);
 }

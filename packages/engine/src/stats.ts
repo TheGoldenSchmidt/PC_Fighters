@@ -7,6 +7,7 @@
 
 import type {
   CheerleaderStatistik,
+  Creature,
   GameState,
   KartenStatistik,
   MatchStatistik,
@@ -23,6 +24,14 @@ function leereKartenStatistik(): KartenStatistik {
     gestorben: 0,
     geheilt: 0,
     verhindert: 0
+    ,atkGewaehrt: 0
+    ,hpGewaehrt: 0
+    ,atkEntfernt: 0
+    ,hpEntfernt: 0
+    ,buffSchadenKreatur: 0
+    ,buffSchadenBasis: 0
+    ,tokensErzeugt: 0
+    ,bewegungenErzeugt: 0
     ,auraAusloesungen: 0
     ,wachstumAusloesungen: 0
     ,giftZerstoerungen: 0
@@ -178,6 +187,39 @@ export function zaehleKarte(
   const entry = kartenEintrag(state, owner, cardId);
   if (!entry) return;
   entry[feld] += n;
+}
+
+/** Merkt einen temporären Angriffsbonus samt verursachender Karte. */
+export function registriereAktionsBuff(
+  state: GameState,
+  owner: PlayerIndex,
+  creature: Creature,
+  sourceCardId: string,
+  attack: number
+): void {
+  if (attack <= 0) return;
+  creature.tempAttackSources ??= {};
+  creature.tempAttackSources[sourceCardId] = (creature.tempAttackSources[sourceCardId] ?? 0) + attack;
+  zaehleKarte(state, owner, sourceCardId, 'atkGewaehrt', attack);
+}
+
+/** Ordnet den durch Aktions-Buffs ermöglichten Anteil eines Treffers den Quellen zu. */
+export function rechneBuffSchadenZu(
+  state: GameState,
+  owner: PlayerIndex,
+  creature: Creature,
+  verursachterSchaden: number,
+  ziel: 'Kreatur' | 'Basis'
+): void {
+  if (!state.stats || verursachterSchaden <= 0 || !creature.tempAttackSources) return;
+  const sources = Object.entries(creature.tempAttackSources).filter(([, amount]) => amount > 0);
+  const total = sources.reduce((sum, [, amount]) => sum + amount, 0);
+  if (total <= 0) return;
+  const zurechenbar = Math.min(verursachterSchaden, total);
+  const feld = ziel === 'Basis' ? 'buffSchadenBasis' : 'buffSchadenKreatur';
+  for (const [sourceCardId, amount] of sources) {
+    zaehleKarte(state, owner, sourceCardId, feld, zurechenbar * (amount / total));
+  }
 }
 
 /** Zählt ein Spieler-Feld hoch – No-Op, solange state.stats nicht aktiviert ist. */

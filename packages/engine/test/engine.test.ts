@@ -144,7 +144,8 @@ describe('Cheerleader-Auswahl', () => {
         'randy_marsh'
       ],
       selectionSize: 3,
-      maxInDeck: 2
+      maxInDeck: 3,
+      allowDeckOverlap: true
     });
   });
 
@@ -162,11 +163,9 @@ describe('Cheerleader-Auswahl', () => {
     ).toThrow(/Unbekannter Cheerleader/);
   });
 
-  it('schließt Figuren aus, die Bestandteil des Decks sind', () => {
+  it('erlaubt in der Alpha konfigurierte Überschneidungen zwischen Deck und Bank', () => {
     const deck = { cards: [{ cardId: 'pc_principal', count: 1 }] };
-    expect(() => validateCheerleaderSelection(valid, deck, data)).toThrow(
-      /Bestandteil des Decks/
-    );
+    expect(validateCheerleaderSelection(valid, deck, data)).toEqual(valid);
   });
 });
 
@@ -819,9 +818,7 @@ describe('Deckbau-Regeln (Zod)', () => {
         { cardId: 'pc_principal', count: 1 }
       ]
     };
-    expect(() => validateDeck(deck, data)).toThrow(
-      /Zu viele Cheerleader-Kandidaten im Deck: 3, erlaubt sind 2/
-    );
+    expect(validateDeck(deck, data)).toEqual(deck);
   });
 
   it('Heroes und PC Principal zählen zur Deckgröße', () => {

@@ -12,7 +12,7 @@
 //   ReaktionsAuswahl.tsx  Auswahl beim Schild-Block
 //   useLongPress.ts    langes Druecken
 //
-// Zum Layout: Das Lane-Raster (dynamisch aus der Config – 3 bis 6 Bahnen)
+// Zum Layout: Das Lane-Raster folgt der verbindlichen Fünf-Bahnen-Konfiguration.
 // liegt in einem mittleren Band, davor und dahinter steht mittig die
 // Cheerleader-Bank mit der Basis dahinter. Alle Anzeigen schweben als Chips
 // darueber; es gibt bewusst KEINE Kopf-/Fusszeile mehr – der tote Rand oben

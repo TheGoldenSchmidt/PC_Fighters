@@ -92,7 +92,7 @@ export const cheerleaderKraftSchema = z
   .strict();
 
 export const configSchema = z.object({
-  lanes: z.number().int().min(1).max(6),
+  lanes: z.literal(5),
   baseHealth: z.number().int().min(1),
   startingHand: z.number().int().min(0),
   cardsDrawnPerTurn: z.number().int().min(0),
@@ -115,6 +115,7 @@ export const configSchema = z.object({
     candidates: z.array(z.string().min(1)).min(3),
     selectionSize: z.literal(3),
     maxInDeck: z.number().int().min(0),
+    allowDeckOverlap: z.boolean().optional().default(false),
     // Ohne Eintrag sitzt ein Cheerleader nur dekorativ auf der Bank.
     kraefte: z.record(z.string().min(1), cheerleaderKraftSchema).default({})
   }),
@@ -717,7 +718,9 @@ export function validateDeck(deck: unknown, data: GameData): DeckList {
     if (entry.count > max) {
       problems.push(`Zu viele Kopien von "${card.name}": ${entry.count}, erlaubt sind ${max}.`);
     }
-    if (isNeutralCard(card, data.factions, tree)) continue;
+    // Die vier festen Alpha-Decks dürfen ihre einzeln limitierten Heroes
+    // fraktionsübergreifend verwenden; Principal ist ohnehin neutral.
+    if (card.category === 'hero' || card.category === 'principal' || isNeutralCard(card, data.factions, tree)) continue;
     tops.add(topOf(tree, card.faction));
     subs.add(card.faction);
   }
@@ -769,7 +772,7 @@ export function validateCheerleaderSelection(
     deck?.cards.filter((entry) => entry.count > 0).map((entry) => entry.cardId) ?? []
   );
   for (const id of ids) {
-    if (deckIds.has(id)) {
+    if (!data.config.cheerleaders.allowDeckOverlap && deckIds.has(id)) {
       const name = data.cardsById[id]?.name ?? id;
       problems.push(`"${name}" ist Bestandteil des Decks und kann nicht zugleich Cheerleader sein.`);
     }
@@ -787,7 +790,7 @@ export function defaultCheerleaderSelection(
     deck?.cards.filter((entry) => entry.count > 0).map((entry) => entry.cardId) ?? []
   );
   const selection = data.config.cheerleaders.candidates
-    .filter((id) => !deckIds.has(id))
+    .filter((id) => data.config.cheerleaders.allowDeckOverlap || !deckIds.has(id))
     .slice(0, data.config.cheerleaders.selectionSize);
   return validateCheerleaderSelection(selection, deck, data);
 }

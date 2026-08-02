@@ -10,7 +10,7 @@ import {
   recalcBoard
 } from './internal.js';
 import { basisSchaden } from './schild.js';
-import { zaehleKarte } from './stats.js';
+import { registriereAktionsBuff, zaehleKarte } from './stats.js';
 import type { ActionCard, Effect, GameState, PlayerAction, PlayerIndex } from './types.js';
 
 type EffectOf<K extends Effect['kind']> = Extract<Effect, { kind: K }>;
@@ -40,6 +40,7 @@ export const EFFECTS: { [K in Effect['kind']]: EffectResolver<K> } = {
     const { creature, lane } = requireFriendlyCreature(ctx, ctx.action.targetLane);
     // Nur das Maximum erhöhen – recalcBoard() hebt das aktuelle Leben mit an.
     creature.permHealthBonus += effect.amount;
+    zaehleKarte(ctx.state, ctx.player, ctx.card.id, 'hpGewaehrt', effect.amount);
     log(ctx.state, `${ctx.card.name}: ${creature.name} erhält dauerhaft +${effect.amount} Leben.`, {
       kind: 'spell',
       lane,
@@ -51,6 +52,7 @@ export const EFFECTS: { [K in Effect['kind']]: EffectResolver<K> } = {
   buffAttackTemp(ctx, effect) {
     const { creature, lane } = requireFriendlyCreature(ctx, ctx.action.targetLane);
     creature.tempAttackBonus += effect.amount;
+    registriereAktionsBuff(ctx.state, ctx.player, creature, ctx.card.id, effect.amount);
     log(
       ctx.state,
       `${ctx.card.name}: ${creature.name} erhält +${effect.amount} Angriff bis zum Rundenende.`,
@@ -64,6 +66,7 @@ export const EFFECTS: { [K in Effect['kind']]: EffectResolver<K> } = {
       throw new GameRuleError('Keine freie Lane – es kann nichts beschworen werden.');
     }
     const count = Math.min(effect.count, lanes.length);
+    zaehleKarte(ctx.state, ctx.player, ctx.card.id, 'tokensErzeugt', count);
     for (let i = 0; i < count; i++) {
       const creature = makeTokenCreature(ctx.state, ctx.card.faction, effect.token);
       ctx.state.board[ctx.player][lanes[i]] = creature;
@@ -81,15 +84,19 @@ export const EFFECTS: { [K in Effect['kind']]: EffectResolver<K> } = {
     if (to === undefined || to < 0 || to >= ctx.state.config.lanes) {
       throw new GameRuleError('Bitte eine Ziel-Lane wählen.');
     }
-    if (ctx.state.board[ctx.player][to]) {
-      throw new GameRuleError('Die Ziel-Lane ist nicht frei.');
-    }
     if (to === lane) {
       throw new GameRuleError('Die Kreatur steht schon in dieser Lane.');
     }
+    if (ctx.state.board[ctx.player][to]) {
+      throw new GameRuleError('Die Ziel-Lane ist nicht frei.');
+    }
     ctx.state.board[ctx.player][to] = creature;
     ctx.state.board[ctx.player][lane] = null;
-    if (effect.tempAtkBonus) creature.tempAttackBonus += effect.tempAtkBonus;
+    if (effect.tempAtkBonus) {
+      creature.tempAttackBonus += effect.tempAtkBonus;
+      registriereAktionsBuff(ctx.state, ctx.player, creature, ctx.card.id, effect.tempAtkBonus);
+    }
+    zaehleKarte(ctx.state, ctx.player, ctx.card.id, 'bewegungenErzeugt');
     log(ctx.state, `${ctx.card.name}: ${creature.name} wechselt in Lane ${to + 1}.`, {
       kind: 'spell',
       lane: to,
@@ -103,6 +110,7 @@ export const EFFECTS: { [K in Effect['kind']]: EffectResolver<K> } = {
     for (const c of ctx.state.board[enemy]) {
       if (!c) continue;
       c.tempAttackBonus -= effect.amount;
+      zaehleKarte(ctx.state, ctx.player, ctx.card.id, 'atkEntfernt', Math.min(effect.amount, Math.max(0, c.baseAttack + c.permAttackBonus + c.tempAttackBonus + effect.amount)));
     }
     log(
       ctx.state,

@@ -35,9 +35,13 @@ describe('Backtest-Testdecks (data/decks/)', () => {
         'a2_luftangriff',
         'a3_gift_urgewalt',
         'a4_urzeitliches_rudel',
+        'forschung_muskelkraft',
         'h1_solidaritaet',
         'h2_schicht',
         'h3_campus'
+        ,'rudeljaeger'
+        ,'solidaritaet_ueberleben'
+        ,'urzeitliche_kolosse'
       ].sort()
     );
   });

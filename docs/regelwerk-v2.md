@@ -10,8 +10,8 @@
 
 ## 1. Globale Spielparameter
 
-* **Bahnen (Lanes):** 5. Der Ersteller einer Partie darf beim Einrichten 3 bis 6 wählen; `config.lanes` ist nur die Voreinstellung.
-* **Basis-Lebenspunkte:** 15
+* **Bahnen (Lanes):** dauerhaft 5. Die Feldbreite kann beim Einrichten einer Partie nicht geändert werden.
+* **Basis-Lebenspunkte:** 12
 * **Starthand:** 4 Karten; einmaliger Mulligan empfohlen
 * **Kartenzug:** 1 pro Runde
 * **Rundenlimit:** keines. Stattdessen beendet die **Zermürbung** lange Partien: ab Runde 15 verlieren beide Basen am Rundenende 1 Leben, jede weitere Runde 1 mehr. Zermürbung geht bewusst **am Schild vorbei** – sie ist die Uhr, nicht ein weiterer Angriff.

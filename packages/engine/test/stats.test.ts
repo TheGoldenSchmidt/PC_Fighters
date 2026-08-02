@@ -338,3 +338,20 @@ describe('Cheerleader-Telemetrie', () => {
     expect(n.schadenVerhindert).toBeGreaterThan(0);
   });
 });
+
+describe('Aktionswert-Zurechnung', () => {
+  it('ordnet gewährte ATK und daraus entstandenen Basisschaden der Buffkarte zu', () => {
+    const s = emptyState();
+    s.players[0].hand = ['wilder_instinkt'];
+    put(s, 0, 0, 'ratte');
+    aktiviereStatistik(s);
+
+    let next = applyAction(s, 0, { type: 'playAction', handIndex: 0, targetLane: 0 }, data);
+    next = applyAction(next, next.active, { type: 'pass' }, data);
+    next = applyAction(next, next.active, { type: 'pass' }, data);
+
+    const buff = next.stats!.proKarte[0].wilder_instinkt;
+    expect(buff.atkGewaehrt).toBeGreaterThan(0);
+    expect(buff.buffSchadenBasis).toBeGreaterThan(0);
+  });
+});

@@ -44,7 +44,6 @@ interface Props {
     selection: DeckSelection,
     cheerleaders: CheerleaderSelection,
     topicId: string,
-    lanes: number,
     testMode?: boolean
   ) => void;
   onJoin: (
@@ -61,9 +60,8 @@ interface Info {
   cards: CardDef[];
   deckbuilding: DeckbuildingConfig;
   cheerleaders: CheerleaderConfig;
-  /** Bahnen: erlaubte Zahlen und Voreinstellung (kommt vom Server). */
-  lanes?: { optionen: number[]; standard: number };
   decks: Record<string, DeckList>;
+  deckStatus?: { active: string[]; allowCustomDecks: boolean; disabledReason: string };
 }
 
 function selectedDeck(info: Info, selection: DeckSelection): DeckList | null {
@@ -81,7 +79,6 @@ export function StartScreen({ status, onCreate, onJoin }: Props) {
   const [library, setLibrary] = useState(loadDeckLibrary);
   const [editor, setEditor] = useState<{ initial?: SavedDeck; sub?: string } | null>(null);
   const [topicId, setTopicId] = useState<string | null>(null);
-  const [lanes, setLanes] = useState<number | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [testMode, setTestMode] = useState(false);
   const importRef = useRef<HTMLInputElement>(null);
@@ -95,7 +92,6 @@ export function StartScreen({ status, onCreate, onJoin }: Props) {
       const loaded = json as Info;
       setInfo(loaded);
       setTopicId((current) => current ?? loaded.topics?.[0]?.id ?? null);
-      setLanes((current) => current ?? loaded.lanes?.standard ?? null);
     } catch (error) {
       setInfo(null);
       setLoadError(
@@ -113,13 +109,18 @@ export function StartScreen({ status, onCreate, onJoin }: Props) {
   }, []);
 
   const topFactions = info?.factions.filter((f) => f.parent === null && !f.neutral) ?? [];
-  const presetEntries = Object.entries(info?.decks ?? {}).filter(([, deck]) => deck.faction === topFaction);
+  const activeDeckIds = new Set(info?.deckStatus?.active ?? Object.keys(info?.decks ?? {}));
+  const presetEntries = Object.entries(info?.decks ?? {}).filter(
+    ([id, deck]) => activeDeckIds.has(id) && deck.faction === topFaction
+  );
+  const customDecksEnabled = info?.deckStatus?.allowCustomDecks ?? true;
   const ownDecks = library.filter((deck) => deck.faction === topFaction);
   const deck = selection && info ? selectedDeck(info, selection) : null;
   const selectionKey = selection ? cheerleaderStorageKey(selection) : '';
   const deckValid =
     selection?.kind === 'preset' ||
     (selection?.kind === 'custom' &&
+      customDecksEnabled &&
       !!info &&
       deckProblems(
         selection.deck,
@@ -134,7 +135,9 @@ export function StartScreen({ status, onCreate, onJoin }: Props) {
     cheerleaders.length === info.cheerleaders.selectionSize &&
     new Set(cheerleaders).size === cheerleaders.length &&
     cheerleaders.every(
-      (id) => info.cheerleaders.candidates.includes(id) && !deckContains(deck, id)
+      (id) =>
+        info.cheerleaders.candidates.includes(id) &&
+        (info.cheerleaders.allowDeckOverlap || !deckContains(deck, id))
     );
   const busy = status === 'connecting';
 
@@ -172,7 +175,7 @@ export function StartScreen({ status, onCreate, onJoin }: Props) {
   };
 
   const toggleCheerleader = (cardId: string) => {
-    if (!deck || deckContains(deck, cardId)) return;
+    if (!deck || (!info?.cheerleaders.allowDeckOverlap && deckContains(deck, cardId))) return;
     setCheerleaders((current) => {
       if (current.includes(cardId)) return current.filter((id) => id !== cardId);
       if (!info || current.length >= info.cheerleaders.selectionSize) return current;
@@ -315,22 +318,25 @@ export function StartScreen({ status, onCreate, onJoin }: Props) {
                 cards={info.cards}
                 factions={info.factions}
                 selected={selection?.kind === 'preset' && selection.id === id}
+                disabled={!activeDeckIds.has(id)}
+                disabledReason={info.deckStatus?.disabledReason}
                 onChoose={() => chooseDeck({ kind: 'preset', id })}
                 onClone={() => cloneDeck(preset)}
               />
             ))}
           </div>
-          <div className="deck-section-head">
+          <div className={`deck-section-head ${customDecksEnabled ? '' : 'disabled'}`}>
             <h3>Eigene Decks</h3>
             <div>
-              <button className="secondary" onClick={() => setEditor({})}>+ Neues Deck</button>
-              <button className="secondary" onClick={() => importRef.current?.click()}>Importieren</button>
+              <button className="secondary" disabled={!customDecksEnabled} onClick={() => setEditor({})}>+ Neues Deck</button>
+              <button className="secondary" disabled={!customDecksEnabled} onClick={() => importRef.current?.click()}>Importieren</button>
               <input ref={importRef} hidden type="file" accept="application/json,.json" onChange={(event) => void importDeck(event.target.files?.[0])} />
             </div>
           </div>
+          {!customDecksEnabled && <p className="hint">Eigene Decks bleiben gespeichert und werden nach der Alpha-Balancingphase wieder freigeschaltet.</p>}
           <div className="subfaction-templates">
             {info.factions.filter((faction) => faction.parent === topFaction).map((faction) => (
-              <button className="secondary" key={faction.id} onClick={() => setEditor({ sub: faction.id })}>
+              <button className="secondary" disabled={!customDecksEnabled} key={faction.id} onClick={() => setEditor({ sub: faction.id })}>
                 Leer mit Filter: {faction.name}
               </button>
             ))}
@@ -343,8 +349,8 @@ export function StartScreen({ status, onCreate, onJoin }: Props) {
                 const invalid = deckProblems(ownDeck, topFaction, info.cards, info.factions, info.deckbuilding);
                 const selected = selection?.kind === 'custom' && (selection.deck as SavedDeck).id === ownDeck.id;
                 return (
-                  <article key={ownDeck.id} className={`preset-card ${selected ? 'selected' : ''}`}>
-                    <button className="preset-main" disabled={invalid.length > 0} onClick={() => chooseDeck({ kind: 'custom', deck: ownDeck })}>
+                  <article key={ownDeck.id} className={`preset-card ${selected ? 'selected' : ''} ${customDecksEnabled ? '' : 'disabled'}`}>
+                    <button className="preset-main" disabled={!customDecksEnabled || invalid.length > 0} onClick={() => chooseDeck({ kind: 'custom', deck: ownDeck })}>
                       <strong>{ownDeck.name}</strong>
                       <span>{ownDeck.cards.reduce((sum, entry) => sum + entry.count, 0)} Karten</span>
                       {invalid.length > 0 && <small>{invalid.join(' · ')}</small>}
@@ -383,7 +389,7 @@ export function StartScreen({ status, onCreate, onJoin }: Props) {
           <div className="cheerleader-candidates">
             {info.cheerleaders.candidates.map((id) => {
               const card = cardById.get(id);
-              const locked = deckContains(deck, id);
+              const locked = !info.cheerleaders.allowDeckOverlap && deckContains(deck, id);
               const slot = cheerleaders.indexOf(id);
               return (
                 <button
@@ -426,33 +432,15 @@ export function StartScreen({ status, onCreate, onJoin }: Props) {
                   </button>
                 ))}
               </div>
-              <h3>Bahnen</h3>
-              <p className="hint">
-                Wie breit das Feld ist. Mehr Bahnen heißt mehr Kreaturen nebeneinander –
-                und mehr Wege, an denen der Gegner nichts stehen hat.
-              </p>
-              <div className="lane-grid-choice">
-                {(info.lanes?.optionen ?? [info.lanes?.standard ?? 5]).map((n) => (
-                  <button
-                    key={n}
-                    className={`lane-choice ${lanes === n ? 'selected' : ''}`}
-                    onClick={() => setLanes(n)}
-                  >
-                    <span className="lane-choice-zahl">{n}</span>
-                    <span className="lane-choice-text">Bahnen</span>
-                  </button>
-                ))}
-              </div>
-
               <label className="checkbox-row">
                 <input type="checkbox" checked={testMode} onChange={(event) => setTestMode(event.target.checked)} />
                 🧪 Testmodus
               </label>
               <button
                 className="primary big"
-                disabled={!deckValid || !cheerleadersValid || !topicId || !lanes || busy}
+                disabled={!deckValid || !cheerleadersValid || !topicId || busy}
                 onClick={() =>
-                  onCreate(server, selection, cheerleaders as CheerleaderSelection, topicId!, lanes!, testMode)
+                  onCreate(server, selection, cheerleaders as CheerleaderSelection, topicId!, testMode)
                 }
               >
                 {busy ? 'Verbinde …' : 'Partie erstellen'}
@@ -482,6 +470,8 @@ function DeckChoice({
   cards,
   factions,
   selected,
+  disabled,
+  disabledReason,
   onChoose,
   onClone
 }: {
@@ -489,6 +479,8 @@ function DeckChoice({
   cards: CardDef[];
   factions: Faction[];
   selected: boolean;
+  disabled: boolean;
+  disabledReason?: string;
   onChoose: () => void;
   onClone: () => void;
 }) {
@@ -498,13 +490,18 @@ function DeckChoice({
   const subs = [...new Set(defs.map((card) => factions.find((faction) => faction.id === card.faction)?.name ?? card.faction))];
   const curve = [1, 2, 3, 4, 5].map((cost) => defs.filter((card) => cost < 5 ? card.cost === cost : card.cost >= 5).length);
   return (
-    <article className={`preset-card ${selected ? 'selected' : ''}`}>
-      <button className="preset-main" onClick={onChoose}>
+    <article className={`preset-card ${selected ? 'selected' : ''} ${disabled ? 'disabled' : ''}`}>
+      <button className="preset-main" disabled={disabled} onClick={onChoose}>
         <strong>{deck.name}</strong>
         <span>{subs.join(' · ')}</span>
         <small>{curve.map((amount, index) => `⚡${index + 1}${index === 4 ? '+' : ''}: ${amount}`).join('  ')}</small>
+        {disabled && (
+          <small className="preset-disabled-note">
+            Später wieder verfügbar{disabledReason ? `: ${disabledReason}` : '.'}
+          </small>
+        )}
       </button>
-      <div className="preset-actions"><button onClick={onClone}>Als eigenes Deck kopieren</button></div>
+      {!disabled && <div className="preset-actions"><button onClick={onClone}>Als eigenes Deck kopieren</button></div>}
     </article>
   );
 }

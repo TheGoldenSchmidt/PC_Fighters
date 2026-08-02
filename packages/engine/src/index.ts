@@ -16,12 +16,28 @@ export {
   roundEnergy
 } from './game.js';
 export { buildFactionTree, matchesScope, topOf } from './factions.js';
-export { aktiviereStatistik, finalisiereStatistik, leereStatistik, markiereLegaleHandkarten, registriereEnergie, zaehleKarte, zaehleSpieler } from './stats.js';
-export { legaleAktionen } from './legal.js';
-export { BOT_PROFILE, bewerteZustand, kampfprognose, waehleAktion, waehleMulligan } from './bot.js';
-export type { BotGewichte, BotProfil } from './bot.js';
-export { spielePartie } from './simulate.js';
-export type { PartieErgebnis, PartieOptionen } from './simulate.js';
+export { aktiviereStatistik, finalisiereStatistik, leereStatistik, markiereLegaleHandkarten, rechneBuffSchadenZu, registriereAktionsBuff, registriereEnergie, zaehleKarte, zaehleSpieler } from './stats.js';
+export { getLegalActions, legaleAktionen } from './legal.js';
+export {
+  BOT_PROFILE,
+  STANDARD_SUCHGRENZEN,
+  bewerteZustand,
+  kampfprognose,
+  waehleAktion,
+  waehleAktionMitAktionssuche,
+  waehleMulligan
+} from './bot.js';
+export type { BotGewichte, BotProfil, BotSuchGrenzen } from './bot.js';
+export { spielePartie, zustandsFingerabdruck } from './simulate.js';
+export type {
+  PartieErgebnis,
+  PartieOptionen,
+  PartieReplay,
+  RundenSnapshot,
+  SimulationsAktion
+} from './simulate.js';
+export { wiederholeReplay } from './replay.js';
+export type { ReplayPruefung } from './replay.js';
 export {
   DataError,
   DeckError,
@@ -32,6 +48,7 @@ export {
   validateDeck,
   validateGameData
 } from './schema.js';
-export { ladeDecks, loadGameData } from './loadData.js';
+export { ladeAktiveDecks, ladeDecks, ladeDeckStatus, loadGameData, validateAlphaTestDeck } from './loadData.js';
+export type { DeckStatus } from './loadData.js';
 export { buildVisualCatalog } from './visualCatalog.js';
 export type { VisualCatalog, VisualCatalogEntry } from './visualCatalog.js';

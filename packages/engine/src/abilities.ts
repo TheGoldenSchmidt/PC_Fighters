@@ -15,6 +15,7 @@ import {
 } from './internal.js';
 import type { DeathInfo } from './internal.js';
 import { basisSchaden } from './schild.js';
+import { zieheKarten } from './draw.js';
 import { zaehleKarte, zaehleSpieler } from './stats.js';
 import type { Ability, Creature, GameState, PlayerIndex, Scope, TokenDef } from './types.js';
 
@@ -104,12 +105,7 @@ export function isUnremovable(c: Creature): boolean {
 }
 
 function draw(state: GameState, player: PlayerIndex, n: number): void {
-  for (let i = 0; i < n; i++) {
-    const card = state.players[player].deck.shift();
-    if (!card) return;
-    state.players[player].hand.push(card);
-    zaehleSpieler(state, player, 'kartenGezogen');
-  }
+  zieheKarten(state, player, n);
 }
 
 function summonTokens(
@@ -219,12 +215,19 @@ function applyPeinigen(
   const c = state.board[owner][lane]!;
   const enemy = otherPlayer(owner);
   let getroffen = 0;
-  for (const e of state.board[enemy]) {
+  let atkEntfernt = 0;
+  let hpEntfernt = 0;
+  for (let enemyLane = 0; enemyLane < state.board[enemy].length; enemyLane++) {
+    const e = state.board[enemy][enemyLane];
     if (!e) continue;
+    atkEntfernt += Math.max(0, getEffectiveAttack(state, enemy, enemyLane) - ab.atkDeckel);
+    hpEntfernt += Math.max(0, getMaxHealth(state, enemy, enemyLane) - ab.hpDeckel);
     e.atkDeckel = e.atkDeckel != null ? Math.min(e.atkDeckel, ab.atkDeckel) : ab.atkDeckel;
     e.hpDeckel = e.hpDeckel != null ? Math.min(e.hpDeckel, ab.hpDeckel) : ab.hpDeckel;
     getroffen += 1;
   }
+  zaehleKarte(state, owner, c.cardId, 'atkEntfernt', atkEntfernt);
+  zaehleKarte(state, owner, c.cardId, 'hpEntfernt', hpEntfernt);
   log(
     state,
     getroffen === 0

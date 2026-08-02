@@ -83,6 +83,8 @@ export interface CheerleaderConfig {
   candidates: string[];
   selectionSize: 3;
   maxInDeck: number;
+  /** Alpha-Regel: dieselbe Figur darf als Kartenkopie und Bankfigur vorkommen. */
+  allowDeckOverlap?: boolean;
   /**
    * Kraft je Kandidat, Schlüssel ist die cardId. Fehlt ein Eintrag, sitzt der
    * Cheerleader nur dekorativ auf der Bank – die Auswahl bleibt gültig.
@@ -506,6 +508,8 @@ export interface Creature {
   permAttackBonus: number;
   /** Angriffs-Bonus bis zum Rundenende (z. B. "Wilder Instinkt"). */
   tempAttackBonus: number;
+  /** Telemetrie: temporärer ATK-Anteil nach verursachender Karte. */
+  tempAttackSources?: Record<string, number>;
   /** Lebens-Bonus bis zum Rundenende (analog tempAttackBonus). */
   tempHealthBonus: number;
   currentHealth: number;
@@ -576,6 +580,14 @@ export interface KartenStatistik {
   gestorben: number;
   geheilt: number;
   verhindert: number;
+  atkGewaehrt: number;
+  hpGewaehrt: number;
+  atkEntfernt: number;
+  hpEntfernt: number;
+  buffSchadenKreatur: number;
+  buffSchadenBasis: number;
+  tokensErzeugt: number;
+  bewegungenErzeugt: number;
   auraAusloesungen: number;
   wachstumAusloesungen: number;
   giftZerstoerungen: number;
@@ -885,8 +897,9 @@ export type PlayerAction =
   | { type: 'flyMove'; fromLane: number; toLane: number }
   | { type: 'flyDone' }
   /**
-   * Antwort auf ein offenes Reaktionsfenster. `slot: null` = verzichten.
-   * `choice` nur, wenn die Kraft des gewählten Slots eine Wahl stellt.
+   * Antwort auf ein offenes Reaktionsfenster. `slot: null` bleibt als
+   * explizit validierbarer ungültiger Drahtwert im Vertrag; die Schildregel
+   * erlaubt keinen Verzicht. `choice` ist nur bei einer Wahl-Kraft gesetzt.
    */
   | { type: 'cheerleaderReaction'; reactionId: number; slot: 0 | 1 | 2 | null; choice?: 'A' | 'B' };
 

@@ -36,7 +36,9 @@ export function isValidCheerleaderSelection(
     value.length === rule.selectionSize &&
     value.every((id): id is string => typeof id === 'string') &&
     new Set(value).size === value.length &&
-    value.every((id) => rule.candidates.includes(id) && !deckContains(deck, id))
+    value.every(
+      (id) => rule.candidates.includes(id) && (rule.allowDeckOverlap || !deckContains(deck, id))
+    )
   );
 }
 

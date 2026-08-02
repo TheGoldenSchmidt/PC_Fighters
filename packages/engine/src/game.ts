@@ -20,6 +20,7 @@ import {
   wirkungsKontext
 } from './cheerleader.js';
 import { resolveEffect } from './effects.js';
+import { zieheKarten } from './draw.js';
 import { buildFactionTree, matchesScope } from './factions.js';
 import { defaultCheerleaderSelection, maxCopiesOf, validateDeck } from './schema.js';
 import {
@@ -34,7 +35,7 @@ import {
 } from './internal.js';
 import { hasKeyword } from './keywords.js';
 import { basisSchaden } from './schild.js';
-import { registriereAusspielen, registriereEnergie, registriereMulligan, registriereZug, zaehleCheerleader, zaehleKarte, zaehleSpieler } from './stats.js';
+import { rechneBuffSchadenZu, registriereAusspielen, registriereEnergie, registriereMulligan, zaehleCheerleader, zaehleKarte, zaehleSpieler } from './stats.js';
 import type {
   AufloesungsSchritt,
   CardDef,
@@ -148,14 +149,7 @@ export function buildDeckFromList(data: GameData, deck: DeckList, random: () => 
 }
 
 function drawCards(state: GameState, player: PlayerIndex, amount: number): void {
-  const p = state.players[player];
-  for (let i = 0; i < amount; i++) {
-    const card = p.deck.shift();
-    if (!card) return; // leeres Deck: es wird einfach nicht mehr gezogen
-    p.hand.push(card);
-    registriereZug(state, player);
-    zaehleSpieler(state, player, 'kartenGezogen');
-  }
+  zieheKarten(state, player, amount);
 }
 
 export function createGame(
@@ -311,6 +305,7 @@ function rundenAbschluss(state: GameState): void {
     for (const creature of row) {
       if (!creature) continue;
       creature.tempAttackBonus = 0;
+      creature.tempAttackSources = {};
       creature.tempHealthBonus = 0;
       creature.exhausted = false;
       creature.movedThisFlyPhase = false;
@@ -397,6 +392,11 @@ function creatureStrike(
   defender.letzterSchaden = { art: 'kampf', quelle: attacker.cardId, owner: attackerIdx };
   attacker.attackedThisRound = true;
   zaehleKarte(state, attackerIdx, attacker.cardId, 'schadenKreatur', atk);
+  const aktionsBuff = Object.values(attacker.tempAttackSources ?? {}).reduce((sum, amount) => sum + Math.max(0, amount), 0);
+  const angriffOhneAktionsBuff = Math.max(0, atk - aktionsBuff);
+  const echterKreaturenschaden = Math.min(atk, defenderHealthBefore);
+  const buffKreaturenschaden = Math.max(0, echterKreaturenschaden - Math.min(angriffOhneAktionsBuff, defenderHealthBefore));
+  rechneBuffSchadenZu(state, attackerIdx, attacker, buffKreaturenschaden, 'Kreatur');
   if (attacker.spawnRound === state.round) {
     zaehleSpieler(state, attackerIdx, 'flinkAngriffe');
     zaehleKarte(state, attackerIdx, attacker.cardId, 'flinkAngriffe');
@@ -419,6 +419,8 @@ function creatureStrike(
       // lädt genauso auf wie ein direkter Basis-Angriff.
       const echt = basisSchaden(state, defenderIdx, overflow);
       zaehleKarte(state, attackerIdx, attacker.cardId, 'schadenBasis', echt);
+      const natuerlicherOverflow = Math.max(0, angriffOhneAktionsBuff - defenderHealthBefore);
+      rechneBuffSchadenZu(state, attackerIdx, attacker, Math.max(0, echt - natuerlicherOverflow), 'Basis');
       zaehleSpieler(state, attackerIdx, 'wuchtSchaden', echt);
       if (echt > 0) log(state, `Lane ${lane + 1}: Wucht! ${echt} Überschuss trifft die Basis.`);
     }
@@ -484,6 +486,7 @@ function kampfLane(state: GameState, lane: number): void {
     // den effektiven Schaden, weil der Client damit direkt weiterrechnet.
     const echt = basisSchaden(state, 1, dmg);
     zaehleKarte(state, 0, a.cardId, 'schadenBasis', echt);
+    rechneBuffSchadenZu(state, 0, a, Math.min(echt, Object.values(a.tempAttackSources ?? {}).reduce((sum, amount) => sum + Math.max(0, amount), 0)), 'Basis');
     if (a.spawnRound === state.round) {
       zaehleSpieler(state, 0, 'flinkAngriffe');
       zaehleKarte(state, 0, a.cardId, 'flinkAngriffe');
@@ -503,6 +506,7 @@ function kampfLane(state: GameState, lane: number): void {
     b.attackedThisRound = true;
     const echt = basisSchaden(state, 0, dmg);
     zaehleKarte(state, 1, b.cardId, 'schadenBasis', echt);
+    rechneBuffSchadenZu(state, 1, b, Math.min(echt, Object.values(b.tempAttackSources ?? {}).reduce((sum, amount) => sum + Math.max(0, amount), 0)), 'Basis');
     if (b.spawnRound === state.round) {
       zaehleSpieler(state, 1, 'flinkAngriffe');
       zaehleKarte(state, 1, b.cardId, 'flinkAngriffe');

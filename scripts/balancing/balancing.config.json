@@ -1,0 +1,49 @@
+{
+  "simulation": {
+    "gamesPerMatchupPerStartingSide": 500,
+    "technicalGamesPerConfiguration": 100,
+    "pcPrincipalGamesPerConfiguration": 500,
+    "includeMirrorMatches": true,
+    "deterministicSeeds": true,
+    "parallelWorkers": "auto",
+    "saveAllLogs": false,
+    "maxActionsPerTurn": 3,
+    "maxBranchesPerDecision": 12,
+    "maxSimulationDepth": 1,
+    "decisionTimeoutMs": 0
+  },
+  "bots": {
+    "standard": { "enabled": true, "lookahead": 1, "randomness": 0.05 },
+    "aggressive": { "enabled": true, "lookahead": 1, "randomness": 0.10 },
+    "control": { "enabled": true, "lookahead": 1, "randomness": 0.05 },
+    "random": { "enabled": true, "controlGroupOnly": true, "lookahead": 0, "randomness": 1.0 }
+  },
+  "technicalBotMatchups": [
+    ["standard", "standard"],
+    ["aggressive", "standard"],
+    ["standard", "control"],
+    ["random", "standard"]
+  ],
+  "visibility": {
+    "opponentHand": "hidden",
+    "futureDraws": "hidden",
+    "randomResults": "hidden"
+  },
+  "replays": {
+    "saveOnCrash": true,
+    "saveOnIllegalState": true,
+    "saveOnRoundLimit": true,
+    "saveOnHighSingleRoundDamage": 10,
+    "saveOnWinBeforeRound": 3,
+    "saveOnCardPlayWinRateAbove": 0.70,
+    "maxSavedPerRun": 100
+  },
+  "thresholds": {
+    "deckWinRateWarningMin": 0.40,
+    "deckWinRateWarningMax": 0.60,
+    "deckWinRateCriticalMin": 0.35,
+    "deckWinRateCriticalMax": 0.65,
+    "firstPlayerWarning": 0.58,
+    "firstPlayerCritical": 0.60
+  }
+}

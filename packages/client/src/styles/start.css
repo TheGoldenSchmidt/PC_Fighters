@@ -232,48 +232,6 @@ input:focus {
   font-weight: 600;
 }
 
-/* Bahnenwahl beim Erstellen: gleiche Optik wie die Schauplatz-Kacheln, nur
-   knapper – hier steht eine Zahl statt eines Bildes. */
-.lane-grid-choice {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  margin-bottom: 16px;
-}
-
-.lane-choice {
-  background: var(--panel-2);
-  border: 1px solid var(--panel-2-border);
-  border-radius: var(--radius);
-  padding: 12px 6px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  cursor: pointer;
-  color: inherit;
-}
-
-.lane-choice-zahl {
-  font-family: var(--font-title);
-  font-size: 1.5rem;
-  font-weight: 700;
-}
-
-.lane-choice-text {
-  font-size: 0.72rem;
-  color: var(--muted);
-}
-
-.lane-choice:hover { transform: translateY(-2px); border-color: var(--accent); }
-
-.lane-choice.selected {
-  border-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 15%, var(--panel-2));
-}
-
-.lane-choice.selected .lane-choice-text { color: var(--text); font-weight: 600; }
-
 /* Tabs & Buttons */
 .tabs {
   display: flex;

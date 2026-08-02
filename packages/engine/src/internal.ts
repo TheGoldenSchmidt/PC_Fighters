@@ -5,6 +5,7 @@
 import { countScope, isSoloInLane, KLASSE_A_HOOKS } from './abilityHooks.js';
 import { matchesScope } from './factions.js';
 import { KEYWORDS } from './keywords.js';
+import { zieheKarten } from './draw.js';
 import { zaehleKarte, zaehleSpieler } from './stats.js';
 import type { Ability, Creature, GameState, LogEvent, PlayerIndex, TokenDef } from './types.js';
 
@@ -160,12 +161,7 @@ function tryRettung(
   // Karten ziehen, wenn Zäh auslöst (Junger Neffe). Absichtlich hier inline
   // statt über den draw()-Helfer aus abilities.ts: internal.ts darf abilities.ts
   // nicht importieren (Zirkelimport, siehe Kommentar in abilityHooks.ts).
-  for (let i = 0; i < (rescue.ziehenWennAusgeloest ?? 0); i++) {
-    const card = state.players[owner].deck.shift();
-    if (!card) break;
-    state.players[owner].hand.push(card);
-    zaehleSpieler(state, owner, 'kartenGezogen');
-  }
+  zieheKarten(state, owner, rescue.ziehenWennAusgeloest ?? 0);
   zaehleKarte(state, owner, creature.cardId, 'verhindert', verhindert);
   zaehleSpieler(state, owner, 'verhinderterSchaden', verhindert);
   return true;

@@ -14,7 +14,7 @@
 // ausgeschrieben, so wie schild.ts es für die Schild-Superkräfte tut.
 
 import { log, otherPlayer } from './internal.js';
-import { zaehleCheerleader, zaehleSpieler } from './stats.js';
+import { zaehleCheerleader } from './stats.js';
 import type {
   CheerleaderAusloeser,
   CheerleaderKraft,
@@ -24,6 +24,7 @@ import type {
   PlayerIndex,
   ReaktionsAngebot
 } from './types.js';
+import { zieheKarten } from './draw.js';
 
 /** Bankplätze sind fest dreistellig (config.cheerleaders.selectionSize === 3). */
 export type SlotIndex = 0 | 1 | 2;
@@ -120,15 +121,7 @@ type WirkungsResolver<K extends CheerleaderWirkung['kind']> = (
 /** Karten ins Blatt ziehen. Bewusst inline: diese Datei importiert nicht aus
  *  abilities.ts (Zirkelimport, siehe Kopfkommentar von schild.ts). */
 function ziehe(state: GameState, spieler: PlayerIndex, n: number): number {
-  let gezogen = 0;
-  for (let i = 0; i < n; i++) {
-    const card = state.players[spieler].deck.shift();
-    if (!card) break;
-    state.players[spieler].hand.push(card);
-    zaehleSpieler(state, spieler, 'kartenGezogen');
-    gezogen += 1;
-  }
-  return gezogen;
+  return zieheKarten(state, spieler, n);
 }
 
 /**

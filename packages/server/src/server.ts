@@ -20,6 +20,7 @@ import {
   GameRuleError,
   loadGameData,
   ladeDecks,
+  ladeDeckStatus,
   topOf,
   validateDeck,
   validateCheerleaderSelection,
@@ -60,12 +61,8 @@ interface Room {
   state: GameState | null;
   /** Vom Raum-Ersteller gewählter Schauplatz (rein optisch). */
   topic: Topic;
-  /**
-   * Vom Raum-Ersteller gewählte Bahnenzahl. Ohne Angabe gilt `config.lanes`.
-   * Anders als der Schauplatz ist das KEINE Optik: Sie bestimmt die Breite des
-   * Feldes und damit den ganzen Spielverlauf.
-   */
-  lanes?: number;
+  /** Verbindliche Feldbreite. Sie ist nicht je Raum konfigurierbar. */
+  lanes: 5;
   /** Testmodus: beide Hände starten mit allen Karten, die eine 3D-Figur
    * (visual) haben, plus viel Energie – zum schnellen Prüfen neuer Figuren,
    * ohne eine Runde durchzuspielen. Rein server-seitig, Engine bleibt unberührt. */
@@ -77,14 +74,8 @@ function testCardIds(d: GameData): string[] {
   return d.cards.filter((c) => c.type === 'creature' && d.figures[c.id]?.visual).map((c) => c.id);
 }
 
-/** Erlaubte Bahnenzahlen, die der Raum-Ersteller wählen darf. */
-const LANE_OPTIONEN = [3, 4, 5, 6] as const;
-
-/** Spieldaten mit der vom Raum gewählten Bahnenzahl. */
-function mitLanes(d: GameData, lanes: number | undefined): GameData {
-  if (!lanes || lanes === d.config.lanes) return d;
-  return { ...d, config: { ...d.config, lanes } };
-}
+/** PC Fighters wird dauerhaft auf genau fünf Bahnen gespielt. */
+const FESTE_BAHNEN = 5 as const;
 
 /** Testmodus-Variante der Spieldaten: großzügige, ungedeckelte Energie. */
 function testGameData(d: GameData): GameData {
@@ -136,7 +127,7 @@ interface PersistedRoom {
   code: string;
   topic: Topic;
   state: GameState | null;
-  /** Bahnenzahl des Raums; fehlt bei Raeumen von vor dieser Einstellung. */
+  /** Historisches Feld; neue und geladene Räume verwenden immer fünf. */
   lanes?: number;
   testMode?: boolean;
   players: Array<{
@@ -214,6 +205,11 @@ function loadRooms(data: GameData): Map<string, Room> {
       }
       for (const item of parsed) {
         try {
+          if (item.state && item.state.config.lanes !== FESTE_BAHNEN) {
+            throw new GameRuleError(
+              `Der gespeicherte Raum verwendet ${item.state.config.lanes} statt ${FESTE_BAHNEN} Bahnen.`
+            );
+          }
           const players = item.players.map((p, idx) => {
             const deck = p.deck ?? null;
             const cheerleaders = p.cheerleaders
@@ -239,12 +235,13 @@ function loadRooms(data: GameData): Map<string, Room> {
             code: item.code,
             topic: item.topic,
             state: item.state ? migriereZustand(item.state) : null,
-            lanes: item.lanes,
+            lanes: FESTE_BAHNEN,
             testMode: item.testMode,
             players
           });
         } catch (error) {
-          console.warn(`Historischer Raum ${item.code} wurde übersprungen:`, error);
+          const grund = error instanceof Error ? error.message : String(error);
+          console.warn(`Historischer Raum ${item.code} wurde übersprungen: ${grund}`);
         }
       }
     }
@@ -259,6 +256,11 @@ export function startServer(port: number): Promise<RunningServer> {
   let dataError: string | null = null;
   try {
     data = loadGameData();
+    if (data.config.lanes !== FESTE_BAHNEN) {
+      throw new DataError('config.json', [
+        `lanes: PC Fighters verwendet dauerhaft ${FESTE_BAHNEN} Bahnen.`
+      ]);
+    }
   } catch (e) {
     // Fehlerhafte Datendateien: Server läuft trotzdem und zeigt die Meldung
     // jedem Client an, statt einfach abzustürzen.
@@ -346,6 +348,11 @@ export function startServer(port: number): Promise<RunningServer> {
         'cache-control': 'no-store',
         ...cors
       });
+      const deckStatus = ladeDeckStatus(data!);
+      const alleDecks = ladeDecks(data!);
+      const aktiveDecks = Object.fromEntries(
+        deckStatus.active.flatMap((id) => (alleDecks[id] ? [[id, alleDecks[id]]] : []))
+      );
       res.end(
         JSON.stringify({
           name: 'Political Correct Fighters',
@@ -357,10 +364,13 @@ export function startServer(port: number): Promise<RunningServer> {
           cards: data!.cards,
           deckbuilding: data!.config.deckbuilding,
           cheerleaders: data!.config.cheerleaders,
-          // Bahnen: was der Raum-Ersteller waehlen darf und was voreingestellt
-          // ist. Der Client soll die Liste nicht hartkodieren muessen.
-          lanes: { optionen: [...LANE_OPTIONEN], standard: data!.config.lanes },
-          decks: ladeDecks(data!)
+          // Aus Kompatibilitätsgründen bleibt die bisherige Form erhalten,
+          // enthält aber nur noch die verbindliche Feldbreite.
+          lanes: { optionen: [FESTE_BAHNEN], standard: FESTE_BAHNEN },
+          // Nur freigegebene Decks verlassen den Server. Die übrigen Dateien
+          // bleiben erhalten und können später über deck-status.json aktiviert werden.
+          decks: aktiveDecks,
+          deckStatus
         })
       );
       return;
@@ -452,8 +462,16 @@ export function startServer(port: number): Promise<RunningServer> {
       if (value.kind === 'preset') {
         const preset = ladeDecks(d)[value.id];
         if (!preset) throw new GameRuleError(`Unbekanntes Prebuild-Deck "${value.id}".`);
+        if (!ladeDeckStatus(d).active.includes(value.id)) {
+          throw new GameRuleError(
+            `Das Prebuild-Deck "${value.id}" ist während der Alpha-Balancingphase deaktiviert.`
+          );
+        }
         deck = preset;
       } else if (value.kind === 'custom') {
+        if (!ladeDeckStatus(d).allowCustomDecks) {
+          throw new GameRuleError('Eigene Decks sind während der Alpha-Balancingphase deaktiviert.');
+        }
         try {
           deck = validateDeck(value.deck, d);
         } catch (e) {
@@ -495,14 +513,16 @@ export function startServer(port: number): Promise<RunningServer> {
       return topic;
     }
 
-    /** Bahnenzahl aus der Create-Nachricht prüfen (undefined = Standard). */
-    function validLanes(roh: unknown): number | undefined {
-      if (roh == null) return undefined;
+    /** Alte Clients dürfen noch `lanes: 5` senden; jede Abweichung ist ungültig. */
+    function validLanes(roh: unknown): 5 {
+      if (roh == null) return FESTE_BAHNEN;
       const n = Number(roh);
-      if (!LANE_OPTIONEN.includes(n as (typeof LANE_OPTIONEN)[number])) {
-        throw new GameRuleError(`Ungültige Bahnenzahl. Erlaubt: ${LANE_OPTIONEN.join(', ')}`);
+      if (n !== FESTE_BAHNEN) {
+        throw new GameRuleError(
+          `Ungültige Bahnenzahl. PC Fighters verwendet dauerhaft ${FESTE_BAHNEN} Bahnen.`
+        );
       }
-      return n;
+      return FESTE_BAHNEN;
     }
 
     function attach(room: Room, idx: PlayerIndex): void {
@@ -582,7 +602,7 @@ export function startServer(port: number): Promise<RunningServer> {
           // Beide Spieler da → Partie starten
           const d = requireData();
           room.state = createGame(
-            mitLanes(room.testMode ? testGameData(d) : d, room.lanes),
+            room.testMode ? testGameData(d) : d,
             [room.players[0].faction, faction],
             Math.random,
             [room.players[0].deck, deck],

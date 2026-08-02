@@ -99,8 +99,8 @@ function legaleFlugAktionen(state: GameState, player: PlayerIndex): PlayerAction
  * jeder Aufrufer (Bot, Backtest) diese Invariante ohnehin selbst hält.
  */
 export function legaleAktionen(state: GameState, player: PlayerIndex, data: GameData): PlayerAction[] {
-  // Ein offenes Reaktionsfenster sperrt alles andere: hier gibt es nur
-  // "verzichten" und die passenden Opfer (mit Wahl, wo die Kraft eine stellt).
+  // Ein offenes Reaktionsfenster sperrt alles andere: hier gibt es nur die
+  // passenden Opfer (mit Wahl, wo die Kraft eine stellt).
   if (state.reaktion) {
     if (state.reaktion.spieler !== player) return [];
     const reactionId = state.reaktion.id;
@@ -126,3 +126,6 @@ export function legaleAktionen(state: GameState, player: PlayerIndex, data: Game
     ? legaleFlugAktionen(state, player)
     : legaleSpielAktionen(state, player, data);
 }
+
+/** Englischer API-Name fuer Simulatoren und externe Werkzeuge. */
+export const getLegalActions = legaleAktionen;

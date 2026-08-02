@@ -9,6 +9,9 @@
 .preset-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:.75rem; }
 .preset-card { border:1px solid rgba(255,255,255,.16); border-radius:12px; background:rgba(10,9,20,.55); overflow:hidden; }
 .preset-card.selected { border-color:var(--gold); box-shadow:0 0 0 2px rgba(255,207,76,.18); }
+.preset-card.disabled { opacity:.48; filter:grayscale(.85); border-style:dashed; }
+.preset-card.disabled .preset-main { cursor:not-allowed; }
+.preset-disabled-note { color:var(--muted); font-style:italic; }
 .preset-main { width:100%; min-height:95px; display:flex; flex-direction:column; align-items:flex-start; gap:.35rem; padding:.85rem; color:inherit; background:transparent; border:0; text-align:left; }
 .preset-main strong { font-size:1rem; }
 .preset-main small { opacity:.75; }
