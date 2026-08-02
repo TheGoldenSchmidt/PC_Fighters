@@ -15,10 +15,10 @@ import {
 const data = loadGameData();
 
 const EXPECTED_ALPHA_DECKS: Record<string, Record<string, number>> = {
-  rudeljaeger: { ratte: 2, streunerkatze: 2, getigerter: 2, hauskater: 2, wolf: 2, wilder_instinkt: 2, pferd: 2, katzenmutter: 1, luchs: 1, alphawolf: 1, vogelmensch: 1, junger_neffe: 1, pc_principal: 1 },
-  urzeitliche_kolosse: { ratte: 2, wolf: 2, wilder_instinkt: 2, velociraptor: 2, pferd: 2, triceratops: 2, pteranodon: 1, baer: 1, spinosaurus: 1, tyrannosaurus_rex: 1, brachiosaurus: 1, vogelmensch: 1, randy_marsh: 1, pc_principal: 1 },
-  solidaritaet_ueberleben: { rekrut: 2, schildwache: 2, der_alte_hund: 2, streikposten: 2, feldscherin: 2, schrottsammlerin: 2, generalstreik: 2, pfandsammler: 1, ritter: 1, kommandantin: 1, pc_babies: 1, junger_neffe: 1, pc_principal: 1 },
-  forschung_muskelkraft: { erstsemester: 2, koffein_junkie: 2, schildwall: 2, mobilmachung: 2, kranfuehrer: 2, ritter: 2, stahlgiesser: 2, pfandsammler: 1, bibliothekar: 1, kommandantin: 1, alter_wissenschaftler: 1, randy_marsh: 1, pc_principal: 1 }
+  rudeljaeger: { ratte: 2, streunerkatze: 2, getigerter: 1, hauskater: 1, baer: 2, wolf: 2, wilder_instinkt: 2, pferd: 2, katzenmutter: 1, luchs: 1, alphawolf: 1, vogelmensch: 1, junger_neffe: 1, pc_principal: 1 },
+  urzeitliche_kolosse: { ratte: 2, wolf: 2, wilder_instinkt: 1, velociraptor: 2, pferd: 2, triceratops: 2, pteranodon: 1, baer: 2, spinosaurus: 1, tyrannosaurus_rex: 1, brachiosaurus: 1, vogelmensch: 1, randy_marsh: 1, pc_principal: 1 },
+  solidaritaet_ueberleben: { rekrut: 2, schildwache: 2, streikposten: 2, schrottsammlerin: 2, basisdemokratie: 2, generalstreik: 1, ritter: 2, gewerkschaftssekretaerin: 1, die_massen: 2, kommandantin: 1, pc_babies: 1, junger_neffe: 1, pc_principal: 1 },
+  forschung_muskelkraft: { erstsemester: 2, koffein_junkie: 2, schildwall: 2, mobilmachung: 1, die_fakultaet: 1, kranfuehrer: 2, ritter: 2, stahlgiesser: 2, pfandsammler: 1, bibliothekar: 1, kommandantin: 1, alter_wissenschaftler: 1, randy_marsh: 1, pc_principal: 1 }
 };
 
 describe('Alpha-Deckfreischaltung', () => {

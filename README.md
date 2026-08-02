@@ -66,7 +66,7 @@ Auch hier erscheint eine „Network"-Adresse, z. B. `http://192.168.178.66:5173`
 
 ### Deckwahl und Mulligan
 
-Vor einer Partie wählst du zuerst **Humans** oder **Animals** und danach eines der sieben fertigen Decks oder ein lokal gespeichertes eigenes Deck. Eigene Decks lassen sich im Deckeditor filtern, kopieren sowie als JSON importieren und exportieren. Sie werden nur in diesem Browser gespeichert. Nach dem Beitritt tauschen beide Spieler im Mulligan optional beliebig viele Karten; Runde 1 beginnt erst nach beiden Bestätigungen.
+Vor einer Partie wählst du zuerst **Humans** oder **Animals** und danach eines der vier für die Alpha freigeschalteten Decks. Weitere Presets und lokal gespeicherte eigene Decks bleiben erhalten, sind bis zur späteren Freischaltung aber ausgegraut. Nach dem Beitritt tauschen beide Spieler im Mulligan optional beliebig viele Karten; Runde 1 beginnt erst nach beiden Bestätigungen.
 
 ### Balancing-Backtest
 
@@ -161,7 +161,7 @@ Die Datei `packages/engine/src/data/config.json` enthält alle Spielregeln als Z
 | Wert | Bedeutung |
 |---|---|
 | `lanes` | Verbindliche Anzahl der Kampfbahnen. Dieser Wert muss dauerhaft `5` sein und kann beim Erstellen einer Partie nicht geändert werden. |
-| `baseHealth` | Lebenspunkte jeder Basis (aktuell: 12) |
+| `baseHealth` | Lebenspunkte jeder Basis (aktuell: 10) |
 | `startingHand` | Handkarten zu Spielbeginn (V2: 4) |
 | `cardsDrawnPerTurn` | Karten, die jede Runde gezogen werden |
 | `energy.start` / `energy.perRound` | Energie in Runde 1 bzw. Zuwachs pro Runde danach (V2: 1 / 1) |

@@ -713,7 +713,7 @@ describe('Heroes & PC Principal', () => {
     expect(randy.currentHealth).toBe(4);
   });
 
-  it('PC Principal peinigt alle Gegner dauerhaft auf 0 ATK / 1 Verteidigung', () => {
+  it('PC Principal peinigt alle Gegner dauerhaft auf 2 ATK / 3 Verteidigung', () => {
     const s = emptyState();
     put(s, 1, 0, 'ritter'); // 4/5
     put(s, 1, 1, 'tyrannosaurus_rex');
@@ -721,15 +721,15 @@ describe('Heroes & PC Principal', () => {
     onPlayAbilities(s, 0, 2);
     recalcBoard(s);
     for (const lane of [0, 1]) {
-      expect(getEffectiveAttack(s, 1, lane)).toBe(0);
-      expect(getMaxHealth(s, 1, lane)).toBe(1);
-      expect(s.board[1][lane]?.currentHealth).toBe(1);
+      expect(getEffectiveAttack(s, 1, lane)).toBe(2);
+      expect(getMaxHealth(s, 1, lane)).toBe(3);
+      expect(s.board[1][lane]?.currentHealth).toBe(3);
     }
     // Eine NEUE Aura hebt die Peinigung nicht auf (Deckel greift zuletzt).
     put(s, 1, 2, 'kommandantin'); // +1/+1 für andere Menschen
     recalcBoard(s);
-    expect(getEffectiveAttack(s, 1, 0)).toBe(0);
-    expect(getMaxHealth(s, 1, 0)).toBe(1);
+    expect(getEffectiveAttack(s, 1, 0)).toBe(2);
+    expect(getMaxHealth(s, 1, 0)).toBe(3);
   });
 });
 
