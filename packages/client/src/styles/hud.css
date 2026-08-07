@@ -161,6 +161,7 @@
   background: linear-gradient(135deg, var(--gold) 0%, #d97706 100%);
   color: #0f1115;
   font-weight: 800;
+  border: 0;
   border-radius: 10px;
   min-height: 38px;
   padding: 6px 20px;
@@ -168,11 +169,26 @@
   letter-spacing: 0.05em;
   text-transform: uppercase;
   box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);
+  /* Traeger fuer den Glanz-Streifen (Regel in start.css). */
+  position: relative;
+  overflow: hidden;
+  /* Der Knopf existiert nur, solange man wirklich am Zug ist
+     (`GameScreen.tsx`), das Glimmen markiert also eine echte Aufforderung. */
+  animation: pass-glimmen 2.2s ease-in-out infinite;
+}
+
+@keyframes pass-glimmen {
+  0%, 100% { box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3); }
+  50% { box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3), 0 0 16px rgba(245, 158, 11, 0.55); }
 }
 
 .pass-button:hover {
   transform: translateY(-1px);
   box-shadow: 0 6px 15px rgba(245, 158, 11, 0.5);
+}
+
+.pass-button:active {
+  transform: translateY(1px) scale(0.97);
 }
 
 .summon-confirm {
@@ -354,15 +370,29 @@
   color: var(--accent-2);
 }
 
+/* Spielbar vs. nicht spielbar musste man vorher an der Deckkraft ablesen.
+   Ein Gold-Ring sagt auf einen Blick, was die Energie noch hergibt. Bewusst
+   ueber `box-shadow` statt `border-color`: der Rahmen traegt schon den
+   Fraktionsstreifen oben bzw. den Gold-Rand der Signaturkarte. */
 .hand-card.playable {
   cursor: grab;
-  border-color: rgba(255,255,255,0.25);
+  box-shadow:
+    0 6px 14px rgba(0,0,0,0.5),
+    0 0 0 1px rgba(245, 158, 11, 0.5),
+    0 0 12px rgba(245, 158, 11, 0.22);
 }
 
 .hand-card.playable:hover {
-  transform: translateY(-8px);
+  transform: translateY(-8px) scale(1.03);
   border-color: var(--accent);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.6);
+  box-shadow:
+    0 12px 24px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(245, 158, 11, 0.6),
+    0 0 18px rgba(245, 158, 11, 0.3);
+}
+
+.hand-card.playable:active {
+  transform: translateY(-4px) scale(0.99);
 }
 
 .hand-card.playable.faction-animals:hover {

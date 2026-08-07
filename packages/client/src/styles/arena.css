@@ -133,6 +133,38 @@
   color: #fff;
 }
 
+/* Lebensbalken unter der Zahl: „wie schlecht steht es" liest man als Balken
+   schneller als als Ziffer. Bewusst nur 4 px hoch – das Zonen-Band hat eine
+   feste Hoehe (`--zone-hoehe`) und darf nicht auseinandergedrueckt werden. */
+.basis-balken {
+  width: 100%;
+  min-width: 42px;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+}
+
+.basis-balken-fuellung {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--hp-gut);
+  transition: width 0.4s ease, background-color 0.4s ease;
+}
+
+.basis-balken.mittel .basis-balken-fuellung { background: var(--hp-mittel); }
+.basis-balken.tief .basis-balken-fuellung {
+  background: var(--hp-kritisch);
+  animation: basis-kritisch 1.1s ease-in-out infinite;
+}
+
+/* Nur in der letzten Stufe: der Balken atmet, damit man es nicht uebersieht. */
+@keyframes basis-kritisch {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
 .energy-chip {
   color: var(--gold);
   text-shadow: 0 0 8px rgba(245, 158, 11, 0.2);

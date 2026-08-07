@@ -52,6 +52,7 @@ export function ShieldMeter({
  */
 export function BasisAnzeige({
   leben,
+  max,
   treffer,
   schild,
   abschnitte,
@@ -59,18 +60,29 @@ export function BasisAnzeige({
   immun
 }: {
   leben: number;
+  /** Startleben – Bezugswert des Balkens. */
+  max: number;
   treffer?: FxBaseImpact;
   schild: number;
   abschnitte: number;
   schildFx: FxShield | null;
   immun: boolean;
 }) {
+  const rest = Math.max(0, leben);
+  const anteil = max > 0 ? Math.min(1, rest / max) : 0;
+  // Farbstufen statt eines Farbverlaufs: „noch gut / wird eng / gleich vorbei"
+  // liest man auf einem Handydisplay schneller als einen Prozentwert.
+  const stufe = anteil > 0.6 ? 'hoch' : anteil > 0.3 ? 'mittel' : 'tief';
   return (
     <div className={`basis-anzeige${treffer ? ' hit' : ''}`}>
-      <div className="basis-wert" title={`Basis-Leben: ${Math.max(0, leben)}`}>
+      <div className="basis-wert" title={`Basis-Leben: ${rest} von ${max}`}>
         <span aria-hidden>🏰</span>
-        <strong>{Math.max(0, leben)}</strong>
+        <strong>{rest}</strong>
         {treffer && <span className="dmg-float">-{treffer.damage}</span>}
+      </div>
+      {/* aria-hidden: die Zahl darüber sagt dasselbe, nur genauer. */}
+      <div className={`basis-balken ${stufe}`} aria-hidden>
+        <span className="basis-balken-fuellung" style={{ width: `${anteil * 100}%` }} />
       </div>
       <ShieldMeter stand={schild} abschnitte={abschnitte} fx={schildFx} immun={immun} />
     </div>

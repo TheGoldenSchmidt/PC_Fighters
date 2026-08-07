@@ -27,5 +27,25 @@
   --font-title: 'Cinzel', Georgia, serif;
   --font-body: 'Inter', system-ui, -apple-system, sans-serif;
   --shadow-lg: 0 10px 30px -10px rgba(0, 0, 0, 0.7);
-  --glass: backdrop-filter: blur(16px);
+  --blur: 16px;
+
+  /* Bewegung: die „Pop"-Kurve lag vorher vier Mal wortgleich inline im
+     Stylesheet (Banner, Detailkarte, Reaktionsbox, Pokal). */
+  --ease-pop: cubic-bezier(0.18, 0.89, 0.32, 1.28);
+  --dur-fast: 0.14s;
+  --dur-med: 0.28s;
+
+  /* Knoepfe: eine Grundform fuer alle Bildschirme. `--btn-min-h` ist das
+     Touch-Ziel und gehoert NUR auf benannte Knopfklassen – die nackte
+     `button`-Regel darf keine Hoehe erzwingen, sonst waechst z. B. der
+     schmale Log-Ticker auf Knopfhoehe. */
+  --btn-radius: 10px;
+  --btn-min-h: 40px;
+  --btn-bg: linear-gradient(180deg, var(--panel-2), rgba(12, 17, 28, 0.9));
+  --ring: 0 0 0 2px rgba(245, 158, 11, 0.55);
+
+  /* Lebensbalken der Basis: gruen → gold → rot. */
+  --hp-gut: var(--accent-2);
+  --hp-mittel: var(--gold);
+  --hp-kritisch: var(--danger);
 }

@@ -8,15 +8,23 @@
 .top-faction-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
 .preset-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:.75rem; }
 .preset-card { border:1px solid rgba(255,255,255,.16); border-radius:12px; background:rgba(10,9,20,.55); overflow:hidden; }
-.preset-card.selected { border-color:var(--gold); box-shadow:0 0 0 2px rgba(255,207,76,.18); }
+.preset-card.selected { border-color:var(--gold); box-shadow:var(--ring); }
 .preset-card.disabled { opacity:.48; filter:grayscale(.85); border-style:dashed; }
 .preset-card.disabled .preset-main { cursor:not-allowed; }
 .preset-disabled-note { color:var(--muted); font-style:italic; }
 .preset-main { width:100%; min-height:95px; display:flex; flex-direction:column; align-items:flex-start; gap:.35rem; padding:.85rem; color:inherit; background:transparent; border:0; text-align:left; }
 .preset-main strong { font-size:1rem; }
+/* Die Knopf-Grundform setzt `font-weight: 600`; die beschreibenden Zeilen im
+   Knopf sollen aber Fliesstext bleiben. */
+.preset-main span,.preset-main small,.cheerleader-candidate small { font-weight:400; }
 .preset-main small { opacity:.75; }
+.preset-main:hover:not(:disabled) { background:rgba(255,255,255,.05); }
 .preset-actions { display:flex; flex-wrap:wrap; gap:.35rem; padding:.5rem; border-top:1px solid rgba(255,255,255,.1); }
-.preset-actions button { font-size:.72rem; padding:.4rem .55rem; }
+/* Diese vier Knoepfe (Bearbeiten/Duplizieren/Export/Loeschen) trugen frueher
+   nur Groessenangaben und wurden deshalb als nackte Browser-Knoepfe gezeichnet.
+   Farbe und Rahmen kommen jetzt aus der `button`-Grundform, hier bleibt die
+   kompakte Groesse plus ein sicheres Touch-Ziel. */
+.preset-actions button { font-size:.72rem; padding:.4rem .6rem; min-height:34px; }
 .deck-section-head,.deck-editor-head { display:flex; justify-content:space-between; align-items:center; gap:.75rem; flex-wrap:wrap; }
 .deck-section-head > div,.subfaction-templates { display:flex; gap:.4rem; flex-wrap:wrap; }
 .deck-filters,.deck-curve { display:flex; gap:.5rem; flex-wrap:wrap; margin:.75rem 0; }
@@ -30,7 +38,10 @@
 .deck-builder-card div:nth-child(2) { display:flex; flex-direction:column; gap:.2rem; }
 .deck-builder-card p { margin:0; font-size:.76rem; opacity:.8; }
 .copy-stepper { display:flex; align-items:center; gap:.4rem; }
-.copy-stepper button { width:2rem; height:2rem; padding:0; }
+/* Runde Stempel statt nativer Kaesten – das Plus/Minus ist der meistbenutzte
+   Knopf des Deck-Editors. */
+.copy-stepper button { width:2.15rem; height:2.15rem; padding:0; border-radius:50%; font-size:1.05rem; line-height:1; display:grid; place-items:center; }
+.copy-stepper b { min-width:1.4rem; text-align:center; font-variant-numeric:tabular-nums; }
 .deck-validation { margin:.75rem 0; padding:.65rem; border-radius:8px; }
 .deck-validation.valid { background:rgba(45,180,90,.16); color:#98f0b4; }
 .deck-validation.invalid { background:rgba(220,70,70,.14); color:#ffb0b0; }
@@ -102,9 +113,18 @@
 .cheerleader-candidate > span:last-child { display:flex; flex-direction:column; gap:.15rem; min-width:0; }
 .cheerleader-candidate strong { font-size:.82rem; }
 .cheerleader-candidate small { color:var(--muted); font-size:.68rem; }
+.cheerleader-candidate:active:not(:disabled) { transform:translateY(1px) scale(.99); }
 .cheerleader-candidate.selected {
   border-color:#f5b74a;
   background:rgba(245,183,74,.1);
+  box-shadow:var(--ring);
+}
+/* Besetzter Bankplatz: kurzes Aufpoppen beim Belegen. */
+.cheerleader-slot.filled { animation:slot-belegt .32s var(--ease-pop); }
+@keyframes slot-belegt {
+  0% { transform:scale(.92); }
+  60% { transform:scale(1.04); }
+  100% { transform:scale(1); }
 }
 .cheerleader-candidate.locked { opacity:.52; filter:saturate(.35); }
 .candidate-portrait {

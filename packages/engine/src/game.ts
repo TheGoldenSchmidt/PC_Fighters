@@ -915,6 +915,8 @@ export function buildClientView(state: GameState, player: PlayerIndex, data: Gam
     round: state.round,
     roundLimit: state.config.roundLimit,
     lanes: state.config.lanes,
+    // Startleben der Basis: Bezugswert für den Lebensbalken im Client.
+    baseMax: state.config.baseHealth,
     // 0 = Schild-Regel in der Config abgeschaltet, der Client blendet sie dann aus.
     schildAbschnitte: state.config.schild?.abschnitte ?? 0,
     // Energie ist rundenbasiert (ggf. ungedeckelt): der Client zeigt die
