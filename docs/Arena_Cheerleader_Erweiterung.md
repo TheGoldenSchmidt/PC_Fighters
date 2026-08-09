@@ -1,86 +1,78 @@
-# Arena_Cheerleader_Erweiterung
+# Arena- und Cheerleader-Erweiterung
 
-> Fortschritt und aktuelle Messwerte stehen in [STATUS.md](STATUS.md).
-> Dieses Dokument beschreibt das *Wie*, nicht den Stand.
+> Fortschritt und aktuelle Messwerte stehen in [STATUS.md](STATUS.md). Dieses
+> Dokument beschreibt den implementierten Regel- und Technikvertrag.
 
-## Ziel
+## Regel
 
-Die bestehende Cheerleader-Auswahl und die Arena-Teamzonen werden um die
-eigentliche Engine-Logik für Cheerleader-Superkräfte erweitert. Die Engine
-entscheidet regelkonform, wann eine Kraft angeboten wird, welcher belegte
-Bankplatz geopfert werden darf und wie die Kraft auf den Spielzustand wirkt.
+Die drei gewählten Cheerleader bilden zugleich die Basisverteidigung:
 
-## Bereits umgesetzt
+1. Eingehender Basisschaden lädt den Schild entsprechend der konfigurierten
+   Ladungswerte.
+2. Ist der Schild vollständig geladen und mindestens ein Bankplatz besetzt,
+   blockt er den nächsten Basistreffer vollständig.
+3. Der Block öffnet ein Reaktionsfenster. Der Besitzer muss einen belegten
+   Bankplatz wählen; Verzicht ist nicht möglich.
+4. Die Engine leert zuerst den Slot, loggt das Opfer, führt die zugehörige
+   Superkraft aus und stabilisiert danach Tode und Folgewirkungen.
+5. Ohne Cheerleader lädt beziehungsweise blockt der Schild nicht.
 
-- Datengetriebener Kandidatenpool mit Auswahlgröße `3` und Deckgrenze `2`.
-- Validierung von Auswahl, Duplikaten, Kandidaten-IDs und Deckausschluss.
-- Drei öffentliche, stabile Slots vom Typ `cardId | null` je Spieler.
-- Persistenz, Reconnect und Migration historischer Räume.
-- `CheerleaderSacrificeEvent` als öffentlicher Replay-Vertrag.
-- 3D-Teamzonen, 2D-Fallback sowie individuelle `cheer`- und `sacrifice`-Clips.
+Das Opfer kostet weder Energie noch einen normalen Spielzug. Während das
+Fenster offen ist, sind alle anderen Aktionen gesperrt. Es gibt keinen Timeout.
 
-Stand: Commit `34cb6cf` auf `master`.
+## Datenvertrag
 
-## Offene Engine-Arbeit
+`config.cheerleaders` enthält Kandidaten, Auswahlgröße, Deckgrenze und eine
+Kraftdefinition für jeden Kandidaten. Jede Kraft besitzt einen deutschen Namen
+und Erklärungstext, den Auslöser `schildBlock` sowie eine schema-validierte
+Wirkung.
 
-### 1. Superkräfte spezifizieren
+Aktuell implementiert:
 
-- [ ] Effekt, Auslöser, Zielwahl und Einschränkungen für alle fünf Kandidaten festlegen.
-- [ ] Entscheiden, ob Kräfte aktiv im eigenen Zug oder reaktiv während einer
-      laufenden Auflösung eingesetzt werden.
-- [ ] Datengetriebene Definitionen samt Schema-Validierung ergänzen.
+- **PC Principal – Machtwort:** Alle gegnerischen Kreaturen werden gepeinigt
+  (ATK höchstens 0, Verteidigung höchstens 1).
+- **PC Babies – Sicherer Raum:** Die eigene Basis ist für den Rest der Runde
+  gegen weiteren Schaden immun.
+- **Alter Wissenschaftler – Feldforschung:** Wahl zwischen einer Karte plus
+  einem Wissen oder zwei Schaden an jeder gegnerischen Kreatur.
+- **Randy Marsh – Handgemenge:** Jede Kreatur auf dem Feld erleidet zwei
+  Schaden.
+- **Junger Neffe – Zweite Chance:** Alle eigenen Kreaturen werden vollständig
+  geheilt und der Spieler zieht eine Karte.
 
-### 2. Auslöse- und Auswahlzustand modellieren
+## Engine- und Protokollvertrag
 
-- [ ] Falls eine Reaktion oder Auswahl nötig ist, einen persistierbaren
-      `pendingCheerleaderChoice`-Zustand in `GameState` ergänzen.
-- [ ] Besitzer, Auslöser, erlaubte Slots und fortzusetzende Auflösung eindeutig
-      im Zustand abbilden.
-- [ ] Den öffentlichen Teil dieses Zustands in `ClientView` aufnehmen.
+- `GameState.aufloesung` ist eine serialisierbare Schrittliste für Kampf,
+  Todesstabilisierung, Schildfenster und Rundenabschluss.
+- `GameState.reaktion` hält Reaktions-ID, Besitzer, gültige Slots und den danach
+  wieder aktiven Spieler.
+- `PlayerAction.cheerleaderReaction` enthält Reaktions-ID, gewählten Slot und
+  bei Feldforschung die Wahl `A` oder `B`.
+- Eine monotone Reaktions-ID verwirft doppelte oder verspätete Antworten nach
+  Reconnect.
+- `ClientView` zeigt Angebote nur dem Besitzer; der Gegner erhält lediglich den
+  öffentlichen Wartezustand.
+- Replay-Reihenfolge: `cheerleaderSacrifice` → `cheerleaderPower` → konkrete
+  Wirkung → Todesereignisse → Fortsetzung der Auflösung.
 
-### 3. Spieleraktion und Validierung ergänzen
+## Persistenz und Simulation
 
-- [ ] `PlayerAction` um `sacrificeCheerleader` mit einem Slot von `0 | 1 | 2`
-      erweitern.
-- [ ] In `applyAction` Phase, Priorität, Besitzer, belegten Slot und aktuellen
-      Auslöser serverautoritativ validieren.
-- [ ] Festlegen, ob die Aktivierung Zug, Energie oder Priorität verbraucht.
+- Räume werden als `{ version: 2, rooms: [...] }` atomar über eine temporäre
+  Datei geschrieben.
+- Das frühere unversionierte Array wird weiterhin migriert; fehlende
+  Auflösungsfelder werden ergänzt.
+- Legal Actions liefern bei offenem Fenster ausschließlich gültige Opfer- und
+  Wahlaktionen.
+- Bot und Backtest rotieren Bankkombinationen und erfassen Angebote, Opfer,
+  Wahlquote, verursachten beziehungsweise verhinderten Schaden und Rettungen.
 
-### 4. Opfer und Kraft atomar auflösen
+## Abnahme
 
-- [ ] Den gewählten Slot stabil auf `null` setzen.
-- [ ] Zuerst ein `CheerleaderSacrificeEvent` in das Log schreiben.
-- [ ] Anschließend den zugehörigen Superkrafteffekt ausführen.
-- [ ] Danach Todesfälle, Folgetrigger und zerstörte Basen prüfen.
-- [ ] Die Ereignisreihenfolge für den Client-Replay deterministisch halten.
+Abgedeckt sind alle fünf Kräfte, ungültige Besitzer/Slots/Reaktions-IDs,
+gesperrte Normalaktionen, A/B-Wahl, deterministische Replay-Reihenfolge,
+Persistenz und Reconnect mitten im Fenster sowie Legal-Action-/Bot-Partien.
+Clienttests prüfen Besitzer- und Gegneransicht in der echten Engine-Sicht.
 
-### 5. Effektprimitive erweitern
-
-- [ ] Vorhandene Ability-/Effect-Primitive für die fünf Kräfte wiederverwenden.
-- [ ] Nur fehlende Mechaniken als neue Union-Zweige, Schemata und Resolver
-      ergänzen.
-- [ ] Wechselwirkungen mit Tod, Rettung, Nachbar, Basisangriff und Flugphase
-      ausdrücklich definieren.
-
-### 6. Legale Aktionen, Bot und Simulation
-
-- [ ] `legaleAktionen` um erlaubte Cheerleader-Opfer erweitern.
-- [ ] Bot-Bewertung und Backtest-Simulation für die neue Aktion ergänzen.
-- [ ] Optional Cheerleader-Nutzung und Wirkung in der Statistik erfassen.
-
-### 7. Tests und Abnahme
-
-- [ ] Engine-Tests für jede der fünf Superkräfte ergänzen.
-- [ ] Ungültigen Besitzer, falsche Phase, leere Slots und Mehrfachopfer testen.
-- [ ] Ereignisreihenfolge sowie Tod-, Kampf- und Basisschaden-Grenzfälle testen.
-- [ ] Ausstehende Auswahl, Persistenz und Reconnect testen.
-- [ ] Bot-/Legal-Action-Property-Test um die neue Aktion erweitern.
-- [ ] Abschluss mit `npm test`, `npm run typecheck` und `npm run build`.
-
-## Zentrale Designentscheidung
-
-Reaktive Superkräfte sind technisch deutlich aufwendiger als aktive Kräfte:
-Die Engine löst Kampf und Effekte derzeit vollständig innerhalb eines
-`applyAction`-Aufrufs auf. Eine Reaktion auf tödlichen Schaden benötigt daher
-einen pausierbaren Auflösungszustand, der nach der Cheerleader-Wahl exakt an der
-unterbrochenen Stelle fortgesetzt werden kann.
+Die technische Integration ist abgeschlossen. Die Kraftwerte brauchen weiterhin
+menschliches Playtesting; der vollständige Bot-Backtest vom 2026-08-01 erfüllt
+mit unveränderter Schildfrequenz alle automatischen Tempo- und Deckkorridore.

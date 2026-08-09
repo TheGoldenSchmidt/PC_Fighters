@@ -1,0 +1,3310 @@
+{
+  "deckA": "forschung_muskelkraft",
+  "deckB": "rudeljaeger",
+  "botA": "standard",
+  "botB": "standard",
+  "replay": {
+    "version": 1,
+    "matchId": "match-d523e2bc-72",
+    "saat": 3575898812,
+    "startspieler": 0,
+    "cheerleaders": [
+      [
+        "pc_principal",
+        "pc_babies",
+        "alter_wissenschaftler"
+      ],
+      [
+        "pc_principal",
+        "pc_babies",
+        "alter_wissenschaftler"
+      ]
+    ],
+    "aktionen": [
+      {
+        "index": 0,
+        "runde": 0,
+        "spieler": 0,
+        "aktion": {
+          "type": "mulligan",
+          "handIndices": [
+            1,
+            2,
+            3
+          ]
+        },
+        "energieVorher": 0,
+        "energieNachher": 0,
+        "zustand": "c0b8f10f"
+      },
+      {
+        "index": 1,
+        "runde": 1,
+        "spieler": 1,
+        "aktion": {
+          "type": "mulligan",
+          "handIndices": [
+            3
+          ]
+        },
+        "energieVorher": 0,
+        "energieNachher": 1,
+        "zustand": "9167fdd7"
+      },
+      {
+        "index": 2,
+        "runde": 1,
+        "spieler": 0,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 1,
+        "energieNachher": 1,
+        "zustand": "d90a1f64"
+      },
+      {
+        "index": 3,
+        "runde": 2,
+        "spieler": 1,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 1,
+        "energieNachher": 2,
+        "zustand": "4bd447f9"
+      },
+      {
+        "index": 4,
+        "runde": 2,
+        "spieler": 1,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 1,
+          "lane": 0
+        },
+        "energieVorher": 2,
+        "energieNachher": 0,
+        "zustand": "4d8fcddf",
+        "cardId": "getigerter"
+      },
+      {
+        "index": 5,
+        "runde": 2,
+        "spieler": 0,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 0,
+          "lane": 4
+        },
+        "energieVorher": 2,
+        "energieNachher": 0,
+        "zustand": "c46342ff",
+        "cardId": "koffein_junkie"
+      },
+      {
+        "index": 6,
+        "runde": 2,
+        "spieler": 1,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 0,
+        "energieNachher": 0,
+        "zustand": "6ca94588"
+      },
+      {
+        "index": 7,
+        "runde": 3,
+        "spieler": 0,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 0,
+        "energieNachher": 3,
+        "zustand": "006b317a"
+      },
+      {
+        "index": 8,
+        "runde": 3,
+        "spieler": 0,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 4,
+          "lane": 1
+        },
+        "energieVorher": 3,
+        "energieNachher": 1,
+        "zustand": "97da1f01",
+        "cardId": "erstsemester"
+      },
+      {
+        "index": 9,
+        "runde": 3,
+        "spieler": 1,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 4,
+          "lane": 1
+        },
+        "energieVorher": 3,
+        "energieNachher": 0,
+        "zustand": "e952503f",
+        "cardId": "pferd"
+      },
+      {
+        "index": 10,
+        "runde": 3,
+        "spieler": 0,
+        "aktion": {
+          "type": "playAction",
+          "handIndex": 1,
+          "targetLane": 1
+        },
+        "energieVorher": 1,
+        "energieNachher": 0,
+        "zustand": "521bb045",
+        "cardId": "schildwall"
+      },
+      {
+        "index": 11,
+        "runde": 3,
+        "spieler": 1,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 0,
+        "energieNachher": 0,
+        "zustand": "23a6dafc"
+      },
+      {
+        "index": 12,
+        "runde": 4,
+        "spieler": 0,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 0,
+        "energieNachher": 4,
+        "zustand": "49062ff9"
+      },
+      {
+        "index": 13,
+        "runde": 4,
+        "spieler": 1,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 2,
+          "lane": 4
+        },
+        "energieVorher": 4,
+        "energieNachher": 2,
+        "zustand": "75599351",
+        "cardId": "getigerter"
+      },
+      {
+        "index": 14,
+        "runde": 4,
+        "spieler": 0,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 3,
+          "lane": 0
+        },
+        "energieVorher": 4,
+        "energieNachher": 0,
+        "zustand": "c9727b44",
+        "cardId": "ritter"
+      },
+      {
+        "index": 15,
+        "runde": 4,
+        "spieler": 1,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 1,
+          "lane": 2
+        },
+        "energieVorher": 2,
+        "energieNachher": 0,
+        "zustand": "28646c6a",
+        "cardId": "wolf"
+      },
+      {
+        "index": 16,
+        "runde": 4,
+        "spieler": 0,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 0,
+        "energieNachher": 0,
+        "zustand": "f92100ed"
+      },
+      {
+        "index": 17,
+        "runde": 5,
+        "spieler": 1,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 0,
+        "energieNachher": 5,
+        "zustand": "24cb0101"
+      },
+      {
+        "index": 18,
+        "runde": 5,
+        "spieler": 0,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 3,
+          "lane": 1
+        },
+        "energieVorher": 5,
+        "energieNachher": 0,
+        "zustand": "395b2179",
+        "cardId": "alter_wissenschaftler"
+      },
+      {
+        "index": 19,
+        "runde": 5,
+        "spieler": 1,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 0,
+          "lane": 1
+        },
+        "energieVorher": 5,
+        "energieNachher": 2,
+        "zustand": "dca1c5dd",
+        "cardId": "katzenmutter"
+      },
+      {
+        "index": 20,
+        "runde": 5,
+        "spieler": 0,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 0,
+        "energieNachher": 0,
+        "zustand": "958a4772"
+      },
+      {
+        "index": 21,
+        "runde": 5,
+        "spieler": 1,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 1,
+          "lane": 4
+        },
+        "energieVorher": 2,
+        "energieNachher": 1,
+        "zustand": "f3e1f35a",
+        "cardId": "ratte"
+      },
+      {
+        "index": 22,
+        "runde": 5,
+        "spieler": 0,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 0,
+        "energieNachher": 0,
+        "zustand": "b1f323cb"
+      },
+      {
+        "index": 23,
+        "runde": 5,
+        "spieler": 1,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 1,
+        "energieNachher": 1,
+        "zustand": "d7fbfadc"
+      },
+      {
+        "index": 24,
+        "runde": 6,
+        "spieler": 0,
+        "aktion": {
+          "type": "cheerleaderReaction",
+          "reactionId": 1,
+          "slot": 0
+        },
+        "energieVorher": 0,
+        "energieNachher": 6,
+        "zustand": "adbdda61"
+      },
+      {
+        "index": 25,
+        "runde": 6,
+        "spieler": 1,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 0,
+          "lane": 0
+        },
+        "energieVorher": 6,
+        "energieNachher": 0,
+        "zustand": "1e12cd5b",
+        "cardId": "pc_principal",
+        "zieleBetroffen": 1,
+        "attackRemoved": 3,
+        "healthRemoved": 4,
+        "boardValueBefore": 8,
+        "boardValueAfter": 1
+      },
+      {
+        "index": 26,
+        "runde": 6,
+        "spieler": 0,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 0,
+          "lane": 2
+        },
+        "energieVorher": 6,
+        "energieNachher": 1,
+        "zustand": "e38fc9be",
+        "cardId": "die_fakultaet"
+      },
+      {
+        "index": 27,
+        "runde": 6,
+        "spieler": 1,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 0,
+        "energieNachher": 0,
+        "zustand": "d39da085"
+      },
+      {
+        "index": 28,
+        "runde": 7,
+        "spieler": 0,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 1,
+        "energieNachher": 7,
+        "zustand": "d2bd8e64"
+      },
+      {
+        "index": 29,
+        "runde": 7,
+        "spieler": 0,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 6,
+          "lane": 3
+        },
+        "energieVorher": 7,
+        "energieNachher": 1,
+        "zustand": "0533153b",
+        "cardId": "pc_principal",
+        "zieleBetroffen": 5,
+        "attackRemoved": 4,
+        "healthRemoved": 6,
+        "boardValueBefore": 15,
+        "boardValueAfter": 5
+      },
+      {
+        "index": 30,
+        "runde": 7,
+        "spieler": 1,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 7,
+        "energieNachher": 7,
+        "zustand": "43718bbc"
+      },
+      {
+        "index": 31,
+        "runde": 8,
+        "spieler": 0,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 1,
+        "energieNachher": 8,
+        "zustand": "5e00ff78"
+      },
+      {
+        "index": 32,
+        "runde": 8,
+        "spieler": 1,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 3,
+          "lane": 2
+        },
+        "energieVorher": 8,
+        "energieNachher": 4,
+        "zustand": "bb485d76",
+        "cardId": "luchs"
+      },
+      {
+        "index": 33,
+        "runde": 8,
+        "spieler": 0,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 6,
+          "lane": 4
+        },
+        "energieVorher": 8,
+        "energieNachher": 3,
+        "zustand": "9c268ba8",
+        "cardId": "die_fakultaet"
+      },
+      {
+        "index": 34,
+        "runde": 8,
+        "spieler": 1,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 4,
+        "energieNachher": 4,
+        "zustand": "224ec8e3"
+      },
+      {
+        "index": 35,
+        "runde": 8,
+        "spieler": 0,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 6,
+          "lane": 0
+        },
+        "energieVorher": 3,
+        "energieNachher": 1,
+        "zustand": "eed6e094",
+        "cardId": "erstsemester"
+      },
+      {
+        "index": 36,
+        "runde": 8,
+        "spieler": 1,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 4,
+        "energieNachher": 4,
+        "zustand": "7e946b85"
+      },
+      {
+        "index": 37,
+        "runde": 9,
+        "spieler": 0,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 1,
+        "energieNachher": 9,
+        "zustand": "14f59da4"
+      },
+      {
+        "index": 38,
+        "runde": 9,
+        "spieler": 0,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 9,
+        "energieNachher": 9,
+        "zustand": "abbe6d31"
+      },
+      {
+        "index": 39,
+        "runde": 9,
+        "spieler": 1,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 2,
+          "lane": 3
+        },
+        "energieVorher": 9,
+        "energieNachher": 4,
+        "zustand": "dee17c71",
+        "cardId": "vogelmensch"
+      },
+      {
+        "index": 40,
+        "runde": 9,
+        "spieler": 0,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 9,
+        "energieNachher": 9,
+        "zustand": "2fccf50c"
+      },
+      {
+        "index": 41,
+        "runde": 9,
+        "spieler": 1,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 4,
+        "energieNachher": 4,
+        "zustand": "6ac6b1b4"
+      },
+      {
+        "index": 42,
+        "runde": 10,
+        "spieler": 1,
+        "aktion": {
+          "type": "flyMove",
+          "fromLane": 3,
+          "toLane": 2
+        },
+        "energieVorher": 4,
+        "energieNachher": 10,
+        "zustand": "8998bcb6"
+      },
+      {
+        "index": 43,
+        "runde": 10,
+        "spieler": 1,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 1,
+          "lane": 3
+        },
+        "energieVorher": 10,
+        "energieNachher": 6,
+        "zustand": "b99a0da3",
+        "cardId": "baer"
+      },
+      {
+        "index": 44,
+        "runde": 10,
+        "spieler": 0,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 10,
+        "energieNachher": 10,
+        "zustand": "c7e908ec"
+      },
+      {
+        "index": 45,
+        "runde": 10,
+        "spieler": 1,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 2,
+          "lane": 0
+        },
+        "energieVorher": 6,
+        "energieNachher": 3,
+        "zustand": "ce50be70",
+        "cardId": "junger_neffe"
+      },
+      {
+        "index": 46,
+        "runde": 10,
+        "spieler": 0,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 10,
+        "energieNachher": 10,
+        "zustand": "90d072b1"
+      },
+      {
+        "index": 47,
+        "runde": 10,
+        "spieler": 1,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 1,
+          "lane": 4
+        },
+        "energieVorher": 3,
+        "energieNachher": 2,
+        "zustand": "54e06d8b",
+        "cardId": "streunerkatze"
+      },
+      {
+        "index": 48,
+        "runde": 10,
+        "spieler": 0,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 10,
+        "energieNachher": 10,
+        "zustand": "7ab2d0d2"
+      },
+      {
+        "index": 49,
+        "runde": 11,
+        "spieler": 1,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 2,
+        "energieNachher": 11,
+        "zustand": "8f801a87"
+      },
+      {
+        "index": 50,
+        "runde": 11,
+        "spieler": 0,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 9,
+          "lane": 2
+        },
+        "energieVorher": 11,
+        "energieNachher": 6,
+        "zustand": "68c04621",
+        "cardId": "kommandantin"
+      },
+      {
+        "index": 51,
+        "runde": 11,
+        "spieler": 1,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 1,
+          "lane": 4
+        },
+        "energieVorher": 11,
+        "energieNachher": 8,
+        "zustand": "8c9d5a9a",
+        "cardId": "pferd"
+      },
+      {
+        "index": 52,
+        "runde": 11,
+        "spieler": 0,
+        "aktion": {
+          "type": "playAction",
+          "handIndex": 9,
+          "targetLane": 3
+        },
+        "energieVorher": 6,
+        "energieNachher": 5,
+        "zustand": "c04048b0",
+        "cardId": "schildwall"
+      },
+      {
+        "index": 53,
+        "runde": 11,
+        "spieler": 1,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 0,
+          "lane": 2
+        },
+        "energieVorher": 8,
+        "energieNachher": 7,
+        "zustand": "f7bb9d8c",
+        "cardId": "streunerkatze"
+      },
+      {
+        "index": 54,
+        "runde": 11,
+        "spieler": 0,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 5,
+        "energieNachher": 5,
+        "zustand": "111741fb"
+      },
+      {
+        "index": 55,
+        "runde": 12,
+        "spieler": 1,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 7,
+        "energieNachher": 12,
+        "zustand": "c7509acd"
+      },
+      {
+        "index": 56,
+        "runde": 12,
+        "spieler": 1,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 0,
+          "lane": 3
+        },
+        "energieVorher": 12,
+        "energieNachher": 7,
+        "zustand": "bacbf409",
+        "cardId": "alphawolf"
+      },
+      {
+        "index": 57,
+        "runde": 12,
+        "spieler": 0,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 12,
+        "energieNachher": 12,
+        "zustand": "7e076df6"
+      },
+      {
+        "index": 58,
+        "runde": 12,
+        "spieler": 1,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 0,
+          "lane": 4
+        },
+        "energieVorher": 7,
+        "energieNachher": 5,
+        "zustand": "dc891760",
+        "cardId": "wolf"
+      },
+      {
+        "index": 59,
+        "runde": 12,
+        "spieler": 0,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 12,
+        "energieNachher": 12,
+        "zustand": "2451e16d"
+      },
+      {
+        "index": 60,
+        "runde": 13,
+        "spieler": 1,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 5,
+        "energieNachher": 13,
+        "zustand": "e43178a0"
+      },
+      {
+        "index": 61,
+        "runde": 13,
+        "spieler": 0,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 0,
+          "lane": 0
+        },
+        "energieVorher": 13,
+        "energieNachher": 7,
+        "zustand": "64398dc4",
+        "cardId": "stahlgiesser"
+      },
+      {
+        "index": 62,
+        "runde": 13,
+        "spieler": 1,
+        "aktion": {
+          "type": "playAction",
+          "handIndex": 0,
+          "targetLane": 3
+        },
+        "energieVorher": 13,
+        "energieNachher": 11,
+        "zustand": "bfd68892",
+        "cardId": "wilder_instinkt"
+      },
+      {
+        "index": 63,
+        "runde": 13,
+        "spieler": 0,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 7,
+        "energieNachher": 7,
+        "zustand": "ebfa8f2f"
+      },
+      {
+        "index": 64,
+        "runde": 13,
+        "spieler": 1,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 11,
+        "energieNachher": 11,
+        "zustand": "8af969f5"
+      },
+      {
+        "index": 65,
+        "runde": 14,
+        "spieler": 1,
+        "aktion": {
+          "type": "cheerleaderReaction",
+          "reactionId": 2,
+          "slot": 0
+        },
+        "energieVorher": 11,
+        "energieNachher": 14,
+        "zustand": "3fdf31a3"
+      },
+      {
+        "index": 66,
+        "runde": 14,
+        "spieler": 1,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 14,
+        "energieNachher": 14,
+        "zustand": "d0bb573e"
+      },
+      {
+        "index": 67,
+        "runde": 14,
+        "spieler": 0,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 2,
+          "lane": 3
+        },
+        "energieVorher": 14,
+        "energieNachher": 8,
+        "zustand": "6e100480",
+        "cardId": "stahlgiesser"
+      },
+      {
+        "index": 68,
+        "runde": 14,
+        "spieler": 1,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 14,
+        "energieNachher": 14,
+        "zustand": "565aafad"
+      },
+      {
+        "index": 69,
+        "runde": 15,
+        "spieler": 0,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 8,
+        "energieNachher": 15,
+        "zustand": "56118520"
+      },
+      {
+        "index": 70,
+        "runde": 15,
+        "spieler": 0,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 15,
+        "energieNachher": 15,
+        "zustand": "be987e17"
+      },
+      {
+        "index": 71,
+        "runde": 15,
+        "spieler": 1,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 1,
+          "lane": 0
+        },
+        "energieVorher": 15,
+        "energieNachher": 11,
+        "zustand": "5d2cea8d",
+        "cardId": "baer"
+      },
+      {
+        "index": 72,
+        "runde": 15,
+        "spieler": 0,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 15,
+        "energieNachher": 15,
+        "zustand": "3be36d3c"
+      },
+      {
+        "index": 73,
+        "runde": 15,
+        "spieler": 1,
+        "aktion": {
+          "type": "playAction",
+          "handIndex": 0,
+          "targetLane": 0
+        },
+        "energieVorher": 11,
+        "energieNachher": 9,
+        "zustand": "d12d0679",
+        "cardId": "wilder_instinkt"
+      },
+      {
+        "index": 74,
+        "runde": 15,
+        "spieler": 0,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 15,
+        "energieNachher": 15,
+        "zustand": "b52d7640"
+      },
+      {
+        "index": 75,
+        "runde": 15,
+        "spieler": 1,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 9,
+        "energieNachher": 9,
+        "zustand": "b1725a07"
+      }
+    ],
+    "runden": [
+      {
+        "runde": 1,
+        "basis": [
+          10,
+          10
+        ],
+        "energie": [
+          1,
+          1
+        ],
+        "hand": [
+          4,
+          4
+        ],
+        "deck": [
+          16,
+          16
+        ],
+        "brett": [
+          0,
+          0
+        ],
+        "kontrollierteLanes": [
+          0,
+          0
+        ],
+        "laneBelegt": [
+          [
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          [
+            false,
+            false,
+            false,
+            false,
+            false
+          ]
+        ]
+      },
+      {
+        "runde": 2,
+        "basis": [
+          10,
+          10
+        ],
+        "energie": [
+          2,
+          2
+        ],
+        "hand": [
+          5,
+          5
+        ],
+        "deck": [
+          15,
+          15
+        ],
+        "brett": [
+          0,
+          0
+        ],
+        "kontrollierteLanes": [
+          0,
+          0
+        ],
+        "laneBelegt": [
+          [
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          [
+            false,
+            false,
+            false,
+            false,
+            false
+          ]
+        ]
+      },
+      {
+        "runde": 3,
+        "basis": [
+          7,
+          10
+        ],
+        "energie": [
+          3,
+          3
+        ],
+        "hand": [
+          5,
+          5
+        ],
+        "deck": [
+          14,
+          14
+        ],
+        "brett": [
+          1,
+          1
+        ],
+        "kontrollierteLanes": [
+          1,
+          1
+        ],
+        "laneBelegt": [
+          [
+            false,
+            false,
+            false,
+            false,
+            true
+          ],
+          [
+            true,
+            false,
+            false,
+            false,
+            false
+          ]
+        ]
+      },
+      {
+        "runde": 4,
+        "basis": [
+          4,
+          7
+        ],
+        "energie": [
+          4,
+          4
+        ],
+        "hand": [
+          5,
+          5
+        ],
+        "deck": [
+          12,
+          13
+        ],
+        "brett": [
+          2,
+          2
+        ],
+        "kontrollierteLanes": [
+          1,
+          1
+        ],
+        "laneBelegt": [
+          [
+            false,
+            true,
+            false,
+            false,
+            true
+          ],
+          [
+            true,
+            true,
+            false,
+            false,
+            false
+          ]
+        ]
+      },
+      {
+        "runde": 5,
+        "basis": [
+          4,
+          7
+        ],
+        "energie": [
+          5,
+          5
+        ],
+        "hand": [
+          5,
+          4
+        ],
+        "deck": [
+          11,
+          12
+        ],
+        "brett": [
+          1,
+          3
+        ],
+        "kontrollierteLanes": [
+          0,
+          2
+        ],
+        "laneBelegt": [
+          [
+            true,
+            false,
+            false,
+            false,
+            false
+          ],
+          [
+            true,
+            true,
+            true,
+            false,
+            false
+          ]
+        ]
+      },
+      {
+        "runde": 6,
+        "basis": [
+          4,
+          7
+        ],
+        "energie": [
+          6,
+          6
+        ],
+        "hand": [
+          5,
+          3
+        ],
+        "deck": [
+          10,
+          11
+        ],
+        "brett": [
+          1,
+          4
+        ],
+        "kontrollierteLanes": [
+          0,
+          3
+        ],
+        "laneBelegt": [
+          [
+            false,
+            true,
+            false,
+            false,
+            false
+          ],
+          [
+            false,
+            true,
+            true,
+            true,
+            true
+          ]
+        ]
+      },
+      {
+        "runde": 7,
+        "basis": [
+          4,
+          7
+        ],
+        "energie": [
+          7,
+          7
+        ],
+        "hand": [
+          7,
+          3
+        ],
+        "deck": [
+          7,
+          10
+        ],
+        "brett": [
+          2,
+          5
+        ],
+        "kontrollierteLanes": [
+          0,
+          3
+        ],
+        "laneBelegt": [
+          [
+            false,
+            true,
+            true,
+            false,
+            false
+          ],
+          [
+            true,
+            true,
+            true,
+            true,
+            true
+          ]
+        ]
+      },
+      {
+        "runde": 8,
+        "basis": [
+          4,
+          7
+        ],
+        "energie": [
+          8,
+          8
+        ],
+        "hand": [
+          7,
+          4
+        ],
+        "deck": [
+          6,
+          9
+        ],
+        "brett": [
+          3,
+          4
+        ],
+        "kontrollierteLanes": [
+          1,
+          2
+        ],
+        "laneBelegt": [
+          [
+            false,
+            true,
+            true,
+            true,
+            false
+          ],
+          [
+            true,
+            true,
+            false,
+            true,
+            true
+          ]
+        ]
+      },
+      {
+        "runde": 9,
+        "basis": [
+          4,
+          7
+        ],
+        "energie": [
+          9,
+          9
+        ],
+        "hand": [
+          9,
+          4
+        ],
+        "deck": [
+          2,
+          8
+        ],
+        "brett": [
+          5,
+          4
+        ],
+        "kontrollierteLanes": [
+          1,
+          0
+        ],
+        "laneBelegt": [
+          [
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          [
+            true,
+            true,
+            true,
+            false,
+            true
+          ]
+        ]
+      },
+      {
+        "runde": 10,
+        "basis": [
+          4,
+          7
+        ],
+        "energie": [
+          10,
+          10
+        ],
+        "hand": [
+          10,
+          4
+        ],
+        "deck": [
+          1,
+          7
+        ],
+        "brett": [
+          5,
+          2
+        ],
+        "kontrollierteLanes": [
+          3,
+          0
+        ],
+        "laneBelegt": [
+          [
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          [
+            false,
+            true,
+            true,
+            false,
+            false
+          ]
+        ]
+      },
+      {
+        "runde": 11,
+        "basis": [
+          4,
+          7
+        ],
+        "energie": [
+          11,
+          11
+        ],
+        "hand": [
+          11,
+          2
+        ],
+        "deck": [
+          0,
+          6
+        ],
+        "brett": [
+          4,
+          3
+        ],
+        "kontrollierteLanes": [
+          1,
+          0
+        ],
+        "laneBelegt": [
+          [
+            true,
+            true,
+            false,
+            true,
+            true
+          ],
+          [
+            true,
+            true,
+            false,
+            true,
+            false
+          ]
+        ]
+      },
+      {
+        "runde": 12,
+        "basis": [
+          4,
+          7
+        ],
+        "energie": [
+          12,
+          12
+        ],
+        "hand": [
+          9,
+          2
+        ],
+        "deck": [
+          0,
+          4
+        ],
+        "brett": [
+          5,
+          3
+        ],
+        "kontrollierteLanes": [
+          2,
+          0
+        ],
+        "laneBelegt": [
+          [
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          [
+            true,
+            true,
+            true,
+            false,
+            false
+          ]
+        ]
+      },
+      {
+        "runde": 13,
+        "basis": [
+          4,
+          7
+        ],
+        "energie": [
+          13,
+          13
+        ],
+        "hand": [
+          9,
+          1
+        ],
+        "deck": [
+          0,
+          3
+        ],
+        "brett": [
+          4,
+          2
+        ],
+        "kontrollierteLanes": [
+          2,
+          0
+        ],
+        "laneBelegt": [
+          [
+            false,
+            true,
+            true,
+            true,
+            true
+          ],
+          [
+            false,
+            true,
+            false,
+            true,
+            false
+          ]
+        ]
+      },
+      {
+        "runde": 14,
+        "basis": [
+          4,
+          4
+        ],
+        "energie": [
+          14,
+          14
+        ],
+        "hand": [
+          8,
+          1
+        ],
+        "deck": [
+          0,
+          2
+        ],
+        "brett": [
+          4,
+          1
+        ],
+        "kontrollierteLanes": [
+          3,
+          0
+        ],
+        "laneBelegt": [
+          [
+            true,
+            true,
+            true,
+            false,
+            true
+          ],
+          [
+            false,
+            true,
+            false,
+            false,
+            false
+          ]
+        ]
+      },
+      {
+        "runde": 15,
+        "basis": [
+          4,
+          4
+        ],
+        "energie": [
+          15,
+          15
+        ],
+        "hand": [
+          7,
+          2
+        ],
+        "deck": [
+          0,
+          1
+        ],
+        "brett": [
+          5,
+          1
+        ],
+        "kontrollierteLanes": [
+          4,
+          0
+        ],
+        "laneBelegt": [
+          [
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          [
+            false,
+            true,
+            false,
+            false,
+            false
+          ]
+        ]
+      },
+      {
+        "runde": 15,
+        "basis": [
+          4,
+          -3
+        ],
+        "energie": [
+          15,
+          9
+        ],
+        "hand": [
+          7,
+          0
+        ],
+        "deck": [
+          0,
+          1
+        ],
+        "brett": [
+          5,
+          2
+        ],
+        "kontrollierteLanes": [
+          3,
+          0
+        ],
+        "laneBelegt": [
+          [
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          [
+            true,
+            true,
+            false,
+            false,
+            false
+          ]
+        ]
+      }
+    ],
+    "endzustand": "b1725a07",
+    "log": [
+      {
+        "id": 0,
+        "round": 0,
+        "text": "Spieler 1 hat den Mulligan bestätigt."
+      },
+      {
+        "id": 1,
+        "round": 0,
+        "text": "Spieler 2 hat den Mulligan bestätigt."
+      },
+      {
+        "id": 2,
+        "round": 1,
+        "text": "— Runde 1 beginnt (1 Energie, Spieler 1 fängt an) —"
+      },
+      {
+        "id": 3,
+        "round": 1,
+        "text": "Spieler 1 passt."
+      },
+      {
+        "id": 4,
+        "round": 1,
+        "text": "Spieler 2 passt."
+      },
+      {
+        "id": 5,
+        "round": 1,
+        "text": "— Kampfphase —"
+      },
+      {
+        "id": 6,
+        "round": 2,
+        "text": "— Runde 2 beginnt (2 Energie, Spieler 2 fängt an) —"
+      },
+      {
+        "id": 7,
+        "round": 2,
+        "text": "Spieler 2 spielt Getigerter in Lane 1 – flink und sofort kampfbereit!"
+      },
+      {
+        "id": 8,
+        "round": 2,
+        "text": "Spieler 1 spielt Koffein-Junkie in Lane 5."
+      },
+      {
+        "id": 9,
+        "round": 2,
+        "text": "Spieler 2 passt."
+      },
+      {
+        "id": 10,
+        "round": 2,
+        "text": "Spieler 1 passt."
+      },
+      {
+        "id": 11,
+        "round": 2,
+        "text": "— Kampfphase —"
+      },
+      {
+        "id": 12,
+        "round": 2,
+        "text": "Schild von Spieler 1 lädt sich um 1 auf (1/7).",
+        "event": {
+          "kind": "schild",
+          "owner": 0,
+          "ladung": 1,
+          "stand": 1,
+          "abschnitte": 7
+        }
+      },
+      {
+        "id": 13,
+        "round": 2,
+        "text": "Lane 1: Getigerter trifft die gegnerische Basis für 3.",
+        "event": {
+          "kind": "attack",
+          "lane": 0,
+          "attacker": 1,
+          "damage": 3,
+          "toBase": true
+        }
+      },
+      {
+        "id": 14,
+        "round": 3,
+        "text": "— Runde 3 beginnt (3 Energie, Spieler 1 fängt an) —"
+      },
+      {
+        "id": 15,
+        "round": 3,
+        "text": "Spieler 1 spielt Erstsemester in Lane 2."
+      },
+      {
+        "id": 16,
+        "round": 3,
+        "text": "Spieler 2 spielt Pferd in Lane 2 – flink und sofort kampfbereit!"
+      },
+      {
+        "id": 17,
+        "round": 3,
+        "text": "Schildwall: Erstsemester erhält dauerhaft +3 Leben.",
+        "event": {
+          "kind": "spell",
+          "lane": 1,
+          "effect": "buff",
+          "faction": "humans"
+        }
+      },
+      {
+        "id": 18,
+        "round": 3,
+        "text": "Spieler 2 passt."
+      },
+      {
+        "id": 19,
+        "round": 3,
+        "text": "Spieler 1 passt."
+      },
+      {
+        "id": 20,
+        "round": 3,
+        "text": "— Kampfphase —"
+      },
+      {
+        "id": 21,
+        "round": 3,
+        "text": "Schild von Spieler 1 lädt sich um 3 auf (4/7).",
+        "event": {
+          "kind": "schild",
+          "owner": 0,
+          "ladung": 3,
+          "stand": 4,
+          "abschnitte": 7
+        }
+      },
+      {
+        "id": 22,
+        "round": 3,
+        "text": "Lane 1: Getigerter trifft die gegnerische Basis für 3.",
+        "event": {
+          "kind": "attack",
+          "lane": 0,
+          "attacker": 1,
+          "damage": 3,
+          "toBase": true
+        }
+      },
+      {
+        "id": 23,
+        "round": 3,
+        "text": "Lane 2: Pferd trifft Erstsemester für 3.",
+        "event": {
+          "kind": "attack",
+          "lane": 1,
+          "attacker": 1,
+          "damage": 3,
+          "toBase": false
+        }
+      },
+      {
+        "id": 24,
+        "round": 3,
+        "text": "Schild von Spieler 2 lädt sich um 2 auf (2/7).",
+        "event": {
+          "kind": "schild",
+          "owner": 1,
+          "ladung": 2,
+          "stand": 2,
+          "abschnitte": 7
+        }
+      },
+      {
+        "id": 25,
+        "round": 3,
+        "text": "Lane 5: Koffein-Junkie trifft die gegnerische Basis für 3.",
+        "event": {
+          "kind": "attack",
+          "lane": 4,
+          "attacker": 0,
+          "damage": 3,
+          "toBase": true
+        }
+      },
+      {
+        "id": 26,
+        "round": 3,
+        "text": "Koffein-Junkie: Überstunden +0/+2."
+      },
+      {
+        "id": 27,
+        "round": 4,
+        "text": "— Runde 4 beginnt (4 Energie, Spieler 2 fängt an) —"
+      },
+      {
+        "id": 28,
+        "round": 4,
+        "text": "Spieler 2 spielt Getigerter in Lane 5 – flink und sofort kampfbereit!"
+      },
+      {
+        "id": 29,
+        "round": 4,
+        "text": "Spieler 1 spielt Ritter in Lane 1."
+      },
+      {
+        "id": 30,
+        "round": 4,
+        "text": "Spieler 2 spielt Wolf in Lane 3."
+      },
+      {
+        "id": 31,
+        "round": 4,
+        "text": "Spieler 1 passt."
+      },
+      {
+        "id": 32,
+        "round": 4,
+        "text": "Spieler 2 passt."
+      },
+      {
+        "id": 33,
+        "round": 4,
+        "text": "— Kampfphase —"
+      },
+      {
+        "id": 34,
+        "round": 4,
+        "text": "Lane 1: Getigerter trifft Ritter für 3.",
+        "event": {
+          "kind": "attack",
+          "lane": 0,
+          "attacker": 1,
+          "damage": 3,
+          "toBase": false
+        }
+      },
+      {
+        "id": 35,
+        "round": 4,
+        "text": "Lane 2: Erstsemester trifft Pferd für 2.",
+        "event": {
+          "kind": "attack",
+          "lane": 1,
+          "attacker": 0,
+          "damage": 2,
+          "toBase": false
+        }
+      },
+      {
+        "id": 36,
+        "round": 4,
+        "text": "Lane 2: Pferd trifft Erstsemester für 3.",
+        "event": {
+          "kind": "attack",
+          "lane": 1,
+          "attacker": 1,
+          "damage": 3,
+          "toBase": false
+        }
+      },
+      {
+        "id": 37,
+        "round": 4,
+        "text": "Erstsemester wird zerstört.",
+        "event": {
+          "kind": "death",
+          "lane": 1,
+          "owner": 0
+        }
+      },
+      {
+        "id": 38,
+        "round": 4,
+        "text": "Lane 5: Koffein-Junkie trifft Getigerter für 3.",
+        "event": {
+          "kind": "attack",
+          "lane": 4,
+          "attacker": 0,
+          "damage": 3,
+          "toBase": false
+        }
+      },
+      {
+        "id": 39,
+        "round": 4,
+        "text": "Lane 5: Getigerter trifft Koffein-Junkie für 3.",
+        "event": {
+          "kind": "attack",
+          "lane": 4,
+          "attacker": 1,
+          "damage": 3,
+          "toBase": false
+        }
+      },
+      {
+        "id": 40,
+        "round": 4,
+        "text": "Koffein-Junkie wird zerstört.",
+        "event": {
+          "kind": "death",
+          "lane": 4,
+          "owner": 0
+        }
+      },
+      {
+        "id": 41,
+        "round": 4,
+        "text": "Getigerter wird zerstört.",
+        "event": {
+          "kind": "death",
+          "lane": 4,
+          "owner": 1
+        }
+      },
+      {
+        "id": 42,
+        "round": 5,
+        "text": "— Runde 5 beginnt (5 Energie, Spieler 1 fängt an) —"
+      },
+      {
+        "id": 43,
+        "round": 5,
+        "text": "Spieler 1 spielt Alter Wissenschaftler in Lane 2."
+      },
+      {
+        "id": 44,
+        "round": 5,
+        "text": "Alter Wissenschaftler: Wahl → 2 Schaden auf Pferd.",
+        "event": {
+          "kind": "spell",
+          "lane": 1,
+          "effect": "attackBuff",
+          "faction": "studenten"
+        }
+      },
+      {
+        "id": 45,
+        "round": 5,
+        "text": "Pferd wird zerstört.",
+        "event": {
+          "kind": "death",
+          "lane": 1,
+          "owner": 1
+        }
+      },
+      {
+        "id": 46,
+        "round": 5,
+        "text": "Spieler 2 spielt Katzenmutter in Lane 2."
+      },
+      {
+        "id": 47,
+        "round": 5,
+        "text": "Kätzchen (1/1) erscheint in Lane 4.",
+        "event": {
+          "kind": "spell",
+          "lane": 3,
+          "effect": "summon",
+          "faction": "katzen"
+        }
+      },
+      {
+        "id": 48,
+        "round": 5,
+        "text": "Spieler 1 passt."
+      },
+      {
+        "id": 49,
+        "round": 5,
+        "text": "Spieler 2 spielt Ratte in Lane 5 – flink und sofort kampfbereit!"
+      },
+      {
+        "id": 50,
+        "round": 5,
+        "text": "Spieler 1 passt."
+      },
+      {
+        "id": 51,
+        "round": 5,
+        "text": "Spieler 2 passt."
+      },
+      {
+        "id": 52,
+        "round": 5,
+        "text": "— Kampfphase —"
+      },
+      {
+        "id": 53,
+        "round": 5,
+        "text": "Lane 1: Ritter trifft Getigerter für 4.",
+        "event": {
+          "kind": "attack",
+          "lane": 0,
+          "attacker": 0,
+          "damage": 4,
+          "toBase": false
+        }
+      },
+      {
+        "id": 54,
+        "round": 5,
+        "text": "Lane 1: Getigerter trifft Ritter für 3.",
+        "event": {
+          "kind": "attack",
+          "lane": 0,
+          "attacker": 1,
+          "damage": 3,
+          "toBase": false
+        }
+      },
+      {
+        "id": 55,
+        "round": 5,
+        "text": "Ritter wird zerstört.",
+        "event": {
+          "kind": "death",
+          "lane": 0,
+          "owner": 0
+        }
+      },
+      {
+        "id": 56,
+        "round": 5,
+        "text": "Getigerter wird zerstört.",
+        "event": {
+          "kind": "death",
+          "lane": 0,
+          "owner": 1
+        }
+      },
+      {
+        "id": 57,
+        "round": 5,
+        "text": "Schild von Spieler 1 blockt den Angriff (3 Schaden verhindert)!",
+        "event": {
+          "kind": "schild",
+          "owner": 0,
+          "ladung": 3,
+          "stand": 0,
+          "abschnitte": 7,
+          "blockiert": true
+        }
+      },
+      {
+        "id": 58,
+        "round": 5,
+        "text": "Lane 3: Wolf greift die gegnerische Basis an – abgewehrt.",
+        "event": {
+          "kind": "attack",
+          "lane": 2,
+          "attacker": 1,
+          "damage": 0,
+          "toBase": true,
+          "blockiert": true
+        }
+      },
+      {
+        "id": 59,
+        "round": 5,
+        "text": "Spieler 1 opfert PC Principal von der Bank.",
+        "event": {
+          "kind": "cheerleaderSacrifice",
+          "owner": 0,
+          "slot": 0,
+          "cardId": "pc_principal"
+        }
+      },
+      {
+        "id": 60,
+        "round": 5,
+        "text": "Superkraft: Machtwort!",
+        "event": {
+          "kind": "cheerleaderPower",
+          "owner": 0,
+          "cardId": "pc_principal",
+          "kraft": "Machtwort",
+          "wirkung": "peinigenAlle"
+        }
+      },
+      {
+        "id": 61,
+        "round": 5,
+        "text": "Machtwort: 4 gegnerische Kreaturen auf 0 ATK und 1 Verteidigung gedeckelt."
+      },
+      {
+        "id": 62,
+        "round": 5,
+        "text": "Lane 4: Kätzchen greift die gegnerische Basis an – abgewehrt.",
+        "event": {
+          "kind": "attack",
+          "lane": 3,
+          "attacker": 1,
+          "damage": 0,
+          "toBase": true,
+          "blockiert": true
+        }
+      },
+      {
+        "id": 63,
+        "round": 5,
+        "text": "Lane 5: Ratte greift die gegnerische Basis an – abgewehrt.",
+        "event": {
+          "kind": "attack",
+          "lane": 4,
+          "attacker": 1,
+          "damage": 0,
+          "toBase": true,
+          "blockiert": true
+        }
+      },
+      {
+        "id": 64,
+        "round": 6,
+        "text": "— Runde 6 beginnt (6 Energie, Spieler 2 fängt an) —"
+      },
+      {
+        "id": 65,
+        "round": 6,
+        "text": "Spieler 2 spielt PC Principal in Lane 1."
+      },
+      {
+        "id": 66,
+        "round": 6,
+        "text": "PC Principal peinigt 1 gegnerische Kreatur(en): ATK 0, Verteidigung 1."
+      },
+      {
+        "id": 67,
+        "round": 6,
+        "text": "Spieler 1 spielt Die Fakultät in Lane 3."
+      },
+      {
+        "id": 68,
+        "round": 6,
+        "text": "Die Fakultät: +1 Wissen (Pool: 1)."
+      },
+      {
+        "id": 69,
+        "round": 6,
+        "text": "Spieler 2 passt."
+      },
+      {
+        "id": 70,
+        "round": 6,
+        "text": "Spieler 1 passt."
+      },
+      {
+        "id": 71,
+        "round": 6,
+        "text": "— Kampfphase —"
+      },
+      {
+        "id": 72,
+        "round": 6,
+        "text": "Lane 4: Kätzchen greift die gegnerische Basis an – abgewehrt.",
+        "event": {
+          "kind": "attack",
+          "lane": 3,
+          "attacker": 1,
+          "damage": 0,
+          "toBase": true,
+          "blockiert": true
+        }
+      },
+      {
+        "id": 73,
+        "round": 6,
+        "text": "Lane 5: Ratte greift die gegnerische Basis an – abgewehrt.",
+        "event": {
+          "kind": "attack",
+          "lane": 4,
+          "attacker": 1,
+          "damage": 0,
+          "toBase": true,
+          "blockiert": true
+        }
+      },
+      {
+        "id": 74,
+        "round": 7,
+        "text": "— Runde 7 beginnt (7 Energie, Spieler 1 fängt an) —"
+      },
+      {
+        "id": 75,
+        "round": 7,
+        "text": "Spieler 1 spielt PC Principal in Lane 4."
+      },
+      {
+        "id": 76,
+        "round": 7,
+        "text": "PC Principal peinigt 5 gegnerische Kreatur(en): ATK 0, Verteidigung 1."
+      },
+      {
+        "id": 77,
+        "round": 7,
+        "text": "Spieler 2 passt."
+      },
+      {
+        "id": 78,
+        "round": 7,
+        "text": "Spieler 1 passt."
+      },
+      {
+        "id": 79,
+        "round": 7,
+        "text": "— Kampfphase —"
+      },
+      {
+        "id": 80,
+        "round": 7,
+        "text": "Lane 1: PC Principal greift die gegnerische Basis an – abgewehrt.",
+        "event": {
+          "kind": "attack",
+          "lane": 0,
+          "attacker": 1,
+          "damage": 0,
+          "toBase": true,
+          "blockiert": true
+        }
+      },
+      {
+        "id": 81,
+        "round": 7,
+        "text": "Lane 3: Die Fakultät trifft Wolf für 5.",
+        "event": {
+          "kind": "attack",
+          "lane": 2,
+          "attacker": 0,
+          "damage": 5,
+          "toBase": false
+        }
+      },
+      {
+        "id": 82,
+        "round": 7,
+        "text": "Wolf wird zerstört.",
+        "event": {
+          "kind": "death",
+          "lane": 2,
+          "owner": 1
+        }
+      },
+      {
+        "id": 83,
+        "round": 7,
+        "text": "Lane 5: Ratte greift die gegnerische Basis an – abgewehrt.",
+        "event": {
+          "kind": "attack",
+          "lane": 4,
+          "attacker": 1,
+          "damage": 0,
+          "toBase": true,
+          "blockiert": true
+        }
+      },
+      {
+        "id": 84,
+        "round": 8,
+        "text": "— Runde 8 beginnt (8 Energie, Spieler 2 fängt an) —"
+      },
+      {
+        "id": 85,
+        "round": 8,
+        "text": "Spieler 2 spielt Luchs in Lane 3 – flink und sofort kampfbereit!"
+      },
+      {
+        "id": 86,
+        "round": 8,
+        "text": "Spieler 1 spielt Die Fakultät in Lane 5."
+      },
+      {
+        "id": 87,
+        "round": 8,
+        "text": "Die Fakultät: +1 Wissen (Pool: 2)."
+      },
+      {
+        "id": 88,
+        "round": 8,
+        "text": "Spieler 2 passt."
+      },
+      {
+        "id": 89,
+        "round": 8,
+        "text": "Spieler 1 spielt Erstsemester in Lane 1."
+      },
+      {
+        "id": 90,
+        "round": 8,
+        "text": "Spieler 2 passt."
+      },
+      {
+        "id": 91,
+        "round": 8,
+        "text": "Spieler 1 passt."
+      },
+      {
+        "id": 92,
+        "round": 8,
+        "text": "— Kampfphase —"
+      },
+      {
+        "id": 93,
+        "round": 8,
+        "text": "Lane 3: Die Fakultät trifft Luchs für 5.",
+        "event": {
+          "kind": "attack",
+          "lane": 2,
+          "attacker": 0,
+          "damage": 5,
+          "toBase": false
+        }
+      },
+      {
+        "id": 94,
+        "round": 8,
+        "text": "Lane 3: Luchs trifft Die Fakultät für 3.",
+        "event": {
+          "kind": "attack",
+          "lane": 2,
+          "attacker": 1,
+          "damage": 3,
+          "toBase": false
+        }
+      },
+      {
+        "id": 95,
+        "round": 8,
+        "text": "Lane 4: PC Principal trifft Kätzchen für 4.",
+        "event": {
+          "kind": "attack",
+          "lane": 3,
+          "attacker": 0,
+          "damage": 4,
+          "toBase": false
+        }
+      },
+      {
+        "id": 96,
+        "round": 8,
+        "text": "Kätzchen wird zerstört.",
+        "event": {
+          "kind": "death",
+          "lane": 3,
+          "owner": 1
+        }
+      },
+      {
+        "id": 97,
+        "round": 9,
+        "text": "— Runde 9 beginnt (9 Energie, Spieler 1 fängt an) —"
+      },
+      {
+        "id": 98,
+        "round": 9,
+        "text": "Spieler 1 passt."
+      },
+      {
+        "id": 99,
+        "round": 9,
+        "text": "Spieler 2 spielt Vogelmensch in Lane 4."
+      },
+      {
+        "id": 100,
+        "round": 9,
+        "text": "Spieler 1 passt."
+      },
+      {
+        "id": 101,
+        "round": 9,
+        "text": "Spieler 2 passt."
+      },
+      {
+        "id": 102,
+        "round": 9,
+        "text": "— Kampfphase —"
+      },
+      {
+        "id": 103,
+        "round": 9,
+        "text": "Lane 1: Erstsemester trifft PC Principal für 2.",
+        "event": {
+          "kind": "attack",
+          "lane": 0,
+          "attacker": 0,
+          "damage": 2,
+          "toBase": false
+        }
+      },
+      {
+        "id": 104,
+        "round": 9,
+        "text": "PC Principal wird zerstört.",
+        "event": {
+          "kind": "death",
+          "lane": 0,
+          "owner": 1
+        }
+      },
+      {
+        "id": 105,
+        "round": 9,
+        "text": "Lane 3: Die Fakultät trifft Luchs für 5.",
+        "event": {
+          "kind": "attack",
+          "lane": 2,
+          "attacker": 0,
+          "damage": 5,
+          "toBase": false
+        }
+      },
+      {
+        "id": 106,
+        "round": 9,
+        "text": "Lane 3: Luchs trifft Die Fakultät für 3.",
+        "event": {
+          "kind": "attack",
+          "lane": 2,
+          "attacker": 1,
+          "damage": 3,
+          "toBase": false
+        }
+      },
+      {
+        "id": 107,
+        "round": 9,
+        "text": "Luchs wird zerstört.",
+        "event": {
+          "kind": "death",
+          "lane": 2,
+          "owner": 1
+        }
+      },
+      {
+        "id": 108,
+        "round": 9,
+        "text": "Lane 4: PC Principal trifft Vogelmensch für 4.",
+        "event": {
+          "kind": "attack",
+          "lane": 3,
+          "attacker": 0,
+          "damage": 4,
+          "toBase": false
+        }
+      },
+      {
+        "id": 109,
+        "round": 9,
+        "text": "Lane 5: Die Fakultät trifft Ratte für 5.",
+        "event": {
+          "kind": "attack",
+          "lane": 4,
+          "attacker": 0,
+          "damage": 5,
+          "toBase": false
+        }
+      },
+      {
+        "id": 110,
+        "round": 9,
+        "text": "Ratte wird zerstört.",
+        "event": {
+          "kind": "death",
+          "lane": 4,
+          "owner": 1
+        }
+      },
+      {
+        "id": 111,
+        "round": 9,
+        "text": "Fliegende Kreaturen dürfen jetzt die Lane wechseln."
+      },
+      {
+        "id": 112,
+        "round": 9,
+        "text": "Vogelmensch fliegt in Lane 3."
+      },
+      {
+        "id": 113,
+        "round": 10,
+        "text": "— Runde 10 beginnt (10 Energie, Spieler 2 fängt an) —"
+      },
+      {
+        "id": 114,
+        "round": 10,
+        "text": "Spieler 2 spielt Bär in Lane 4."
+      },
+      {
+        "id": 115,
+        "round": 10,
+        "text": "Spieler 1 passt."
+      },
+      {
+        "id": 116,
+        "round": 10,
+        "text": "Spieler 2 spielt Junger Neffe in Lane 1."
+      },
+      {
+        "id": 117,
+        "round": 10,
+        "text": "Spieler 1 passt."
+      },
+      {
+        "id": 118,
+        "round": 10,
+        "text": "Spieler 2 spielt Streunerkatze in Lane 5 – flink und sofort kampfbereit!"
+      },
+      {
+        "id": 119,
+        "round": 10,
+        "text": "Spieler 1 passt."
+      },
+      {
+        "id": 120,
+        "round": 10,
+        "text": "Spieler 2 passt."
+      },
+      {
+        "id": 121,
+        "round": 10,
+        "text": "— Kampfphase —"
+      },
+      {
+        "id": 122,
+        "round": 10,
+        "text": "Lane 1: Erstsemester trifft Junger Neffe für 2.",
+        "event": {
+          "kind": "attack",
+          "lane": 0,
+          "attacker": 0,
+          "damage": 2,
+          "toBase": false
+        }
+      },
+      {
+        "id": 123,
+        "round": 10,
+        "text": "Lane 3: Die Fakultät trifft Vogelmensch für 5.",
+        "event": {
+          "kind": "attack",
+          "lane": 2,
+          "attacker": 0,
+          "damage": 5,
+          "toBase": false
+        }
+      },
+      {
+        "id": 124,
+        "round": 10,
+        "text": "Lane 3: Vogelmensch trifft Die Fakultät für 4.",
+        "event": {
+          "kind": "attack",
+          "lane": 2,
+          "attacker": 1,
+          "damage": 4,
+          "toBase": false
+        }
+      },
+      {
+        "id": 125,
+        "round": 10,
+        "text": "Die Fakultät wird zerstört.",
+        "event": {
+          "kind": "death",
+          "lane": 2,
+          "owner": 0
+        }
+      },
+      {
+        "id": 126,
+        "round": 10,
+        "text": "Vogelmensch wird zerstört.",
+        "event": {
+          "kind": "death",
+          "lane": 2,
+          "owner": 1
+        }
+      },
+      {
+        "id": 127,
+        "round": 10,
+        "text": "Lane 4: PC Principal trifft Bär für 4.",
+        "event": {
+          "kind": "attack",
+          "lane": 3,
+          "attacker": 0,
+          "damage": 4,
+          "toBase": false
+        }
+      },
+      {
+        "id": 128,
+        "round": 10,
+        "text": "Lane 5: Die Fakultät trifft Streunerkatze für 5.",
+        "event": {
+          "kind": "attack",
+          "lane": 4,
+          "attacker": 0,
+          "damage": 5,
+          "toBase": false
+        }
+      },
+      {
+        "id": 129,
+        "round": 10,
+        "text": "Lane 5: Streunerkatze trifft Die Fakultät für 2.",
+        "event": {
+          "kind": "attack",
+          "lane": 4,
+          "attacker": 1,
+          "damage": 2,
+          "toBase": false
+        }
+      },
+      {
+        "id": 130,
+        "round": 10,
+        "text": "Streunerkatze wird zerstört.",
+        "event": {
+          "kind": "death",
+          "lane": 4,
+          "owner": 1
+        }
+      },
+      {
+        "id": 131,
+        "round": 11,
+        "text": "— Runde 11 beginnt (11 Energie, Spieler 1 fängt an) —"
+      },
+      {
+        "id": 132,
+        "round": 11,
+        "text": "Spieler 1 spielt Kommandantin in Lane 3."
+      },
+      {
+        "id": 133,
+        "round": 11,
+        "text": "Spieler 2 spielt Pferd in Lane 5 – flink und sofort kampfbereit!"
+      },
+      {
+        "id": 134,
+        "round": 11,
+        "text": "Schildwall: PC Principal erhält dauerhaft +3 Leben.",
+        "event": {
+          "kind": "spell",
+          "lane": 3,
+          "effect": "buff",
+          "faction": "humans"
+        }
+      },
+      {
+        "id": 135,
+        "round": 11,
+        "text": "Spieler 2 spielt Streunerkatze in Lane 3 – flink und sofort kampfbereit!"
+      },
+      {
+        "id": 136,
+        "round": 11,
+        "text": "Spieler 1 passt."
+      },
+      {
+        "id": 137,
+        "round": 11,
+        "text": "Spieler 2 passt."
+      },
+      {
+        "id": 138,
+        "round": 11,
+        "text": "— Kampfphase —"
+      },
+      {
+        "id": 139,
+        "round": 11,
+        "text": "Lane 1: Erstsemester trifft Junger Neffe für 3.",
+        "event": {
+          "kind": "attack",
+          "lane": 0,
+          "attacker": 0,
+          "damage": 3,
+          "toBase": false
+        }
+      },
+      {
+        "id": 140,
+        "round": 11,
+        "text": "Lane 1: Junger Neffe trifft Erstsemester für 2.",
+        "event": {
+          "kind": "attack",
+          "lane": 0,
+          "attacker": 1,
+          "damage": 2,
+          "toBase": false
+        }
+      },
+      {
+        "id": 141,
+        "round": 11,
+        "text": "Lane 3: Streunerkatze trifft Kommandantin für 2.",
+        "event": {
+          "kind": "attack",
+          "lane": 2,
+          "attacker": 1,
+          "damage": 2,
+          "toBase": false
+        }
+      },
+      {
+        "id": 142,
+        "round": 11,
+        "text": "Lane 4: PC Principal trifft Bär für 4.",
+        "event": {
+          "kind": "attack",
+          "lane": 3,
+          "attacker": 0,
+          "damage": 4,
+          "toBase": false
+        }
+      },
+      {
+        "id": 143,
+        "round": 11,
+        "text": "Lane 4: Bär trifft PC Principal für 4.",
+        "event": {
+          "kind": "attack",
+          "lane": 3,
+          "attacker": 1,
+          "damage": 4,
+          "toBase": false
+        }
+      },
+      {
+        "id": 144,
+        "round": 11,
+        "text": "Bär wird zerstört.",
+        "event": {
+          "kind": "death",
+          "lane": 3,
+          "owner": 1
+        }
+      },
+      {
+        "id": 145,
+        "round": 11,
+        "text": "Lane 5: Die Fakultät trifft Pferd für 6.",
+        "event": {
+          "kind": "attack",
+          "lane": 4,
+          "attacker": 0,
+          "damage": 6,
+          "toBase": false
+        }
+      },
+      {
+        "id": 146,
+        "round": 11,
+        "text": "Lane 5: Pferd trifft Die Fakultät für 3.",
+        "event": {
+          "kind": "attack",
+          "lane": 4,
+          "attacker": 1,
+          "damage": 3,
+          "toBase": false
+        }
+      },
+      {
+        "id": 147,
+        "round": 11,
+        "text": "Pferd wird zerstört.",
+        "event": {
+          "kind": "death",
+          "lane": 4,
+          "owner": 1
+        }
+      },
+      {
+        "id": 148,
+        "round": 12,
+        "text": "— Runde 12 beginnt (12 Energie, Spieler 2 fängt an) —"
+      },
+      {
+        "id": 149,
+        "round": 12,
+        "text": "Spieler 2 spielt Alphawolf in Lane 4."
+      },
+      {
+        "id": 150,
+        "round": 12,
+        "text": "Spieler 1 passt."
+      },
+      {
+        "id": 151,
+        "round": 12,
+        "text": "Spieler 2 spielt Wolf in Lane 5."
+      },
+      {
+        "id": 152,
+        "round": 12,
+        "text": "Spieler 1 passt."
+      },
+      {
+        "id": 153,
+        "round": 12,
+        "text": "Spieler 2 passt."
+      },
+      {
+        "id": 154,
+        "round": 12,
+        "text": "— Kampfphase —"
+      },
+      {
+        "id": 155,
+        "round": 12,
+        "text": "Lane 1: Erstsemester trifft Junger Neffe für 3.",
+        "event": {
+          "kind": "attack",
+          "lane": 0,
+          "attacker": 0,
+          "damage": 3,
+          "toBase": false
+        }
+      },
+      {
+        "id": 156,
+        "round": 12,
+        "text": "Lane 1: Junger Neffe trifft Erstsemester für 2.",
+        "event": {
+          "kind": "attack",
+          "lane": 0,
+          "attacker": 1,
+          "damage": 2,
+          "toBase": false
+        }
+      },
+      {
+        "id": 157,
+        "round": 12,
+        "text": "Erstsemester wird zerstört.",
+        "event": {
+          "kind": "death",
+          "lane": 0,
+          "owner": 0
+        }
+      },
+      {
+        "id": 158,
+        "round": 12,
+        "text": "Junger Neffe wird zerstört.",
+        "event": {
+          "kind": "death",
+          "lane": 0,
+          "owner": 1
+        }
+      },
+      {
+        "id": 159,
+        "round": 12,
+        "text": "Lane 3: Kommandantin trifft Streunerkatze für 3.",
+        "event": {
+          "kind": "attack",
+          "lane": 2,
+          "attacker": 0,
+          "damage": 3,
+          "toBase": false
+        }
+      },
+      {
+        "id": 160,
+        "round": 12,
+        "text": "Lane 3: Streunerkatze trifft Kommandantin für 3.",
+        "event": {
+          "kind": "attack",
+          "lane": 2,
+          "attacker": 1,
+          "damage": 3,
+          "toBase": false
+        }
+      },
+      {
+        "id": 161,
+        "round": 12,
+        "text": "Streunerkatze wird zerstört.",
+        "event": {
+          "kind": "death",
+          "lane": 2,
+          "owner": 1
+        }
+      },
+      {
+        "id": 162,
+        "round": 12,
+        "text": "Lane 4: PC Principal trifft Alphawolf für 4.",
+        "event": {
+          "kind": "attack",
+          "lane": 3,
+          "attacker": 0,
+          "damage": 4,
+          "toBase": false
+        }
+      },
+      {
+        "id": 163,
+        "round": 12,
+        "text": "Lane 5: Die Fakultät trifft Wolf für 6.",
+        "event": {
+          "kind": "attack",
+          "lane": 4,
+          "attacker": 0,
+          "damage": 6,
+          "toBase": false
+        }
+      },
+      {
+        "id": 164,
+        "round": 12,
+        "text": "Wolf wird zerstört.",
+        "event": {
+          "kind": "death",
+          "lane": 4,
+          "owner": 1
+        }
+      },
+      {
+        "id": 165,
+        "round": 13,
+        "text": "— Runde 13 beginnt (13 Energie, Spieler 1 fängt an) —"
+      },
+      {
+        "id": 166,
+        "round": 13,
+        "text": "Spieler 1 spielt Stahlgießer in Lane 1."
+      },
+      {
+        "id": 167,
+        "round": 13,
+        "text": "Wilder Instinkt: Alphawolf erhält +2 Angriff bis zum Rundenende.",
+        "event": {
+          "kind": "spell",
+          "lane": 3,
+          "effect": "attackBuff",
+          "faction": "animals"
+        }
+      },
+      {
+        "id": 168,
+        "round": 13,
+        "text": "Spieler 1 passt."
+      },
+      {
+        "id": 169,
+        "round": 13,
+        "text": "Spieler 2 passt."
+      },
+      {
+        "id": 170,
+        "round": 13,
+        "text": "— Kampfphase —"
+      },
+      {
+        "id": 171,
+        "round": 13,
+        "text": "Schild von Spieler 2 lädt sich um 3 auf (5/7).",
+        "event": {
+          "kind": "schild",
+          "owner": 1,
+          "ladung": 3,
+          "stand": 5,
+          "abschnitte": 7
+        }
+      },
+      {
+        "id": 172,
+        "round": 13,
+        "text": "Lane 3: Kommandantin trifft die gegnerische Basis für 3.",
+        "event": {
+          "kind": "attack",
+          "lane": 2,
+          "attacker": 0,
+          "damage": 3,
+          "toBase": true
+        }
+      },
+      {
+        "id": 173,
+        "round": 13,
+        "text": "Lane 4: PC Principal trifft Alphawolf für 4.",
+        "event": {
+          "kind": "attack",
+          "lane": 3,
+          "attacker": 0,
+          "damage": 4,
+          "toBase": false
+        }
+      },
+      {
+        "id": 174,
+        "round": 13,
+        "text": "Lane 4: Alphawolf trifft PC Principal für 6.",
+        "event": {
+          "kind": "attack",
+          "lane": 3,
+          "attacker": 1,
+          "damage": 6,
+          "toBase": false
+        }
+      },
+      {
+        "id": 175,
+        "round": 13,
+        "text": "PC Principal wird zerstört.",
+        "event": {
+          "kind": "death",
+          "lane": 3,
+          "owner": 0
+        }
+      },
+      {
+        "id": 176,
+        "round": 13,
+        "text": "Alphawolf wird zerstört.",
+        "event": {
+          "kind": "death",
+          "lane": 3,
+          "owner": 1
+        }
+      },
+      {
+        "id": 177,
+        "round": 13,
+        "text": "Schild von Spieler 2 blockt den Angriff (6 Schaden verhindert)!",
+        "event": {
+          "kind": "schild",
+          "owner": 1,
+          "ladung": 2,
+          "stand": 0,
+          "abschnitte": 7,
+          "blockiert": true
+        }
+      },
+      {
+        "id": 178,
+        "round": 13,
+        "text": "Lane 5: Die Fakultät greift die gegnerische Basis an – abgewehrt.",
+        "event": {
+          "kind": "attack",
+          "lane": 4,
+          "attacker": 0,
+          "damage": 0,
+          "toBase": true,
+          "blockiert": true
+        }
+      },
+      {
+        "id": 179,
+        "round": 13,
+        "text": "Spieler 2 opfert PC Principal von der Bank.",
+        "event": {
+          "kind": "cheerleaderSacrifice",
+          "owner": 1,
+          "slot": 0,
+          "cardId": "pc_principal"
+        }
+      },
+      {
+        "id": 180,
+        "round": 13,
+        "text": "Superkraft: Machtwort!",
+        "event": {
+          "kind": "cheerleaderPower",
+          "owner": 1,
+          "cardId": "pc_principal",
+          "kraft": "Machtwort",
+          "wirkung": "peinigenAlle"
+        }
+      },
+      {
+        "id": 181,
+        "round": 13,
+        "text": "Machtwort: 4 gegnerische Kreaturen auf 0 ATK und 1 Verteidigung gedeckelt."
+      },
+      {
+        "id": 182,
+        "round": 14,
+        "text": "— Runde 14 beginnt (14 Energie, Spieler 2 fängt an) —"
+      },
+      {
+        "id": 183,
+        "round": 14,
+        "text": "Spieler 2 passt."
+      },
+      {
+        "id": 184,
+        "round": 14,
+        "text": "Spieler 1 spielt Stahlgießer in Lane 4."
+      },
+      {
+        "id": 185,
+        "round": 14,
+        "text": "Spieler 2 passt."
+      },
+      {
+        "id": 186,
+        "round": 14,
+        "text": "Spieler 1 passt."
+      },
+      {
+        "id": 187,
+        "round": 14,
+        "text": "— Kampfphase —"
+      },
+      {
+        "id": 188,
+        "round": 14,
+        "text": "Lane 1: Stahlgießer greift die gegnerische Basis an – abgewehrt.",
+        "event": {
+          "kind": "attack",
+          "lane": 0,
+          "attacker": 0,
+          "damage": 0,
+          "toBase": true,
+          "blockiert": true
+        }
+      },
+      {
+        "id": 189,
+        "round": 14,
+        "text": "Lane 3: Kommandantin greift die gegnerische Basis an – abgewehrt.",
+        "event": {
+          "kind": "attack",
+          "lane": 2,
+          "attacker": 0,
+          "damage": 0,
+          "toBase": true,
+          "blockiert": true
+        }
+      },
+      {
+        "id": 190,
+        "round": 14,
+        "text": "Lane 5: Die Fakultät greift die gegnerische Basis an – abgewehrt.",
+        "event": {
+          "kind": "attack",
+          "lane": 4,
+          "attacker": 0,
+          "damage": 0,
+          "toBase": true,
+          "blockiert": true
+        }
+      },
+      {
+        "id": 191,
+        "round": 15,
+        "text": "— Runde 15 beginnt (15 Energie, Spieler 1 fängt an) —"
+      },
+      {
+        "id": 192,
+        "round": 15,
+        "text": "Spieler 1 passt."
+      },
+      {
+        "id": 193,
+        "round": 15,
+        "text": "Spieler 2 spielt Bär in Lane 1."
+      },
+      {
+        "id": 194,
+        "round": 15,
+        "text": "Spieler 1 passt."
+      },
+      {
+        "id": 195,
+        "round": 15,
+        "text": "Wilder Instinkt: Bär erhält +2 Angriff bis zum Rundenende.",
+        "event": {
+          "kind": "spell",
+          "lane": 0,
+          "effect": "attackBuff",
+          "faction": "animals"
+        }
+      },
+      {
+        "id": 196,
+        "round": 15,
+        "text": "Spieler 1 passt."
+      },
+      {
+        "id": 197,
+        "round": 15,
+        "text": "Spieler 2 passt."
+      },
+      {
+        "id": 198,
+        "round": 15,
+        "text": "— Kampfphase —"
+      },
+      {
+        "id": 199,
+        "round": 15,
+        "text": "Lane 3: Kommandantin greift die gegnerische Basis an – abgewehrt.",
+        "event": {
+          "kind": "attack",
+          "lane": 2,
+          "attacker": 0,
+          "damage": 0,
+          "toBase": true,
+          "blockiert": true
+        }
+      },
+      {
+        "id": 200,
+        "round": 15,
+        "text": "Schild von Spieler 2 lädt sich um 1 auf (1/7).",
+        "event": {
+          "kind": "schild",
+          "owner": 1,
+          "ladung": 1,
+          "stand": 1,
+          "abschnitte": 7
+        }
+      },
+      {
+        "id": 201,
+        "round": 15,
+        "text": "Lane 4: Stahlgießer trifft die gegnerische Basis für 7.",
+        "event": {
+          "kind": "attack",
+          "lane": 3,
+          "attacker": 0,
+          "damage": 7,
+          "toBase": true
+        }
+      },
+      {
+        "id": 202,
+        "round": 15,
+        "text": "Die Basis von Spieler 2 ist zerstört – Spieler 1 gewinnt!"
+      }
+    ]
+  }
+}

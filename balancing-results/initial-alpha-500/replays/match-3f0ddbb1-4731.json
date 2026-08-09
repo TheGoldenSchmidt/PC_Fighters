@@ -1,0 +1,1354 @@
+{
+  "deckA": "a4_urzeitliches_rudel",
+  "deckB": "h2_schicht",
+  "botA": "standard",
+  "botB": "standard",
+  "replay": {
+    "version": 1,
+    "matchId": "match-3f0ddbb1-4731",
+    "saat": 1057872817,
+    "startspieler": 1,
+    "cheerleaders": [
+      [
+        "pc_principal",
+        "pc_babies",
+        "alter_wissenschaftler"
+      ],
+      [
+        "pc_principal",
+        "pc_babies",
+        "alter_wissenschaftler"
+      ]
+    ],
+    "aktionen": [
+      {
+        "index": 0,
+        "runde": 0,
+        "spieler": 0,
+        "aktion": {
+          "type": "mulligan",
+          "handIndices": [
+            2
+          ]
+        },
+        "energieVorher": 0,
+        "energieNachher": 0,
+        "zustand": "806e650d"
+      },
+      {
+        "index": 1,
+        "runde": 1,
+        "spieler": 1,
+        "aktion": {
+          "type": "mulligan",
+          "handIndices": []
+        },
+        "energieVorher": 0,
+        "energieNachher": 1,
+        "zustand": "4853dbf0"
+      },
+      {
+        "index": 2,
+        "runde": 1,
+        "spieler": 1,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 1,
+        "energieNachher": 1,
+        "zustand": "ab0430dd"
+      },
+      {
+        "index": 3,
+        "runde": 1,
+        "spieler": 0,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 1,
+          "lane": 2
+        },
+        "energieVorher": 1,
+        "energieNachher": 0,
+        "zustand": "bd418cc4",
+        "cardId": "compsognathus"
+      },
+      {
+        "index": 4,
+        "runde": 1,
+        "spieler": 1,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 1,
+        "energieNachher": 1,
+        "zustand": "7f449817"
+      },
+      {
+        "index": 5,
+        "runde": 2,
+        "spieler": 0,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 0,
+        "energieNachher": 2,
+        "zustand": "f6860213"
+      },
+      {
+        "index": 6,
+        "runde": 2,
+        "spieler": 0,
+        "aktion": {
+          "type": "playAction",
+          "handIndex": 1,
+          "targetLane": 2
+        },
+        "energieVorher": 2,
+        "energieNachher": 0,
+        "zustand": "c449e087",
+        "cardId": "wilder_instinkt"
+      },
+      {
+        "index": 7,
+        "runde": 2,
+        "spieler": 1,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 1,
+          "lane": 3
+        },
+        "energieVorher": 2,
+        "energieNachher": 0,
+        "zustand": "79749f29",
+        "cardId": "fliessbandarbeiter"
+      },
+      {
+        "index": 8,
+        "runde": 2,
+        "spieler": 0,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 0,
+        "energieNachher": 0,
+        "zustand": "37dbcb46"
+      },
+      {
+        "index": 9,
+        "runde": 3,
+        "spieler": 1,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 0,
+        "energieNachher": 3,
+        "zustand": "71eeffbc"
+      },
+      {
+        "index": 10,
+        "runde": 3,
+        "spieler": 1,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 1,
+          "lane": 2
+        },
+        "energieVorher": 3,
+        "energieNachher": 0,
+        "zustand": "01ecdecb",
+        "cardId": "schichtwechsel"
+      },
+      {
+        "index": 11,
+        "runde": 3,
+        "spieler": 0,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 0,
+          "lane": 3
+        },
+        "energieVorher": 3,
+        "energieNachher": 0,
+        "zustand": "d6734e09",
+        "cardId": "pferd"
+      },
+      {
+        "index": 12,
+        "runde": 3,
+        "spieler": 1,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 0,
+        "energieNachher": 0,
+        "zustand": "34a424e0"
+      },
+      {
+        "index": 13,
+        "runde": 4,
+        "spieler": 0,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 0,
+        "energieNachher": 4,
+        "zustand": "571ab181"
+      },
+      {
+        "index": 14,
+        "runde": 4,
+        "spieler": 0,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 3,
+          "lane": 4
+        },
+        "energieVorher": 4,
+        "energieNachher": 1,
+        "zustand": "7424cd29",
+        "cardId": "velociraptor"
+      },
+      {
+        "index": 15,
+        "runde": 4,
+        "spieler": 1,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 2,
+          "lane": 4
+        },
+        "energieVorher": 4,
+        "energieNachher": 0,
+        "zustand": "219bfd22",
+        "cardId": "bibliothekar"
+      },
+      {
+        "index": 16,
+        "runde": 4,
+        "spieler": 0,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 1,
+        "energieNachher": 1,
+        "zustand": "f982c937"
+      },
+      {
+        "index": 17,
+        "runde": 5,
+        "spieler": 1,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 0,
+        "energieNachher": 5,
+        "zustand": "8d1e6b44"
+      },
+      {
+        "index": 18,
+        "runde": 5,
+        "spieler": 1,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 3,
+          "lane": 1
+        },
+        "energieVorher": 5,
+        "energieNachher": 0,
+        "zustand": "ea35a0b3",
+        "cardId": "doktorandin"
+      },
+      {
+        "index": 19,
+        "runde": 5,
+        "spieler": 0,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 2,
+          "lane": 2
+        },
+        "energieVorher": 5,
+        "energieNachher": 3,
+        "zustand": "123b7235",
+        "cardId": "wolf"
+      },
+      {
+        "index": 20,
+        "runde": 5,
+        "spieler": 1,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 0,
+        "energieNachher": 0,
+        "zustand": "b0fda0d8"
+      },
+      {
+        "index": 21,
+        "runde": 6,
+        "spieler": 0,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 3,
+        "energieNachher": 6,
+        "zustand": "d7897cc0"
+      },
+      {
+        "index": 22,
+        "runde": 6,
+        "spieler": 0,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 3,
+          "lane": 4
+        },
+        "energieVorher": 6,
+        "energieNachher": 2,
+        "zustand": "7fc4fb39",
+        "cardId": "pteranodon"
+      },
+      {
+        "index": 23,
+        "runde": 6,
+        "spieler": 1,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 4,
+          "lane": 3
+        },
+        "energieVorher": 6,
+        "energieNachher": 1,
+        "zustand": "603aa2d9",
+        "cardId": "doktorandin"
+      },
+      {
+        "index": 24,
+        "runde": 6,
+        "spieler": 0,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 2,
+        "energieNachher": 2,
+        "zustand": "1ed44cdc"
+      },
+      {
+        "index": 25,
+        "runde": 6,
+        "spieler": 1,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 1,
+        "energieNachher": 1,
+        "zustand": "ce02af0a"
+      },
+      {
+        "index": 26,
+        "runde": 7,
+        "spieler": 0,
+        "aktion": {
+          "type": "flyMove",
+          "fromLane": 4,
+          "toLane": 2
+        },
+        "energieVorher": 2,
+        "energieNachher": 7,
+        "zustand": "fb37cb22"
+      },
+      {
+        "index": 27,
+        "runde": 7,
+        "spieler": 1,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 0,
+          "lane": 0
+        },
+        "energieVorher": 7,
+        "energieNachher": 5,
+        "zustand": "8ace358c",
+        "cardId": "erstsemester"
+      },
+      {
+        "index": 28,
+        "runde": 7,
+        "spieler": 0,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 2,
+          "lane": 1
+        },
+        "energieVorher": 7,
+        "energieNachher": 0,
+        "zustand": "1b6cd59a",
+        "cardId": "brachiosaurus"
+      },
+      {
+        "index": 29,
+        "runde": 7,
+        "spieler": 1,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 5,
+        "energieNachher": 5,
+        "zustand": "742d306b"
+      },
+      {
+        "index": 30,
+        "runde": 7,
+        "spieler": 0,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 0,
+        "energieNachher": 0,
+        "zustand": "b86cebe0"
+      }
+    ],
+    "runden": [
+      {
+        "runde": 1,
+        "basis": [
+          12,
+          12
+        ],
+        "energie": [
+          1,
+          1
+        ],
+        "hand": [
+          4,
+          4
+        ],
+        "deck": [
+          16,
+          16
+        ],
+        "brett": [
+          0,
+          0
+        ],
+        "kontrollierteLanes": [
+          0,
+          0
+        ],
+        "laneBelegt": [
+          [
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          [
+            false,
+            false,
+            false,
+            false,
+            false
+          ]
+        ]
+      },
+      {
+        "runde": 2,
+        "basis": [
+          12,
+          12
+        ],
+        "energie": [
+          2,
+          2
+        ],
+        "hand": [
+          4,
+          5
+        ],
+        "deck": [
+          15,
+          15
+        ],
+        "brett": [
+          1,
+          0
+        ],
+        "kontrollierteLanes": [
+          1,
+          0
+        ],
+        "laneBelegt": [
+          [
+            false,
+            false,
+            true,
+            false,
+            false
+          ],
+          [
+            false,
+            false,
+            false,
+            false,
+            false
+          ]
+        ]
+      },
+      {
+        "runde": 3,
+        "basis": [
+          12,
+          9
+        ],
+        "energie": [
+          3,
+          3
+        ],
+        "hand": [
+          4,
+          5
+        ],
+        "deck": [
+          14,
+          14
+        ],
+        "brett": [
+          1,
+          1
+        ],
+        "kontrollierteLanes": [
+          1,
+          1
+        ],
+        "laneBelegt": [
+          [
+            false,
+            false,
+            true,
+            false,
+            false
+          ],
+          [
+            false,
+            false,
+            false,
+            true,
+            false
+          ]
+        ]
+      },
+      {
+        "runde": 4,
+        "basis": [
+          12,
+          9
+        ],
+        "energie": [
+          4,
+          4
+        ],
+        "hand": [
+          4,
+          5
+        ],
+        "deck": [
+          13,
+          13
+        ],
+        "brett": [
+          1,
+          1
+        ],
+        "kontrollierteLanes": [
+          0,
+          0
+        ],
+        "laneBelegt": [
+          [
+            false,
+            false,
+            true,
+            false,
+            false
+          ],
+          [
+            false,
+            false,
+            true,
+            false,
+            false
+          ]
+        ]
+      },
+      {
+        "runde": 5,
+        "basis": [
+          12,
+          9
+        ],
+        "energie": [
+          5,
+          5
+        ],
+        "hand": [
+          4,
+          5
+        ],
+        "deck": [
+          12,
+          12
+        ],
+        "brett": [
+          1,
+          2
+        ],
+        "kontrollierteLanes": [
+          0,
+          1
+        ],
+        "laneBelegt": [
+          [
+            false,
+            false,
+            false,
+            false,
+            true
+          ],
+          [
+            false,
+            false,
+            true,
+            false,
+            true
+          ]
+        ]
+      },
+      {
+        "runde": 6,
+        "basis": [
+          12,
+          9
+        ],
+        "energie": [
+          6,
+          6
+        ],
+        "hand": [
+          4,
+          5
+        ],
+        "deck": [
+          11,
+          11
+        ],
+        "brett": [
+          0,
+          3
+        ],
+        "kontrollierteLanes": [
+          0,
+          3
+        ],
+        "laneBelegt": [
+          [
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          [
+            false,
+            true,
+            true,
+            false,
+            true
+          ]
+        ]
+      },
+      {
+        "runde": 7,
+        "basis": [
+          1,
+          9
+        ],
+        "energie": [
+          7,
+          7
+        ],
+        "hand": [
+          4,
+          5
+        ],
+        "deck": [
+          10,
+          10
+        ],
+        "brett": [
+          1,
+          4
+        ],
+        "kontrollierteLanes": [
+          0,
+          3
+        ],
+        "laneBelegt": [
+          [
+            false,
+            false,
+            true,
+            false,
+            false
+          ],
+          [
+            false,
+            true,
+            true,
+            true,
+            true
+          ]
+        ]
+      },
+      {
+        "runde": 7,
+        "basis": [
+          -4,
+          9
+        ],
+        "energie": [
+          0,
+          5
+        ],
+        "hand": [
+          3,
+          5
+        ],
+        "deck": [
+          10,
+          9
+        ],
+        "brett": [
+          1,
+          4
+        ],
+        "kontrollierteLanes": [
+          0,
+          3
+        ],
+        "laneBelegt": [
+          [
+            false,
+            true,
+            false,
+            false,
+            false
+          ],
+          [
+            true,
+            true,
+            false,
+            true,
+            true
+          ]
+        ]
+      }
+    ],
+    "endzustand": "b86cebe0",
+    "log": [
+      {
+        "id": 0,
+        "round": 0,
+        "text": "Spieler 1 hat den Mulligan bestätigt."
+      },
+      {
+        "id": 1,
+        "round": 0,
+        "text": "Spieler 2 hat den Mulligan bestätigt."
+      },
+      {
+        "id": 2,
+        "round": 1,
+        "text": "— Runde 1 beginnt (1 Energie, Spieler 2 fängt an) —"
+      },
+      {
+        "id": 3,
+        "round": 1,
+        "text": "Spieler 2 passt."
+      },
+      {
+        "id": 4,
+        "round": 1,
+        "text": "Spieler 1 spielt Compsognathus in Lane 3."
+      },
+      {
+        "id": 5,
+        "round": 1,
+        "text": "Spieler 2 passt."
+      },
+      {
+        "id": 6,
+        "round": 1,
+        "text": "Spieler 1 passt."
+      },
+      {
+        "id": 7,
+        "round": 1,
+        "text": "— Kampfphase —"
+      },
+      {
+        "id": 8,
+        "round": 2,
+        "text": "— Runde 2 beginnt (2 Energie, Spieler 1 fängt an) —"
+      },
+      {
+        "id": 9,
+        "round": 2,
+        "text": "Wilder Instinkt: Compsognathus erhält +2 Angriff bis zum Rundenende.",
+        "event": {
+          "kind": "spell",
+          "lane": 2,
+          "effect": "attackBuff",
+          "faction": "animals"
+        }
+      },
+      {
+        "id": 10,
+        "round": 2,
+        "text": "Spieler 2 spielt Fließbandarbeiter in Lane 4."
+      },
+      {
+        "id": 11,
+        "round": 2,
+        "text": "Spieler 1 passt."
+      },
+      {
+        "id": 12,
+        "round": 2,
+        "text": "Spieler 2 passt."
+      },
+      {
+        "id": 13,
+        "round": 2,
+        "text": "— Kampfphase —"
+      },
+      {
+        "id": 14,
+        "round": 2,
+        "text": "Schild von Spieler 2 lädt sich um 2 auf (2/7).",
+        "event": {
+          "kind": "schild",
+          "owner": 1,
+          "ladung": 2,
+          "stand": 2,
+          "abschnitte": 7
+        }
+      },
+      {
+        "id": 15,
+        "round": 2,
+        "text": "Lane 3: Compsognathus trifft die gegnerische Basis für 3.",
+        "event": {
+          "kind": "attack",
+          "lane": 2,
+          "attacker": 0,
+          "damage": 3,
+          "toBase": true
+        }
+      },
+      {
+        "id": 16,
+        "round": 3,
+        "text": "— Runde 3 beginnt (3 Energie, Spieler 2 fängt an) —"
+      },
+      {
+        "id": 17,
+        "round": 3,
+        "text": "Spieler 2 spielt Schichtwechsel in Lane 3."
+      },
+      {
+        "id": 18,
+        "round": 3,
+        "text": "Spieler 1 spielt Pferd in Lane 4 – flink und sofort kampfbereit!"
+      },
+      {
+        "id": 19,
+        "round": 3,
+        "text": "Spieler 2 passt."
+      },
+      {
+        "id": 20,
+        "round": 3,
+        "text": "Spieler 1 passt."
+      },
+      {
+        "id": 21,
+        "round": 3,
+        "text": "— Kampfphase —"
+      },
+      {
+        "id": 22,
+        "round": 3,
+        "text": "Lane 3: Compsognathus trifft Schichtwechsel für 1.",
+        "event": {
+          "kind": "attack",
+          "lane": 2,
+          "attacker": 0,
+          "damage": 1,
+          "toBase": false
+        }
+      },
+      {
+        "id": 23,
+        "round": 3,
+        "text": "Lane 4: Pferd trifft Fließbandarbeiter für 3.",
+        "event": {
+          "kind": "attack",
+          "lane": 3,
+          "attacker": 0,
+          "damage": 3,
+          "toBase": false
+        }
+      },
+      {
+        "id": 24,
+        "round": 3,
+        "text": "Lane 4: Fließbandarbeiter trifft Pferd für 4.",
+        "event": {
+          "kind": "attack",
+          "lane": 3,
+          "attacker": 1,
+          "damage": 4,
+          "toBase": false
+        }
+      },
+      {
+        "id": 25,
+        "round": 3,
+        "text": "Pferd wird zerstört.",
+        "event": {
+          "kind": "death",
+          "lane": 3,
+          "owner": 0
+        }
+      },
+      {
+        "id": 26,
+        "round": 3,
+        "text": "Fließbandarbeiter wird zerstört.",
+        "event": {
+          "kind": "death",
+          "lane": 3,
+          "owner": 1
+        }
+      },
+      {
+        "id": 27,
+        "round": 4,
+        "text": "— Runde 4 beginnt (4 Energie, Spieler 1 fängt an) —"
+      },
+      {
+        "id": 28,
+        "round": 4,
+        "text": "Spieler 1 spielt Velociraptor in Lane 5 – flink und sofort kampfbereit!"
+      },
+      {
+        "id": 29,
+        "round": 4,
+        "text": "Spieler 2 spielt Bibliothekar in Lane 5."
+      },
+      {
+        "id": 30,
+        "round": 4,
+        "text": "Spieler 1 passt."
+      },
+      {
+        "id": 31,
+        "round": 4,
+        "text": "Spieler 2 passt."
+      },
+      {
+        "id": 32,
+        "round": 4,
+        "text": "— Kampfphase —"
+      },
+      {
+        "id": 33,
+        "round": 4,
+        "text": "Lane 3: Compsognathus trifft Schichtwechsel für 1.",
+        "event": {
+          "kind": "attack",
+          "lane": 2,
+          "attacker": 0,
+          "damage": 1,
+          "toBase": false
+        }
+      },
+      {
+        "id": 34,
+        "round": 4,
+        "text": "Lane 3: Schichtwechsel trifft Compsognathus für 4.",
+        "event": {
+          "kind": "attack",
+          "lane": 2,
+          "attacker": 1,
+          "damage": 4,
+          "toBase": false
+        }
+      },
+      {
+        "id": 35,
+        "round": 4,
+        "text": "Compsognathus wird zerstört.",
+        "event": {
+          "kind": "death",
+          "lane": 2,
+          "owner": 0
+        }
+      },
+      {
+        "id": 36,
+        "round": 4,
+        "text": "Lane 5: Velociraptor trifft Bibliothekar für 2.",
+        "event": {
+          "kind": "attack",
+          "lane": 4,
+          "attacker": 0,
+          "damage": 2,
+          "toBase": false
+        }
+      },
+      {
+        "id": 37,
+        "round": 4,
+        "text": "Schichtwechsel: Überstunden +2/+1."
+      },
+      {
+        "id": 38,
+        "round": 5,
+        "text": "Bibliothekar: Wahl → +1 Wissen."
+      },
+      {
+        "id": 39,
+        "round": 5,
+        "text": "— Runde 5 beginnt (5 Energie, Spieler 2 fängt an) —"
+      },
+      {
+        "id": 40,
+        "round": 5,
+        "text": "Spieler 2 spielt Doktorandin in Lane 2."
+      },
+      {
+        "id": 41,
+        "round": 5,
+        "text": "Doktorandin: +1/+1 aus 1 Wissen."
+      },
+      {
+        "id": 42,
+        "round": 5,
+        "text": "Spieler 1 spielt Wolf in Lane 3."
+      },
+      {
+        "id": 43,
+        "round": 5,
+        "text": "Spieler 2 passt."
+      },
+      {
+        "id": 44,
+        "round": 5,
+        "text": "Spieler 1 passt."
+      },
+      {
+        "id": 45,
+        "round": 5,
+        "text": "— Kampfphase —"
+      },
+      {
+        "id": 46,
+        "round": 5,
+        "text": "Lane 3: Schichtwechsel trifft Wolf für 6.",
+        "event": {
+          "kind": "attack",
+          "lane": 2,
+          "attacker": 1,
+          "damage": 6,
+          "toBase": false
+        }
+      },
+      {
+        "id": 47,
+        "round": 5,
+        "text": "Wolf wird zerstört.",
+        "event": {
+          "kind": "death",
+          "lane": 2,
+          "owner": 0
+        }
+      },
+      {
+        "id": 48,
+        "round": 5,
+        "text": "Lane 5: Velociraptor trifft Bibliothekar für 2.",
+        "event": {
+          "kind": "attack",
+          "lane": 4,
+          "attacker": 0,
+          "damage": 2,
+          "toBase": false
+        }
+      },
+      {
+        "id": 49,
+        "round": 5,
+        "text": "Lane 5: Bibliothekar trifft Velociraptor für 2.",
+        "event": {
+          "kind": "attack",
+          "lane": 4,
+          "attacker": 1,
+          "damage": 2,
+          "toBase": false
+        }
+      },
+      {
+        "id": 50,
+        "round": 5,
+        "text": "Velociraptor wird zerstört.",
+        "event": {
+          "kind": "death",
+          "lane": 4,
+          "owner": 0
+        }
+      },
+      {
+        "id": 51,
+        "round": 6,
+        "text": "Bibliothekar: Wahl → +1 Wissen."
+      },
+      {
+        "id": 52,
+        "round": 6,
+        "text": "— Runde 6 beginnt (6 Energie, Spieler 1 fängt an) —"
+      },
+      {
+        "id": 53,
+        "round": 6,
+        "text": "Spieler 1 spielt Pteranodon in Lane 5."
+      },
+      {
+        "id": 54,
+        "round": 6,
+        "text": "Spieler 2 spielt Doktorandin in Lane 4."
+      },
+      {
+        "id": 55,
+        "round": 6,
+        "text": "Doktorandin: +1/+1 aus 1 Wissen."
+      },
+      {
+        "id": 56,
+        "round": 6,
+        "text": "Spieler 1 passt."
+      },
+      {
+        "id": 57,
+        "round": 6,
+        "text": "Spieler 2 passt."
+      },
+      {
+        "id": 58,
+        "round": 6,
+        "text": "— Kampfphase —"
+      },
+      {
+        "id": 59,
+        "round": 6,
+        "text": "Schild von Spieler 1 lädt sich um 2 auf (2/7).",
+        "event": {
+          "kind": "schild",
+          "owner": 0,
+          "ladung": 2,
+          "stand": 2,
+          "abschnitte": 7
+        }
+      },
+      {
+        "id": 60,
+        "round": 6,
+        "text": "Lane 2: Doktorandin trifft die gegnerische Basis für 5.",
+        "event": {
+          "kind": "attack",
+          "lane": 1,
+          "attacker": 1,
+          "damage": 5,
+          "toBase": true
+        }
+      },
+      {
+        "id": 61,
+        "round": 6,
+        "text": "Schild von Spieler 1 lädt sich um 1 auf (3/7).",
+        "event": {
+          "kind": "schild",
+          "owner": 0,
+          "ladung": 1,
+          "stand": 3,
+          "abschnitte": 7
+        }
+      },
+      {
+        "id": 62,
+        "round": 6,
+        "text": "Lane 3: Schichtwechsel trifft die gegnerische Basis für 6.",
+        "event": {
+          "kind": "attack",
+          "lane": 2,
+          "attacker": 1,
+          "damage": 6,
+          "toBase": true
+        }
+      },
+      {
+        "id": 63,
+        "round": 6,
+        "text": "Lane 5: Bibliothekar trifft Pteranodon für 2.",
+        "event": {
+          "kind": "attack",
+          "lane": 4,
+          "attacker": 1,
+          "damage": 2,
+          "toBase": false
+        }
+      },
+      {
+        "id": 64,
+        "round": 6,
+        "text": "Fliegende Kreaturen dürfen jetzt die Lane wechseln."
+      },
+      {
+        "id": 65,
+        "round": 6,
+        "text": "Pteranodon fliegt in Lane 3."
+      },
+      {
+        "id": 66,
+        "round": 7,
+        "text": "Bibliothekar: Wahl → +1 Wissen."
+      },
+      {
+        "id": 67,
+        "round": 7,
+        "text": "— Runde 7 beginnt (7 Energie, Spieler 2 fängt an) —"
+      },
+      {
+        "id": 68,
+        "round": 7,
+        "text": "Spieler 2 spielt Erstsemester in Lane 1."
+      },
+      {
+        "id": 69,
+        "round": 7,
+        "text": "Spieler 1 spielt Brachiosaurus in Lane 2."
+      },
+      {
+        "id": 70,
+        "round": 7,
+        "text": "Spieler 2 passt."
+      },
+      {
+        "id": 71,
+        "round": 7,
+        "text": "Spieler 1 passt."
+      },
+      {
+        "id": 72,
+        "round": 7,
+        "text": "— Kampfphase —"
+      },
+      {
+        "id": 73,
+        "round": 7,
+        "text": "Lane 2: Doktorandin trifft Brachiosaurus für 5.",
+        "event": {
+          "kind": "attack",
+          "lane": 1,
+          "attacker": 1,
+          "damage": 5,
+          "toBase": false
+        }
+      },
+      {
+        "id": 74,
+        "round": 7,
+        "text": "Lane 3: Pteranodon trifft Schichtwechsel für 3.",
+        "event": {
+          "kind": "attack",
+          "lane": 2,
+          "attacker": 0,
+          "damage": 3,
+          "toBase": false
+        }
+      },
+      {
+        "id": 75,
+        "round": 7,
+        "text": "Lane 3: Schichtwechsel trifft Pteranodon für 6.",
+        "event": {
+          "kind": "attack",
+          "lane": 2,
+          "attacker": 1,
+          "damage": 6,
+          "toBase": false
+        }
+      },
+      {
+        "id": 76,
+        "round": 7,
+        "text": "Pteranodon wird zerstört.",
+        "event": {
+          "kind": "death",
+          "lane": 2,
+          "owner": 0
+        }
+      },
+      {
+        "id": 77,
+        "round": 7,
+        "text": "Schichtwechsel wird zerstört.",
+        "event": {
+          "kind": "death",
+          "lane": 2,
+          "owner": 1
+        }
+      },
+      {
+        "id": 78,
+        "round": 7,
+        "text": "Schild von Spieler 1 lädt sich um 1 auf (4/7).",
+        "event": {
+          "kind": "schild",
+          "owner": 0,
+          "ladung": 1,
+          "stand": 4,
+          "abschnitte": 7
+        }
+      },
+      {
+        "id": 79,
+        "round": 7,
+        "text": "Lane 4: Doktorandin trifft die gegnerische Basis für 5.",
+        "event": {
+          "kind": "attack",
+          "lane": 3,
+          "attacker": 1,
+          "damage": 5,
+          "toBase": true
+        }
+      },
+      {
+        "id": 80,
+        "round": 7,
+        "text": "Die Basis von Spieler 1 ist zerstört – Spieler 2 gewinnt!"
+      }
+    ]
+  }
+}

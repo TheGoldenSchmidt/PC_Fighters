@@ -1,0 +1,1983 @@
+{
+  "deckA": "h1_solidaritaet",
+  "deckB": "h2_schicht",
+  "botA": "standard",
+  "botB": "standard",
+  "replay": {
+    "version": 1,
+    "matchId": "match-900271b0-5816",
+    "saat": 2416079280,
+    "startspieler": 1,
+    "cheerleaders": [
+      [
+        "pc_principal",
+        "pc_babies",
+        "alter_wissenschaftler"
+      ],
+      [
+        "pc_principal",
+        "pc_babies",
+        "alter_wissenschaftler"
+      ]
+    ],
+    "aktionen": [
+      {
+        "index": 0,
+        "runde": 0,
+        "spieler": 0,
+        "aktion": {
+          "type": "mulligan",
+          "handIndices": [
+            2
+          ]
+        },
+        "energieVorher": 0,
+        "energieNachher": 0,
+        "zustand": "e4cbe425"
+      },
+      {
+        "index": 1,
+        "runde": 1,
+        "spieler": 1,
+        "aktion": {
+          "type": "mulligan",
+          "handIndices": [
+            0,
+            1,
+            2,
+            3
+          ]
+        },
+        "energieVorher": 0,
+        "energieNachher": 1,
+        "zustand": "4ab6d7d8"
+      },
+      {
+        "index": 2,
+        "runde": 1,
+        "spieler": 1,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 3,
+          "lane": 3
+        },
+        "energieVorher": 1,
+        "energieNachher": 0,
+        "zustand": "d7ebb991",
+        "cardId": "rekrut"
+      },
+      {
+        "index": 3,
+        "runde": 1,
+        "spieler": 0,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 1,
+        "energieNachher": 1,
+        "zustand": "ce578efc"
+      },
+      {
+        "index": 4,
+        "runde": 2,
+        "spieler": 1,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 0,
+        "energieNachher": 2,
+        "zustand": "2001db1e"
+      },
+      {
+        "index": 5,
+        "runde": 2,
+        "spieler": 0,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 2,
+          "lane": 3
+        },
+        "energieVorher": 2,
+        "energieNachher": 0,
+        "zustand": "2fbe265c",
+        "cardId": "streikposten"
+      },
+      {
+        "index": 6,
+        "runde": 2,
+        "spieler": 1,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 1,
+          "lane": 4
+        },
+        "energieVorher": 2,
+        "energieNachher": 0,
+        "zustand": "13fc84f1",
+        "cardId": "fliessbandarbeiter"
+      },
+      {
+        "index": 7,
+        "runde": 2,
+        "spieler": 0,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 0,
+        "energieNachher": 0,
+        "zustand": "24444800"
+      },
+      {
+        "index": 8,
+        "runde": 3,
+        "spieler": 1,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 0,
+        "energieNachher": 3,
+        "zustand": "6f5fdc5e"
+      },
+      {
+        "index": 9,
+        "runde": 3,
+        "spieler": 1,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 0,
+          "lane": 0
+        },
+        "energieVorher": 3,
+        "energieNachher": 0,
+        "zustand": "eae873a8",
+        "cardId": "schichtwechsel"
+      },
+      {
+        "index": 10,
+        "runde": 3,
+        "spieler": 0,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 1,
+          "lane": 4
+        },
+        "energieVorher": 3,
+        "energieNachher": 0,
+        "zustand": "9de20715",
+        "cardId": "basisdemokratie"
+      },
+      {
+        "index": 11,
+        "runde": 3,
+        "spieler": 1,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 0,
+        "energieNachher": 0,
+        "zustand": "0533fca4"
+      },
+      {
+        "index": 12,
+        "runde": 4,
+        "spieler": 0,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 0,
+        "energieNachher": 4,
+        "zustand": "08cabbc3"
+      },
+      {
+        "index": 13,
+        "runde": 4,
+        "spieler": 0,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 0,
+          "lane": 2
+        },
+        "energieVorher": 4,
+        "energieNachher": 1,
+        "zustand": "6fc0ce3a",
+        "cardId": "schrottsammlerin"
+      },
+      {
+        "index": 14,
+        "runde": 4,
+        "spieler": 1,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 0,
+          "lane": 1
+        },
+        "energieVorher": 4,
+        "energieNachher": 0,
+        "zustand": "c840b599",
+        "cardId": "vorarbeiter"
+      },
+      {
+        "index": 15,
+        "runde": 4,
+        "spieler": 0,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 1,
+          "lane": 0
+        },
+        "energieVorher": 1,
+        "energieNachher": 0,
+        "zustand": "7fbf28c5",
+        "cardId": "flugblatt_verteiler"
+      },
+      {
+        "index": 16,
+        "runde": 4,
+        "spieler": 1,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 0,
+        "energieNachher": 0,
+        "zustand": "eba5fed6"
+      },
+      {
+        "index": 17,
+        "runde": 5,
+        "spieler": 0,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 0,
+        "energieNachher": 5,
+        "zustand": "d1befb88"
+      },
+      {
+        "index": 18,
+        "runde": 5,
+        "spieler": 1,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 0,
+          "lane": 2
+        },
+        "energieVorher": 5,
+        "energieNachher": 1,
+        "zustand": "3214fce7",
+        "cardId": "bibliothekar"
+      },
+      {
+        "index": 19,
+        "runde": 5,
+        "spieler": 0,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 0,
+          "lane": 0
+        },
+        "energieVorher": 5,
+        "energieNachher": 2,
+        "zustand": "a28c00bc",
+        "cardId": "schrottsammlerin"
+      },
+      {
+        "index": 20,
+        "runde": 5,
+        "spieler": 1,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 2,
+          "lane": 3
+        },
+        "energieVorher": 1,
+        "energieNachher": 0,
+        "zustand": "d88c5e73",
+        "cardId": "lehrling"
+      },
+      {
+        "index": 21,
+        "runde": 5,
+        "spieler": 0,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 0,
+          "lane": 4
+        },
+        "energieVorher": 2,
+        "energieNachher": 0,
+        "zustand": "7cb7dd1c",
+        "cardId": "feldscherin"
+      },
+      {
+        "index": 22,
+        "runde": 5,
+        "spieler": 1,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 0,
+        "energieNachher": 0,
+        "zustand": "b69ba919"
+      },
+      {
+        "index": 23,
+        "runde": 6,
+        "spieler": 0,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 0,
+        "energieNachher": 6,
+        "zustand": "8035b5e5"
+      },
+      {
+        "index": 24,
+        "runde": 6,
+        "spieler": 0,
+        "aktion": {
+          "type": "playAction",
+          "handIndex": 2
+        },
+        "energieVorher": 6,
+        "energieNachher": 2,
+        "zustand": "8b9f4d89",
+        "cardId": "generalstreik"
+      },
+      {
+        "index": 25,
+        "runde": 6,
+        "spieler": 1,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 6,
+        "energieNachher": 6,
+        "zustand": "f6a28954"
+      },
+      {
+        "index": 26,
+        "runde": 7,
+        "spieler": 0,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 2,
+        "energieNachher": 7,
+        "zustand": "b0d5c940"
+      },
+      {
+        "index": 27,
+        "runde": 7,
+        "spieler": 1,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 2,
+          "lane": 2
+        },
+        "energieVorher": 7,
+        "energieNachher": 2,
+        "zustand": "18e174af",
+        "cardId": "doktorandin"
+      },
+      {
+        "index": 28,
+        "runde": 7,
+        "spieler": 0,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 0,
+          "lane": 4
+        },
+        "energieVorher": 7,
+        "energieNachher": 1,
+        "zustand": "dc2c07f8",
+        "cardId": "die_massen"
+      },
+      {
+        "index": 29,
+        "runde": 7,
+        "spieler": 1,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 2,
+        "energieNachher": 2,
+        "zustand": "c4fee807"
+      },
+      {
+        "index": 30,
+        "runde": 7,
+        "spieler": 0,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 1,
+        "energieNachher": 1,
+        "zustand": "586ab2bc"
+      },
+      {
+        "index": 31,
+        "runde": 8,
+        "spieler": 0,
+        "aktion": {
+          "type": "cheerleaderReaction",
+          "reactionId": 1,
+          "slot": 0
+        },
+        "energieVorher": 1,
+        "energieNachher": 8,
+        "zustand": "88cb8079"
+      },
+      {
+        "index": 32,
+        "runde": 8,
+        "spieler": 0,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 0,
+          "lane": 0
+        },
+        "energieVorher": 8,
+        "energieNachher": 2,
+        "zustand": "ef100644",
+        "cardId": "die_massen"
+      },
+      {
+        "index": 33,
+        "runde": 8,
+        "spieler": 1,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 3,
+          "lane": 2
+        },
+        "energieVorher": 8,
+        "energieNachher": 3,
+        "zustand": "c0773eac",
+        "cardId": "doktorandin"
+      },
+      {
+        "index": 34,
+        "runde": 8,
+        "spieler": 0,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 0,
+          "lane": 1
+        },
+        "energieVorher": 2,
+        "energieNachher": 0,
+        "zustand": "468d89e2",
+        "cardId": "feldscherin"
+      },
+      {
+        "index": 35,
+        "runde": 8,
+        "spieler": 1,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 3,
+        "energieNachher": 3,
+        "zustand": "f7a299d1"
+      },
+      {
+        "index": 36,
+        "runde": 9,
+        "spieler": 0,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 0,
+        "energieNachher": 9,
+        "zustand": "bf93f409"
+      },
+      {
+        "index": 37,
+        "runde": 9,
+        "spieler": 1,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 2,
+          "lane": 4
+        },
+        "energieVorher": 9,
+        "energieNachher": 7,
+        "zustand": "4df636f3",
+        "cardId": "erstsemester"
+      },
+      {
+        "index": 38,
+        "runde": 9,
+        "spieler": 0,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 0,
+          "lane": 3
+        },
+        "energieVorher": 9,
+        "energieNachher": 5,
+        "zustand": "56d167f2",
+        "cardId": "gewerkschaftssekretaerin"
+      },
+      {
+        "index": 39,
+        "runde": 9,
+        "spieler": 1,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 7,
+        "energieNachher": 7,
+        "zustand": "1698954f"
+      },
+      {
+        "index": 40,
+        "runde": 9,
+        "spieler": 0,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 5,
+        "energieNachher": 5,
+        "zustand": "31ea008a"
+      }
+    ],
+    "runden": [
+      {
+        "runde": 1,
+        "basis": [
+          12,
+          12
+        ],
+        "energie": [
+          1,
+          1
+        ],
+        "hand": [
+          4,
+          4
+        ],
+        "deck": [
+          16,
+          16
+        ],
+        "brett": [
+          0,
+          0
+        ],
+        "kontrollierteLanes": [
+          0,
+          0
+        ],
+        "laneBelegt": [
+          [
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          [
+            false,
+            false,
+            false,
+            false,
+            false
+          ]
+        ]
+      },
+      {
+        "runde": 2,
+        "basis": [
+          12,
+          12
+        ],
+        "energie": [
+          2,
+          2
+        ],
+        "hand": [
+          5,
+          4
+        ],
+        "deck": [
+          15,
+          15
+        ],
+        "brett": [
+          0,
+          1
+        ],
+        "kontrollierteLanes": [
+          0,
+          1
+        ],
+        "laneBelegt": [
+          [
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          [
+            false,
+            false,
+            false,
+            true,
+            false
+          ]
+        ]
+      },
+      {
+        "runde": 3,
+        "basis": [
+          12,
+          12
+        ],
+        "energie": [
+          3,
+          3
+        ],
+        "hand": [
+          5,
+          4
+        ],
+        "deck": [
+          14,
+          14
+        ],
+        "brett": [
+          1,
+          2
+        ],
+        "kontrollierteLanes": [
+          0,
+          1
+        ],
+        "laneBelegt": [
+          [
+            false,
+            false,
+            false,
+            true,
+            false
+          ],
+          [
+            false,
+            false,
+            false,
+            true,
+            true
+          ]
+        ]
+      },
+      {
+        "runde": 4,
+        "basis": [
+          12,
+          12
+        ],
+        "energie": [
+          4,
+          4
+        ],
+        "hand": [
+          5,
+          4
+        ],
+        "deck": [
+          13,
+          13
+        ],
+        "brett": [
+          1,
+          2
+        ],
+        "kontrollierteLanes": [
+          0,
+          1
+        ],
+        "laneBelegt": [
+          [
+            false,
+            false,
+            false,
+            false,
+            true
+          ],
+          [
+            true,
+            false,
+            false,
+            false,
+            true
+          ]
+        ]
+      },
+      {
+        "runde": 5,
+        "basis": [
+          12,
+          12
+        ],
+        "energie": [
+          5,
+          5
+        ],
+        "hand": [
+          4,
+          4
+        ],
+        "deck": [
+          12,
+          12
+        ],
+        "brett": [
+          1,
+          3
+        ],
+        "kontrollierteLanes": [
+          1,
+          3
+        ],
+        "laneBelegt": [
+          [
+            false,
+            false,
+            true,
+            false,
+            false
+          ],
+          [
+            true,
+            true,
+            false,
+            false,
+            true
+          ]
+        ]
+      },
+      {
+        "runde": 6,
+        "basis": [
+          9,
+          12
+        ],
+        "energie": [
+          6,
+          6
+        ],
+        "hand": [
+          3,
+          3
+        ],
+        "deck": [
+          11,
+          11
+        ],
+        "brett": [
+          2,
+          5
+        ],
+        "kontrollierteLanes": [
+          0,
+          3
+        ],
+        "laneBelegt": [
+          [
+            true,
+            false,
+            true,
+            false,
+            false
+          ],
+          [
+            true,
+            true,
+            true,
+            true,
+            true
+          ]
+        ]
+      },
+      {
+        "runde": 7,
+        "basis": [
+          5,
+          12
+        ],
+        "energie": [
+          7,
+          7
+        ],
+        "hand": [
+          3,
+          4
+        ],
+        "deck": [
+          10,
+          10
+        ],
+        "brett": [
+          1,
+          4
+        ],
+        "kontrollierteLanes": [
+          1,
+          4
+        ],
+        "laneBelegt": [
+          [
+            false,
+            false,
+            true,
+            false,
+            false
+          ],
+          [
+            true,
+            true,
+            false,
+            true,
+            true
+          ]
+        ]
+      },
+      {
+        "runde": 8,
+        "basis": [
+          5,
+          12
+        ],
+        "energie": [
+          8,
+          8
+        ],
+        "hand": [
+          3,
+          4
+        ],
+        "deck": [
+          9,
+          9
+        ],
+        "brett": [
+          2,
+          4
+        ],
+        "kontrollierteLanes": [
+          1,
+          3
+        ],
+        "laneBelegt": [
+          [
+            false,
+            false,
+            true,
+            false,
+            true
+          ],
+          [
+            true,
+            true,
+            false,
+            true,
+            true
+          ]
+        ]
+      },
+      {
+        "runde": 9,
+        "basis": [
+          5,
+          7
+        ],
+        "energie": [
+          9,
+          9
+        ],
+        "hand": [
+          2,
+          4
+        ],
+        "deck": [
+          8,
+          8
+        ],
+        "brett": [
+          4,
+          4
+        ],
+        "kontrollierteLanes": [
+          1,
+          1
+        ],
+        "laneBelegt": [
+          [
+            true,
+            true,
+            true,
+            false,
+            true
+          ],
+          [
+            true,
+            true,
+            true,
+            true,
+            false
+          ]
+        ]
+      },
+      {
+        "runde": 9,
+        "basis": [
+          5,
+          -4
+        ],
+        "energie": [
+          5,
+          7
+        ],
+        "hand": [
+          1,
+          4
+        ],
+        "deck": [
+          8,
+          7
+        ],
+        "brett": [
+          5,
+          2
+        ],
+        "kontrollierteLanes": [
+          3,
+          0
+        ],
+        "laneBelegt": [
+          [
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          [
+            false,
+            false,
+            false,
+            true,
+            true
+          ]
+        ]
+      }
+    ],
+    "endzustand": "31ea008a",
+    "log": [
+      {
+        "id": 0,
+        "round": 0,
+        "text": "Spieler 1 hat den Mulligan bestätigt."
+      },
+      {
+        "id": 1,
+        "round": 0,
+        "text": "Spieler 2 hat den Mulligan bestätigt."
+      },
+      {
+        "id": 2,
+        "round": 1,
+        "text": "— Runde 1 beginnt (1 Energie, Spieler 2 fängt an) —"
+      },
+      {
+        "id": 3,
+        "round": 1,
+        "text": "Spieler 2 spielt Rekrut in Lane 4."
+      },
+      {
+        "id": 4,
+        "round": 1,
+        "text": "Spieler 1 passt."
+      },
+      {
+        "id": 5,
+        "round": 1,
+        "text": "Spieler 2 passt."
+      },
+      {
+        "id": 6,
+        "round": 1,
+        "text": "— Kampfphase —"
+      },
+      {
+        "id": 7,
+        "round": 2,
+        "text": "— Runde 2 beginnt (2 Energie, Spieler 1 fängt an) —"
+      },
+      {
+        "id": 8,
+        "round": 2,
+        "text": "Spieler 1 spielt Streikposten in Lane 4."
+      },
+      {
+        "id": 9,
+        "round": 2,
+        "text": "Spieler 2 spielt Fließbandarbeiter in Lane 5."
+      },
+      {
+        "id": 10,
+        "round": 2,
+        "text": "Spieler 1 passt."
+      },
+      {
+        "id": 11,
+        "round": 2,
+        "text": "Spieler 2 passt."
+      },
+      {
+        "id": 12,
+        "round": 2,
+        "text": "— Kampfphase —"
+      },
+      {
+        "id": 13,
+        "round": 2,
+        "text": "Lane 4: Rekrut trifft Streikposten für 2.",
+        "event": {
+          "kind": "attack",
+          "lane": 3,
+          "attacker": 1,
+          "damage": 2,
+          "toBase": false
+        }
+      },
+      {
+        "id": 14,
+        "round": 3,
+        "text": "— Runde 3 beginnt (3 Energie, Spieler 2 fängt an) —"
+      },
+      {
+        "id": 15,
+        "round": 3,
+        "text": "Spieler 2 spielt Schichtwechsel in Lane 1."
+      },
+      {
+        "id": 16,
+        "round": 3,
+        "text": "Spieler 1 spielt Basisdemokratie in Lane 5."
+      },
+      {
+        "id": 17,
+        "round": 3,
+        "text": "Spieler 2 passt."
+      },
+      {
+        "id": 18,
+        "round": 3,
+        "text": "Spieler 1 passt."
+      },
+      {
+        "id": 19,
+        "round": 3,
+        "text": "— Kampfphase —"
+      },
+      {
+        "id": 20,
+        "round": 3,
+        "text": "Lane 4: Streikposten trifft Rekrut für 2.",
+        "event": {
+          "kind": "attack",
+          "lane": 3,
+          "attacker": 0,
+          "damage": 2,
+          "toBase": false
+        }
+      },
+      {
+        "id": 21,
+        "round": 3,
+        "text": "Lane 4: Rekrut trifft Streikposten für 2.",
+        "event": {
+          "kind": "attack",
+          "lane": 3,
+          "attacker": 1,
+          "damage": 2,
+          "toBase": false
+        }
+      },
+      {
+        "id": 22,
+        "round": 3,
+        "text": "Streikposten wird zerstört.",
+        "event": {
+          "kind": "death",
+          "lane": 3,
+          "owner": 0
+        }
+      },
+      {
+        "id": 23,
+        "round": 3,
+        "text": "Rekrut wird zerstört.",
+        "event": {
+          "kind": "death",
+          "lane": 3,
+          "owner": 1
+        }
+      },
+      {
+        "id": 24,
+        "round": 3,
+        "text": "Lane 5: Fließbandarbeiter trifft Basisdemokratie für 4.",
+        "event": {
+          "kind": "attack",
+          "lane": 4,
+          "attacker": 1,
+          "damage": 4,
+          "toBase": false
+        }
+      },
+      {
+        "id": 25,
+        "round": 4,
+        "text": "— Runde 4 beginnt (4 Energie, Spieler 1 fängt an) —"
+      },
+      {
+        "id": 26,
+        "round": 4,
+        "text": "Spieler 1 spielt Schrottsammlerin in Lane 3."
+      },
+      {
+        "id": 27,
+        "round": 4,
+        "text": "Spieler 2 spielt Vorarbeiter in Lane 2."
+      },
+      {
+        "id": 28,
+        "round": 4,
+        "text": "Spieler 1 spielt Flugblatt-Verteiler in Lane 1."
+      },
+      {
+        "id": 29,
+        "round": 4,
+        "text": "Spieler 2 passt."
+      },
+      {
+        "id": 30,
+        "round": 4,
+        "text": "Spieler 1 passt."
+      },
+      {
+        "id": 31,
+        "round": 4,
+        "text": "— Kampfphase —"
+      },
+      {
+        "id": 32,
+        "round": 4,
+        "text": "Lane 1: Schichtwechsel trifft Flugblatt-Verteiler für 5.",
+        "event": {
+          "kind": "attack",
+          "lane": 0,
+          "attacker": 1,
+          "damage": 5,
+          "toBase": false
+        }
+      },
+      {
+        "id": 33,
+        "round": 4,
+        "text": "Flugblatt-Verteiler wird zerstört.",
+        "event": {
+          "kind": "death",
+          "lane": 0,
+          "owner": 0
+        }
+      },
+      {
+        "id": 34,
+        "round": 4,
+        "text": "Lane 5: Basisdemokratie trifft Fließbandarbeiter für 2.",
+        "event": {
+          "kind": "attack",
+          "lane": 4,
+          "attacker": 0,
+          "damage": 2,
+          "toBase": false
+        }
+      },
+      {
+        "id": 35,
+        "round": 4,
+        "text": "Lane 5: Fließbandarbeiter trifft Basisdemokratie für 5.",
+        "event": {
+          "kind": "attack",
+          "lane": 4,
+          "attacker": 1,
+          "damage": 5,
+          "toBase": false
+        }
+      },
+      {
+        "id": 36,
+        "round": 4,
+        "text": "Basisdemokratie wird zerstört.",
+        "event": {
+          "kind": "death",
+          "lane": 4,
+          "owner": 0
+        }
+      },
+      {
+        "id": 37,
+        "round": 4,
+        "text": "Schichtwechsel: Überstunden +2/+1."
+      },
+      {
+        "id": 38,
+        "round": 5,
+        "text": "Vorarbeiter: Schichtwechsel wächst um +1/+1."
+      },
+      {
+        "id": 39,
+        "round": 5,
+        "text": "— Runde 5 beginnt (5 Energie, Spieler 2 fängt an) —"
+      },
+      {
+        "id": 40,
+        "round": 5,
+        "text": "Spieler 2 spielt Bibliothekar in Lane 3."
+      },
+      {
+        "id": 41,
+        "round": 5,
+        "text": "Spieler 1 spielt Schrottsammlerin in Lane 1."
+      },
+      {
+        "id": 42,
+        "round": 5,
+        "text": "Spieler 2 spielt Lehrling in Lane 4."
+      },
+      {
+        "id": 43,
+        "round": 5,
+        "text": "Spieler 1 spielt Feldscherin in Lane 5."
+      },
+      {
+        "id": 44,
+        "round": 5,
+        "text": "Spieler 2 passt."
+      },
+      {
+        "id": 45,
+        "round": 5,
+        "text": "Spieler 1 passt."
+      },
+      {
+        "id": 46,
+        "round": 5,
+        "text": "— Kampfphase —"
+      },
+      {
+        "id": 47,
+        "round": 5,
+        "text": "Lane 1: Schichtwechsel trifft Schrottsammlerin für 8.",
+        "event": {
+          "kind": "attack",
+          "lane": 0,
+          "attacker": 1,
+          "damage": 8,
+          "toBase": false
+        }
+      },
+      {
+        "id": 48,
+        "round": 5,
+        "text": "Schrottsammlerin wird zerstört.",
+        "event": {
+          "kind": "death",
+          "lane": 0,
+          "owner": 0
+        }
+      },
+      {
+        "id": 49,
+        "round": 5,
+        "text": "Fund-Token (1/1) erscheint in Lane 1.",
+        "event": {
+          "kind": "spell",
+          "lane": 0,
+          "effect": "summon",
+          "faction": "obdachlose"
+        }
+      },
+      {
+        "id": 50,
+        "round": 5,
+        "text": "Schild von Spieler 1 lädt sich um 1 auf (1/7).",
+        "event": {
+          "kind": "schild",
+          "owner": 0,
+          "ladung": 1,
+          "stand": 1,
+          "abschnitte": 7
+        }
+      },
+      {
+        "id": 51,
+        "round": 5,
+        "text": "Lane 2: Vorarbeiter trifft die gegnerische Basis für 3.",
+        "event": {
+          "kind": "attack",
+          "lane": 1,
+          "attacker": 1,
+          "damage": 3,
+          "toBase": true
+        }
+      },
+      {
+        "id": 52,
+        "round": 5,
+        "text": "Lane 3: Schrottsammlerin trifft Bibliothekar für 3.",
+        "event": {
+          "kind": "attack",
+          "lane": 2,
+          "attacker": 0,
+          "damage": 3,
+          "toBase": false
+        }
+      },
+      {
+        "id": 53,
+        "round": 5,
+        "text": "Lane 5: Fließbandarbeiter trifft Feldscherin für 5.",
+        "event": {
+          "kind": "attack",
+          "lane": 4,
+          "attacker": 1,
+          "damage": 5,
+          "toBase": false
+        }
+      },
+      {
+        "id": 54,
+        "round": 5,
+        "text": "Feldscherin wird zerstört.",
+        "event": {
+          "kind": "death",
+          "lane": 4,
+          "owner": 0
+        }
+      },
+      {
+        "id": 55,
+        "round": 6,
+        "text": "Vorarbeiter: Schichtwechsel wächst um +1/+1."
+      },
+      {
+        "id": 56,
+        "round": 6,
+        "text": "Bibliothekar: Wahl → +1 Wissen."
+      },
+      {
+        "id": 57,
+        "round": 6,
+        "text": "— Runde 6 beginnt (6 Energie, Spieler 1 fängt an) —"
+      },
+      {
+        "id": 58,
+        "round": 6,
+        "text": "Generalstreik: alle gegnerischen Kreaturen verlieren bis zum Rundenende 2 ATK.",
+        "event": {
+          "kind": "spell",
+          "lane": 0,
+          "effect": "attackBuff",
+          "faction": "sozis"
+        }
+      },
+      {
+        "id": 59,
+        "round": 6,
+        "text": "Spieler 2 passt."
+      },
+      {
+        "id": 60,
+        "round": 6,
+        "text": "Spieler 1 passt."
+      },
+      {
+        "id": 61,
+        "round": 6,
+        "text": "— Kampfphase —"
+      },
+      {
+        "id": 62,
+        "round": 6,
+        "text": "Lane 1: Fund-Token trifft Schichtwechsel für 1.",
+        "event": {
+          "kind": "attack",
+          "lane": 0,
+          "attacker": 0,
+          "damage": 1,
+          "toBase": false
+        }
+      },
+      {
+        "id": 63,
+        "round": 6,
+        "text": "Lane 1: Schichtwechsel trifft Fund-Token für 7.",
+        "event": {
+          "kind": "attack",
+          "lane": 0,
+          "attacker": 1,
+          "damage": 7,
+          "toBase": false
+        }
+      },
+      {
+        "id": 64,
+        "round": 6,
+        "text": "Fund-Token wird zerstört.",
+        "event": {
+          "kind": "death",
+          "lane": 0,
+          "owner": 0
+        }
+      },
+      {
+        "id": 65,
+        "round": 6,
+        "text": "Schild von Spieler 1 lädt sich um 2 auf (3/7).",
+        "event": {
+          "kind": "schild",
+          "owner": 0,
+          "ladung": 2,
+          "stand": 3,
+          "abschnitte": 7
+        }
+      },
+      {
+        "id": 66,
+        "round": 6,
+        "text": "Lane 2: Vorarbeiter trifft die gegnerische Basis für 1.",
+        "event": {
+          "kind": "attack",
+          "lane": 1,
+          "attacker": 1,
+          "damage": 1,
+          "toBase": true
+        }
+      },
+      {
+        "id": 67,
+        "round": 6,
+        "text": "Lane 3: Schrottsammlerin trifft Bibliothekar für 3.",
+        "event": {
+          "kind": "attack",
+          "lane": 2,
+          "attacker": 0,
+          "damage": 3,
+          "toBase": false
+        }
+      },
+      {
+        "id": 68,
+        "round": 6,
+        "text": "Lane 3: Bibliothekar trifft Schrottsammlerin für 1.",
+        "event": {
+          "kind": "attack",
+          "lane": 2,
+          "attacker": 1,
+          "damage": 1,
+          "toBase": false
+        }
+      },
+      {
+        "id": 69,
+        "round": 6,
+        "text": "Bibliothekar wird zerstört.",
+        "event": {
+          "kind": "death",
+          "lane": 2,
+          "owner": 1
+        }
+      },
+      {
+        "id": 70,
+        "round": 6,
+        "text": "Lane 4: Lehrling greift die gegnerische Basis an – abgewehrt.",
+        "event": {
+          "kind": "attack",
+          "lane": 3,
+          "attacker": 1,
+          "damage": 0,
+          "toBase": true,
+          "blockiert": true
+        }
+      },
+      {
+        "id": 71,
+        "round": 6,
+        "text": "Schild von Spieler 1 lädt sich um 2 auf (5/7).",
+        "event": {
+          "kind": "schild",
+          "owner": 0,
+          "ladung": 2,
+          "stand": 5,
+          "abschnitte": 7
+        }
+      },
+      {
+        "id": 72,
+        "round": 6,
+        "text": "Lane 5: Fließbandarbeiter trifft die gegnerische Basis für 3.",
+        "event": {
+          "kind": "attack",
+          "lane": 4,
+          "attacker": 1,
+          "damage": 3,
+          "toBase": true
+        }
+      },
+      {
+        "id": 73,
+        "round": 7,
+        "text": "Vorarbeiter: Schichtwechsel wächst um +1/+1."
+      },
+      {
+        "id": 74,
+        "round": 7,
+        "text": "— Runde 7 beginnt (7 Energie, Spieler 2 fängt an) —"
+      },
+      {
+        "id": 75,
+        "round": 7,
+        "text": "Spieler 2 spielt Doktorandin in Lane 3."
+      },
+      {
+        "id": 76,
+        "round": 7,
+        "text": "Doktorandin: +1/+1 aus 1 Wissen."
+      },
+      {
+        "id": 77,
+        "round": 7,
+        "text": "Spieler 1 spielt Die Massen in Lane 5."
+      },
+      {
+        "id": 78,
+        "round": 7,
+        "text": "Spieler 2 passt."
+      },
+      {
+        "id": 79,
+        "round": 7,
+        "text": "Spieler 1 passt."
+      },
+      {
+        "id": 80,
+        "round": 7,
+        "text": "— Kampfphase —"
+      },
+      {
+        "id": 81,
+        "round": 7,
+        "text": "Schild von Spieler 1 blockt den Angriff (10 Schaden verhindert)!",
+        "event": {
+          "kind": "schild",
+          "owner": 0,
+          "ladung": 2,
+          "stand": 0,
+          "abschnitte": 7,
+          "blockiert": true
+        }
+      },
+      {
+        "id": 82,
+        "round": 7,
+        "text": "Lane 1: Schichtwechsel greift die gegnerische Basis an – abgewehrt.",
+        "event": {
+          "kind": "attack",
+          "lane": 0,
+          "attacker": 1,
+          "damage": 0,
+          "toBase": true,
+          "blockiert": true
+        }
+      },
+      {
+        "id": 83,
+        "round": 7,
+        "text": "Spieler 1 opfert PC Principal von der Bank.",
+        "event": {
+          "kind": "cheerleaderSacrifice",
+          "owner": 0,
+          "slot": 0,
+          "cardId": "pc_principal"
+        }
+      },
+      {
+        "id": 84,
+        "round": 7,
+        "text": "Superkraft: Machtwort!",
+        "event": {
+          "kind": "cheerleaderPower",
+          "owner": 0,
+          "cardId": "pc_principal",
+          "kraft": "Machtwort",
+          "wirkung": "peinigenAlle"
+        }
+      },
+      {
+        "id": 85,
+        "round": 7,
+        "text": "Machtwort: 5 gegnerische Kreaturen auf 0 ATK und 1 Verteidigung gedeckelt."
+      },
+      {
+        "id": 86,
+        "round": 7,
+        "text": "Lane 2: Vorarbeiter greift die gegnerische Basis an – abgewehrt.",
+        "event": {
+          "kind": "attack",
+          "lane": 1,
+          "attacker": 1,
+          "damage": 0,
+          "toBase": true,
+          "blockiert": true
+        }
+      },
+      {
+        "id": 87,
+        "round": 7,
+        "text": "Lane 3: Schrottsammlerin trifft Doktorandin für 3.",
+        "event": {
+          "kind": "attack",
+          "lane": 2,
+          "attacker": 0,
+          "damage": 3,
+          "toBase": false
+        }
+      },
+      {
+        "id": 88,
+        "round": 7,
+        "text": "Doktorandin wird zerstört.",
+        "event": {
+          "kind": "death",
+          "lane": 2,
+          "owner": 1
+        }
+      },
+      {
+        "id": 89,
+        "round": 7,
+        "text": "Lane 4: Lehrling greift die gegnerische Basis an – abgewehrt.",
+        "event": {
+          "kind": "attack",
+          "lane": 3,
+          "attacker": 1,
+          "damage": 0,
+          "toBase": true,
+          "blockiert": true
+        }
+      },
+      {
+        "id": 90,
+        "round": 8,
+        "text": "Vorarbeiter: Schichtwechsel wächst um +1/+1."
+      },
+      {
+        "id": 91,
+        "round": 8,
+        "text": "— Runde 8 beginnt (8 Energie, Spieler 1 fängt an) —"
+      },
+      {
+        "id": 92,
+        "round": 8,
+        "text": "Spieler 1 spielt Die Massen in Lane 1."
+      },
+      {
+        "id": 93,
+        "round": 8,
+        "text": "Spieler 2 spielt Doktorandin in Lane 3."
+      },
+      {
+        "id": 94,
+        "round": 8,
+        "text": "Spieler 1 spielt Feldscherin in Lane 2."
+      },
+      {
+        "id": 95,
+        "round": 8,
+        "text": "Spieler 2 passt."
+      },
+      {
+        "id": 96,
+        "round": 8,
+        "text": "Spieler 1 passt."
+      },
+      {
+        "id": 97,
+        "round": 8,
+        "text": "— Kampfphase —"
+      },
+      {
+        "id": 98,
+        "round": 8,
+        "text": "Lane 3: Schrottsammlerin trifft Doktorandin für 3.",
+        "event": {
+          "kind": "attack",
+          "lane": 2,
+          "attacker": 0,
+          "damage": 3,
+          "toBase": false
+        }
+      },
+      {
+        "id": 99,
+        "round": 8,
+        "text": "Lane 4: Lehrling greift die gegnerische Basis an – abgewehrt.",
+        "event": {
+          "kind": "attack",
+          "lane": 3,
+          "attacker": 1,
+          "damage": 0,
+          "toBase": true,
+          "blockiert": true
+        }
+      },
+      {
+        "id": 100,
+        "round": 8,
+        "text": "Lane 5: Die Massen trifft Fließbandarbeiter für 6.",
+        "event": {
+          "kind": "attack",
+          "lane": 4,
+          "attacker": 0,
+          "damage": 6,
+          "toBase": false
+        }
+      },
+      {
+        "id": 101,
+        "round": 8,
+        "text": "Schild von Spieler 2 lädt sich um 1 auf (1/7).",
+        "event": {
+          "kind": "schild",
+          "owner": 1,
+          "ladung": 1,
+          "stand": 1,
+          "abschnitte": 7
+        }
+      },
+      {
+        "id": 102,
+        "round": 8,
+        "text": "Lane 5: Wucht! 5 Überschuss trifft die Basis."
+      },
+      {
+        "id": 103,
+        "round": 8,
+        "text": "Fließbandarbeiter wird zerstört.",
+        "event": {
+          "kind": "death",
+          "lane": 4,
+          "owner": 1
+        }
+      },
+      {
+        "id": 104,
+        "round": 8,
+        "text": "Feldscherin heilt Schrottsammlerin um 1."
+      },
+      {
+        "id": 105,
+        "round": 9,
+        "text": "Vorarbeiter: Schichtwechsel wächst um +1/+1."
+      },
+      {
+        "id": 106,
+        "round": 9,
+        "text": "— Runde 9 beginnt (9 Energie, Spieler 2 fängt an) —"
+      },
+      {
+        "id": 107,
+        "round": 9,
+        "text": "Spieler 2 spielt Erstsemester in Lane 5."
+      },
+      {
+        "id": 108,
+        "round": 9,
+        "text": "Spieler 1 spielt Gewerkschaftssekretärin in Lane 4."
+      },
+      {
+        "id": 109,
+        "round": 9,
+        "text": "Spieler 2 passt."
+      },
+      {
+        "id": 110,
+        "round": 9,
+        "text": "Spieler 1 passt."
+      },
+      {
+        "id": 111,
+        "round": 9,
+        "text": "— Kampfphase —"
+      },
+      {
+        "id": 112,
+        "round": 9,
+        "text": "Lane 1: Die Massen trifft Schichtwechsel für 7.",
+        "event": {
+          "kind": "attack",
+          "lane": 0,
+          "attacker": 0,
+          "damage": 7,
+          "toBase": false
+        }
+      },
+      {
+        "id": 113,
+        "round": 9,
+        "text": "Schild von Spieler 2 lädt sich um 2 auf (3/7).",
+        "event": {
+          "kind": "schild",
+          "owner": 1,
+          "ladung": 2,
+          "stand": 3,
+          "abschnitte": 7
+        }
+      },
+      {
+        "id": 114,
+        "round": 9,
+        "text": "Lane 1: Wucht! 6 Überschuss trifft die Basis."
+      },
+      {
+        "id": 115,
+        "round": 9,
+        "text": "Schichtwechsel wird zerstört.",
+        "event": {
+          "kind": "death",
+          "lane": 0,
+          "owner": 1
+        }
+      },
+      {
+        "id": 116,
+        "round": 9,
+        "text": "Lane 2: Feldscherin trifft Vorarbeiter für 1.",
+        "event": {
+          "kind": "attack",
+          "lane": 1,
+          "attacker": 0,
+          "damage": 1,
+          "toBase": false
+        }
+      },
+      {
+        "id": 117,
+        "round": 9,
+        "text": "Vorarbeiter wird zerstört.",
+        "event": {
+          "kind": "death",
+          "lane": 1,
+          "owner": 1
+        }
+      },
+      {
+        "id": 118,
+        "round": 9,
+        "text": "Lane 3: Schrottsammlerin trifft Doktorandin für 3.",
+        "event": {
+          "kind": "attack",
+          "lane": 2,
+          "attacker": 0,
+          "damage": 3,
+          "toBase": false
+        }
+      },
+      {
+        "id": 119,
+        "round": 9,
+        "text": "Lane 3: Doktorandin trifft Schrottsammlerin für 3.",
+        "event": {
+          "kind": "attack",
+          "lane": 2,
+          "attacker": 1,
+          "damage": 3,
+          "toBase": false
+        }
+      },
+      {
+        "id": 120,
+        "round": 9,
+        "text": "Schrottsammlerin wird zerstört.",
+        "event": {
+          "kind": "death",
+          "lane": 2,
+          "owner": 0
+        }
+      },
+      {
+        "id": 121,
+        "round": 9,
+        "text": "Doktorandin wird zerstört.",
+        "event": {
+          "kind": "death",
+          "lane": 2,
+          "owner": 1
+        }
+      },
+      {
+        "id": 122,
+        "round": 9,
+        "text": "Fund-Token (1/1) erscheint in Lane 3.",
+        "event": {
+          "kind": "spell",
+          "lane": 2,
+          "effect": "summon",
+          "faction": "obdachlose"
+        }
+      },
+      {
+        "id": 123,
+        "round": 9,
+        "text": "Lane 5: Die Massen trifft Erstsemester für 7.",
+        "event": {
+          "kind": "attack",
+          "lane": 4,
+          "attacker": 0,
+          "damage": 7,
+          "toBase": false
+        }
+      },
+      {
+        "id": 124,
+        "round": 9,
+        "text": "Schild von Spieler 2 lädt sich um 1 auf (4/7).",
+        "event": {
+          "kind": "schild",
+          "owner": 1,
+          "ladung": 1,
+          "stand": 4,
+          "abschnitte": 7
+        }
+      },
+      {
+        "id": 125,
+        "round": 9,
+        "text": "Lane 5: Wucht! 5 Überschuss trifft die Basis."
+      },
+      {
+        "id": 126,
+        "round": 9,
+        "text": "Die Basis von Spieler 2 ist zerstört – Spieler 1 gewinnt!"
+      }
+    ]
+  }
+}

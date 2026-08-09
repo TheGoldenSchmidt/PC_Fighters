@@ -1,0 +1,743 @@
+{
+  "deckA": "a4_urzeitliches_rudel",
+  "deckB": "h2_schicht",
+  "botA": "standard",
+  "botB": "standard",
+  "replay": {
+    "version": 1,
+    "matchId": "match-1b4c9a78-4199",
+    "saat": 458005112,
+    "startspieler": 0,
+    "cheerleaders": [
+      [
+        "pc_principal",
+        "pc_babies",
+        "alter_wissenschaftler"
+      ],
+      [
+        "pc_principal",
+        "pc_babies",
+        "alter_wissenschaftler"
+      ]
+    ],
+    "aktionen": [
+      {
+        "index": 0,
+        "runde": 0,
+        "spieler": 0,
+        "aktion": {
+          "type": "mulligan",
+          "handIndices": [
+            1,
+            2,
+            3
+          ]
+        },
+        "energieVorher": 0,
+        "energieNachher": 0,
+        "zustand": "d6e8d97d"
+      },
+      {
+        "index": 1,
+        "runde": 1,
+        "spieler": 1,
+        "aktion": {
+          "type": "mulligan",
+          "handIndices": []
+        },
+        "energieVorher": 0,
+        "energieNachher": 1,
+        "zustand": "880ef0f3"
+      },
+      {
+        "index": 2,
+        "runde": 1,
+        "spieler": 0,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 0,
+          "lane": 1
+        },
+        "energieVorher": 1,
+        "energieNachher": 0,
+        "zustand": "af36019c",
+        "cardId": "compsognathus"
+      },
+      {
+        "index": 3,
+        "runde": 1,
+        "spieler": 1,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 1,
+          "lane": 1
+        },
+        "energieVorher": 1,
+        "energieNachher": 0,
+        "zustand": "885ecf09",
+        "cardId": "lehrling"
+      },
+      {
+        "index": 4,
+        "runde": 1,
+        "spieler": 0,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 0,
+        "energieNachher": 0,
+        "zustand": "be9bd852"
+      },
+      {
+        "index": 5,
+        "runde": 2,
+        "spieler": 1,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 0,
+        "energieNachher": 2,
+        "zustand": "e449f2a2"
+      },
+      {
+        "index": 6,
+        "runde": 2,
+        "spieler": 1,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 0,
+          "lane": 2
+        },
+        "energieVorher": 2,
+        "energieNachher": 0,
+        "zustand": "65e2f4df",
+        "cardId": "fliessbandarbeiter"
+      },
+      {
+        "index": 7,
+        "runde": 2,
+        "spieler": 0,
+        "aktion": {
+          "type": "playAction",
+          "handIndex": 0,
+          "targetLane": 1
+        },
+        "energieVorher": 2,
+        "energieNachher": 0,
+        "zustand": "e5a07e03",
+        "cardId": "wilder_instinkt"
+      },
+      {
+        "index": 8,
+        "runde": 2,
+        "spieler": 1,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 0,
+        "energieNachher": 0,
+        "zustand": "73bf0962"
+      },
+      {
+        "index": 9,
+        "runde": 3,
+        "spieler": 0,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 0,
+        "energieNachher": 3,
+        "zustand": "5d64f998"
+      },
+      {
+        "index": 10,
+        "runde": 3,
+        "spieler": 0,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 3,
+          "lane": 3
+        },
+        "energieVorher": 3,
+        "energieNachher": 1,
+        "zustand": "c0f96980",
+        "cardId": "wolf"
+      },
+      {
+        "index": 11,
+        "runde": 3,
+        "spieler": 1,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 2,
+          "lane": 4
+        },
+        "energieVorher": 3,
+        "energieNachher": 1,
+        "zustand": "f504c406",
+        "cardId": "fliessbandarbeiter"
+      },
+      {
+        "index": 12,
+        "runde": 3,
+        "spieler": 0,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 1,
+        "energieNachher": 1,
+        "zustand": "59e4c805"
+      },
+      {
+        "index": 13,
+        "runde": 4,
+        "spieler": 1,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 1,
+        "energieNachher": 4,
+        "zustand": "004df677"
+      },
+      {
+        "index": 14,
+        "runde": 4,
+        "spieler": 1,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 3,
+          "lane": 3
+        },
+        "energieVorher": 4,
+        "energieNachher": 0,
+        "zustand": "7115fccb",
+        "cardId": "vorarbeiter"
+      },
+      {
+        "index": 15,
+        "runde": 4,
+        "spieler": 0,
+        "aktion": {
+          "type": "playCreature",
+          "handIndex": 2,
+          "lane": 1
+        },
+        "energieVorher": 4,
+        "energieNachher": 0,
+        "zustand": "78dec433",
+        "cardId": "triceratops"
+      },
+      {
+        "index": 16,
+        "runde": 4,
+        "spieler": 1,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 0,
+        "energieNachher": 0,
+        "zustand": "1b774f9e"
+      },
+      {
+        "index": 17,
+        "runde": 4,
+        "spieler": 0,
+        "aktion": {
+          "type": "pass"
+        },
+        "energieVorher": 0,
+        "energieNachher": 0,
+        "zustand": "f02e3ace"
+      }
+    ],
+    "runden": [
+      {
+        "runde": 1,
+        "basis": [
+          12,
+          12
+        ],
+        "energie": [
+          1,
+          1
+        ],
+        "hand": [
+          4,
+          4
+        ],
+        "deck": [
+          16,
+          16
+        ],
+        "brett": [
+          0,
+          0
+        ],
+        "kontrollierteLanes": [
+          0,
+          0
+        ],
+        "laneBelegt": [
+          [
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          [
+            false,
+            false,
+            false,
+            false,
+            false
+          ]
+        ]
+      },
+      {
+        "runde": 2,
+        "basis": [
+          12,
+          12
+        ],
+        "energie": [
+          2,
+          2
+        ],
+        "hand": [
+          4,
+          4
+        ],
+        "deck": [
+          15,
+          15
+        ],
+        "brett": [
+          1,
+          1
+        ],
+        "kontrollierteLanes": [
+          0,
+          0
+        ],
+        "laneBelegt": [
+          [
+            false,
+            true,
+            false,
+            false,
+            false
+          ],
+          [
+            false,
+            true,
+            false,
+            false,
+            false
+          ]
+        ]
+      },
+      {
+        "runde": 3,
+        "basis": [
+          12,
+          12
+        ],
+        "energie": [
+          3,
+          3
+        ],
+        "hand": [
+          4,
+          4
+        ],
+        "deck": [
+          14,
+          14
+        ],
+        "brett": [
+          0,
+          1
+        ],
+        "kontrollierteLanes": [
+          0,
+          1
+        ],
+        "laneBelegt": [
+          [
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          [
+            false,
+            false,
+            true,
+            false,
+            false
+          ]
+        ]
+      },
+      {
+        "runde": 4,
+        "basis": [
+          8,
+          12
+        ],
+        "energie": [
+          4,
+          4
+        ],
+        "hand": [
+          4,
+          4
+        ],
+        "deck": [
+          13,
+          13
+        ],
+        "brett": [
+          1,
+          2
+        ],
+        "kontrollierteLanes": [
+          1,
+          2
+        ],
+        "laneBelegt": [
+          [
+            false,
+            false,
+            false,
+            true,
+            false
+          ],
+          [
+            false,
+            false,
+            true,
+            false,
+            true
+          ]
+        ]
+      },
+      {
+        "runde": 4,
+        "basis": [
+          -3,
+          12
+        ],
+        "energie": [
+          0,
+          0
+        ],
+        "hand": [
+          3,
+          3
+        ],
+        "deck": [
+          13,
+          13
+        ],
+        "brett": [
+          2,
+          3
+        ],
+        "kontrollierteLanes": [
+          1,
+          2
+        ],
+        "laneBelegt": [
+          [
+            false,
+            true,
+            false,
+            true,
+            false
+          ],
+          [
+            false,
+            false,
+            true,
+            true,
+            true
+          ]
+        ]
+      }
+    ],
+    "endzustand": "f02e3ace",
+    "log": [
+      {
+        "id": 0,
+        "round": 0,
+        "text": "Spieler 1 hat den Mulligan bestätigt."
+      },
+      {
+        "id": 1,
+        "round": 0,
+        "text": "Spieler 2 hat den Mulligan bestätigt."
+      },
+      {
+        "id": 2,
+        "round": 1,
+        "text": "— Runde 1 beginnt (1 Energie, Spieler 1 fängt an) —"
+      },
+      {
+        "id": 3,
+        "round": 1,
+        "text": "Spieler 1 spielt Compsognathus in Lane 2."
+      },
+      {
+        "id": 4,
+        "round": 1,
+        "text": "Spieler 2 spielt Lehrling in Lane 2."
+      },
+      {
+        "id": 5,
+        "round": 1,
+        "text": "Spieler 1 passt."
+      },
+      {
+        "id": 6,
+        "round": 1,
+        "text": "Spieler 2 passt."
+      },
+      {
+        "id": 7,
+        "round": 1,
+        "text": "— Kampfphase —"
+      },
+      {
+        "id": 8,
+        "round": 2,
+        "text": "— Runde 2 beginnt (2 Energie, Spieler 2 fängt an) —"
+      },
+      {
+        "id": 9,
+        "round": 2,
+        "text": "Spieler 2 spielt Fließbandarbeiter in Lane 3."
+      },
+      {
+        "id": 10,
+        "round": 2,
+        "text": "Wilder Instinkt: Compsognathus erhält +2 Angriff bis zum Rundenende.",
+        "event": {
+          "kind": "spell",
+          "lane": 1,
+          "effect": "attackBuff",
+          "faction": "animals"
+        }
+      },
+      {
+        "id": 11,
+        "round": 2,
+        "text": "Spieler 2 passt."
+      },
+      {
+        "id": 12,
+        "round": 2,
+        "text": "Spieler 1 passt."
+      },
+      {
+        "id": 13,
+        "round": 2,
+        "text": "— Kampfphase —"
+      },
+      {
+        "id": 14,
+        "round": 2,
+        "text": "Lane 2: Compsognathus trifft Lehrling für 3.",
+        "event": {
+          "kind": "attack",
+          "lane": 1,
+          "attacker": 0,
+          "damage": 3,
+          "toBase": false
+        }
+      },
+      {
+        "id": 15,
+        "round": 2,
+        "text": "Lane 2: Lehrling trifft Compsognathus für 2.",
+        "event": {
+          "kind": "attack",
+          "lane": 1,
+          "attacker": 1,
+          "damage": 2,
+          "toBase": false
+        }
+      },
+      {
+        "id": 16,
+        "round": 2,
+        "text": "Compsognathus wird zerstört.",
+        "event": {
+          "kind": "death",
+          "lane": 1,
+          "owner": 0
+        }
+      },
+      {
+        "id": 17,
+        "round": 2,
+        "text": "Lehrling wird zerstört.",
+        "event": {
+          "kind": "death",
+          "lane": 1,
+          "owner": 1
+        }
+      },
+      {
+        "id": 18,
+        "round": 3,
+        "text": "— Runde 3 beginnt (3 Energie, Spieler 1 fängt an) —"
+      },
+      {
+        "id": 19,
+        "round": 3,
+        "text": "Spieler 1 spielt Wolf in Lane 4."
+      },
+      {
+        "id": 20,
+        "round": 3,
+        "text": "Spieler 2 spielt Fließbandarbeiter in Lane 5."
+      },
+      {
+        "id": 21,
+        "round": 3,
+        "text": "Spieler 1 passt."
+      },
+      {
+        "id": 22,
+        "round": 3,
+        "text": "Spieler 2 passt."
+      },
+      {
+        "id": 23,
+        "round": 3,
+        "text": "— Kampfphase —"
+      },
+      {
+        "id": 24,
+        "round": 3,
+        "text": "Schild von Spieler 1 lädt sich um 1 auf (1/7).",
+        "event": {
+          "kind": "schild",
+          "owner": 0,
+          "ladung": 1,
+          "stand": 1,
+          "abschnitte": 7
+        }
+      },
+      {
+        "id": 25,
+        "round": 3,
+        "text": "Lane 3: Fließbandarbeiter trifft die gegnerische Basis für 4.",
+        "event": {
+          "kind": "attack",
+          "lane": 2,
+          "attacker": 1,
+          "damage": 4,
+          "toBase": true
+        }
+      },
+      {
+        "id": 26,
+        "round": 4,
+        "text": "— Runde 4 beginnt (4 Energie, Spieler 2 fängt an) —"
+      },
+      {
+        "id": 27,
+        "round": 4,
+        "text": "Spieler 2 spielt Vorarbeiter in Lane 4."
+      },
+      {
+        "id": 28,
+        "round": 4,
+        "text": "Spieler 1 spielt Triceratops in Lane 2."
+      },
+      {
+        "id": 29,
+        "round": 4,
+        "text": "Spieler 2 passt."
+      },
+      {
+        "id": 30,
+        "round": 4,
+        "text": "Spieler 1 passt."
+      },
+      {
+        "id": 31,
+        "round": 4,
+        "text": "— Kampfphase —"
+      },
+      {
+        "id": 32,
+        "round": 4,
+        "text": "Schild von Spieler 1 lädt sich um 1 auf (2/7).",
+        "event": {
+          "kind": "schild",
+          "owner": 0,
+          "ladung": 1,
+          "stand": 2,
+          "abschnitte": 7
+        }
+      },
+      {
+        "id": 33,
+        "round": 4,
+        "text": "Lane 3: Fließbandarbeiter trifft die gegnerische Basis für 6.",
+        "event": {
+          "kind": "attack",
+          "lane": 2,
+          "attacker": 1,
+          "damage": 6,
+          "toBase": true
+        }
+      },
+      {
+        "id": 34,
+        "round": 4,
+        "text": "Lane 4: Wolf trifft Vorarbeiter für 2.",
+        "event": {
+          "kind": "attack",
+          "lane": 3,
+          "attacker": 0,
+          "damage": 2,
+          "toBase": false
+        }
+      },
+      {
+        "id": 35,
+        "round": 4,
+        "text": "Schild von Spieler 1 lädt sich um 3 auf (5/7).",
+        "event": {
+          "kind": "schild",
+          "owner": 0,
+          "ladung": 3,
+          "stand": 5,
+          "abschnitte": 7
+        }
+      },
+      {
+        "id": 36,
+        "round": 4,
+        "text": "Lane 5: Fließbandarbeiter trifft die gegnerische Basis für 5.",
+        "event": {
+          "kind": "attack",
+          "lane": 4,
+          "attacker": 1,
+          "damage": 5,
+          "toBase": true
+        }
+      },
+      {
+        "id": 37,
+        "round": 4,
+        "text": "Die Basis von Spieler 1 ist zerstört – Spieler 2 gewinnt!"
+      }
+    ]
+  }
+}

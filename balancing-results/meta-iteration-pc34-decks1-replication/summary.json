@@ -1,0 +1,529 @@
+{
+  "generatedAt": "2026-08-02T18:23:20.564Z",
+  "mode": "full",
+  "lanes": 5,
+  "baseSeed": 20260824,
+  "gamesPerConfiguration": 100,
+  "activeDecks": [
+    "forschung_muskelkraft",
+    "rudeljaeger",
+    "solidaritaet_ueberleben",
+    "urzeitliche_kolosse"
+  ],
+  "deckContracts": {
+    "rudeljaeger": {
+      "size": 20,
+      "heroes": 2,
+      "heroIds": [
+        "vogelmensch",
+        "junger_neffe"
+      ],
+      "principals": 1,
+      "pcPrincipal": true
+    },
+    "urzeitliche_kolosse": {
+      "size": 20,
+      "heroes": 2,
+      "heroIds": [
+        "vogelmensch",
+        "randy_marsh"
+      ],
+      "principals": 1,
+      "pcPrincipal": true
+    },
+    "solidaritaet_ueberleben": {
+      "size": 20,
+      "heroes": 2,
+      "heroIds": [
+        "pc_babies",
+        "junger_neffe"
+      ],
+      "principals": 1,
+      "pcPrincipal": true
+    },
+    "forschung_muskelkraft": {
+      "size": 20,
+      "heroes": 2,
+      "heroIds": [
+        "alter_wissenschaftler",
+        "randy_marsh"
+      ],
+      "principals": 1,
+      "pcPrincipal": true
+    }
+  },
+  "totalMatches": 1200,
+  "durationMs": 49887,
+  "matchups": [
+    {
+      "deckA": "forschung_muskelkraft",
+      "deckB": "rudeljaeger",
+      "botA": "standard",
+      "botB": "standard",
+      "startingPlayer": 0,
+      "games": 100,
+      "winsA": 53,
+      "winsB": 47,
+      "draws": 0,
+      "rounds": 835,
+      "base": 471,
+      "winRateA": 0.53,
+      "averageRounds": 8.35,
+      "averageRemainingBaseHealth": 4.71
+    },
+    {
+      "deckA": "forschung_muskelkraft",
+      "deckB": "rudeljaeger",
+      "botA": "standard",
+      "botB": "standard",
+      "startingPlayer": 1,
+      "games": 100,
+      "winsA": 56,
+      "winsB": 43,
+      "draws": 1,
+      "rounds": 875,
+      "base": 487,
+      "winRateA": 0.5656565656565656,
+      "averageRounds": 8.75,
+      "averageRemainingBaseHealth": 4.87
+    },
+    {
+      "deckA": "forschung_muskelkraft",
+      "deckB": "solidaritaet_ueberleben",
+      "botA": "standard",
+      "botB": "standard",
+      "startingPlayer": 0,
+      "games": 100,
+      "winsA": 62,
+      "winsB": 37,
+      "draws": 1,
+      "rounds": 1118,
+      "base": 432,
+      "winRateA": 0.6262626262626263,
+      "averageRounds": 11.18,
+      "averageRemainingBaseHealth": 4.32
+    },
+    {
+      "deckA": "forschung_muskelkraft",
+      "deckB": "solidaritaet_ueberleben",
+      "botA": "standard",
+      "botB": "standard",
+      "startingPlayer": 1,
+      "games": 100,
+      "winsA": 54,
+      "winsB": 45,
+      "draws": 1,
+      "rounds": 1111,
+      "base": 456,
+      "winRateA": 0.5454545454545454,
+      "averageRounds": 11.11,
+      "averageRemainingBaseHealth": 4.56
+    },
+    {
+      "deckA": "forschung_muskelkraft",
+      "deckB": "urzeitliche_kolosse",
+      "botA": "standard",
+      "botB": "standard",
+      "startingPlayer": 0,
+      "games": 100,
+      "winsA": 54,
+      "winsB": 46,
+      "draws": 0,
+      "rounds": 833,
+      "base": 398,
+      "winRateA": 0.54,
+      "averageRounds": 8.33,
+      "averageRemainingBaseHealth": 3.98
+    },
+    {
+      "deckA": "forschung_muskelkraft",
+      "deckB": "urzeitliche_kolosse",
+      "botA": "standard",
+      "botB": "standard",
+      "startingPlayer": 1,
+      "games": 100,
+      "winsA": 52,
+      "winsB": 48,
+      "draws": 0,
+      "rounds": 910,
+      "base": 404,
+      "winRateA": 0.52,
+      "averageRounds": 9.1,
+      "averageRemainingBaseHealth": 4.04
+    },
+    {
+      "deckA": "rudeljaeger",
+      "deckB": "solidaritaet_ueberleben",
+      "botA": "standard",
+      "botB": "standard",
+      "startingPlayer": 0,
+      "games": 100,
+      "winsA": 35,
+      "winsB": 63,
+      "draws": 2,
+      "rounds": 1051,
+      "base": 405,
+      "winRateA": 0.35714285714285715,
+      "averageRounds": 10.51,
+      "averageRemainingBaseHealth": 4.05
+    },
+    {
+      "deckA": "rudeljaeger",
+      "deckB": "solidaritaet_ueberleben",
+      "botA": "standard",
+      "botB": "standard",
+      "startingPlayer": 1,
+      "games": 100,
+      "winsA": 38,
+      "winsB": 62,
+      "draws": 0,
+      "rounds": 975,
+      "base": 415,
+      "winRateA": 0.38,
+      "averageRounds": 9.75,
+      "averageRemainingBaseHealth": 4.15
+    },
+    {
+      "deckA": "rudeljaeger",
+      "deckB": "urzeitliche_kolosse",
+      "botA": "standard",
+      "botB": "standard",
+      "startingPlayer": 0,
+      "games": 100,
+      "winsA": 54,
+      "winsB": 46,
+      "draws": 0,
+      "rounds": 827,
+      "base": 396,
+      "winRateA": 0.54,
+      "averageRounds": 8.27,
+      "averageRemainingBaseHealth": 3.96
+    },
+    {
+      "deckA": "rudeljaeger",
+      "deckB": "urzeitliche_kolosse",
+      "botA": "standard",
+      "botB": "standard",
+      "startingPlayer": 1,
+      "games": 100,
+      "winsA": 56,
+      "winsB": 44,
+      "draws": 0,
+      "rounds": 788,
+      "base": 394,
+      "winRateA": 0.56,
+      "averageRounds": 7.88,
+      "averageRemainingBaseHealth": 3.94
+    },
+    {
+      "deckA": "solidaritaet_ueberleben",
+      "deckB": "urzeitliche_kolosse",
+      "botA": "standard",
+      "botB": "standard",
+      "startingPlayer": 0,
+      "games": 100,
+      "winsA": 43,
+      "winsB": 57,
+      "draws": 0,
+      "rounds": 916,
+      "base": 422,
+      "winRateA": 0.43,
+      "averageRounds": 9.16,
+      "averageRemainingBaseHealth": 4.22
+    },
+    {
+      "deckA": "solidaritaet_ueberleben",
+      "deckB": "urzeitliche_kolosse",
+      "botA": "standard",
+      "botB": "standard",
+      "startingPlayer": 1,
+      "games": 100,
+      "winsA": 46,
+      "winsB": 54,
+      "draws": 0,
+      "rounds": 1023,
+      "base": 415,
+      "winRateA": 0.46,
+      "averageRounds": 10.23,
+      "averageRemainingBaseHealth": 4.15
+    }
+  ],
+  "decksSummary": {
+    "forschung_muskelkraft": {
+      "games": 600,
+      "wins": 331,
+      "losses": 266,
+      "draws": 3,
+      "winRate": 0.5544388609715243
+    },
+    "rudeljaeger": {
+      "games": 600,
+      "wins": 273,
+      "losses": 324,
+      "draws": 3,
+      "winRate": 0.457286432160804
+    },
+    "solidaritaet_ueberleben": {
+      "games": 600,
+      "wins": 296,
+      "losses": 300,
+      "draws": 4,
+      "winRate": 0.4966442953020134
+    },
+    "urzeitliche_kolosse": {
+      "games": 600,
+      "wins": 295,
+      "losses": 305,
+      "draws": 0,
+      "winRate": 0.49166666666666664
+    }
+  },
+  "firstPlayerWinRate": 0.499581589958159,
+  "comeback": {
+    "trailingBy5BaseHealth": {
+      "chances": 1121,
+      "wins": 323,
+      "winRate": 0.288135593220339
+    },
+    "trailingBy2Creatures": {
+      "chances": 1374,
+      "wins": 587,
+      "winRate": 0.4272197962154294
+    },
+    "losingTwoLanes": {
+      "chances": 1374,
+      "wins": 587,
+      "winRate": 0.4272197962154294
+    }
+  },
+  "snowball": {
+    "moreCreaturesRound3": {
+      "chances": 739,
+      "wins": 384,
+      "winRate": 0.5196211096075778
+    },
+    "moreCreaturesRound5": {
+      "chances": 806,
+      "wins": 402,
+      "winRate": 0.4987593052109181
+    },
+    "moreBaseRound3": {
+      "chances": 781,
+      "wins": 392,
+      "winRate": 0.5019206145966709
+    },
+    "moreBaseRound5": {
+      "chances": 1015,
+      "wins": 497,
+      "winRate": 0.4896551724137931
+    },
+    "firstTwoLanes": {
+      "chances": 1158,
+      "wins": 595,
+      "winRate": 0.5138169257340242
+    },
+    "firstHero": {
+      "chances": 1054,
+      "wins": 501,
+      "winRate": 0.47533206831119545
+    },
+    "firstCost5": {
+      "chances": 1147,
+      "wins": 623,
+      "winRate": 0.5431560592850916
+    }
+  },
+  "costCurves": {
+    "forschung_muskelkraft": {
+      "playsByCost": {
+        "1": 923,
+        "2": 1491,
+        "4": 1051,
+        "5": 1807,
+        "6": 973
+      },
+      "averageEnergyUtilization": 0.7689116397336813,
+      "averageStartingHandCost": 3.7683333333333335
+    },
+    "rudeljaeger": {
+      "playsByCost": {
+        "1": 1475,
+        "2": 2036,
+        "3": 1390,
+        "4": 931,
+        "5": 612,
+        "6": 279
+      },
+      "averageEnergyUtilization": 0.6894131927322383,
+      "averageStartingHandCost": 2.816666666666667
+    },
+    "solidaritaet_ueberleben": {
+      "playsByCost": {
+        "1": 735,
+        "2": 1406,
+        "3": 1841,
+        "4": 1377,
+        "5": 725,
+        "6": 1131
+      },
+      "averageEnergyUtilization": 0.7316137721044619,
+      "averageStartingHandCost": 3.4154166666666668
+    },
+    "urzeitliche_kolosse": {
+      "playsByCost": {
+        "1": 695,
+        "2": 925,
+        "3": 1257,
+        "4": 1257,
+        "5": 627,
+        "6": 288,
+        "7": 511,
+        "8": 267
+      },
+      "averageEnergyUtilization": 0.8342530922930542,
+      "averageStartingHandCost": 3.921666666666667
+    }
+  },
+  "laneUsage": [
+    {
+      "deckId": "forschung_muskelkraft",
+      "lane": 0,
+      "occupied": 2681,
+      "snapshots": 6282,
+      "occupancyRate": 0.4267749124482649
+    },
+    {
+      "deckId": "forschung_muskelkraft",
+      "lane": 1,
+      "occupied": 2721,
+      "snapshots": 6282,
+      "occupancyRate": 0.43314231136580705
+    },
+    {
+      "deckId": "forschung_muskelkraft",
+      "lane": 2,
+      "occupied": 2711,
+      "snapshots": 6282,
+      "occupancyRate": 0.4315504616364215
+    },
+    {
+      "deckId": "forschung_muskelkraft",
+      "lane": 3,
+      "occupied": 2742,
+      "snapshots": 6282,
+      "occupancyRate": 0.4364851957975167
+    },
+    {
+      "deckId": "forschung_muskelkraft",
+      "lane": 4,
+      "occupied": 2820,
+      "snapshots": 6282,
+      "occupancyRate": 0.448901623686724
+    },
+    {
+      "deckId": "rudeljaeger",
+      "lane": 0,
+      "occupied": 2475,
+      "snapshots": 5951,
+      "occupancyRate": 0.41589648798521256
+    },
+    {
+      "deckId": "rudeljaeger",
+      "lane": 1,
+      "occupied": 2442,
+      "snapshots": 5951,
+      "occupancyRate": 0.41035120147874304
+    },
+    {
+      "deckId": "rudeljaeger",
+      "lane": 2,
+      "occupied": 2500,
+      "snapshots": 5951,
+      "occupancyRate": 0.4200974626113258
+    },
+    {
+      "deckId": "rudeljaeger",
+      "lane": 3,
+      "occupied": 2473,
+      "snapshots": 5951,
+      "occupancyRate": 0.4155604100151235
+    },
+    {
+      "deckId": "rudeljaeger",
+      "lane": 4,
+      "occupied": 2491,
+      "snapshots": 5951,
+      "occupancyRate": 0.41858511174592505
+    },
+    {
+      "deckId": "solidaritaet_ueberleben",
+      "lane": 0,
+      "occupied": 3107,
+      "snapshots": 6794,
+      "occupancyRate": 0.45731527818663525
+    },
+    {
+      "deckId": "solidaritaet_ueberleben",
+      "lane": 1,
+      "occupied": 3188,
+      "snapshots": 6794,
+      "occupancyRate": 0.4692375625551958
+    },
+    {
+      "deckId": "solidaritaet_ueberleben",
+      "lane": 2,
+      "occupied": 3097,
+      "snapshots": 6794,
+      "occupancyRate": 0.45584339122755374
+    },
+    {
+      "deckId": "solidaritaet_ueberleben",
+      "lane": 3,
+      "occupied": 3089,
+      "snapshots": 6794,
+      "occupancyRate": 0.4546658816602885
+    },
+    {
+      "deckId": "solidaritaet_ueberleben",
+      "lane": 4,
+      "occupied": 3055,
+      "snapshots": 6794,
+      "occupancyRate": 0.44966146599941126
+    },
+    {
+      "deckId": "urzeitliche_kolosse",
+      "lane": 0,
+      "occupied": 2043,
+      "snapshots": 5897,
+      "occupancyRate": 0.3464473461081906
+    },
+    {
+      "deckId": "urzeitliche_kolosse",
+      "lane": 1,
+      "occupied": 2080,
+      "snapshots": 5897,
+      "occupancyRate": 0.35272172290995424
+    },
+    {
+      "deckId": "urzeitliche_kolosse",
+      "lane": 2,
+      "occupied": 2071,
+      "snapshots": 5897,
+      "occupancyRate": 0.3511955231473631
+    },
+    {
+      "deckId": "urzeitliche_kolosse",
+      "lane": 3,
+      "occupied": 2208,
+      "snapshots": 5897,
+      "occupancyRate": 0.3744276750890283
+    },
+    {
+      "deckId": "urzeitliche_kolosse",
+      "lane": 4,
+      "occupied": 2215,
+      "snapshots": 5897,
+      "occupancyRate": 0.37561471934882146
+    }
+  ]
+}

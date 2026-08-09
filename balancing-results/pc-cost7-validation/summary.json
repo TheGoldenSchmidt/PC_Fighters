@@ -1,0 +1,1365 @@
+{
+  "generatedAt": "2026-08-02T18:01:23.759Z",
+  "mode": "pc",
+  "lanes": 5,
+  "baseSeed": 20260812,
+  "gamesPerConfiguration": 100,
+  "activeDecks": [
+    "forschung_muskelkraft__mit_pc",
+    "forschung_muskelkraft__ohne_pc",
+    "rudeljaeger__mit_pc",
+    "rudeljaeger__ohne_pc",
+    "solidaritaet_ueberleben__mit_pc",
+    "solidaritaet_ueberleben__ohne_pc",
+    "urzeitliche_kolosse__mit_pc",
+    "urzeitliche_kolosse__ohne_pc"
+  ],
+  "deckContracts": {
+    "forschung_muskelkraft__ohne_pc": {
+      "size": 20,
+      "heroes": 2,
+      "heroIds": [
+        "alter_wissenschaftler",
+        "randy_marsh"
+      ],
+      "principals": 0,
+      "pcPrincipal": false
+    },
+    "forschung_muskelkraft__mit_pc": {
+      "size": 20,
+      "heroes": 2,
+      "heroIds": [
+        "alter_wissenschaftler",
+        "randy_marsh"
+      ],
+      "principals": 1,
+      "pcPrincipal": true
+    },
+    "rudeljaeger__ohne_pc": {
+      "size": 20,
+      "heroes": 2,
+      "heroIds": [
+        "vogelmensch",
+        "junger_neffe"
+      ],
+      "principals": 0,
+      "pcPrincipal": false
+    },
+    "rudeljaeger__mit_pc": {
+      "size": 20,
+      "heroes": 2,
+      "heroIds": [
+        "vogelmensch",
+        "junger_neffe"
+      ],
+      "principals": 1,
+      "pcPrincipal": true
+    },
+    "solidaritaet_ueberleben__ohne_pc": {
+      "size": 20,
+      "heroes": 2,
+      "heroIds": [
+        "pc_babies",
+        "junger_neffe"
+      ],
+      "principals": 0,
+      "pcPrincipal": false
+    },
+    "solidaritaet_ueberleben__mit_pc": {
+      "size": 20,
+      "heroes": 2,
+      "heroIds": [
+        "pc_babies",
+        "junger_neffe"
+      ],
+      "principals": 1,
+      "pcPrincipal": true
+    },
+    "urzeitliche_kolosse__ohne_pc": {
+      "size": 20,
+      "heroes": 2,
+      "heroIds": [
+        "vogelmensch",
+        "randy_marsh"
+      ],
+      "principals": 0,
+      "pcPrincipal": false
+    },
+    "urzeitliche_kolosse__mit_pc": {
+      "size": 20,
+      "heroes": 2,
+      "heroIds": [
+        "vogelmensch",
+        "randy_marsh"
+      ],
+      "principals": 1,
+      "pcPrincipal": true
+    }
+  },
+  "totalMatches": 4800,
+  "durationMs": 120451,
+  "matchups": [
+    {
+      "deckA": "forschung_muskelkraft__ohne_pc",
+      "deckB": "rudeljaeger__ohne_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 0,
+      "games": 100,
+      "winsA": 45,
+      "winsB": 55,
+      "draws": 0,
+      "rounds": 737,
+      "base": 489,
+      "winRateA": 0.45,
+      "averageRounds": 7.37,
+      "averageRemainingBaseHealth": 4.89
+    },
+    {
+      "deckA": "forschung_muskelkraft__ohne_pc",
+      "deckB": "rudeljaeger__ohne_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 1,
+      "games": 100,
+      "winsA": 48,
+      "winsB": 52,
+      "draws": 0,
+      "rounds": 780,
+      "base": 540,
+      "winRateA": 0.48,
+      "averageRounds": 7.8,
+      "averageRemainingBaseHealth": 5.4
+    },
+    {
+      "deckA": "forschung_muskelkraft__mit_pc",
+      "deckB": "rudeljaeger__mit_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 0,
+      "games": 100,
+      "winsA": 47,
+      "winsB": 49,
+      "draws": 4,
+      "rounds": 917,
+      "base": 424,
+      "winRateA": 0.4895833333333333,
+      "averageRounds": 9.17,
+      "averageRemainingBaseHealth": 4.24
+    },
+    {
+      "deckA": "forschung_muskelkraft__mit_pc",
+      "deckB": "rudeljaeger__mit_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 1,
+      "games": 100,
+      "winsA": 44,
+      "winsB": 53,
+      "draws": 3,
+      "rounds": 794,
+      "base": 561,
+      "winRateA": 0.4536082474226804,
+      "averageRounds": 7.94,
+      "averageRemainingBaseHealth": 5.61
+    },
+    {
+      "deckA": "forschung_muskelkraft__mit_pc",
+      "deckB": "rudeljaeger__ohne_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 0,
+      "games": 100,
+      "winsA": 60,
+      "winsB": 40,
+      "draws": 0,
+      "rounds": 834,
+      "base": 493,
+      "winRateA": 0.6,
+      "averageRounds": 8.34,
+      "averageRemainingBaseHealth": 4.93
+    },
+    {
+      "deckA": "forschung_muskelkraft__mit_pc",
+      "deckB": "rudeljaeger__ohne_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 1,
+      "games": 100,
+      "winsA": 53,
+      "winsB": 47,
+      "draws": 0,
+      "rounds": 794,
+      "base": 547,
+      "winRateA": 0.53,
+      "averageRounds": 7.94,
+      "averageRemainingBaseHealth": 5.47
+    },
+    {
+      "deckA": "forschung_muskelkraft__ohne_pc",
+      "deckB": "rudeljaeger__mit_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 0,
+      "games": 100,
+      "winsA": 41,
+      "winsB": 56,
+      "draws": 3,
+      "rounds": 850,
+      "base": 455,
+      "winRateA": 0.422680412371134,
+      "averageRounds": 8.5,
+      "averageRemainingBaseHealth": 4.55
+    },
+    {
+      "deckA": "forschung_muskelkraft__ohne_pc",
+      "deckB": "rudeljaeger__mit_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 1,
+      "games": 100,
+      "winsA": 47,
+      "winsB": 52,
+      "draws": 1,
+      "rounds": 878,
+      "base": 462,
+      "winRateA": 0.47474747474747475,
+      "averageRounds": 8.78,
+      "averageRemainingBaseHealth": 4.62
+    },
+    {
+      "deckA": "forschung_muskelkraft__ohne_pc",
+      "deckB": "solidaritaet_ueberleben__ohne_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 0,
+      "games": 100,
+      "winsA": 57,
+      "winsB": 42,
+      "draws": 1,
+      "rounds": 1037,
+      "base": 423,
+      "winRateA": 0.5757575757575758,
+      "averageRounds": 10.37,
+      "averageRemainingBaseHealth": 4.23
+    },
+    {
+      "deckA": "forschung_muskelkraft__ohne_pc",
+      "deckB": "solidaritaet_ueberleben__ohne_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 1,
+      "games": 100,
+      "winsA": 56,
+      "winsB": 42,
+      "draws": 2,
+      "rounds": 1016,
+      "base": 430,
+      "winRateA": 0.5714285714285714,
+      "averageRounds": 10.16,
+      "averageRemainingBaseHealth": 4.3
+    },
+    {
+      "deckA": "forschung_muskelkraft__mit_pc",
+      "deckB": "solidaritaet_ueberleben__mit_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 0,
+      "games": 100,
+      "winsA": 42,
+      "winsB": 52,
+      "draws": 6,
+      "rounds": 1215,
+      "base": 450,
+      "winRateA": 0.44680851063829785,
+      "averageRounds": 12.15,
+      "averageRemainingBaseHealth": 4.5
+    },
+    {
+      "deckA": "forschung_muskelkraft__mit_pc",
+      "deckB": "solidaritaet_ueberleben__mit_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 1,
+      "games": 100,
+      "winsA": 54,
+      "winsB": 39,
+      "draws": 7,
+      "rounds": 1249,
+      "base": 387,
+      "winRateA": 0.5806451612903226,
+      "averageRounds": 12.49,
+      "averageRemainingBaseHealth": 3.87
+    },
+    {
+      "deckA": "forschung_muskelkraft__mit_pc",
+      "deckB": "solidaritaet_ueberleben__ohne_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 0,
+      "games": 100,
+      "winsA": 71,
+      "winsB": 26,
+      "draws": 3,
+      "rounds": 1076,
+      "base": 436,
+      "winRateA": 0.7319587628865979,
+      "averageRounds": 10.76,
+      "averageRemainingBaseHealth": 4.36
+    },
+    {
+      "deckA": "forschung_muskelkraft__mit_pc",
+      "deckB": "solidaritaet_ueberleben__ohne_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 1,
+      "games": 100,
+      "winsA": 67,
+      "winsB": 30,
+      "draws": 3,
+      "rounds": 1121,
+      "base": 475,
+      "winRateA": 0.6907216494845361,
+      "averageRounds": 11.21,
+      "averageRemainingBaseHealth": 4.75
+    },
+    {
+      "deckA": "forschung_muskelkraft__ohne_pc",
+      "deckB": "solidaritaet_ueberleben__mit_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 0,
+      "games": 100,
+      "winsA": 47,
+      "winsB": 53,
+      "draws": 0,
+      "rounds": 1104,
+      "base": 443,
+      "winRateA": 0.47,
+      "averageRounds": 11.04,
+      "averageRemainingBaseHealth": 4.43
+    },
+    {
+      "deckA": "forschung_muskelkraft__ohne_pc",
+      "deckB": "solidaritaet_ueberleben__mit_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 1,
+      "games": 100,
+      "winsA": 45,
+      "winsB": 53,
+      "draws": 2,
+      "rounds": 1100,
+      "base": 416,
+      "winRateA": 0.45918367346938777,
+      "averageRounds": 11,
+      "averageRemainingBaseHealth": 4.16
+    },
+    {
+      "deckA": "forschung_muskelkraft__ohne_pc",
+      "deckB": "urzeitliche_kolosse__ohne_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 0,
+      "games": 100,
+      "winsA": 54,
+      "winsB": 46,
+      "draws": 0,
+      "rounds": 757,
+      "base": 380,
+      "winRateA": 0.54,
+      "averageRounds": 7.57,
+      "averageRemainingBaseHealth": 3.8
+    },
+    {
+      "deckA": "forschung_muskelkraft__ohne_pc",
+      "deckB": "urzeitliche_kolosse__ohne_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 1,
+      "games": 100,
+      "winsA": 53,
+      "winsB": 47,
+      "draws": 0,
+      "rounds": 784,
+      "base": 410,
+      "winRateA": 0.53,
+      "averageRounds": 7.84,
+      "averageRemainingBaseHealth": 4.1
+    },
+    {
+      "deckA": "forschung_muskelkraft__mit_pc",
+      "deckB": "urzeitliche_kolosse__mit_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 0,
+      "games": 100,
+      "winsA": 50,
+      "winsB": 48,
+      "draws": 2,
+      "rounds": 989,
+      "base": 374,
+      "winRateA": 0.5102040816326531,
+      "averageRounds": 9.89,
+      "averageRemainingBaseHealth": 3.74
+    },
+    {
+      "deckA": "forschung_muskelkraft__mit_pc",
+      "deckB": "urzeitliche_kolosse__mit_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 1,
+      "games": 100,
+      "winsA": 41,
+      "winsB": 56,
+      "draws": 3,
+      "rounds": 885,
+      "base": 436,
+      "winRateA": 0.422680412371134,
+      "averageRounds": 8.85,
+      "averageRemainingBaseHealth": 4.36
+    },
+    {
+      "deckA": "forschung_muskelkraft__mit_pc",
+      "deckB": "urzeitliche_kolosse__ohne_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 0,
+      "games": 100,
+      "winsA": 45,
+      "winsB": 54,
+      "draws": 1,
+      "rounds": 786,
+      "base": 438,
+      "winRateA": 0.45454545454545453,
+      "averageRounds": 7.86,
+      "averageRemainingBaseHealth": 4.38
+    },
+    {
+      "deckA": "forschung_muskelkraft__mit_pc",
+      "deckB": "urzeitliche_kolosse__ohne_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 1,
+      "games": 100,
+      "winsA": 60,
+      "winsB": 39,
+      "draws": 1,
+      "rounds": 826,
+      "base": 429,
+      "winRateA": 0.6060606060606061,
+      "averageRounds": 8.26,
+      "averageRemainingBaseHealth": 4.29
+    },
+    {
+      "deckA": "forschung_muskelkraft__ohne_pc",
+      "deckB": "urzeitliche_kolosse__mit_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 0,
+      "games": 100,
+      "winsA": 39,
+      "winsB": 60,
+      "draws": 1,
+      "rounds": 815,
+      "base": 440,
+      "winRateA": 0.3939393939393939,
+      "averageRounds": 8.15,
+      "averageRemainingBaseHealth": 4.4
+    },
+    {
+      "deckA": "forschung_muskelkraft__ohne_pc",
+      "deckB": "urzeitliche_kolosse__mit_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 1,
+      "games": 100,
+      "winsA": 41,
+      "winsB": 59,
+      "draws": 0,
+      "rounds": 858,
+      "base": 417,
+      "winRateA": 0.41,
+      "averageRounds": 8.58,
+      "averageRemainingBaseHealth": 4.17
+    },
+    {
+      "deckA": "rudeljaeger__ohne_pc",
+      "deckB": "solidaritaet_ueberleben__ohne_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 0,
+      "games": 100,
+      "winsA": 45,
+      "winsB": 55,
+      "draws": 0,
+      "rounds": 934,
+      "base": 438,
+      "winRateA": 0.45,
+      "averageRounds": 9.34,
+      "averageRemainingBaseHealth": 4.38
+    },
+    {
+      "deckA": "rudeljaeger__ohne_pc",
+      "deckB": "solidaritaet_ueberleben__ohne_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 1,
+      "games": 100,
+      "winsA": 36,
+      "winsB": 63,
+      "draws": 1,
+      "rounds": 934,
+      "base": 424,
+      "winRateA": 0.36363636363636365,
+      "averageRounds": 9.34,
+      "averageRemainingBaseHealth": 4.24
+    },
+    {
+      "deckA": "rudeljaeger__mit_pc",
+      "deckB": "solidaritaet_ueberleben__mit_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 0,
+      "games": 100,
+      "winsA": 43,
+      "winsB": 50,
+      "draws": 7,
+      "rounds": 1035,
+      "base": 415,
+      "winRateA": 0.46236559139784944,
+      "averageRounds": 10.35,
+      "averageRemainingBaseHealth": 4.15
+    },
+    {
+      "deckA": "rudeljaeger__mit_pc",
+      "deckB": "solidaritaet_ueberleben__mit_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 1,
+      "games": 100,
+      "winsA": 46,
+      "winsB": 52,
+      "draws": 2,
+      "rounds": 1012,
+      "base": 456,
+      "winRateA": 0.46938775510204084,
+      "averageRounds": 10.12,
+      "averageRemainingBaseHealth": 4.56
+    },
+    {
+      "deckA": "rudeljaeger__mit_pc",
+      "deckB": "solidaritaet_ueberleben__ohne_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 0,
+      "games": 100,
+      "winsA": 67,
+      "winsB": 31,
+      "draws": 2,
+      "rounds": 960,
+      "base": 481,
+      "winRateA": 0.6836734693877551,
+      "averageRounds": 9.6,
+      "averageRemainingBaseHealth": 4.81
+    },
+    {
+      "deckA": "rudeljaeger__mit_pc",
+      "deckB": "solidaritaet_ueberleben__ohne_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 1,
+      "games": 100,
+      "winsA": 69,
+      "winsB": 28,
+      "draws": 3,
+      "rounds": 1042,
+      "base": 585,
+      "winRateA": 0.711340206185567,
+      "averageRounds": 10.42,
+      "averageRemainingBaseHealth": 5.85
+    },
+    {
+      "deckA": "rudeljaeger__ohne_pc",
+      "deckB": "solidaritaet_ueberleben__mit_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 0,
+      "games": 100,
+      "winsA": 37,
+      "winsB": 62,
+      "draws": 1,
+      "rounds": 896,
+      "base": 466,
+      "winRateA": 0.37373737373737376,
+      "averageRounds": 8.96,
+      "averageRemainingBaseHealth": 4.66
+    },
+    {
+      "deckA": "rudeljaeger__ohne_pc",
+      "deckB": "solidaritaet_ueberleben__mit_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 1,
+      "games": 100,
+      "winsA": 39,
+      "winsB": 60,
+      "draws": 1,
+      "rounds": 883,
+      "base": 498,
+      "winRateA": 0.3939393939393939,
+      "averageRounds": 8.83,
+      "averageRemainingBaseHealth": 4.98
+    },
+    {
+      "deckA": "rudeljaeger__ohne_pc",
+      "deckB": "urzeitliche_kolosse__ohne_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 0,
+      "games": 100,
+      "winsA": 53,
+      "winsB": 47,
+      "draws": 0,
+      "rounds": 729,
+      "base": 390,
+      "winRateA": 0.53,
+      "averageRounds": 7.29,
+      "averageRemainingBaseHealth": 3.9
+    },
+    {
+      "deckA": "rudeljaeger__ohne_pc",
+      "deckB": "urzeitliche_kolosse__ohne_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 1,
+      "games": 100,
+      "winsA": 64,
+      "winsB": 36,
+      "draws": 0,
+      "rounds": 706,
+      "base": 423,
+      "winRateA": 0.64,
+      "averageRounds": 7.06,
+      "averageRemainingBaseHealth": 4.23
+    },
+    {
+      "deckA": "rudeljaeger__mit_pc",
+      "deckB": "urzeitliche_kolosse__mit_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 0,
+      "games": 100,
+      "winsA": 48,
+      "winsB": 52,
+      "draws": 0,
+      "rounds": 816,
+      "base": 409,
+      "winRateA": 0.48,
+      "averageRounds": 8.16,
+      "averageRemainingBaseHealth": 4.09
+    },
+    {
+      "deckA": "rudeljaeger__mit_pc",
+      "deckB": "urzeitliche_kolosse__mit_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 1,
+      "games": 100,
+      "winsA": 72,
+      "winsB": 28,
+      "draws": 0,
+      "rounds": 773,
+      "base": 397,
+      "winRateA": 0.72,
+      "averageRounds": 7.73,
+      "averageRemainingBaseHealth": 3.97
+    },
+    {
+      "deckA": "rudeljaeger__mit_pc",
+      "deckB": "urzeitliche_kolosse__ohne_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 0,
+      "games": 100,
+      "winsA": 65,
+      "winsB": 35,
+      "draws": 0,
+      "rounds": 682,
+      "base": 461,
+      "winRateA": 0.65,
+      "averageRounds": 6.82,
+      "averageRemainingBaseHealth": 4.61
+    },
+    {
+      "deckA": "rudeljaeger__mit_pc",
+      "deckB": "urzeitliche_kolosse__ohne_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 1,
+      "games": 100,
+      "winsA": 65,
+      "winsB": 35,
+      "draws": 0,
+      "rounds": 731,
+      "base": 458,
+      "winRateA": 0.65,
+      "averageRounds": 7.31,
+      "averageRemainingBaseHealth": 4.58
+    },
+    {
+      "deckA": "rudeljaeger__ohne_pc",
+      "deckB": "urzeitliche_kolosse__mit_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 0,
+      "games": 100,
+      "winsA": 47,
+      "winsB": 53,
+      "draws": 0,
+      "rounds": 706,
+      "base": 444,
+      "winRateA": 0.47,
+      "averageRounds": 7.06,
+      "averageRemainingBaseHealth": 4.44
+    },
+    {
+      "deckA": "rudeljaeger__ohne_pc",
+      "deckB": "urzeitliche_kolosse__mit_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 1,
+      "games": 100,
+      "winsA": 41,
+      "winsB": 59,
+      "draws": 0,
+      "rounds": 775,
+      "base": 406,
+      "winRateA": 0.41,
+      "averageRounds": 7.75,
+      "averageRemainingBaseHealth": 4.06
+    },
+    {
+      "deckA": "solidaritaet_ueberleben__ohne_pc",
+      "deckB": "urzeitliche_kolosse__ohne_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 0,
+      "games": 100,
+      "winsA": 39,
+      "winsB": 60,
+      "draws": 1,
+      "rounds": 859,
+      "base": 435,
+      "winRateA": 0.3939393939393939,
+      "averageRounds": 8.59,
+      "averageRemainingBaseHealth": 4.35
+    },
+    {
+      "deckA": "solidaritaet_ueberleben__ohne_pc",
+      "deckB": "urzeitliche_kolosse__ohne_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 1,
+      "games": 100,
+      "winsA": 38,
+      "winsB": 60,
+      "draws": 2,
+      "rounds": 877,
+      "base": 441,
+      "winRateA": 0.3877551020408163,
+      "averageRounds": 8.77,
+      "averageRemainingBaseHealth": 4.41
+    },
+    {
+      "deckA": "solidaritaet_ueberleben__mit_pc",
+      "deckB": "urzeitliche_kolosse__mit_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 0,
+      "games": 100,
+      "winsA": 37,
+      "winsB": 61,
+      "draws": 2,
+      "rounds": 1023,
+      "base": 440,
+      "winRateA": 0.37755102040816324,
+      "averageRounds": 10.23,
+      "averageRemainingBaseHealth": 4.4
+    },
+    {
+      "deckA": "solidaritaet_ueberleben__mit_pc",
+      "deckB": "urzeitliche_kolosse__mit_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 1,
+      "games": 100,
+      "winsA": 40,
+      "winsB": 56,
+      "draws": 4,
+      "rounds": 1022,
+      "base": 450,
+      "winRateA": 0.4166666666666667,
+      "averageRounds": 10.22,
+      "averageRemainingBaseHealth": 4.5
+    },
+    {
+      "deckA": "solidaritaet_ueberleben__mit_pc",
+      "deckB": "urzeitliche_kolosse__ohne_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 0,
+      "games": 100,
+      "winsA": 51,
+      "winsB": 49,
+      "draws": 0,
+      "rounds": 890,
+      "base": 445,
+      "winRateA": 0.51,
+      "averageRounds": 8.9,
+      "averageRemainingBaseHealth": 4.45
+    },
+    {
+      "deckA": "solidaritaet_ueberleben__mit_pc",
+      "deckB": "urzeitliche_kolosse__ohne_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 1,
+      "games": 100,
+      "winsA": 59,
+      "winsB": 41,
+      "draws": 0,
+      "rounds": 971,
+      "base": 412,
+      "winRateA": 0.59,
+      "averageRounds": 9.71,
+      "averageRemainingBaseHealth": 4.12
+    },
+    {
+      "deckA": "solidaritaet_ueberleben__ohne_pc",
+      "deckB": "urzeitliche_kolosse__mit_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 0,
+      "games": 100,
+      "winsA": 27,
+      "winsB": 73,
+      "draws": 0,
+      "rounds": 919,
+      "base": 508,
+      "winRateA": 0.27,
+      "averageRounds": 9.19,
+      "averageRemainingBaseHealth": 5.08
+    },
+    {
+      "deckA": "solidaritaet_ueberleben__ohne_pc",
+      "deckB": "urzeitliche_kolosse__mit_pc",
+      "botA": "control",
+      "botB": "control",
+      "startingPlayer": 1,
+      "games": 100,
+      "winsA": 29,
+      "winsB": 70,
+      "draws": 1,
+      "rounds": 983,
+      "base": 442,
+      "winRateA": 0.29292929292929293,
+      "averageRounds": 9.83,
+      "averageRemainingBaseHealth": 4.42
+    }
+  ],
+  "decksSummary": {
+    "forschung_muskelkraft__ohne_pc": {
+      "games": 1200,
+      "wins": 573,
+      "losses": 617,
+      "draws": 10,
+      "winRate": 0.4815126050420168
+    },
+    "rudeljaeger__ohne_pc": {
+      "games": 1200,
+      "wins": 556,
+      "losses": 641,
+      "draws": 3,
+      "winRate": 0.4644945697577276
+    },
+    "forschung_muskelkraft__mit_pc": {
+      "games": 1200,
+      "wins": 634,
+      "losses": 533,
+      "draws": 33,
+      "winRate": 0.5432733504712939
+    },
+    "rudeljaeger__mit_pc": {
+      "games": 1200,
+      "wins": 685,
+      "losses": 490,
+      "draws": 25,
+      "winRate": 0.5829787234042553
+    },
+    "solidaritaet_ueberleben__ohne_pc": {
+      "games": 1200,
+      "wins": 450,
+      "losses": 731,
+      "draws": 19,
+      "winRate": 0.3810330228619814
+    },
+    "solidaritaet_ueberleben__mit_pc": {
+      "games": 1200,
+      "wins": 608,
+      "losses": 560,
+      "draws": 32,
+      "winRate": 0.5205479452054794
+    },
+    "urzeitliche_kolosse__ohne_pc": {
+      "games": 1200,
+      "wins": 549,
+      "losses": 646,
+      "draws": 5,
+      "winRate": 0.4594142259414226
+    },
+    "urzeitliche_kolosse__mit_pc": {
+      "games": 1200,
+      "wins": 675,
+      "losses": 512,
+      "draws": 13,
+      "winRate": 0.5686604886267902
+    }
+  },
+  "firstPlayerWinRate": 0.48921775898520087,
+  "comeback": {
+    "trailingBy5BaseHealth": {
+      "chances": 4659,
+      "wins": 1188,
+      "winRate": 0.2549903412749517
+    },
+    "trailingBy2Creatures": {
+      "chances": 5203,
+      "wins": 2115,
+      "winRate": 0.40649625216221413
+    },
+    "losingTwoLanes": {
+      "chances": 5203,
+      "wins": 2115,
+      "winRate": 0.40649625216221413
+    }
+  },
+  "snowball": {
+    "moreCreaturesRound3": {
+      "chances": 2950,
+      "wins": 1606,
+      "winRate": 0.5444067796610169
+    },
+    "moreCreaturesRound5": {
+      "chances": 3241,
+      "wins": 1559,
+      "winRate": 0.4810243751928417
+    },
+    "moreBaseRound3": {
+      "chances": 3108,
+      "wins": 1716,
+      "winRate": 0.5521235521235521
+    },
+    "moreBaseRound5": {
+      "chances": 4072,
+      "wins": 2076,
+      "winRate": 0.5098231827111984
+    },
+    "firstTwoLanes": {
+      "chances": 4621,
+      "wins": 2417,
+      "winRate": 0.5230469595325687
+    },
+    "firstHero": {
+      "chances": 4087,
+      "wins": 1919,
+      "winRate": 0.46953755811108394
+    },
+    "firstCost5": {
+      "chances": 4467,
+      "wins": 2208,
+      "winRate": 0.49429147078576224
+    }
+  },
+  "costCurves": {
+    "forschung_muskelkraft__ohne_pc": {
+      "playsByCost": {
+        "1": 1769,
+        "2": 3303,
+        "4": 2175,
+        "5": 3410,
+        "6": 1222
+      },
+      "averageEnergyUtilization": 0.7677222222222222,
+      "averageStartingHandCost": 3.5116666666666667
+    },
+    "rudeljaeger__ohne_pc": {
+      "playsByCost": {
+        "1": 2601,
+        "2": 3788,
+        "3": 3148,
+        "4": 1676,
+        "5": 1086
+      },
+      "averageEnergyUtilization": 0.7202476808274173,
+      "averageStartingHandCost": 2.6341666666666668
+    },
+    "forschung_muskelkraft__mit_pc": {
+      "playsByCost": {
+        "1": 1799,
+        "2": 2627,
+        "4": 1715,
+        "5": 3289,
+        "6": 1128,
+        "7": 713
+      },
+      "averageEnergyUtilization": 0.6812623337970302,
+      "averageStartingHandCost": 3.784375
+    },
+    "rudeljaeger__mit_pc": {
+      "playsByCost": {
+        "1": 2642,
+        "2": 3978,
+        "3": 2618,
+        "4": 1807,
+        "5": 1161,
+        "7": 459
+      },
+      "averageEnergyUtilization": 0.6527088036117381,
+      "averageStartingHandCost": 2.8766666666666665
+    },
+    "solidaritaet_ueberleben__ohne_pc": {
+      "playsByCost": {
+        "1": 1330,
+        "2": 4110,
+        "3": 2895,
+        "4": 2701,
+        "5": 1402,
+        "6": 1391
+      },
+      "averageEnergyUtilization": 0.7172167563288583,
+      "averageStartingHandCost": 3.2154166666666666
+    },
+    "solidaritaet_ueberleben__mit_pc": {
+      "playsByCost": {
+        "1": 1226,
+        "2": 3161,
+        "3": 2823,
+        "4": 2688,
+        "5": 1405,
+        "6": 1451,
+        "7": 673
+      },
+      "averageEnergyUtilization": 0.674144307520955,
+      "averageStartingHandCost": 3.456875
+    },
+    "urzeitliche_kolosse__ohne_pc": {
+      "playsByCost": {
+        "1": 1302,
+        "2": 2346,
+        "3": 2369,
+        "4": 2447,
+        "5": 1067,
+        "7": 815,
+        "8": 392
+      },
+      "averageEnergyUtilization": 0.8440937350549976,
+      "averageStartingHandCost": 3.716875
+    },
+    "urzeitliche_kolosse__mit_pc": {
+      "playsByCost": {
+        "1": 1303,
+        "2": 1910,
+        "3": 2303,
+        "4": 2555,
+        "5": 1177,
+        "7": 1462,
+        "8": 465
+      },
+      "averageEnergyUtilization": 0.7915710685673449,
+      "averageStartingHandCost": 3.9520833333333334
+    }
+  },
+  "laneUsage": [
+    {
+      "deckId": "forschung_muskelkraft__ohne_pc",
+      "lane": 0,
+      "occupied": 5074,
+      "snapshots": 11916,
+      "occupancyRate": 0.4258140315542128
+    },
+    {
+      "deckId": "forschung_muskelkraft__ohne_pc",
+      "lane": 1,
+      "occupied": 5142,
+      "snapshots": 11916,
+      "occupancyRate": 0.43152064451158106
+    },
+    {
+      "deckId": "forschung_muskelkraft__ohne_pc",
+      "lane": 2,
+      "occupied": 5039,
+      "snapshots": 11916,
+      "occupancyRate": 0.42287680429674385
+    },
+    {
+      "deckId": "forschung_muskelkraft__ohne_pc",
+      "lane": 3,
+      "occupied": 5088,
+      "snapshots": 11916,
+      "occupancyRate": 0.4269889224572004
+    },
+    {
+      "deckId": "forschung_muskelkraft__ohne_pc",
+      "lane": 4,
+      "occupied": 5185,
+      "snapshots": 11916,
+      "occupancyRate": 0.4351292379993286
+    },
+    {
+      "deckId": "rudeljaeger__ohne_pc",
+      "lane": 0,
+      "occupied": 4383,
+      "snapshots": 10908,
+      "occupancyRate": 0.4018151815181518
+    },
+    {
+      "deckId": "rudeljaeger__ohne_pc",
+      "lane": 1,
+      "occupied": 4394,
+      "snapshots": 10908,
+      "occupancyRate": 0.4028236156949028
+    },
+    {
+      "deckId": "rudeljaeger__ohne_pc",
+      "lane": 2,
+      "occupied": 4297,
+      "snapshots": 10908,
+      "occupancyRate": 0.3939310597726439
+    },
+    {
+      "deckId": "rudeljaeger__ohne_pc",
+      "lane": 3,
+      "occupied": 4382,
+      "snapshots": 10908,
+      "occupancyRate": 0.40172350568390175
+    },
+    {
+      "deckId": "rudeljaeger__ohne_pc",
+      "lane": 4,
+      "occupied": 4437,
+      "snapshots": 10908,
+      "occupancyRate": 0.4067656765676568
+    },
+    {
+      "deckId": "forschung_muskelkraft__mit_pc",
+      "lane": 0,
+      "occupied": 5877,
+      "snapshots": 12686,
+      "occupancyRate": 0.4632665930947501
+    },
+    {
+      "deckId": "forschung_muskelkraft__mit_pc",
+      "lane": 1,
+      "occupied": 5904,
+      "snapshots": 12686,
+      "occupancyRate": 0.46539492353775813
+    },
+    {
+      "deckId": "forschung_muskelkraft__mit_pc",
+      "lane": 2,
+      "occupied": 5966,
+      "snapshots": 12686,
+      "occupancyRate": 0.47028220085133216
+    },
+    {
+      "deckId": "forschung_muskelkraft__mit_pc",
+      "lane": 3,
+      "occupied": 5976,
+      "snapshots": 12686,
+      "occupancyRate": 0.4710704713857796
+    },
+    {
+      "deckId": "forschung_muskelkraft__mit_pc",
+      "lane": 4,
+      "occupied": 5972,
+      "snapshots": 12686,
+      "occupancyRate": 0.4707551631720006
+    },
+    {
+      "deckId": "rudeljaeger__mit_pc",
+      "lane": 0,
+      "occupied": 5192,
+      "snapshots": 11690,
+      "occupancyRate": 0.44414029084687767
+    },
+    {
+      "deckId": "rudeljaeger__mit_pc",
+      "lane": 1,
+      "occupied": 5198,
+      "snapshots": 11690,
+      "occupancyRate": 0.4446535500427716
+    },
+    {
+      "deckId": "rudeljaeger__mit_pc",
+      "lane": 2,
+      "occupied": 5113,
+      "snapshots": 11690,
+      "occupancyRate": 0.437382378100941
+    },
+    {
+      "deckId": "rudeljaeger__mit_pc",
+      "lane": 3,
+      "occupied": 5237,
+      "snapshots": 11690,
+      "occupancyRate": 0.4479897348160821
+    },
+    {
+      "deckId": "rudeljaeger__mit_pc",
+      "lane": 4,
+      "occupied": 5266,
+      "snapshots": 11690,
+      "occupancyRate": 0.4504704875962361
+    },
+    {
+      "deckId": "solidaritaet_ueberleben__ohne_pc",
+      "lane": 0,
+      "occupied": 5925,
+      "snapshots": 12958,
+      "occupancyRate": 0.45724648865565676
+    },
+    {
+      "deckId": "solidaritaet_ueberleben__ohne_pc",
+      "lane": 1,
+      "occupied": 6006,
+      "snapshots": 12958,
+      "occupancyRate": 0.4634974533106961
+    },
+    {
+      "deckId": "solidaritaet_ueberleben__ohne_pc",
+      "lane": 2,
+      "occupied": 6053,
+      "snapshots": 12958,
+      "occupancyRate": 0.4671245562586819
+    },
+    {
+      "deckId": "solidaritaet_ueberleben__ohne_pc",
+      "lane": 3,
+      "occupied": 5993,
+      "snapshots": 12958,
+      "occupancyRate": 0.4624942120697639
+    },
+    {
+      "deckId": "solidaritaet_ueberleben__ohne_pc",
+      "lane": 4,
+      "occupied": 5631,
+      "snapshots": 12958,
+      "occupancyRate": 0.4345578021299583
+    },
+    {
+      "deckId": "solidaritaet_ueberleben__mit_pc",
+      "lane": 0,
+      "occupied": 6869,
+      "snapshots": 13600,
+      "occupancyRate": 0.5050735294117648
+    },
+    {
+      "deckId": "solidaritaet_ueberleben__mit_pc",
+      "lane": 1,
+      "occupied": 6799,
+      "snapshots": 13600,
+      "occupancyRate": 0.4999264705882353
+    },
+    {
+      "deckId": "solidaritaet_ueberleben__mit_pc",
+      "lane": 2,
+      "occupied": 6823,
+      "snapshots": 13600,
+      "occupancyRate": 0.5016911764705883
+    },
+    {
+      "deckId": "solidaritaet_ueberleben__mit_pc",
+      "lane": 3,
+      "occupied": 6809,
+      "snapshots": 13600,
+      "occupancyRate": 0.5006617647058823
+    },
+    {
+      "deckId": "solidaritaet_ueberleben__mit_pc",
+      "lane": 4,
+      "occupied": 6598,
+      "snapshots": 13600,
+      "occupancyRate": 0.48514705882352943
+    },
+    {
+      "deckId": "urzeitliche_kolosse__ohne_pc",
+      "lane": 0,
+      "occupied": 3682,
+      "snapshots": 10798,
+      "occupancyRate": 0.3409890720503797
+    },
+    {
+      "deckId": "urzeitliche_kolosse__ohne_pc",
+      "lane": 1,
+      "occupied": 3709,
+      "snapshots": 10798,
+      "occupancyRate": 0.3434895350990924
+    },
+    {
+      "deckId": "urzeitliche_kolosse__ohne_pc",
+      "lane": 2,
+      "occupied": 3819,
+      "snapshots": 10798,
+      "occupancyRate": 0.3536766067790332
+    },
+    {
+      "deckId": "urzeitliche_kolosse__ohne_pc",
+      "lane": 3,
+      "occupied": 3801,
+      "snapshots": 10798,
+      "occupancyRate": 0.35200963141322467
+    },
+    {
+      "deckId": "urzeitliche_kolosse__ohne_pc",
+      "lane": 4,
+      "occupied": 3965,
+      "snapshots": 10798,
+      "occupancyRate": 0.36719762919059085
+    },
+    {
+      "deckId": "urzeitliche_kolosse__mit_pc",
+      "lane": 0,
+      "occupied": 4659,
+      "snapshots": 11764,
+      "occupancyRate": 0.39603876232573954
+    },
+    {
+      "deckId": "urzeitliche_kolosse__mit_pc",
+      "lane": 1,
+      "occupied": 4620,
+      "snapshots": 11764,
+      "occupancyRate": 0.3927235634138048
+    },
+    {
+      "deckId": "urzeitliche_kolosse__mit_pc",
+      "lane": 2,
+      "occupied": 4716,
+      "snapshots": 11764,
+      "occupancyRate": 0.4008840530431826
+    },
+    {
+      "deckId": "urzeitliche_kolosse__mit_pc",
+      "lane": 3,
+      "occupied": 4665,
+      "snapshots": 11764,
+      "occupancyRate": 0.39654879292757567
+    },
+    {
+      "deckId": "urzeitliche_kolosse__mit_pc",
+      "lane": 4,
+      "occupied": 4786,
+      "snapshots": 11764,
+      "occupancyRate": 0.40683441006460386
+    }
+  ]
+}
