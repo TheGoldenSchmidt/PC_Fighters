@@ -619,9 +619,11 @@ function applyExperiment(
     let total = gesamt;
     const liveLanes: number[] = [];
     for (let j = 0; j < state.board[enemy].length; j++) if (state.board[enemy][j]) liveLanes.push(j);
+    let basisschaden = 0;
     if (liveLanes.length === 0) {
       // Über den Schild-Trichter: auch Effektschaden lädt auf und ist blockbar.
-      zaehleKarte(state, owner, c.cardId, 'schadenBasis', basisSchaden(state, enemy, total));
+      basisschaden = basisSchaden(state, enemy, total);
+      zaehleKarte(state, owner, c.cardId, 'schadenBasis', basisschaden);
     } else {
       let i = 0;
       while (total > 0) {
@@ -635,7 +637,13 @@ function applyExperiment(
       }
       zaehleKarte(state, owner, c.cardId, 'schadenKreatur', gesamt);
     }
-    log(state, `${c.name}: Experiment verteilt ${gesamt} Schaden.`);
+    log(
+      state,
+      `${c.name}: Experiment verteilt ${gesamt} Schaden.`,
+      basisschaden > 0
+        ? { kind: 'attack', lane, attacker: owner, damage: basisschaden, toBase: true }
+        : undefined
+    );
   }
   state.players[owner].knowledge -= markers;
 }

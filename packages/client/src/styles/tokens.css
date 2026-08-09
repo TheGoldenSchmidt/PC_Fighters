@@ -5,27 +5,28 @@
  */
 
 :root {
-  --bg: #090b11;
-  --bg-gradient: radial-gradient(circle at 50% 50%, #151926 0%, #080a0f 100%);
-  --panel: rgba(22, 28, 45, 0.65);
-  --panel-border: rgba(255, 255, 255, 0.08);
-  --panel-2: rgba(30, 39, 61, 0.8);
-  --panel-2-border: rgba(255, 255, 255, 0.12);
-  --text: #f1f4fa;
-  --muted: #8e9bb0;
+  --bg: #080d18;
+  --bg-gradient: radial-gradient(circle at 50% 0%, #1b2944 0%, #0d1526 42%, #080d18 100%);
+  --panel: rgba(19, 29, 47, 0.88);
+  --panel-border: rgba(243, 241, 232, 0.14);
+  --panel-2: rgba(28, 42, 67, 0.92);
+  --panel-2-border: rgba(243, 241, 232, 0.22);
+  --text: #f3f1e8;
+  --muted: #b8c2d3;
   
   /* Brand colors */
-  --accent: #3b82f6;      /* Blue (Humans) */
-  --accent-rgb: 59, 130, 246;
-  --accent-2: #10b981;    /* Green (Animals) */
-  --accent-2-rgb: 16, 185, 129;
+  --accent: #4d8dff;      /* Menschenblau */
+  --accent-rgb: 77, 141, 255;
+  --accent-2: #35d07f;    /* Tiergruen */
+  --accent-2-rgb: 53, 208, 127;
   --danger: #ef4444;
-  --gold: #f59e0b;
-  --gold-glow: rgba(245, 158, 11, 0.4);
+  --gold: #ffb429;
+  --gold-glow: rgba(255, 180, 41, 0.42);
   
   --radius: 16px;
-  --font-title: 'Cinzel', Georgia, serif;
-  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-title: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+  --font-body: 'Atkinson Hyperlegible', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
   --shadow-lg: 0 10px 30px -10px rgba(0, 0, 0, 0.7);
   --glass: backdrop-filter: blur(16px);
 }

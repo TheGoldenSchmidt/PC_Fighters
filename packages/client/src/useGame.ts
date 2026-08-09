@@ -34,6 +34,8 @@ export interface GameClientState {
   error: string | null;
   dataError: string | null;
   opponentConnected: boolean;
+  rematchReady: [boolean, boolean];
+  matchNumber: number;
 }
 
 const initial: GameClientState = {
@@ -48,7 +50,9 @@ const initial: GameClientState = {
   testMode: false,
   error: null,
   dataError: null,
-  opponentConnected: true
+  opponentConnected: true,
+  rematchReady: [false, false],
+  matchNumber: 1
 };
 
 export function useGame() {
@@ -114,11 +118,15 @@ export function useGame() {
           patch({
             screen: 'game',
             view: msg.view as ClientView,
+            matchNumber: Number(msg.matchNumber) || 1,
             ...(msg.topic ? { topic: msg.topic as Topic } : {})
           });
           break;
         case 'opponent':
           patch({ opponentConnected: Boolean(msg.connected) });
+          break;
+        case 'rematchState':
+          patch({ rematchReady: msg.ready as [boolean, boolean] });
           break;
         case 'dataError':
           patch({ dataError: msg.message as string });
@@ -232,6 +240,17 @@ export function useGame() {
     [showError]
   );
 
+  const setRematchReady = useCallback(
+    (ready: boolean) => {
+      if (ws.current?.readyState === WebSocket.OPEN) {
+        ws.current.send(JSON.stringify({ type: 'rematchReady', ready }));
+      } else {
+        showError('Gerade keine Verbindung â€“ einen Moment â€¦');
+      }
+    },
+    [showError]
+  );
+
   const leaveGame = useCallback(() => {
     intentionalClose.current = true;
     if (reconnectTimer.current) window.clearTimeout(reconnectTimer.current);
@@ -265,5 +284,5 @@ export function useGame() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return { state, createGame, joinGame, sendAction, leaveGame };
+  return { state, createGame, joinGame, sendAction, setRematchReady, leaveGame };
 }

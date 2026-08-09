@@ -75,6 +75,7 @@
    Feld. Das Log als feste Box hat vorher dauerhaft Bildhöhe gekostet, obwohl
    man es nur gelegentlich liest. Antippen öffnet das vollständige Log. */
 .log-ticker {
+  display: none;
   position: absolute;
   top: calc(var(--feld-oben) - 14px);
   left: 0;
@@ -141,7 +142,7 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  gap: 3px;
+  gap: 5px;
   padding: 0 8px 6px;
   /* Die Hand wächst nach oben, aber höchstens bis `--hand-hoehe` – genau der
      Platz, den das Lane-Band unten frei lässt. Ohne diese Grenze schöbe eine
@@ -162,12 +163,85 @@
   color: #0f1115;
   font-weight: 800;
   border-radius: 10px;
-  min-height: 38px;
-  padding: 6px 20px;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 7px 14px;
   font-family: var(--font-title);
   letter-spacing: 0.05em;
   text-transform: uppercase;
   box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);
+}
+
+.schlagabtausch-band {
+  pointer-events: auto;
+  width: min(620px, 100%);
+  margin: 0 auto;
+  min-height: 48px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas: 'kicker status' 'log log';
+  align-items: center;
+  column-gap: 9px;
+  padding: 7px 10px;
+  overflow: hidden;
+  background: linear-gradient(100deg, rgba(19, 29, 47, 0.97), rgba(8, 13, 24, 0.94));
+  border: 1px solid rgba(243, 241, 232, 0.24);
+  border-left: 5px solid var(--muted);
+  border-radius: 8px;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.42);
+}
+
+.schlagabtausch-band.my-turn { border-left-color: var(--gold); }
+.schlagabtausch-band.replay { border-left-color: var(--accent); }
+
+.schlagabtausch-kicker {
+  grid-area: kicker;
+  color: var(--gold);
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.schlagabtausch-band > strong {
+  grid-area: status;
+  overflow: hidden;
+  color: var(--text);
+  font-family: var(--font-title);
+  font-size: 0.84rem;
+  letter-spacing: 0.02em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.schlagabtausch-band > button {
+  grid-area: log;
+  min-height: 22px;
+  padding: 1px 0 0;
+  overflow: hidden;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.66rem;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.arena-settings-button {
+  pointer-events: auto;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-top: 1px;
+  border: 1px solid rgba(243, 241, 232, 0.22);
+  border-radius: 50%;
+  background: rgba(8, 13, 24, 0.82);
+  color: var(--text);
+  cursor: pointer;
 }
 
 .pass-button:hover {
@@ -289,7 +363,7 @@
 }
 
 .hand-card-art,
-.hand-card-art-fallback {
+.card-poster {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -297,26 +371,30 @@
   object-fit: cover;
 }
 
-.hand-card-art-fallback {
+.card-poster {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  gap: 6px;
+  padding: 12px;
+  overflow: hidden;
+  background:
+    linear-gradient(rgba(8, 13, 24, .36), rgba(8, 13, 24, .42)),
+    url('/assets/ui/card-fallback-arena.png') center / cover no-repeat,
+    linear-gradient(145deg, #263752, #080d18 72%);
+  color: var(--text);
+  text-align: center;
 }
 
-.hand-card-art-fallback.theme-humans {
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(59, 130, 246, 0.15) 100%);
-}
-
-.hand-card-art-fallback.theme-animals {
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(16, 185, 129, 0.15) 100%);
-}
-
-.fallback-symbol {
-  font-size: 1.6rem;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-  opacity: 0.6;
-}
+.card-poster.faction-humans { box-shadow: inset 0 0 0 3px rgba(77, 141, 255, .55); }
+.card-poster.faction-animals { box-shadow: inset 0 0 0 3px rgba(53, 208, 127, .55); }
+.card-poster-show { color: var(--gold); font-family: var(--font-mono); font-size: .56rem; letter-spacing: .1em; }
+.card-poster strong { font-family: var(--font-title); font-size: 1.15rem; letter-spacing: .04em; }
+.card-poster small { max-width: 100%; color: var(--muted); font-size: .72rem; }
+.card-poster.compact { gap: 2px; padding: 4px; }
+.card-poster.compact .card-poster-show { font-size: .38rem; }
+.card-poster.compact strong { font-size: .68rem; }
 
 .hand-card-stats {
   position: absolute;

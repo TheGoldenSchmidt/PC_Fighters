@@ -360,12 +360,12 @@ const DEFAULT_ARENA_STYLE: ArenaRenderStyle = {
 };
 
 const ARENA_STYLES: Record<EnvironmentKind, ArenaRenderStyle> = {
-  wald: { floorOpacity: 0.38, gridOpacity: 0.045, pathOpacity: 0.13, glowOpacity: 0.1, fogNear: 16, fogFar: 40, exposure: 1.08 },
-  hoehle: { floorOpacity: 0.5, gridOpacity: 0.025, pathOpacity: 0.11, glowOpacity: 0.18, fogNear: 13, fogFar: 34, exposure: 1.12 },
-  stadt: { floorOpacity: 0.44, gridOpacity: 0.2, pathOpacity: 0.2, glowOpacity: 0.2, fogNear: 20, fogFar: 50, exposure: 1.16 },
-  mond: { floorOpacity: 0.48, gridOpacity: 0.055, pathOpacity: 0.12, glowOpacity: 0.13, fogNear: 23, fogFar: 58, exposure: 1.22 },
-  mars: { floorOpacity: 0.5, gridOpacity: 0.035, pathOpacity: 0.1, glowOpacity: 0.15, fogNear: 17, fogFar: 43, exposure: 1.12 },
-  c137: { floorOpacity: 0.42, gridOpacity: 0.14, pathOpacity: 0.24, glowOpacity: 0.26, fogNear: 16, fogFar: 42, exposure: 1.2 }
+  wald: { floorOpacity: 0.38, gridOpacity: 0.07, pathOpacity: 0.16, glowOpacity: 0.13, fogNear: 16, fogFar: 40, exposure: 1.24 },
+  hoehle: { floorOpacity: 0.5, gridOpacity: 0.05, pathOpacity: 0.15, glowOpacity: 0.22, fogNear: 13, fogFar: 34, exposure: 1.3 },
+  stadt: { floorOpacity: 0.44, gridOpacity: 0.24, pathOpacity: 0.24, glowOpacity: 0.24, fogNear: 20, fogFar: 50, exposure: 1.3 },
+  mond: { floorOpacity: 0.48, gridOpacity: 0.08, pathOpacity: 0.15, glowOpacity: 0.16, fogNear: 23, fogFar: 58, exposure: 1.34 },
+  mars: { floorOpacity: 0.5, gridOpacity: 0.06, pathOpacity: 0.14, glowOpacity: 0.18, fogNear: 17, fogFar: 43, exposure: 1.28 },
+  c137: { floorOpacity: 0.42, gridOpacity: 0.18, pathOpacity: 0.28, glowOpacity: 0.3, fogNear: 16, fogFar: 42, exposure: 1.34 }
 };
 
 /** Geschossfarbe aus dem Projektil-Emoji der Karte ableiten. */
@@ -432,8 +432,8 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
     camera.position.set(0, 8, 10.5);
     camera.lookAt(0, 1.1, -2.5);
 
-    scene.add(new THREE.HemisphereLight(0xcfe0ff, 0x4a3d2c, 1.5));
-    const sun = new THREE.DirectionalLight(0xfff2dd, 2.1);
+    scene.add(new THREE.HemisphereLight(0xcfe0ff, 0x4a3d2c, 1.85));
+    const sun = new THREE.DirectionalLight(0xfff2dd, 2.35);
     sun.position.set(3, 8, 4);
     if (realShadows) {
       sun.castShadow = true;
@@ -450,7 +450,7 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
       sun.shadow.bias = -0.0008;
     }
     scene.add(sun);
-    const rim = new THREE.DirectionalLight(0x8ab4ff, 0.6);
+    const rim = new THREE.DirectionalLight(0x8ab4ff, 0.82);
     rim.position.set(-4, 5, -6);
     scene.add(rim);
 

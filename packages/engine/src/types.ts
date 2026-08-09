@@ -967,6 +967,19 @@ export interface ReaktionsView {
   angebote: ReaktionsAngebot[];
 }
 
+/** Kompakte, aus dem vollstaendigen Ereignislog abgeleitete Match-Bilanz. */
+export interface MatchSummaryView {
+  round: number;
+  /** Tatsaechlich an der gegnerischen Basis angerichteter Kampfschaden. */
+  baseDamageDealt: [number, number];
+  /** Im Match verlorene Kreaturen, nach Besitzer gezaehlt. */
+  creaturesLost: [number, number];
+  /** Vollstaendig geblockte Basistreffer, nach Schildbesitzer gezaehlt. */
+  shieldsBlocked: [number, number];
+  /** Fuer einen Schildblock geopferte Cheerleader, nach Besitzer gezaehlt. */
+  cheerleadersUsed: [number, number];
+}
+
 export interface ClientView {
   you: PlayerIndex;
   round: number;
@@ -982,6 +995,8 @@ export interface ClientView {
   hand: CardDef[];
   board: (CreatureView | null)[][];
   log: LogEntry[];
+  /** Nur nach Matchende gesetzt; wird vor dem Kuerzen des sichtbaren Logs berechnet. */
+  matchSummary?: MatchSummaryView;
   /**
    * Offenes Cheerleader-Reaktionsfenster. Solange gesetzt, sind alle normalen
    * Aktionen gesperrt – die UI darf nur die Reaktion anbieten (bzw. warten).

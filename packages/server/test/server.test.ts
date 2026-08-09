@@ -428,6 +428,66 @@ describe('Verbindliche Bahnenzahl', () => {
   });
 });
 
+describe('Rückspiel', () => {
+  it('wartet auf beide Spieler, überlebt Reconnect und startet dieselben Loadouts neu', async () => {
+    let c1 = await connect(server.port);
+    let c2 = await connect(server.port);
+    c1.send({ type: 'create', faction: 'humans' });
+    const created = await c1.next('created');
+    const rematchCode = created.code as string;
+    const token1 = created.token as string;
+    c2.send({ type: 'join', code: rematchCode, faction: 'animals' });
+    await c2.next('joined');
+    await c1.next('state');
+    await c2.next('state');
+
+    c1.send({ type: 'action', action: { type: 'mulligan', handIndices: [] } });
+    await c1.next('state'); await c2.next('state');
+    c2.send({ type: 'action', action: { type: 'mulligan', handIndices: [] } });
+    await c1.next('state'); await c2.next('state');
+
+    // Ohne ausgespielte Kreaturen beendet die direkte Zermürbung die Partie
+    // deterministisch. So testet der Serverpfad keine Bot-Entscheidungen mit.
+    for (let step = 0; step < 100 && c1.lastView!.phase !== 'ended'; step++) {
+      const active = c1.lastView!.active === c1.lastView!.you ? c1 : c2;
+      active.send({ type: 'action', action: { type: 'pass' } });
+      await c1.next('state');
+      await c2.next('state');
+    }
+    expect(c1.lastView!.phase).toBe('ended');
+    expect(c1.lastView!.matchSummary).toBeTruthy();
+
+    c1.send({ type: 'rematchReady', ready: true });
+    expect((await c1.next('rematchState')).ready).toEqual([true, false]);
+    await c2.next('rematchState');
+
+    c1.ws.close();
+    c1 = await connect(server.port);
+    c1.send({ type: 'rejoin', code: rematchCode, token: token1 });
+    await c1.next('rejoined');
+    await c1.next('state');
+    expect((await c1.next('rematchState')).ready).toEqual([true, false]);
+
+    c2.send({ type: 'rematchReady', ready: true });
+    expect((await c1.next('rematchState')).ready).toEqual([true, true]);
+    expect((await c2.next('rematchState')).ready).toEqual([true, true]);
+    const freshMessage1 = await c1.next('state');
+    const freshMessage2 = await c2.next('state');
+    const fresh1 = freshMessage1.view as ClientView;
+    const fresh2 = freshMessage2.view as ClientView;
+    expect(freshMessage1.matchNumber).toBe(2);
+    expect(freshMessage2.matchNumber).toBe(2);
+    expect(fresh1.phase).toBe('mulligan');
+    expect(fresh2.phase).toBe('mulligan');
+    expect(fresh1.round).toBe(0);
+    expect(fresh1.players[0].cheerleaders).toEqual(DEFAULT_CHEERLEADERS);
+    expect(fresh1.players[1].cheerleaders).toEqual(DEFAULT_CHEERLEADERS);
+
+    c1.ws.close();
+    c2.ws.close();
+  });
+});
+
 describe('Persistenz: Version, Migration und offenes Reaktionsfenster', () => {
   const persistPfad = join(process.cwd(), 'rooms_persist.json');
   let gesichert: string | null = null;
@@ -534,7 +594,7 @@ describe('Persistenz: Version, Migration und offenes Reaktionsfenster', () => {
     // Die Datei muss versioniert sein und darf keine .tmp-Reste hinterlassen.
     const roh = JSON.parse(readFileSync(persistPfad, 'utf-8'));
     expect(Array.isArray(roh)).toBe(false);
-    expect(roh.version).toBe(2);
+    expect(roh.version).toBe(3);
     expect(existsSync(persistPfad + '.tmp')).toBe(false);
 
     srv = await startServer(0);

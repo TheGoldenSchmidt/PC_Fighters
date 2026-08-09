@@ -31,6 +31,7 @@ import {
   saveCheerleaderSelection
 } from './cheerleaderSelection';
 import type { ConnectionStatus } from './useGame';
+import type { LocalProfileV1, StoredLoadout } from './profile';
 import { defaultServerHost, isCloud, toInfoUrl } from './config';
 
 const params = new URLSearchParams(window.location.search);
@@ -39,6 +40,8 @@ const defaultRoom = params.get('room') ?? '';
 
 interface Props {
   status: ConnectionStatus;
+  profile: LocalProfileV1;
+  onRememberLoadout: (faction: string, loadout: StoredLoadout) => void;
   onCreate: (
     server: string,
     selection: DeckSelection,
@@ -68,7 +71,7 @@ function selectedDeck(info: Info, selection: DeckSelection): DeckList | null {
   return selection.kind === 'preset' ? info.decks[selection.id] ?? null : selection.deck;
 }
 
-export function StartScreen({ status, onCreate, onJoin }: Props) {
+export function StartScreen({ status, profile, onRememberLoadout, onCreate, onJoin }: Props) {
   const [server, setServer] = useState(defaultServer);
   const [mode, setMode] = useState<'create' | 'join'>(defaultRoom ? 'join' : 'create');
   const [room, setRoom] = useState(defaultRoom);
@@ -81,7 +84,13 @@ export function StartScreen({ status, onCreate, onJoin }: Props) {
   const [topicId, setTopicId] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [testMode, setTestMode] = useState(false);
+  const [advancedOpen, setAdvancedOpen] = useState(() => {
+    const requested = sessionStorage.getItem('pcf.openLoadout') === '1';
+    sessionStorage.removeItem('pcf.openLoadout');
+    return requested;
+  });
   const importRef = useRef<HTMLInputElement>(null);
+  const quickLoadoutRef = useRef<HTMLElement>(null);
 
   const loadInfo = useCallback(async (serverInput: string) => {
     setLoadError(null);
@@ -142,14 +151,62 @@ export function StartScreen({ status, onCreate, onJoin }: Props) {
   const busy = status === 'connecting';
 
   useEffect(() => {
+    if (!info || !topFaction || selection) return;
+    const remembered = profile.lastLoadouts[topFaction];
+    if (
+      remembered?.deckSelection.kind === 'preset' &&
+      info.decks[remembered.deckSelection.id] &&
+      activeDeckIds.has(remembered.deckSelection.id)
+    ) {
+      setSelection(remembered.deckSelection);
+      setTopicId(
+        info.topics.some((topic) => topic.id === remembered.topicId)
+          ? remembered.topicId
+          : info.topics[0]?.id ?? null
+      );
+      return;
+    }
+    const firstPreset = Object.entries(info.decks).find(
+      ([id, preset]) => activeDeckIds.has(id) && preset.faction === topFaction
+    );
+    if (firstPreset) setSelection({ kind: 'preset', id: firstPreset[0] });
+  }, [activeDeckIds, info, profile.lastLoadouts, selection, topFaction]);
+
+  useEffect(() => {
     if (!selection || !info || !deck) {
       setCheerleaders([]);
       return;
     }
-    setCheerleaders(loadCheerleaderSelection(selection, deck, info.cheerleaders) ?? []);
+    const remembered = profile.lastLoadouts[topFaction ?? '']?.cheerleaders;
+    const fallback = info.cheerleaders.candidates
+      .filter((id) => info.cheerleaders.allowDeckOverlap || !deckContains(deck, id))
+      .slice(0, info.cheerleaders.selectionSize);
+    const rememberedValid =
+      remembered?.length === info.cheerleaders.selectionSize &&
+      new Set(remembered).size === remembered.length &&
+      remembered.every(
+        (id) =>
+          info.cheerleaders.candidates.includes(id) &&
+          (info.cheerleaders.allowDeckOverlap || !deckContains(deck, id))
+      )
+        ? [...remembered]
+        : null;
+    setCheerleaders(
+      loadCheerleaderSelection(selection, deck, info.cheerleaders) ??
+        rememberedValid ??
+        fallback
+    );
     // selectionKey bildet Preset-ID bzw. stabile eigene Deck-ID ab.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectionKey, info]);
+
+  useEffect(() => {
+    if (!selection || advancedOpen) return;
+    const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    window.requestAnimationFrame(() =>
+      quickLoadoutRef.current?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' })
+    );
+  }, [advancedOpen, selection]);
 
   useEffect(() => {
     if (selection && cheerleadersValid) {
@@ -167,6 +224,32 @@ export function StartScreen({ status, onCreate, onJoin }: Props) {
     setSelection(null);
     setCheerleaders([]);
     setEditor(null);
+    setAdvancedOpen(false);
+    const remembered = profile.lastLoadouts[id];
+    if (remembered && info?.topics.some((topic) => topic.id === remembered.topicId)) {
+      setTopicId(remembered.topicId);
+    }
+  };
+
+  const rememberCurrentLoadout = () => {
+    if (!topFaction || !selection || !topicId || !cheerleadersValid) return;
+    onRememberLoadout(topFaction, {
+      deckSelection: selection,
+      cheerleaders: cheerleaders as CheerleaderSelection,
+      topicId
+    });
+  };
+
+  const createCurrentGame = () => {
+    if (!selection || !topicId) return;
+    rememberCurrentLoadout();
+    onCreate(server, selection, cheerleaders as CheerleaderSelection, topicId, testMode);
+  };
+
+  const joinCurrentGame = () => {
+    if (!selection) return;
+    rememberCurrentLoadout();
+    onJoin(server, room, selection, cheerleaders as CheerleaderSelection);
   };
 
   const chooseDeck = (next: DeckSelection) => {
@@ -263,6 +346,13 @@ export function StartScreen({ status, onCreate, onJoin }: Props) {
           <img src="/assets/logo.png" className="main-logo" alt="Political Correct Fighters" />
         </div>
         <p className="subtitle">Das ultimative Duell: Humans vs. Animals</p>
+        {(profile.stats.wins + profile.stats.losses + profile.stats.draws > 0) && (
+          <div className="profile-strip" aria-label="Lokale Bilanz">
+            <span><strong>{profile.stats.wins}</strong> Siege</span>
+            <span><strong>{profile.stats.losses}</strong> Niederlagen</span>
+            <span><strong>{profile.stats.bestStreak}</strong> beste Serie</span>
+          </div>
+        )}
       </header>
 
       <section className="panel">
@@ -289,7 +379,7 @@ export function StartScreen({ status, onCreate, onJoin }: Props) {
       {loadError && <section className="panel"><p className="hint error-hint">{loadError}</p></section>}
 
       <section className="panel wizard-step">
-        <h2><span>1</span> Oberfraktion wählen</h2>
+        <h2><span>1</span> Deine Seite</h2>
         <div className="faction-grid top-faction-grid">
           {topFactions.map((faction) => (
             <button
@@ -306,10 +396,66 @@ export function StartScreen({ status, onCreate, onJoin }: Props) {
         </div>
       </section>
 
-      {topFaction && info && (
+      {topFaction && info && selection && deck && (
+        <section ref={quickLoadoutRef} className="panel quick-loadout" aria-labelledby="quick-loadout-title">
+          <div className="quick-loadout-head">
+            <div>
+              <span className="eyebrow">Einsatzbereit</span>
+              <h2 id="quick-loadout-title">{deck.name ?? 'Fertiges Deck'}</h2>
+            </div>
+            <span className="loadout-ready" aria-label="Ausrüstung gültig">✓</span>
+          </div>
+          <p className="quick-loadout-meta">
+            {cheerleaders.length}/{info.cheerleaders.selectionSize} Cheerleader
+            {mode === 'create' && topicId
+              ? ` · ${info.topics.find((topic) => topic.id === topicId)?.emoji ?? ''} ${
+                  info.topics.find((topic) => topic.id === topicId)?.name ?? ''
+                }`
+              : ''}
+          </p>
+
+          {mode === 'join' && (
+            <>
+              <label htmlFor="room-quick">Raum-Code</label>
+              <input
+                id="room-quick"
+                className="room-input"
+                inputMode="numeric"
+                maxLength={4}
+                value={room}
+                onChange={(event) => setRoom(event.target.value.replace(/\D/g, ''))}
+                placeholder="4217"
+              />
+            </>
+          )}
+
+          <button
+            className="primary big quick-start-button"
+            disabled={
+              !deckValid ||
+              !cheerleadersValid ||
+              busy ||
+              (mode === 'create' ? !topicId : room.length !== 4)
+            }
+            onClick={mode === 'create' ? createCurrentGame : joinCurrentGame}
+          >
+            {busy ? 'Verbinde …' : mode === 'create' ? 'Arena öffnen' : 'Duell beitreten'}
+          </button>
+          <button
+            type="button"
+            className="loadout-toggle"
+            aria-expanded={advancedOpen}
+            onClick={() => setAdvancedOpen((open) => !open)}
+          >
+            {advancedOpen ? 'Ausrüstung schließen' : 'Ausrüstung ändern'}
+          </button>
+        </section>
+      )}
+
+      {advancedOpen && topFaction && info && (
         <section className="panel wizard-step">
           <h2><span>2</span> Deck wählen</h2>
-          <h3>Prebuilds</h3>
+          <h3>Fertige Decks</h3>
           <div className="preset-grid">
             {presetEntries.map(([id, preset]) => (
               <DeckChoice
@@ -325,18 +471,18 @@ export function StartScreen({ status, onCreate, onJoin }: Props) {
               />
             ))}
           </div>
-          <div className={`deck-section-head ${customDecksEnabled ? '' : 'disabled'}`}>
+          {customDecksEnabled && <>
+          <div className="deck-section-head">
             <h3>Eigene Decks</h3>
             <div>
-              <button className="secondary" disabled={!customDecksEnabled} onClick={() => setEditor({})}>+ Neues Deck</button>
-              <button className="secondary" disabled={!customDecksEnabled} onClick={() => importRef.current?.click()}>Importieren</button>
+              <button className="secondary" onClick={() => setEditor({})}>+ Neues Deck</button>
+              <button className="secondary" onClick={() => importRef.current?.click()}>Importieren</button>
               <input ref={importRef} hidden type="file" accept="application/json,.json" onChange={(event) => void importDeck(event.target.files?.[0])} />
             </div>
           </div>
-          {!customDecksEnabled && <p className="hint">Eigene Decks bleiben gespeichert und werden nach der Alpha-Balancingphase wieder freigeschaltet.</p>}
           <div className="subfaction-templates">
             {info.factions.filter((faction) => faction.parent === topFaction).map((faction) => (
-              <button className="secondary" disabled={!customDecksEnabled} key={faction.id} onClick={() => setEditor({ sub: faction.id })}>
+              <button className="secondary" key={faction.id} onClick={() => setEditor({ sub: faction.id })}>
                 Leer mit Filter: {faction.name}
               </button>
             ))}
@@ -366,10 +512,11 @@ export function StartScreen({ status, onCreate, onJoin }: Props) {
               })}
             </div>
           )}
+          </>}
         </section>
       )}
 
-      {topFaction && selection && info && deck && (
+      {advancedOpen && topFaction && selection && info && deck && (
         <section className="panel wizard-step cheerleader-step">
           <div className="wizard-title-row">
             <h2><span>3</span> Cheerleader wählen</h2>
@@ -404,6 +551,7 @@ export function StartScreen({ status, onCreate, onJoin }: Props) {
                   <span>
                     <strong>{card?.name ?? id}</strong>
                     <small>{locked ? 'Im Deck · nicht verfügbar' : slot >= 0 ? `Bankplatz ${slot + 1}` : 'Für die Bank verfügbar'}</small>
+                    {card?.text && <small className="candidate-power">{card.text}</small>}
                   </span>
                 </button>
               );
@@ -413,7 +561,7 @@ export function StartScreen({ status, onCreate, onJoin }: Props) {
         </section>
       )}
 
-      {topFaction && selection && info && (
+      {advancedOpen && topFaction && selection && info && (
         <section className="panel wizard-step">
           <h2><span>4</span> {mode === 'create' ? 'Partie einrichten' : 'Raum beitreten'}</h2>
           {mode === 'create' ? (
@@ -439,9 +587,7 @@ export function StartScreen({ status, onCreate, onJoin }: Props) {
               <button
                 className="primary big"
                 disabled={!deckValid || !cheerleadersValid || !topicId || busy}
-                onClick={() =>
-                  onCreate(server, selection, cheerleaders as CheerleaderSelection, topicId!, testMode)
-                }
+                onClick={createCurrentGame}
               >
                 {busy ? 'Verbinde …' : 'Partie erstellen'}
               </button>
@@ -453,7 +599,7 @@ export function StartScreen({ status, onCreate, onJoin }: Props) {
               <button
                 className="primary big"
                 disabled={!deckValid || !cheerleadersValid || room.length !== 4 || busy}
-                onClick={() => onJoin(server, room, selection, cheerleaders as CheerleaderSelection)}
+                onClick={joinCurrentGame}
               >
                 {busy ? 'Verbinde …' : 'Beitreten'}
               </button>

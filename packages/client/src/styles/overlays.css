@@ -23,9 +23,87 @@
   text-align: center;
   max-width: 380px;
   width: 100%;
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
   box-shadow: 0 20px 50px rgba(0,0,0,0.8);
   animation: play-in 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
 }
+
+.coach-hint {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--hand-hoehe, 210px) + 10px);
+  z-index: 35;
+  width: min(420px, calc(100% - 24px));
+  padding: 12px;
+  transform: translateX(-50%);
+  border: 1px solid rgba(255, 180, 41, 0.55);
+  border-left: 5px solid var(--gold);
+  border-radius: 10px;
+  background: rgba(19, 29, 47, 0.98);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.5);
+}
+
+.coach-kicker { display: block; color: var(--gold); font-family: var(--font-mono); font-size: .62rem; letter-spacing: .08em; text-transform: uppercase; }
+.coach-hint > strong { display: block; margin: 3px 0 5px; font-family: var(--font-title); font-size: 1.05rem; }
+.coach-hint p { margin: 0; color: var(--text); font-size: 0.82rem; line-height: 1.4; }
+.coach-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 9px; }
+.coach-actions button { min-height: 44px; padding: 7px 10px; border: 1px solid var(--panel-2-border); border-radius: 8px; background: var(--panel-2); color: var(--text); font-weight: 700; }
+.coach-actions button:first-child { background: var(--gold); color: #080d18; }
+
+.mulligan-screen .coach-hint {
+  position: relative;
+  left: auto;
+  bottom: auto;
+  width: 100%;
+  transform: none;
+  text-align: left;
+}
+
+.game-screen .coach-hint {
+  top: calc(var(--zone-hoehe) + 4px);
+  bottom: auto;
+}
+
+.pass-confirm-box,
+.arena-settings { display: grid; gap: 12px; }
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 48px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(243, 241, 232, 0.12);
+  text-align: left;
+}
+
+.setting-row input { width: 24px; height: 24px; accent-color: var(--gold); }
+.setting-row select { min-height: 44px; padding: 0 10px; border-radius: 8px; }
+
+.match-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 14px 0;
+}
+
+.match-summary > div {
+  display: grid;
+  gap: 3px;
+  padding: 10px;
+  border: 1px solid rgba(243, 241, 232, 0.14);
+  border-radius: 8px;
+  background: rgba(8, 13, 24, 0.7);
+}
+
+.match-summary strong { color: var(--gold); font-family: var(--font-mono); font-size: 1.05rem; }
+.match-summary span { color: var(--muted); font-size: 0.68rem; }
+
+.result-actions { display: grid; gap: 8px; }
+.result-actions button { min-height: 44px; }
+.rematch-state { margin: 8px 0; color: var(--muted); font-size: 0.8rem; }
 
 .overlay-box h1 {
   font-family: var(--font-title);
@@ -390,12 +468,16 @@
 @media (prefers-reduced-motion: reduce) {
   *, .creature-figure, .dmg-float, .basis-anzeige.hit, .shield-meter, .hand-card.playable:hover {
     animation: none !important;
-    transform: none !important;
     transition: none !important;
   }
 
+  .projectile,
+  .dmg-float,
+  .power-burst,
+  .confetti { display: none !important; }
+
   .team-seat.sacrificing {
-    animation: team-sacrifice-dissolve .36s linear forwards !important;
+    opacity: 0;
   }
 }
 
