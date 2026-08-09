@@ -204,11 +204,13 @@
   max-width: 100%;
   padding: 1px clamp(3px, 8cqw, 8px);
   border-radius: 6px;
-  background: linear-gradient(180deg, rgba(30, 38, 60, 0.95), rgba(15, 20, 35, 0.95));
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(180deg, rgba(30, 38, 60, 0.99), rgba(8, 13, 24, 0.99));
+  border: 1px solid rgba(243, 241, 232, 0.28);
   font-family: var(--font-title);
   font-weight: 700;
-  font-size: clamp(0.5rem, 10cqw, 0.68rem);
+  font-size: clamp(0.58rem, 11cqw, 0.74rem);
+  color: var(--text);
+  text-shadow: 0 1px 3px #000;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -391,12 +393,34 @@
 }
 
 .creature-figure.figure-3d .figure-frame {
+  position: absolute;
+  inset: 0;
   background: transparent;
   border: none;
   box-shadow: none;
   overflow: visible;
   transform: none;
   animation: none;
+}
+
+.creature-figure.figure-3d .figure-stat { bottom: 35px; }
+
+.creature-figure.figure-3d .figure-plaque {
+  position: absolute;
+  left: 3px;
+  right: 3px;
+  bottom: 17px;
+  z-index: 9;
+  text-align: center;
+}
+
+.creature-figure.figure-3d .figure-keywords {
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  bottom: 2px;
+  z-index: 9;
+  text-align: center;
 }
 
 /* Erschöpfung zeigt die 3D-Figur selbst (graue, eingesackte Pose) –

@@ -24,7 +24,7 @@
    nur Groessenangaben und wurden deshalb als nackte Browser-Knoepfe gezeichnet.
    Farbe und Rahmen kommen jetzt aus der `button`-Grundform, hier bleibt die
    kompakte Groesse plus ein sicheres Touch-Ziel. */
-.preset-actions button { font-size:.72rem; padding:.4rem .6rem; min-height:34px; }
+.preset-actions button { min-height:44px; font-size:.72rem; padding:.4rem .6rem; }
 .deck-section-head,.deck-editor-head { display:flex; justify-content:space-between; align-items:center; gap:.75rem; flex-wrap:wrap; }
 .deck-section-head > div,.subfaction-templates { display:flex; gap:.4rem; flex-wrap:wrap; }
 .deck-filters,.deck-curve { display:flex; gap:.5rem; flex-wrap:wrap; margin:.75rem 0; }
@@ -33,14 +33,14 @@
 .deck-builder-card { display:grid; grid-template-columns:64px 1fr auto; gap:.7rem; align-items:center; padding:.55rem; border:1px solid rgba(255,255,255,.12); border-radius:10px; background:rgba(0,0,0,.18); }
 .deck-art,.mulligan-art { position:relative; display:grid; place-items:center; overflow:hidden; background:rgba(255,255,255,.06); border-radius:6px; }
 .deck-art { width:64px; height:82px; }
-.deck-art span,.mulligan-art span { position:absolute; font-size:1.6rem; opacity:.65; }
+.deck-art > span,.mulligan-art > span { position:absolute; font-size:1.6rem; opacity:.65; }
 .deck-art img,.mulligan-art img { position:relative; z-index:1; width:100%; height:100%; object-fit:cover; }
 .deck-builder-card div:nth-child(2) { display:flex; flex-direction:column; gap:.2rem; }
 .deck-builder-card p { margin:0; font-size:.76rem; opacity:.8; }
 .copy-stepper { display:flex; align-items:center; gap:.4rem; }
 /* Runde Stempel statt nativer Kaesten – das Plus/Minus ist der meistbenutzte
    Knopf des Deck-Editors. */
-.copy-stepper button { width:2.15rem; height:2.15rem; padding:0; border-radius:50%; font-size:1.05rem; line-height:1; display:grid; place-items:center; }
+.copy-stepper button { width:44px; height:44px; padding:0; border-radius:50%; font-size:1.05rem; line-height:1; display:grid; place-items:center; }
 .copy-stepper b { min-width:1.4rem; text-align:center; font-variant-numeric:tabular-nums; }
 .deck-validation { margin:.75rem 0; padding:.65rem; border-radius:8px; }
 .deck-validation.valid { background:rgba(45,180,90,.16); color:#98f0b4; }
@@ -141,9 +141,17 @@
 }
 .mulligan-screen { text-align:center; }
 .mulligan-hand { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.8rem; margin:1.25rem 0; }
-.mulligan-card { display:flex; flex-direction:column; gap:.35rem; align-items:center; padding:.65rem; border:2px solid transparent; border-radius:12px; background:rgba(10,9,20,.75); color:inherit; }
+.mulligan-card { display:flex; flex-direction:column; gap:.35rem; align-items:stretch; padding:.5rem; border:2px solid transparent; border-radius:12px; background:rgba(10,16,29,.9); color:inherit; }
 .mulligan-card.selected { border-color:#ff6b6b; transform:translateY(-5px); }
 .mulligan-art { width:100%; aspect-ratio:3/4; }
+.mulligan-select { display:flex; flex-direction:column; gap:.35rem; align-items:center; padding:0; border:0; background:transparent; color:inherit; cursor:pointer; }
+.mulligan-info { min-height:44px; border:1px solid var(--panel-2-border); border-radius:8px; background:var(--panel-2); color:var(--text); }
+.mulligan-cost { font-family:var(--font-mono); color:var(--gold); }
+.mulligan-choice { font-weight:700; color:var(--muted); }
+.mulligan-card.selected .mulligan-choice { color:#ff8f8f; }
+.mulligan-art-img { width:100%; height:100%; object-fit:cover; }
+.card-poster-fallback { position:absolute; inset:0; display:grid; place-items:center; padding:12px; font-family:var(--font-title); font-size:1rem!important; font-weight:800; letter-spacing:.08em; opacity:1!important; color:var(--text); background:linear-gradient(145deg,#273b62,#101827); }
+.card-poster-fallback.faction-animals { background:linear-gradient(145deg,#1c563d,#0d2018); }
 .mulligan-wait { padding:1rem; color:#9df0b6; }
 @media (max-width:650px) {
   .mulligan-hand { grid-template-columns:repeat(2,minmax(0,1fr)); }

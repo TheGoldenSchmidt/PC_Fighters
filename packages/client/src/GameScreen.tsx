@@ -39,10 +39,14 @@ import type { ConnectionStatus, KeywordInfo } from './useGame';
 import { webglSupported } from './webgl';
 import { eigeneLaneRects, useKartenZug } from './useKartenZug';
 import { useKampfReplay } from './arena/useKampfReplay';
-import { CardArt, HandCard, KartenDetail, type DetailData } from './arena/Karten';
+import { CardArt, CardPosterFallback, HandCard, KartenDetail, type DetailData } from './arena/Karten';
 import { CreatureTile } from './arena/CreatureTile';
 import { BasisAnzeige, CheerleaderStrip } from './arena/Anzeigen';
 import { ReaktionsAuswahl } from './arena/ReaktionsAuswahl';
+import { CoachHint } from './arena/CoachHint';
+import { useDialogFocus } from './arena/useDialogFocus';
+import { playFeedback } from './feedback';
+import { defaultProfile, type LocalProfileV1 } from './profile';
 import { useWertPuls } from './arena/useWertPuls';
 
 /**
@@ -62,6 +66,13 @@ interface Props {
   catalog: VisualCatalog | null;
   status: ConnectionStatus;
   opponentConnected: boolean;
+  profile?: LocalProfileV1;
+  roomCode?: string;
+  matchNumber?: number;
+  rematchReady?: [boolean, boolean];
+  onUpdateProfile?: (change: (current: LocalProfileV1) => LocalProfileV1) => void;
+  onRecordMatch?: (matchId: string, result: 'win' | 'loss' | 'draw') => void;
+  onRematchReady?: (ready: boolean) => void;
   onAction: (action: PlayerAction) => void;
   onLeave: () => void;
 }
@@ -79,6 +90,13 @@ export function GameScreen({
   catalog,
   status,
   opponentConnected,
+  profile = defaultProfile(),
+  roomCode = '',
+  matchNumber = 1,
+  rematchReady = [false, false],
+  onUpdateProfile = () => {},
+  onRecordMatch = () => {},
+  onRematchReady = () => {},
   onAction,
   onLeave
 }: Props) {
@@ -87,14 +105,43 @@ export function GameScreen({
   const [use3d, setUse3d] = useState(
     () => !new URLSearchParams(window.location.search).has('no3d') && webglSupported(),
   );
-  const { shownView, isReplaying, fx, moveFx, banner, showBanner } = useKampfReplay(view);
+  const { shownView, isReplaying, fx, moveFx, banner, showBanner } = useKampfReplay(
+    view,
+    profile.settings.replaySpeed
+  );
   const [detail, setDetail] = useState<DetailData | null>(null);
+  const [passConfirm, setPassConfirm] = useState(false);
+  const [passWarnedRound, setPassWarnedRound] = useState<number | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   /** Kampf-Log: normal nur als Ticker sichtbar, auf Tippen als Overlay. */
   const [logOffen, setLogOffen] = useState(false);
   const logRef = useRef<HTMLDivElement>(null);
+  const passDialogRef = useDialogFocus<HTMLDivElement>(passConfirm, () => setPassConfirm(false));
+  const settingsDialogRef = useDialogFocus<HTMLDivElement>(settingsOpen, () => setSettingsOpen(false));
+  const logDialogRef = useDialogFocus<HTMLDivElement>(logOffen, () => setLogOffen(false));
+  const resultDialogRef = useDialogFocus<HTMLDivElement>(shownView.winner !== null);
 
   const me = view.you;
   const opp: PlayerIndex = me === 0 ? 1 : 0;
+
+  const setSetting = <K extends keyof LocalProfileV1['settings'],>(
+    key: K,
+    value: LocalProfileV1['settings'][K]
+  ) =>
+    onUpdateProfile((current) => ({
+      ...current,
+      settings: { ...current.settings, [key]: value }
+    }));
+
+  const finishCoach = (key: 'firstTurn' | 'combat' | 'shield', skipped = false) =>
+    onUpdateProfile((current) => ({
+      ...current,
+      onboarding: {
+        ...current.onboarding,
+        [key]: true,
+        ...(skipped ? { skipped: true } : {})
+      }
+    }));
 
   // Reaktionsfenster kommen IMMER aus der neuesten Serversicht, nicht aus
   // shownView: während einer Abspielung hinkt die angezeigte Lage absichtlich
@@ -109,8 +156,8 @@ export function GameScreen({
     shownView.active === me && shownView.winner === null && !isReplaying && reaktion === null;
   const myBoard = shownView.board[me];
   const energy = shownView.players[me].energy;
-  const canPlaySomething =
-    myTurn && shownView.phase === 'play' && shownView.hand.some((c) => c.cost <= energy);
+  const playableCardCount = shownView.hand.filter((card) => card.cost <= energy).length;
+  const canPlaySomething = myTurn && shownView.phase === 'play' && playableCardCount > 0;
 
   // Zaehler-Blitz: die drei Chips aendern sich sonst lautlos mitten im Spiel.
   const energiePuls = useWertPuls(energy);
@@ -123,6 +170,52 @@ export function GameScreen({
   useEffect(() => {
     logRef.current?.scrollTo({ top: logRef.current.scrollHeight });
   }, [shownView.log.length, logOffen]);
+
+  useEffect(() => {
+    if (fx.projectiles.length > 0) {
+      playFeedback('attack', profile.settings.sound, profile.settings.haptics);
+    }
+  }, [fx.projectiles.length, profile.settings.haptics, profile.settings.sound]);
+
+  useEffect(() => {
+    if (fx.impacts.length > 0) {
+      playFeedback('impact', profile.settings.sound, profile.settings.haptics);
+    }
+    if (fx.baseImpacts.length > 0) {
+      playFeedback('base', profile.settings.sound, profile.settings.haptics);
+    }
+  }, [fx.baseImpacts.length, fx.impacts.length, profile.settings.haptics, profile.settings.sound]);
+
+  useEffect(() => {
+    if (fx.shield?.blockiert) {
+      playFeedback('shield', profile.settings.sound, profile.settings.haptics);
+    }
+  }, [fx.shield?.blockiert, profile.settings.haptics, profile.settings.sound]);
+
+  useEffect(() => {
+    if (fx.power) playFeedback('power', profile.settings.sound, profile.settings.haptics);
+  }, [fx.power, profile.settings.haptics, profile.settings.sound]);
+
+  const recordedWinner = useRef<string | null>(null);
+  useEffect(() => {
+    if (view.winner === null) return;
+    const matchId = `${roomCode}:${matchNumber}`;
+    if (recordedWinner.current === matchId) return;
+    recordedWinner.current = matchId;
+    const result = view.winner === 'draw' ? 'draw' : view.winner === me ? 'win' : 'loss';
+    onRecordMatch(matchId, result);
+    playFeedback(result === 'win' ? 'win' : 'lose', profile.settings.sound, profile.settings.haptics);
+  }, [
+    me,
+    onRecordMatch,
+    profile.settings.haptics,
+    profile.settings.sound,
+    roomCode,
+    matchNumber,
+    view.log,
+    view.round,
+    view.winner
+  ]);
 
   // Phasen-Banner: Rundenwechsel, Flug-Phase, eigener Zug.
   const prevMeta = useRef<{ round: number; phase: string; myTurn: boolean; init: boolean }>({
@@ -233,6 +326,7 @@ export function GameScreen({
   function karteAufLane(handIndex: number, lane: number) {
     const card = shownView.hand[handIndex];
     if (!card) return;
+    playFeedback('card', profile.settings.sound, profile.settings.haptics);
     if (card.type === 'creature') {
       onAction({ type: 'playCreature', handIndex, lane });
     } else if (card.effect.kind === 'moveCreature') {
@@ -272,6 +366,7 @@ export function GameScreen({
   function openCreatureDetail(c: CreatureView) {
     setDetail({
       cardId: c.cardId,
+      type: 'creature',
       name: c.name,
       attack: c.attack,
       health: c.health,
@@ -284,6 +379,8 @@ export function GameScreen({
   function openCardDetail(card: CardDef, handIndex?: number) {
     setDetail({
       cardId: card.id,
+      faction: card.faction,
+      type: card.type,
       name: card.name,
       cost: card.cost,
       attack: card.type === 'creature' ? card.attack : undefined,
@@ -360,6 +457,15 @@ export function GameScreen({
     ? laneZieleFuerKarte(shownView.hand[kartenZug.zug.handIndex] ?? null)
     : null;
   const letzteLogZeile = shownView.log.at(-1)?.text ?? '';
+  const coachKey: 'firstTurn' | 'combat' | 'shield' | null = profile.onboarding.skipped
+    ? null
+    : zeigeReaktionsAuswahl && !profile.onboarding.shield
+      ? 'shield'
+      : isReplaying && !profile.onboarding.combat
+        ? 'combat'
+        : myTurn && shownView.phase === 'play' && !profile.onboarding.firstTurn
+          ? 'firstTurn'
+          : null;
 
   return (
     <div className="screen game-screen" style={themeVars}>
@@ -434,6 +540,14 @@ export function GameScreen({
               className={`conn-dot ${status === 'connected' ? 'ok' : 'lost'}`}
               title={status === 'connected' ? 'Verbunden' : 'Verbindung verloren'}
             />
+            <button
+              type="button"
+              className="arena-settings-button"
+              aria-label="Arena-Einstellungen"
+              onClick={() => setSettingsOpen(true)}
+            >
+              ⚙
+            </button>
           </div>
         </div>
 
@@ -441,6 +555,7 @@ export function GameScreen({
         <main className="lane-grid">
           {Array.from({ length: shownView.lanes }, (_, lane) => {
             const targetable = myTurn && (zugZiele ?? targets.lanes).has(lane);
+            const targeting = myTurn && (selection !== null || kartenZug.zug !== null);
             const dropHover = kartenZug.zug?.lane === lane;
             const flySource = selection?.kind === 'fly' && selection.fromLane === lane;
             const moveSource = selection?.kind === 'move' && selection.fromLane === lane;
@@ -468,10 +583,18 @@ export function GameScreen({
                   className={
                     'slot own-slot' +
                     (targetable ? ' targetable' : '') +
+                    (targeting && !targetable ? ' invalid-target' : '') +
                     (dropHover ? ' drop-hover' : '') +
                     (flySource || moveSource ? ' selected-slot' : '')
                   }
                   data-slot={`${me}-${lane}`}
+                  aria-label={
+                    ownCreature
+                      ? `Lane ${lane + 1}: ${ownCreature.name}`
+                      : targetable
+                        ? `Karte in Lane ${lane + 1} ausspielen`
+                        : `Lane ${lane + 1}, frei`
+                  }
                   onClick={() => tapOwnLane(lane)}
                 >
                   <CreatureTile
@@ -544,8 +667,18 @@ export function GameScreen({
           <div className="hud-gruppe rechts">
             <div className={'deck-chip' + deckPuls}>📚 {shownView.players[me].deckCount}</div>
             {shownView.phase === 'play' && myTurn && (
-              <button className="pass-button" onClick={() => onAction({ type: 'pass' })}>
-                Passen
+              <button
+                className="pass-button"
+                onClick={() => {
+                  if (canPlaySomething && passWarnedRound !== shownView.round) {
+                    setPassWarnedRound(shownView.round);
+                    setPassConfirm(true);
+                  } else {
+                    onAction({ type: 'pass' });
+                  }
+                }}
+              >
+                Runde abschließen
               </button>
             )}
             {shownView.phase === 'fly' && myTurn && (
@@ -572,17 +705,52 @@ export function GameScreen({
       )}
 
       {/* ---- Fußbereich: Status und Hand, direkt über der Arena ---- */}
+      {coachKey && (
+        <CoachHint
+          title={
+            coachKey === 'firstTurn'
+              ? 'Eine Karte, eine Entscheidung'
+              : coachKey === 'combat'
+                ? 'Jetzt wird abgerechnet'
+                : 'Dein Schild verlangt ein Opfer'
+          }
+          onDone={() => finishCoach(coachKey)}
+          onSkip={() => finishCoach(coachKey, true)}
+        >
+          {coachKey === 'firstTurn'
+            ? 'Tippe eine Karte für Details oder ziehe eine leuchtende Karte direkt in eine markierte Lane. Danach ist dein Gegner am Zug.'
+            : coachKey === 'combat'
+              ? 'Wenn beide Seiten ihre Runde abschließen, kämpfen alle Lanes automatisch nacheinander.'
+              : 'Wähle den Cheerleader, dessen Kraft jetzt wirken soll. Der belegte Bankplatz ist danach verbraucht.'}
+        </CoachHint>
+      )}
       <footer className="own-area">
         {/* role=status: Die Zeile ist die Live-Region der Partie – sie meldet
             Zugwechsel, Kampf und wartende Cheerleader-Reaktionen. */}
-        <div className={`status-band ${myTurn ? 'my-turn' : ''}`} role="status">
-          {statusText}
+        <div
+          className={`schlagabtausch-band ${myTurn ? 'my-turn' : ''} ${isReplaying ? 'replay' : ''}`}
+          role="status"
+        >
+          <span className="schlagabtausch-kicker">
+            {isReplaying && fx.activeLane !== null
+              ? `Kampf · Lane ${fx.activeLane + 1}`
+              : myTurn
+                ? 'Dein Auftritt'
+                : 'Gegner am Zug'}
+          </span>
+          <strong>{statusText}</strong>
+          {letzteLogZeile && (
+            <button type="button" onClick={() => setLogOffen(true)}>
+              {letzteLogZeile}
+            </button>
+          )}
         </div>
 
         {showSummonConfirm && (
           <button
             className="primary summon-confirm"
             onClick={() => {
+              playFeedback('card', profile.settings.sound, profile.settings.haptics);
               onAction({ type: 'playAction', handIndex: (selection as { index: number }).index });
               setSelection(null);
             }}
@@ -618,9 +786,12 @@ export function GameScreen({
             className="zug-geist-art"
             alt=""
             fallback={
-              <div className="zug-geist-fallback">
-                {shownView.hand[kartenZug.zug.handIndex].type === 'creature' ? '🛡️' : '⚡'}
-              </div>
+              <CardPosterFallback
+                faction={shownView.hand[kartenZug.zug.handIndex].faction}
+                type={shownView.hand[kartenZug.zug.handIndex].type}
+                name={shownView.hand[kartenZug.zug.handIndex].name}
+                compact
+              />
             }
           />
         </div>
@@ -629,8 +800,15 @@ export function GameScreen({
       {/* ---- Vollständiges Kampf-Log ---- */}
       {logOffen && (
         <div className="overlay log-overlay" onClick={() => setLogOffen(false)}>
-          <div className="log-box" onClick={(e) => e.stopPropagation()}>
-            <h2>Kampf-Log</h2>
+          <div
+            ref={logDialogRef}
+            className="log-box"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="combat-log-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 id="combat-log-title">Kampf-Log</h2>
             <div className="log" ref={logRef}>
               {shownView.log.map((entry) => (
                 <div key={entry.id} className="log-entry">
@@ -668,6 +846,79 @@ export function GameScreen({
       )}
 
       {/* ---- Karten-Detailansicht ---- */}
+      {passConfirm && (
+        <div className="overlay" role="dialog" aria-modal="true" aria-label="Runde abschließen">
+          <div ref={passDialogRef} className="overlay-box pass-confirm-box">
+            <span className="eyebrow">Noch nicht alles gespielt</span>
+            <h1>Runde wirklich abschließen?</h1>
+            <p>
+              Du hast noch {playableCardCount} bezahlbare
+              {playableCardCount === 1 ? ' Karte' : ' Karten'}. Danach kann nur noch dein Gegner handeln.
+            </p>
+            <button
+              className="primary big"
+              onClick={() => {
+                setPassConfirm(false);
+                onAction({ type: 'pass' });
+              }}
+            >
+              Trotzdem abschließen
+            </button>
+            <button className="secondary" onClick={() => setPassConfirm(false)}>Weiterspielen</button>
+          </div>
+        </div>
+      )}
+
+      {settingsOpen && (
+        <div className="overlay" onClick={() => setSettingsOpen(false)}>
+          <div
+            ref={settingsDialogRef}
+            className="overlay-box arena-settings"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Arena-Einstellungen"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <span className="eyebrow">Arena-Regie</span>
+            <h1>Einstellungen</h1>
+            <label className="setting-row">
+              <span>Soundeffekte</span>
+              <input
+                type="checkbox"
+                checked={profile.settings.sound}
+                onChange={(event) => setSetting('sound', event.target.checked)}
+              />
+            </label>
+            <label className="setting-row">
+              <span>Haptisches Feedback</span>
+              <input
+                type="checkbox"
+                checked={profile.settings.haptics}
+                onChange={(event) => setSetting('haptics', event.target.checked)}
+              />
+            </label>
+            <label className="setting-row">
+              <span>Kampfgeschwindigkeit</span>
+              <select
+                value={profile.settings.replaySpeed}
+                onChange={(event) =>
+                  setSetting('replaySpeed', Number(event.target.value) as 1 | 1.5 | 2)
+                }
+              >
+                <option value={1}>1×</option>
+                <option value={1.5}>1,5×</option>
+                <option value={2}>2×</option>
+              </select>
+            </label>
+            <label className="setting-row">
+              <span>3D-Arena</span>
+              <input type="checkbox" checked={use3d} onChange={(event) => setUse3d(event.target.checked)} />
+            </label>
+            <button className="primary" onClick={() => setSettingsOpen(false)}>Fertig</button>
+          </div>
+        </div>
+      )}
+
       {detail && (
         <KartenDetail
           detail={detail}
@@ -702,10 +953,14 @@ export function GameScreen({
             </div>
           )}
           <div
+            ref={resultDialogRef}
             className={
               'overlay-box ' +
               (shownView.winner === 'draw' ? 'draw' : shownView.winner === me ? 'win' : 'lose')
             }
+            role="dialog"
+            aria-modal="true"
+            aria-label="Spielergebnis"
           >
             <h1>
               {shownView.winner === 'draw'
@@ -718,9 +973,40 @@ export function GameScreen({
               Basis-Leben: Du {Math.max(0, shownView.players[me].base)} – Gegner{' '}
               {Math.max(0, shownView.players[opp].base)}
             </p>
-            <button className="primary big" onClick={onLeave}>
-              Zurück zum Start
-            </button>
+            {shownView.matchSummary && (
+              <div className="match-summary">
+                <div><strong>{shownView.matchSummary.round}</strong><span>Runden</span></div>
+                <div><strong>{shownView.matchSummary.baseDamageDealt[me]}</strong><span>Basisschaden</span></div>
+                <div><strong>{shownView.matchSummary.creaturesLost[opp]}</strong><span>Gegner besiegt</span></div>
+                <div><strong>{shownView.matchSummary.shieldsBlocked[me]}</strong><span>Schildblocks</span></div>
+                <div><strong>{shownView.matchSummary.cheerleadersUsed[me]}</strong><span>Cheerleader</span></div>
+              </div>
+            )}
+            <div className="result-actions">
+              <button
+                className="primary big"
+                disabled={rematchReady[me]}
+                onClick={() => onRematchReady(!rematchReady[me])}
+              >
+                {rematchReady[me]
+                  ? rematchReady[opp]
+                    ? 'Rückspiel startet …'
+                    : 'Warte auf Gegner …'
+                  : 'Rückspiel'}
+              </button>
+              <button
+                className="secondary"
+                onClick={() => {
+                  sessionStorage.setItem('pcf.openLoadout', '1');
+                  onLeave();
+                }}
+              >
+                Ausrüstung ändern
+              </button>
+              <button className="result-link" onClick={onLeave}>
+                Zum Start
+              </button>
+            </div>
           </div>
         </div>
       )}

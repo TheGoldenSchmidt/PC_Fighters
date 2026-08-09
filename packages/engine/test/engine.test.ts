@@ -228,6 +228,40 @@ describe('Kampflogik', () => {
   });
 });
 
+describe('Match-Zusammenfassung', () => {
+  it('wird aus dem vollständigen strukturierten Log vor der Sicht-Kürzung berechnet', () => {
+    const state = emptyState();
+    state.round = 12;
+    state.phase = 'ended';
+    state.winner = 0;
+    state.log = Array.from({ length: 65 }, (_, id) => ({
+      id,
+      round: 1,
+      text: `Eintrag ${id}`
+    }));
+    state.log[0].event = { kind: 'attack', lane: 0, attacker: 0, damage: 4, toBase: true };
+    state.log[1].event = { kind: 'attack', lane: 1, attacker: 1, damage: 3, toBase: true };
+    state.log[2].event = { kind: 'death', lane: 0, owner: 1 };
+    state.log[3].event = { kind: 'schild', owner: 0, ladung: 2, stand: 0, abschnitte: 7, blockiert: true };
+    state.log[4].event = { kind: 'cheerleaderSacrifice', owner: 0, slot: 1, cardId: 'pc_babies' };
+
+    const view = buildClientView(state, 0, data);
+
+    expect(view.log).toHaveLength(60);
+    expect(view.matchSummary).toEqual({
+      round: 12,
+      baseDamageDealt: [4, 3],
+      creaturesLost: [0, 1],
+      shieldsBlocked: [1, 0],
+      cheerleadersUsed: [1, 0]
+    });
+  });
+
+  it('fehlt während einer laufenden Partie', () => {
+    expect(buildClientView(emptyState(), 0, data).matchSummary).toBeUndefined();
+  });
+});
+
 describe('Themen (Topics)', () => {
   it('topics.json wird geladen und validiert', () => {
     expect(data.topics.length).toBeGreaterThanOrEqual(1);

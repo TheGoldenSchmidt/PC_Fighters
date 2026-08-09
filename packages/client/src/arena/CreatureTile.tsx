@@ -3,7 +3,7 @@
 
 import type { CSSProperties } from 'react';
 import type { CreatureView } from '@pcf/engine';
-import { CardArt } from './Karten';
+import { CardArt, CardPosterFallback } from './Karten';
 import { useLongPress } from './useLongPress';
 
 export function CreatureTile({
@@ -75,9 +75,7 @@ export function CreatureTile({
             className="figure-image"
             alt={creature.name}
             fallback={
-              <div className="figure-image-fallback">
-                {creature.cardId === 'ratte' ? '🐀' : creature.canFly ? '🕊️' : '⚔️'}
-              </div>
+              <CardPosterFallback name={creature.name} type="creature" compact />
             }
           />
         )}

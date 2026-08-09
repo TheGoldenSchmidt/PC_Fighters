@@ -48,12 +48,38 @@ import type {
   GameConfig,
   GameData,
   GameState,
+  MatchSummaryView,
   PlayerAction,
   PlayerIndex,
   PlayerState
 } from './types.js';
 
 export { GameRuleError, getEffectiveAttack, getMaxHealth };
+
+function matchSummary(state: GameState): MatchSummaryView {
+  const summary: MatchSummaryView = {
+    round: state.round,
+    baseDamageDealt: [0, 0],
+    creaturesLost: [0, 0],
+    shieldsBlocked: [0, 0],
+    cheerleadersUsed: [0, 0]
+  };
+
+  for (const entry of state.log) {
+    const event = entry.event;
+    if (!event) continue;
+    if (event.kind === 'attack' && event.toBase) {
+      summary.baseDamageDealt[event.attacker] += event.damage;
+    } else if (event.kind === 'death') {
+      summary.creaturesLost[event.owner] += 1;
+    } else if (event.kind === 'schild' && event.blockiert) {
+      summary.shieldsBlocked[event.owner] += 1;
+    } else if (event.kind === 'cheerleaderSacrifice') {
+      summary.cheerleadersUsed[event.owner] += 1;
+    }
+  }
+  return summary;
+}
 
 /**
  * Auren neu berechnen, Tote entfernen und als Sterbe-Events loggen. Beim-Tod-
@@ -422,7 +448,11 @@ function creatureStrike(
       const natuerlicherOverflow = Math.max(0, angriffOhneAktionsBuff - defenderHealthBefore);
       rechneBuffSchadenZu(state, attackerIdx, attacker, Math.max(0, echt - natuerlicherOverflow), 'Basis');
       zaehleSpieler(state, attackerIdx, 'wuchtSchaden', echt);
-      if (echt > 0) log(state, `Lane ${lane + 1}: Wucht! ${echt} Überschuss trifft die Basis.`);
+      if (echt > 0) {
+        log(state, `Lane ${lane + 1}: Wucht! ${echt} Überschuss trifft die Basis.`, {
+          kind: 'attack', lane, attacker: attackerIdx, damage: echt, toBase: true
+        });
+      }
     }
   }
   // Dornen: Verteidiger fügt dem Angreifer Schaden zu. Mehrere dornen-Einträge stapeln.
@@ -932,6 +962,7 @@ export function buildClientView(state: GameState, player: PlayerIndex, data: Gam
       state.board[1].map((_, lane) => creatureView(1, lane))
     ],
     log: state.log.slice(-60),
+    ...(state.winner !== null ? { matchSummary: matchSummary(state) } : {}),
     // Der Gegner erfährt DASS gewartet wird, aber nicht, welche Optionen der
     // andere hat – `angebote` bleibt für ihn leer.
     ...(state.reaktion

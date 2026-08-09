@@ -5,10 +5,13 @@ import { useState } from 'react';
 import type { ReactNode } from 'react';
 import type { CardDef } from '@pcf/engine';
 import type { KeywordInfo } from '../useGame';
+import { useDialogFocus } from './useDialogFocus';
 
 /** Daten für die Detailansicht (Handkarte oder Figur auf dem Feld). */
 export interface DetailData {
   cardId: string;
+  faction?: string;
+  type?: 'creature' | 'action';
   name: string;
   cost?: number;
   attack?: number;
@@ -56,6 +59,27 @@ export function CardArt({
   );
 }
 
+/** Lesbarer, gemeinsamer Ersatz für Karten ohne individuelles Artwork. */
+export function CardPosterFallback({
+  faction,
+  type,
+  name,
+  compact = false
+}: {
+  faction?: string;
+  type?: 'creature' | 'action';
+  name: string;
+  compact?: boolean;
+}) {
+  return (
+    <div className={`card-poster ${faction ? `faction-${faction}` : ''} ${compact ? 'compact' : ''}`}>
+      <span className="card-poster-show">PC FIGHTERS</span>
+      <strong>{type === 'action' ? 'AKTION' : type === 'creature' ? 'KÄMPFER' : 'DUELLKARTE'}</strong>
+      {!compact && <small>{name}</small>}
+    </div>
+  );
+}
+
 
 /**
  * Kompakte Handkarte: Artwork füllt die Karte, Kosten als Kreis oben rechts,
@@ -95,9 +119,7 @@ export function HandCard({
         className="hand-card-art"
         alt=""
         fallback={
-          <div className={`hand-card-art-fallback theme-${card.faction}`}>
-            <span className="fallback-symbol">{card.type === 'creature' ? '🛡️' : '⚡'}</span>
-          </div>
+          <CardPosterFallback faction={card.faction} type={card.type} name={card.name} compact />
         }
       />
       <span className="cost">{card.cost}</span>
@@ -135,19 +157,29 @@ export function KartenDetail({
   onAusspielen: (handIndex: number) => void;
   onSchliessen: () => void;
 }) {
+  const dialogRef = useDialogFocus<HTMLDivElement>(true, onSchliessen);
   return (
     <div className="overlay detail-overlay" onClick={onSchliessen}>
-      <div className="detail-card" onClick={(e) => e.stopPropagation()}>
+      <div
+        ref={dialogRef}
+        className="detail-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="detail-card-title"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="detail-art">
           <CardArt
             cardId={detail.cardId}
             className="detail-art-img"
             alt={detail.name}
-            fallback={<div className="detail-art-fallback">🃏</div>}
+            fallback={
+              <CardPosterFallback faction={detail.faction} type={detail.type} name={detail.name} />
+            }
           />
           {detail.cost !== undefined && <span className="cost detail-cost">{detail.cost}</span>}
         </div>
-        <h2 className="detail-name">
+        <h2 className="detail-name" id="detail-card-title">
           {detail.signature ? '★ ' : ''}
           {detail.name}
         </h2>

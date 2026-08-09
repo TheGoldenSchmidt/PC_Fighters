@@ -67,6 +67,10 @@ interface Room {
    * (visual) haben, plus viel Energie – zum schnellen Prüfen neuer Figuren,
    * ohne eine Runde durchzuspielen. Rein server-seitig, Engine bleibt unberührt. */
   testMode?: boolean;
+  /** Zustimmung beider Spieler zu einem Rueckspiel im selben Raum. */
+  rematchReady: [boolean, boolean];
+  /** Laufende Matchnummer innerhalb des Raums, damit lokale Statistiken idempotent bleiben. */
+  matchNumber: number;
 }
 
 /** Alle Kreaturen-Karten, die eine datengetriebene 3D-Figur mitbringen. */
@@ -120,8 +124,9 @@ const persistTempPath = persistFilePath + '.tmp';
  * 2 – { version, rooms }. Eingeführt mit den Cheerleader-Reaktionen: seitdem
  *   trägt GameState einen Auflösungszustand, der ein offenes Reaktionsfenster
  *   über einen Serverneustart hinweg erhalten muss.
+ * 3 – Rückspiel-Bereitschaft und Matchnummer werden mit dem Raum gespeichert.
  */
-const PERSIST_VERSION = 2;
+const PERSIST_VERSION = 3;
 
 interface PersistedRoom {
   code: string;
@@ -130,6 +135,8 @@ interface PersistedRoom {
   /** Historisches Feld; neue und geladene Räume verwenden immer fünf. */
   lanes?: number;
   testMode?: boolean;
+  rematchReady?: [boolean, boolean];
+  matchNumber?: number;
   players: Array<{
     token: string;
     faction: string;
@@ -153,6 +160,8 @@ function saveRooms(rooms: Map<string, Room>) {
         state: room.state,
         lanes: room.lanes,
         testMode: room.testMode,
+        rematchReady: room.rematchReady,
+        matchNumber: room.matchNumber,
         players: room.players.map((p) => ({
           token: p.token,
           faction: p.faction,
@@ -237,6 +246,8 @@ function loadRooms(data: GameData): Map<string, Room> {
             state: item.state ? migriereZustand(item.state) : null,
             lanes: FESTE_BAHNEN,
             testMode: item.testMode,
+            rematchReady: item.rematchReady ?? [false, false],
+            matchNumber: Math.max(1, item.matchNumber ?? 1),
             players
           });
         } catch (error) {
@@ -285,10 +296,42 @@ export function startServer(port: number): Promise<RunningServer> {
         send(player.socket, {
           type: 'state',
           topic: room.topic,
+          matchNumber: room.matchNumber,
           view: buildClientView(room.state!, idx as PlayerIndex, data!)
         });
       }
     });
+  };
+
+  const broadcastRematchState = (room: Room): void => {
+    room.players.forEach((player) => {
+      if (player.socket) send(player.socket, { type: 'rematchState', ready: room.rematchReady });
+    });
+  };
+
+  const startRoomGame = (room: Room): void => {
+    if (!data || room.players.length !== 2) {
+      throw new GameRuleError('Die Partie kann noch nicht gestartet werden.');
+    }
+    room.state = createGame(
+      room.testMode ? testGameData(data) : data,
+      [room.players[0].faction, room.players[1].faction],
+      Math.random,
+      [room.players[0].deck, room.players[1].deck],
+      [room.players[0].cheerleaders, room.players[1].cheerleaders]
+    );
+    if (room.testMode) {
+      const testCards = testCardIds(data);
+      if (testCards.length > 0) {
+        room.state.players[0].hand = [...testCards];
+        room.state.players[1].hand = [...testCards];
+      }
+    }
+    room.rematchReady = [false, false];
+    room.matchNumber += 1;
+    saveRooms(rooms);
+    broadcastRematchState(room);
+    broadcastState(room);
   };
 
   const notifyOpponentConnection = (room: Room, about: PlayerIndex): void => {
@@ -550,7 +593,9 @@ export function startServer(port: number): Promise<RunningServer> {
             state: null,
             topic,
             lanes,
-            testMode: Boolean(msg.testMode)
+            testMode: Boolean(msg.testMode),
+            rematchReady: [false, false],
+            matchNumber: 1
           };
           rooms.set(room.code, room);
           saveRooms(rooms);
@@ -646,12 +691,30 @@ export function startServer(port: number): Promise<RunningServer> {
             send(socket, {
               type: 'state',
               topic: room.topic,
+              matchNumber: room.matchNumber,
               view: buildClientView(room.state, idx as PlayerIndex, requireData())
             });
             send(socket, {
               type: 'opponent',
               connected: room.players[idx === 0 ? 1 : 0]?.socket !== null
             });
+            send(socket, { type: 'rematchState', ready: room.rematchReady });
+          }
+          break;
+        }
+
+        case 'rematchReady': {
+          if (!ctx.room || ctx.playerIndex === null || !ctx.room.state) {
+            throw new GameRuleError('Du bist noch in keiner laufenden Partie.');
+          }
+          if (ctx.room.state.phase !== 'ended') {
+            throw new GameRuleError('Ein Rueckspiel ist erst nach Matchende moeglich.');
+          }
+          ctx.room.rematchReady[ctx.playerIndex] = Boolean(msg.ready);
+          saveRooms(rooms);
+          broadcastRematchState(ctx.room);
+          if (ctx.room.rematchReady[0] && ctx.room.rematchReady[1]) {
+            startRoomGame(ctx.room);
           }
           break;
         }

@@ -19,7 +19,7 @@
   /* Handkarten-Breite; Höhe folgt über aspect-ratio 3/4 */
   --karte-breite: 76px;
   /* Hand (zwei Kartenreihen) + Statuszeile ganz unten */
-  --hand-hoehe: calc(2 * var(--karte-breite) * 4 / 3 + 34px);
+  --hand-hoehe: calc(2 * var(--karte-breite) * 4 / 3 + 66px);
   /* Höhe eines Zonen-Bands (Basis + Bank + Eck-Chips) */
   --zone-hoehe: 82px;
   /* Freiraum über und unter dem Lane-Raster */
@@ -34,13 +34,14 @@
   position: absolute;
   inset: 0;
   z-index: 1;
+  background: radial-gradient(circle at 50% 48%, rgba(77, 141, 255, 0.09), transparent 48%);
 }
 
 .deck-chip,
 .energy-chip,
 .runden-chip {
-  background: rgba(6, 10, 18, 0.55);
-  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(8, 13, 24, 0.82);
+  border: 1px solid rgba(243, 241, 232, 0.2);
   border-radius: 10px;
   padding: 4px 8px;
   font-weight: 700;
@@ -385,11 +386,11 @@
 .lane-label {
   text-align: center;
   color: var(--theme-accent, var(--muted));
-  opacity: 0.5;
-  font-size: 0.65rem;
+  opacity: 1;
+  font-size: 0.72rem;
   font-family: var(--font-title);
   letter-spacing: 0.05em;
-  font-weight: 600;
+  font-weight: 800;
   line-height: 1;
 }
 
@@ -398,9 +399,9 @@
   min-height: 100px;
   /* Bewusst sehr dezent: die Arena (3D-Boden, Lane-Wege, Umgebung) soll
      durchscheinen. Eine Lane ist ein Weg, keine auffällige Box. */
-  background: rgba(8, 12, 20, 0.14);
+  background: linear-gradient(180deg, rgba(19, 29, 47, 0.24), rgba(8, 13, 24, 0.42));
   border-radius: var(--radius);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(243, 241, 232, 0.14);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -418,17 +419,39 @@
 }
 
 .own-slot {
-  border-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(243, 241, 232, 0.24);
   transform: scale(1.02);
   transform-origin: bottom center;
 }
 
 .own-slot.targetable {
   border-color: var(--gold);
-  background: rgba(245, 158, 11, 0.05);
-  box-shadow: 0 0 15px rgba(245, 158, 11, 0.2);
+  border-width: 2px;
+  background: rgba(255, 180, 41, 0.16);
+  box-shadow: 0 0 0 3px rgba(255, 180, 41, 0.15), 0 0 22px rgba(255, 180, 41, 0.35);
   animation: pulse-border 1.5s infinite;
   cursor: pointer;
+}
+
+.own-slot.targetable::after {
+  content: 'ABLEGEN';
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: var(--gold);
+  color: #080d18;
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.own-slot.invalid-target {
+  opacity: 0.45;
+  filter: saturate(0.55);
 }
 
 .own-slot.selected-slot {
@@ -453,7 +476,7 @@
 }
 
 .empty-slot {
-  color: rgba(255,255,255,0.07);
+  color: rgba(243, 241, 232, 0.34);
   font-size: 0.72rem;
   font-weight: 600;
   text-transform: uppercase;

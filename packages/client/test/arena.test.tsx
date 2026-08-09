@@ -179,4 +179,36 @@ describe('Arena-Aufbau', () => {
     expect(container.querySelector('.arena [data-zone="0"]')).not.toBeNull();
     expect(container.querySelector('.arena [data-zone="1"]')).not.toBeNull();
   });
+
+  it('warnt einmalig mit der Anzahl spielbarer Karten vor dem Rundenende', () => {
+    const view = sicht(spielbereit(), 0);
+    const gesendet: PlayerAction[] = [];
+    zeige(view, (action) => gesendet.push(action));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Runde abschließen' }));
+    expect(screen.getByRole('dialog', { name: 'Runde abschließen' })).toBeTruthy();
+    expect(screen.getByText(/noch 1 bezahlbare Karte/)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Weiterspielen' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Runde abschließen' }));
+
+    expect(gesendet).toEqual([{ type: 'pass' }]);
+  });
+
+  it('zeigt am Spielende Bilanz und RÃ¼ckspiel als primÃ¤re Aktion', () => {
+    const state = spielbereit();
+    state.phase = 'ended';
+    state.winner = 0;
+    state.round = 8;
+    state.log.push({
+      id: state.log.length,
+      round: 8,
+      text: 'Basis getroffen',
+      event: { kind: 'attack', lane: 0, attacker: 0, damage: 3, toBase: true }
+    });
+    zeige(sicht(state, 0));
+
+    expect(screen.getByRole('dialog', { name: 'Spielergebnis' })).toBeTruthy();
+    expect(screen.getByText('Basisschaden').previousSibling?.textContent).toBe('3');
+    expect(screen.getByRole('button', { name: 'Rückspiel' })).toBeTruthy();
+  });
 });

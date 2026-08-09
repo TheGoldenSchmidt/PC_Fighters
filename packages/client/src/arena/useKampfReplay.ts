@@ -43,7 +43,7 @@ import {
  * @param view Die neueste Serversicht. Aenderungen daran starten die
  *   Abspielung; `shownView` hinkt waehrenddessen absichtlich hinterher.
  */
-export function useKampfReplay(view: ClientView) {
+export function useKampfReplay(view: ClientView, speed = 1) {
   const [shownView, setShownViewState] = useState<ClientView>(view);
   const [isReplaying, setIsReplaying] = useState(false);
   const [fx, setFx] = useState<FxState>(EMPTY_FX);
@@ -58,6 +58,8 @@ export function useKampfReplay(view: ClientView) {
   const lastLogId = useRef<number | null>(null);
   const moveTimer = useRef<number | null>(null);
   const bannerTimer = useRef<number | null>(null);
+  const speedRef = useRef(speed);
+  speedRef.current = speed;
 
   /** Zeigt kurz ein großes Phasen-Banner in der Bildschirmmitte. */
   const showBanner = (text: string) => {
@@ -112,6 +114,14 @@ export function useKampfReplay(view: ClientView) {
     const fresh = view.log.filter((e) => e.id > lastLogId.current! && e.event);
     lastLogId.current = Math.max(lastLogId.current, maxId);
 
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      queueRef.current = [];
+      setFx(EMPTY_FX);
+      setIsReplaying(false);
+      setShown(view);
+      return;
+    }
+
     if (fresh.length === 0) {
       if (!runningRef.current) setShown(view);
       return;
@@ -133,7 +143,8 @@ export function useKampfReplay(view: ClientView) {
   async function runReplay() {
     runningRef.current = true;
     setIsReplaying(true);
-    const sleep = (ms: number) => new Promise<void>((r) => window.setTimeout(r, ms));
+    const sleep = (ms: number) =>
+      new Promise<void>((r) => window.setTimeout(r, ms / Math.max(1, speedRef.current)));
 
     while (queueRef.current.length > 0 && !cancelledRef.current) {
       const ev = queueRef.current.shift()!;

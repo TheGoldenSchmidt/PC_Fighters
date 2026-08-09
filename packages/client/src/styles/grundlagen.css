@@ -12,6 +12,8 @@
    `transition: none` zurueckholen musste) und machte gezielte Effekte
    unmoeglich. */
 button,
+input,
+select,
 .tab,
 .primary,
 .secondary,
@@ -95,6 +97,32 @@ html, body, #root {
 
 body {
   overflow-y: auto;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button { color: inherit; }
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 3px;
+}
+
+.eyebrow {
+  display: block;
+  color: var(--gold);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 /* Animations */

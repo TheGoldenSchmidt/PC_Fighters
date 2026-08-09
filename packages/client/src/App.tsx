@@ -4,6 +4,7 @@ import { LobbyScreen } from './LobbyScreen';
 import { MulliganScreen } from './MulliganScreen';
 import { StartScreen } from './StartScreen';
 import { useGame } from './useGame';
+import { useLocalProfile } from './profile';
 
 // Die Figuren-Werkstatt zieht three.js und den kompletten Figurenkatalog nach.
 // Sie ist ein Sonderweg (?viewer=figures) – normale Spieler sollen den Code
@@ -34,7 +35,8 @@ export function App() {
 }
 
 function Game() {
-  const { state, createGame, joinGame, sendAction, leaveGame } = useGame();
+  const { state, createGame, joinGame, sendAction, setRematchReady, leaveGame } = useGame();
+  const { profile, updateProfile, rememberLoadout, recordMatch } = useLocalProfile();
 
   // Schauplatz-Hintergrund auf die ganze Seite anwenden (Lobby + Spiel).
   useEffect(() => {
@@ -43,6 +45,10 @@ function Game() {
       document.body.style.background = '';
     };
   }, [state.topic]);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }, [state.screen, state.view?.phase]);
 
   if (state.dataError) {
     return (
@@ -60,7 +66,13 @@ function Game() {
   return (
     <>
       {state.screen === 'start' && (
-        <StartScreen onCreate={createGame} onJoin={joinGame} status={state.status} />
+        <StartScreen
+          onCreate={createGame}
+          onJoin={joinGame}
+          status={state.status}
+          profile={profile}
+          onRememberLoadout={rememberLoadout}
+        />
       )}
       {state.screen === 'lobby' && (
         <LobbyScreen
@@ -71,7 +83,13 @@ function Game() {
         />
       )}
       {state.screen === 'game' && state.view?.phase === 'mulligan' && (
-        <MulliganScreen view={state.view} onAction={sendAction} onLeave={leaveGame} />
+        <MulliganScreen
+          view={state.view}
+          profile={profile}
+          onUpdateProfile={updateProfile}
+          onAction={sendAction}
+          onLeave={leaveGame}
+        />
       )}
       {state.screen === 'game' && state.view && state.view.phase !== 'mulligan' && (
         <GameScreen
@@ -81,13 +99,20 @@ function Game() {
           catalog={state.catalog}
           status={state.status}
           opponentConnected={state.opponentConnected}
+          profile={profile}
+          roomCode={state.roomCode ?? ''}
+          matchNumber={state.matchNumber}
+          rematchReady={state.rematchReady}
+          onUpdateProfile={updateProfile}
+          onRecordMatch={recordMatch}
+          onRematchReady={setRematchReady}
           onAction={sendAction}
           onLeave={leaveGame}
         />
       )}
-      {state.error && <div className="toast">{state.error}</div>}
+      {state.error && <div className="toast" role="alert">{state.error}</div>}
       {state.status === 'reconnecting' && (
-        <div className="reconnect-banner">Verbindung verloren – versuche neu zu verbinden …</div>
+        <div className="reconnect-banner" role="status">Verbindung verloren – versuche neu zu verbinden …</div>
       )}
       {state.testMode && state.screen !== 'start' && <div className="test-badge">🧪 Testmodus</div>}
     </>

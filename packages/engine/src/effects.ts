@@ -129,9 +129,11 @@ export const EFFECTS: { [K in Effect['kind']]: EffectResolver<K> } = {
     let rest = gesamt;
     const liveLanes: number[] = [];
     for (let j = 0; j < ctx.state.board[enemy].length; j++) if (ctx.state.board[enemy][j]) liveLanes.push(j);
+    let basisschaden = 0;
     if (liveLanes.length === 0) {
       // Über den Schild-Trichter: auch Effektschaden lädt auf und ist blockbar.
-      zaehleKarte(ctx.state, owner, ctx.card.id, 'schadenBasis', basisSchaden(ctx.state, enemy, rest));
+      basisschaden = basisSchaden(ctx.state, enemy, rest);
+      zaehleKarte(ctx.state, owner, ctx.card.id, 'schadenBasis', basisschaden);
     } else {
       let i = 0;
       while (rest > 0) {
@@ -145,7 +147,19 @@ export const EFFECTS: { [K in Effect['kind']]: EffectResolver<K> } = {
       }
       zaehleKarte(ctx.state, owner, ctx.card.id, 'schadenKreatur', gesamt);
     }
-    log(ctx.state, `${ctx.card.name}: verbraucht ${markers} Wissen, verteilt ${gesamt} Schaden.`);
+    log(
+      ctx.state,
+      `${ctx.card.name}: verbraucht ${markers} Wissen, verteilt ${gesamt} Schaden.`,
+      basisschaden > 0
+        ? {
+            kind: 'attack',
+            lane: ctx.action.targetLane ?? 0,
+            attacker: owner,
+            damage: basisschaden,
+            toBase: true
+          }
+        : undefined
+    );
   }
 };
 
