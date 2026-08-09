@@ -30,3 +30,37 @@ export function useWertPuls(wert: number): string {
 
   return aktiv ? ' wert-puls' : '';
 }
+
+/** Wie lange die Differenz ueber der Marke stehen bleibt. */
+export const WERT_DELTA_MS = 900;
+
+/**
+ * Wie `useWertPuls`, aber mit RICHTUNG: fuer Werte, bei denen „mehr" und
+ * „weniger" Gegenteiliges bedeuten – ATK und Leben einer Kreatur.
+ *
+ * Liefert eine Klasse (`' wert-hoch'` / `' wert-tief'`) fuer den Blitz und die
+ * vorzeichenbehaftete Differenz, damit der Aufrufer sie als `+2` / `−2`
+ * anzeigen kann. `null` heisst: gerade keine Aenderung.
+ *
+ * Wie beim Zwilling loest der erste Wert bewusst nichts aus. Ein Wechsel der
+ * Kreatur im selben Slot ist kein Thema: `GameScreen` keyt die Kachel auf
+ * `creature.uid`, React montiert sie also neu.
+ */
+export function useWertAenderung(wert: number): { klasse: string; delta: number | null } {
+  const vorher = useRef(wert);
+  const [delta, setDelta] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (vorher.current === wert) return;
+    const diff = wert - vorher.current;
+    vorher.current = wert;
+    setDelta(diff);
+    const timer = window.setTimeout(() => setDelta(null), WERT_DELTA_MS);
+    return () => window.clearTimeout(timer);
+  }, [wert]);
+
+  return {
+    klasse: delta === null ? '' : delta > 0 ? ' wert-hoch' : ' wert-tief',
+    delta
+  };
+}

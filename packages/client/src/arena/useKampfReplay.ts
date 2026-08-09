@@ -6,6 +6,10 @@
 // erscheint, Sterbeanimation, naechste Lane – und schaltet erst danach auf den
 // Serverzustand um.
 //
+// Innerhalb einer Lane schlagen die beiden Seiten NACHEINANDER: ein Angriff je
+// Durchlauf, getrennt durch LANE_PAUSE_MS. Das ist nur die Darstellung – die
+// Kampfregel in `kampfLane` bleibt simultan.
+//
 // Die `else if`-Kette in `runReplay` hat bewusst KEINEN Auffang-Zweig: eine
 // Ereignisart, die niemand beansprucht, faellt still aus der Animation (der
 // Zustand springt trotzdem). Neue Ereignisart in der Engine = neuer Zweig hier.
@@ -29,6 +33,7 @@ import {
   LANE_PAUSE_MS,
   POWER_MS,
   PROJECTILE_MS,
+  SACRIFICE_MS,
   SHIELD_BLOCK_MS,
   SHIELD_MS,
   SPELL_MS,
@@ -139,29 +144,30 @@ export function useKampfReplay(view: ClientView) {
       const ev = queueRef.current.shift()!;
 
       if (ev.kind === 'attack') {
-        // Gleichzeitige Angriffe derselben Lane zusammen abspielen
-        const group: AttackEvent[] = [ev];
-        while (
-          queueRef.current[0]?.kind === 'attack' &&
-          (queueRef.current[0] as AttackEvent).lane === ev.lane
-        ) {
-          group.push(queueRef.current.shift() as AttackEvent);
-        }
-
+        // Ein Angriff, ein Durchlauf. Frueher wurden die Angriffe derselben Lane
+        // gesammelt und gemeinsam gezeigt – beide Projektile flogen gleichzeitig
+        // und man sah nicht, wer wen traf. Jetzt schlaegt jede Seite fuer sich,
+        // getrennt durch LANE_PAUSE_MS. Die Engine loggt die beiden Ereignisse
+        // bereits in der richtigen Reihenfolge (erst Spieler 0, dann 1).
+        //
+        // Achtung: Das ist reine Darstellung. Die REGEL bleibt simultan –
+        // `kampfLane` berechnet beide Angriffswerte, bevor Schaden faellt, eine
+        // sterbende Kreatur schlaegt also weiterhin zurueck.
+        const angriff: AttackEvent = ev;
         const board = shownViewRef.current.board;
-        const projectiles: FxProjectile[] = group.map((g, i) => {
-          const attackerCreature = board[g.attacker][g.lane];
-          return {
-            key: `p-${g.lane}-${g.attacker}-${Date.now()}-${i}`,
-            lane: g.lane,
-            attacker: g.attacker,
-            toBase: g.toBase,
+        const attackerCreature = board[angriff.attacker][angriff.lane];
+        const projectiles: FxProjectile[] = [
+          {
+            key: `p-${angriff.lane}-${angriff.attacker}-${Date.now()}`,
+            lane: angriff.lane,
+            attacker: angriff.attacker,
+            toBase: angriff.toBase,
             emoji:
               attackerCreature?.projectile ??
               (attackerCreature?.abilities.some((a) => a.kind === 'gift') ? '☠️' : '💥')
-          };
-        });
-        setFx((f) => ({ ...f, activeLane: ev.lane, projectiles }));
+          }
+        ];
+        setFx((f) => ({ ...f, activeLane: angriff.lane, projectiles }));
         await sleep(PROJECTILE_MS);
         if (cancelledRef.current) break;
 
@@ -169,28 +175,34 @@ export function useKampfReplay(view: ClientView) {
         const next = structuredClone(shownViewRef.current);
         const impacts: FxImpact[] = [];
         const baseImpacts: FxBaseImpact[] = [];
-        group.forEach((g, i) => {
-          const defender: PlayerIndex = g.attacker === 0 ? 1 : 0;
-          if (g.toBase) {
-            next.players[defender].base -= g.damage;
-            // Bei einem vom Schild geblockten Treffer ist damage 0 – dann keine
-            // "-0"-Schadenszahl zeigen, das übernimmt der Schild-Effekt.
-            if (g.damage > 0) {
-              baseImpacts.push({ key: `b-${g.lane}-${i}-${Date.now()}`, side: defender, damage: g.damage });
-            }
-          } else {
-            const target = next.board[defender][g.lane];
-            if (target) target.health = Math.max(0, target.health - g.damage);
-            impacts.push({ key: `i-${g.lane}-${i}-${Date.now()}`, lane: g.lane, side: defender, damage: g.damage });
+        const defender: PlayerIndex = angriff.attacker === 0 ? 1 : 0;
+        if (angriff.toBase) {
+          next.players[defender].base -= angriff.damage;
+          // Bei einem vom Schild geblockten Treffer ist damage 0 – dann keine
+          // "-0"-Schadenszahl zeigen, das übernimmt der Schild-Effekt.
+          if (angriff.damage > 0) {
+            baseImpacts.push({ key: `b-${angriff.lane}-${Date.now()}`, side: defender, damage: angriff.damage });
           }
-        });
+        } else {
+          const target = next.board[defender][angriff.lane];
+          if (target) target.health = Math.max(0, target.health - angriff.damage);
+          impacts.push({
+            key: `i-${angriff.lane}-${Date.now()}`,
+            lane: angriff.lane,
+            side: defender,
+            damage: angriff.damage
+          });
+        }
         setShown(next);
         setFx((f) => ({ ...f, projectiles: [], impacts, baseImpacts }));
         await sleep(IMPACT_MS);
         setFx((f) => ({ ...f, impacts: [], baseImpacts: [] }));
         await sleep(LANE_PAUSE_MS);
       } else if (ev.kind === 'death') {
-        // Tode derselben Lane (gleichzeitiger Kampf) gemeinsam abspielen
+        // Tode derselben Lane gemeinsam abspielen. Anders als bei den Angriffen
+        // bleibt das absichtlich gebuendelt: die Tode kommen aus dem eigenen
+        // Schritt `todeStabilisieren` NACH beiden Schlaegen und lesen sich als
+        // gemeinsames Ergebnis des Schlagabtauschs.
         const deaths: DeathEvent[] = [ev];
         while (
           queueRef.current[0]?.kind === 'death' &&
@@ -254,7 +266,7 @@ export function useKampfReplay(view: ClientView) {
           cardId: sacrifice.cardId
         };
         setFx((current) => ({ ...current, sacrifices: [item] }));
-        await sleep(1250);
+        await sleep(SACRIFICE_MS);
         if (cancelledRef.current) break;
         const next = structuredClone(shownViewRef.current);
         if (next.players[sacrifice.owner].cheerleaders[sacrifice.slot] === sacrifice.cardId) {

@@ -5,6 +5,7 @@ import type { CSSProperties } from 'react';
 import type { CreatureView } from '@pcf/engine';
 import { CardArt } from './Karten';
 import { useLongPress } from './useLongPress';
+import { useWertAenderung } from './useWertPuls';
 
 export function CreatureTile({
   creature,
@@ -28,6 +29,11 @@ export function CreatureTile({
   const longPress = useLongPress(
     creature && onDetail ? () => onDetail(creature) : undefined
   );
+  // Vor dem fruehen return: Hooks muessen bei jedem Render in gleicher Zahl und
+  // Reihenfolge laufen. `?? 0` fuer den leeren Slot ist harmlos – die Kachel
+  // wird ohnehin auf `uid` gekeyt und bei Wechsel neu montiert.
+  const atkAenderung = useWertAenderung(creature?.attack ?? 0);
+  const hpAenderung = useWertAenderung(creature?.health ?? 0);
   if (!creature) return <span className="empty-slot">frei</span>;
   const attackBuffed = creature.attack > creature.baseAttack;
   const attackReduced = creature.attack < creature.baseAttack;
@@ -81,11 +87,31 @@ export function CreatureTile({
             }
           />
         )}
-        <div className={`figure-stat stat-atk ${attackBuffed ? 'buffed' : attackReduced ? 'reduced' : ''}`}>
+        <div
+          className={
+            `figure-stat stat-atk ${attackBuffed ? 'buffed' : attackReduced ? 'reduced' : ''}` +
+            atkAenderung.klasse
+          }
+        >
           {creature.attack}
+          {atkAenderung.delta !== null && (
+            <span className="stat-delta" aria-hidden>
+              {atkAenderung.delta > 0 ? `+${atkAenderung.delta}` : `−${-atkAenderung.delta}`}
+            </span>
+          )}
         </div>
-        <div className={`figure-stat stat-hp ${damaged ? 'damaged' : healthBuffed ? 'buffed' : ''}`}>
+        <div
+          className={
+            `figure-stat stat-hp ${damaged ? 'damaged' : healthBuffed ? 'buffed' : ''}` +
+            hpAenderung.klasse
+          }
+        >
           {creature.health}
+          {hpAenderung.delta !== null && (
+            <span className="stat-delta" aria-hidden>
+              {hpAenderung.delta > 0 ? `+${hpAenderung.delta}` : `−${-hpAenderung.delta}`}
+            </span>
+          )}
         </div>
       </div>
       <div className="figure-plaque" title={creature.name}>

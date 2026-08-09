@@ -100,11 +100,11 @@
    Bankfiguren stehen. Er braucht deshalb eine feste Größe. */
 .bank-anker {
   position: relative;
-  width: 152px;
-  height: 58px;
+  width: 198px;
+  height: 74px;
 }
 
-.zone-oben .bank-anker { width: 128px; height: 48px; }
+.zone-oben .bank-anker { width: 166px; height: 62px; }
 
 /* Basis-Anzeige: Leben + Schildbalken direkt an der Bank. */
 .basis-anzeige {
@@ -273,8 +273,8 @@
     --zone-hoehe: 74px;
     --feld-seite: 8px;
   }
-  .zone-oben .bank-anker { width: 108px; height: 42px; }
-  .bank-anker { width: 132px; height: 52px; }
+  .zone-oben .bank-anker { width: 140px; height: 54px; }
+  .bank-anker { width: 172px; height: 66px; }
 }
 
 /* Schmale Handys (iPhone SE & Co.): Chips und Karten enger, der Passen-Knopf
@@ -288,8 +288,8 @@
   .energy-chip,
   .runden-chip { padding: 3px 6px; font-size: 0.72rem; }
   .basis-anzeige { padding: 3px 5px; }
-  .bank-anker { width: 112px; height: 46px; }
-  .zone-oben .bank-anker { width: 94px; height: 38px; }
+  .bank-anker { width: 146px; height: 58px; }
+  .zone-oben .bank-anker { width: 122px; height: 48px; }
   .pass-button { padding: 6px 12px; }
 }
 
@@ -316,9 +316,10 @@
   grid-template-columns:repeat(3,1fr);
   gap:3px;
   height:100%;
-  padding:4px 5px 7px;
-  border:1px solid rgba(234,244,255,.18);
-  border-bottom:6px solid #6b4634;
+  padding:5px 6px 8px;
+  border:1px solid rgba(234,244,255,.22);
+  /* Sitzkante in derselben Holzfarbe wie die 3D-Bank (createTeamZone). */
+  border-bottom:8px solid #9c6a44;
   border-radius:8px 8px 3px 3px;
   background:rgba(37,42,51,.92);
 }
@@ -332,20 +333,20 @@
 }
 .team-seat > span {
   position:absolute;
-  left:2px;
+  left:3px;
   bottom:1px;
   color:#f5b74a;
-  font-size:.48rem;
+  font-size:.58rem;
 }
 .team-seat strong {
   display:grid;
   place-items:center;
-  width:23px;
-  height:23px;
+  width:30px;
+  height:30px;
   border-radius:50%;
   background:#eaf4ff;
   color:#252a33;
-  font-size:.64rem;
+  font-size:.8rem;
 }
 .team-seat.empty { opacity:.38; }
 .team-seat.sacrificing { animation:team-sacrifice-fade .72s ease-in forwards; }

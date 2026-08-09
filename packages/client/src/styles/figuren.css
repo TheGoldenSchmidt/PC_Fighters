@@ -474,3 +474,59 @@
   30%, 60%, 90% { transform: translateX(4px); }
 }
 
+
+/* ---------- Wertaenderung an ATK/Leben ---------- */
+/* Ein Treffer, ein Buff oder eine Heilung aenderte die Marken bisher lautlos –
+   im Kampfgetuemmel sah man die Zahl springen, aber nicht, in welche Richtung.
+   Klasse und Differenz kommen aus `useWertAenderung`; die Richtung faerbt den
+   Blitz (gruen hoch, rot tief). Kein `transform` im Ruhezustand, damit die
+   Marke ihre absolute Position behaelt. */
+
+.figure-stat.wert-hoch {
+  animation: stat-puls-hoch 0.5s var(--ease-pop);
+}
+
+.figure-stat.wert-tief {
+  animation: stat-puls-tief 0.5s var(--ease-pop);
+}
+
+@keyframes stat-puls-hoch {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.45); box-shadow: 0 0 14px rgba(52, 211, 153, 0.95); border-color: #6ee7b7; }
+  100% { transform: scale(1); }
+}
+
+@keyframes stat-puls-tief {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.45); box-shadow: 0 0 14px rgba(248, 113, 113, 0.95); border-color: #fca5a5; }
+  100% { transform: scale(1); }
+}
+
+/* Die Differenz selbst: steigt kurz ueber der Marke auf. Sie startet sichtbar
+   (opacity 1), damit sie unter prefers-reduced-motion – wo die Animation
+   entfaellt – trotzdem gelesen werden kann. */
+.stat-delta {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 2px;
+  font-weight: 900;
+  font-size: clamp(0.58rem, 11cqw, 0.8rem);
+  line-height: 1;
+  white-space: nowrap;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95);
+  pointer-events: none;
+  z-index: 3;
+  animation: stat-delta-rise 0.9s ease-out forwards;
+}
+
+.figure-stat.wert-hoch .stat-delta { color: #6ee7b7; }
+.figure-stat.wert-tief .stat-delta { color: #fca5a5; }
+
+@keyframes stat-delta-rise {
+  0% { opacity: 0; transform: translate(-50%, 6px) scale(0.7); }
+  25% { opacity: 1; transform: translate(-50%, 0) scale(1.15); }
+  70% { opacity: 1; transform: translate(-50%, -8px) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -16px) scale(0.95); }
+}
