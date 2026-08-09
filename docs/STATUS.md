@@ -4,172 +4,59 @@ Zentrale Übersicht über den Arbeitsstand. **Diese Datei ist die einzige Quelle
 für „woran wird gerade gearbeitet".** Die Detailpläne beschreiben das *Wie*,
 nicht den Fortschritt.
 
-Stand: **2026-07-30** · Basis: `master` @ `4c2e524`
+Stand: **2026-08-09** · Basis: `claude/basis-schild-spielmechaniken-rvqbkc` @ `6d53456`
 
 ---
 
 ## Now – läuft gerade
 
-**Cheerleader-Superkräfte vertikal fertigstellen** (siehe
-[Arena_Cheerleader_Erweiterung.md](Arena_Cheerleader_Erweiterung.md)).
+**Spielgefühl aus dem Playtest nachziehen.** Vier Beobachtungen aus dem
+tatsächlichen Spielen, alle umgesetzt und auf dem Branch
+`claude/basis-schild-spielmechaniken-rvqbkc`:
 
-Fertig ist die Infrastruktur: datengetriebener Kandidatenpool
-(`config.cheerleaders`, Auswahlgröße 3, Deckgrenze 2), Validierung, drei stabile
-Bankplätze je Spieler, Persistenz mit Migration, `CheerleaderSacrificeEvent` als
-Replay-Vertrag, 3D-Teamzonen samt 2D-Fallback und eigene `cheer`/`sacrifice`-Clips.
+- **Schild lädt jetzt in Achteln.** `schild.abschnitte` steht auf 8 statt 7, ein
+  Treffer lädt also um 1/8 bis 3/8. Die Mechanik selbst ist unverändert: jeder
+  Basistreffer lädt, der Treffer, der den Balken voll macht, wird komplett
+  geblockt, der Stand geht auf 0 und ein Cheerleader bezahlt den Block.
+- **Bank ohne Lehne und rund 30 % größer.** Die Lehne stand zwischen Kamera und
+  Bankfiguren. Ohne sie trägt die Sitzfläche die Bank allein, deshalb ist sie
+  dicker, tiefer und heller, mit zwei Kufen darunter. Die Größe kommt wie gehabt
+  aus dem DOM-Anker (`.bank-anker`), der Skalierungsdeckel musste von 1.6 auf
+  2.1 mit.
+- **ATK und Leben zeigen ihre Änderung.** Neuer Hook `useWertAenderung` neben
+  `useWertPuls`: grüner Blitz plus aufsteigendes `+N` nach oben, roter Blitz
+  plus `−N` nach unten.
+- **Kampf ist ruhiger und lesbarer.** Ein Regler `KAMPF_TEMPO = 0.8` in `fx.ts`
+  leitet alle Kampfdauern ab. Innerhalb einer Lane schlagen die beiden Seiten
+  **nacheinander** statt gleichzeitig – vorher flogen beide Projektile parallel
+  und man sah nicht, wer wen traf.
 
-**Engine fertig** (Branch `cheerleader-reaktionen`): die pausierbare
-Auflösungssteuerung steht als Schrittmaschine (`GameState.aufloesung`, reine
-Daten), alle fünf Kräfte sind datengetrieben in `config.cheerleaders.kraefte`,
-Reaktionsfenster sperren jede andere Aktion, `legaleAktionen` und der Bot
-kennen die neue Aktion. 189 Tests grün, 420 Backtest-Partien terminieren.
+> **Wichtig:** Das „Nacheinander" ist ausschließlich Darstellung. Die Kampfregel
+> bleibt simultan – `kampfLane` berechnet beide Angriffswerte, bevor Schaden
+> fällt, eine sterbende Kreatur schlägt also weiterhin zurück. Ein echter
+> Wechsel auf „Angreifer zuerst, Verteidiger nur wenn er überlebt" wäre eine
+> Regeländerung und ist **nicht** passiert.
 
-**Client fertig.** Die Auswahl ist ein DOM-Overlay (kein 3D-Element), damit
-Bedienung mit und ohne WebGL identisch ist; der Gegner sieht einen
-Wartehinweis, normale Aktionen sind gesperrt. Der Replay-Zweig für
-`cheerleaderPower` hält die Reihenfolge Opfer → Kraft-Banner → Wirkung ein.
-Im Zwei-Browser-Test verifiziert (3D **und** `?no3d`): Fenster öffnet, Wahl
-A/B wirkt unterschiedlich, Bankplatz leert sich, Angebote verschwinden mit
-verbrauchten Plätzen.
-
-**Persistenz fertig.** `rooms_persist.json` hat jetzt das Format
-`{ version: 2, rooms: [...] }`, wird atomar über eine temporäre Datei
-geschrieben und lädt das alte unversionierte Array weiterhin (dabei werden die
-Felder der Auflösungssteuerung nachgezogen). Ein Servertest fährt eine echte
-Partie bis zu einem offenen Fenster, startet den Server neu, verbindet beide
-Spieler per Token wieder und antwortet dann – das Fenster überlebt vollständig.
-
-**Backtest-Kennzahlen fertig.** Der Report hat eine Sektion
-*Cheerleader-Reaktionen* mit Angeboten, Opfern, Einlösequote, Verzicht,
-verursachtem/verhindertem Schaden und Rettungen je Cheerleader.
-
-**Client-Tests fertig.** Der Client hat jetzt eine eigene Vitest-Suite
-(`jsdom`, `@testing-library/react`) – sechs Tests für Besitzer- gegen
-Gegneransicht, gesperrte Normalaktionen, Verzicht, Opfer, die A/B-Wahl und die
-Replay-Reihenfolge. Die Fixtures kommen aus der **echten Engine**
-(`createGame` + `applyAction`), damit die Suite nicht grün bleibt, während sich
-der `ClientView`-Vertrag darunter verschiebt.
-
-**Alle fünf Kräfte vermessen.** Der Backtest rotiert die Bank-Auswahl je
-Partie (`spielePartie` nimmt jetzt `cheerleaders` entgegen). Vorher hätten
-`junger_neffe` und `randy_marsh` in keiner simulierten Partie vorkommen können,
-weil die Standardauswahl immer die ersten drei Kandidaten nimmt. Die
-Regressionstests nutzen weiterhin die Standardauswahl, der Golden Master bleibt
-davon also unberührt.
-
-**Damit ist der Cheerleader-Meilenstein vollständig.**
+Offen: Sichtprüfung im Zwei-Browser-Test (3D **und** `?no3d`) steht noch aus –
+bisher nur Tests, Typecheck und Build.
 
 ---
-
-**Regeländerung: Die Bank IST der Schild.** Cheerleader-Kräfte lösen nicht mehr
-beim Ausspielen gegnerischer Karten oder bei eigenen Toden aus, sondern
-ausschließlich, wenn der eigene Basis-Schild einen Treffer blockt. Der Block ist
-damit bezahlt: ein Cheerleader opfert sich zwingend, Verzichten gibt es nicht
-mehr. Umgekehrt gilt: **ohne Cheerleader kein Schild** – bei leerer Bank lädt
-der Balken nicht mehr und Treffer gehen ungehindert durch. Die drei zufälligen
-Schild-Superkräfte (Schutzschild/Nachschub/Störfeuer) sind ersatzlos entfallen,
-alle fünf Cheerleader-Kräfte neu geschrieben (keine braucht mehr eine
-Auslöser-Kreatur, weil ein Block an der Basis passiert). Golden Master neu
-erzeugt, 202 Tests grün, im Zwei-Browser-Test verifiziert. Im 🧪 Testmodus ist
-der Schild nach einem Treffer voll, damit man die Kräfte sofort sieht.
-
-**Bot sieht jetzt Schild und Immunität.** `bewerteZustand` kannte weder den
-Schildstand noch `basisImmun`. „Sicherer Raum" sah für den Bot deshalb aus wie
-ein verschenkter Bankplatz, und ein fast voller Schild war ihm nichts wert.
-Beides fließt jetzt als **Basis-Reserve** in die Bewertung ein – in Basis-Leben
-umgerechnet, damit die Profile ohne neue Gewichte auskommen. Die Schildladung
-zählt nur bei besetzter Bank, weil sie sonst wirkungslos ist.
-
-> **Wichtig fürs Balancing:** Die Korrektur hat an den Wahlquoten fast nichts
-> geändert (PC Babies 8,6 % → 10,0 %). Die Vermutung, die 8,6 % seien nur ein
-> Messartefakt, war also **falsch** – „Sicherer Raum" ist tatsächlich zu
-> schwach, weil der Block meist im Kampf fällt und der Rundenstart die
-> Immunität sofort wieder aufhebt. Die Zahlen sind jetzt aber belastbar.
-
-Gemessen nach der Korrektur (420 Partien, `--schnell --saat=1`):
-
-| Cheerleader | angeboten | geopfert | Wahlquote |
-|---|---|---|---|
-| PC Principal | 404 | 364 | 90,1 % |
-| Alter Wissenschaftler | 425 | 262 | 61,6 % |
-| Junger Neffe | 464 | 70 | 15,1 % |
-| PC Babies | 479 | 48 | 10,0 % |
-| Randy Marsh | 461 | 37 | 8,0 % |
-
-Deck-Winraten: `h2_schicht` 64,1 % 🔴 bleibt der grösste Ausreisser,
-`a3_gift_urgewalt` 36,8 % der schwächste. Ø Spieldauer 11,4 Runden (Ziel 7–10),
-16,7 % der Partien erreichen die Zermürbung (Ziel ≤ 10 %).
-
----
-
-**Client aufgeräumt und Startladezeit gedrittelt.** `GameScreen.tsx` (1.500
-Zeilen) ist auf 700 Zeilen geschrumpft: Replay, Karten, Figur, Anzeigen und die
-Reaktionsauswahl liegen jetzt in `src/arena/`. `styles.css` (2.500 Zeilen) ist
-ein Sammler aus neun `@import`s in `src/styles/` – die Reihenfolge entspricht
-exakt der alten Datei, das gebündelte CSS ist byte-identisch geblieben.
-
-Dazu wird Three.js nicht mehr im ersten Chunk geladen: `webglSupported()` sitzt
-in einer eigenen Mini-Datei, `Battlefield3D` und `FigurePreview` sind
-`React.lazy`. Der Startbildschirm lädt damit **72 kB statt 225 kB** (gzip);
-die Figuren (139 kB gzip) kommen erst, wenn wirklich in 3D gespielt wird.
-
-Reiner Umbau – alle 205 Tests laufen unverändert durch.
-
----
-
-**Feld und Tempo umgestellt.** Das Spielfeld hat jetzt **5 Bahnen** statt 3, und
-die **Zermürbung setzt erst ab Runde 15** ein (vorher 13). Die Bahnenzahl ist
-zusätzlich **pro Raum wählbar**: Wer eine Partie erstellt, sucht im
-Startbildschirm 3 bis 6 Bahnen aus. Der Server legt die Wahl am Raum ab
-(inklusive Persistenz) und reicht sie über `mitLanes()` als `GameData`-Variante
-an `createGame` – dieselbe Mechanik wie beim Testmodus. `config.lanes` ist damit
-nur noch die Voreinstellung im Startbildschirm.
-
-> **Offene Balancing-Frage (gemessen, 200 Bot-Partien vor der Feldumstellung):** In 81 % der Partien
-> fällt mindestens ein Block, aber nur **0,64 Blocks pro Spieler und Partie**.
-> Von drei Bankplätzen kommt damit im Schnitt weniger als einer zum Einsatz –
-> zwei Drittel der Bank sind Deko. Stellschraube ist `schild.abschnitte`
-> (aktuell 7 bei Ø 14,5 Runden Spieldauer); 4–5 dürfte die Bank erst wirklich
-> zu einer Entscheidung machen. Vor dem nächsten Balancing-Backtest zu klären.
-
----
-
-**Arena-Umbau fertig.** Der Spielbildschirm ist jetzt eine bildschirmfüllende
-Arena statt eines Stapels aus Leisten: Kopf- und Fußleiste sind weg, das
-Lane-Raster sitzt in einem mittleren Band, Cheerleader-Bank und Basis stehen
-mittig davor bzw. dahinter, alle Anzeigen schweben als Chips darüber, und das
-Kampf-Log ist ein antippbarer Ticker. Handkarten sind kompakt und bildlastig;
-**ausgespielt wird per Ziehen in die Lane** (`useKartenZug.ts`, Pointer-Events),
-kurzes Antippen zeigt den Karteneffekt. Der `Ausspielen`-Knopf im Detail führt
-weiterhin in die Tap-auf-Lane-Auswahl – nötig für Karten ohne Lane-Ziel und für
-die Flug-Phase. Neu ist, dass **das CSS-Layout die 3D-Positionen bestimmt**:
-`elementAnchor` projiziert `[data-slot]` und `[data-zone]` auf den Boden.
-Verifiziert im Zwei-Browser-Test (3D und `?no3d`, Handy- und Desktop-Viewport)
-bis in den Kampf hinein; sechs neue Client-Tests in `test/arena.test.tsx`.
-
-> **Offene Designfrage:** Drei der fünf Kandidaten lösen auf *jede* gegnerische
-> Kreatur aus. Mit der Standardbank öffnet damit fast jedes Ausspielen ein
-> Fenster beim Gegner. Regelkonform, aber sehr gesprächig – vor dem Client-Bau
-> zu entscheiden, ob Auslöser seltener greifen sollen.
-
-> **Geklärt:** Die Basis-Schild-Superkraft feuert bereits heute sofort beim
-> Aktivieren des Schilds (`schild.ts::basisSchaden` ruft `fuehreSuperkraftAus`
-> direkt nach dem Block-Log auf, nicht verzögert). Kein Code-Änderungsbedarf –
-> nur hier festgehalten, damit es nicht erneut als offen missverstanden wird.
 
 ## Next – direkt danach
 
-1. **Neu vermessen.** Vollständiger sitzplatzgespiegelter Backtest *nach* den
-   Cheerleader-Kräften. Erst diese Messung ist die Balancing-Grundlage.
-2. **Balancing in getrennten Änderungen.** Zuerst Spieldauer und Zermürbung,
-   dann die Deck-Ausreißer `a2_luftangriff` / `a4_urzeitliches_rudel`, zuletzt
-   die neuen Cheerleader-Effekte.
+1. **Zwei-Browser-Sichtprüfung** der obigen Änderungen, Handy- und
+   Desktop-Viewport.
+2. **Schild-Zahl bewerten.** Die Umstellung auf 8 Abschnitte macht Blocks
+   *seltener* (Messung unten). Falls die Bank dadurch zu selten ins Spiel kommt,
+   ist `abschnitte` die Stellschraube in beide Richtungen.
+3. **Schild- und Bank-Kennzahlen ins aktuelle Balancing holen** – siehe die
+   Messlücke unten.
 
 ## Later – bewusst zurückgestellt
 
 - **Modul-Zerlegung, Rest**: Auflösungslogik aus `game.ts`, Raum/Persistenz aus
   `server.ts`, Welt/Teamzonen/Effekte aus `Battlefield3D.tsx`. Client-UI und CSS
-  sind erledigt (siehe oben).
+  sind erledigt.
 - **Figuren-Viewer nicht mehr versionieren**: den 1,17-MB-Standalone lokal bzw.
   in CI aus Template und Daten erzeugen.
 - **Figuren-Wissen kanonisieren**: gemeinsame Playbook-, Bauteil-, Qualitäts-
@@ -179,102 +66,135 @@ bis in den Kampf hinein; sechs neue Client-Tests in `test/arena.test.tsx`.
 - **Visuals in Wellen**: fehlende Kartenrenders für vorhandene Figuren →
   fehlende Kreaturenfiguren nach Deck-Relevanz → die sechs Aktionskarten.
 
-> Asset-Vollständigkeit blockiert den Cheerleader-Meilenstein **nicht**.
-> Golem- und Emoji-Fallback bleiben bis zur jeweiligen Welle gültig.
+> Asset-Vollständigkeit blockiert nichts. Golem- und Emoji-Fallback bleiben bis
+> zur jeweiligen Welle gültig.
 
 ---
 
 ## Qualitätsstand
 
-| Prüfung | Stand 2026-07-31 |
+| Prüfung | Stand 2026-08-09 |
 |---|---|
-| `npm test` | 🟢 208 Tests (177 Engine + 19 Server + 12 Client) |
+| `npm test` | 🟢 234 Tests (202 Engine inkl. 1 übersprungen + 20 Server + 12 Client) |
 | `npm run typecheck` | 🟢 alle drei Workspaces fehlerfrei |
-| `npm run build` | 🟢 – Startbildschirm 216 kB (72 kB gzip); Three.js liegt in einem eigenen Chunk und wird erst fürs 3D nachgeladen |
+| `npm run build` | 🟢 – Startbildschirm 217 kB (72,5 kB gzip); Three.js und die Figuren liegen in eigenen Chunks und werden erst fürs 3D nachgeladen |
 | CI | 🟢 [`.github/workflows/ci.yml`](../.github/workflows/ci.yml): `npm ci` → Tests → Typecheck → Build → Backtest-Smoke |
 
-Der Backtest-Smoke in CI läuft bewusst **ohne** `--streng`: die Zielkorridore
-sind aktuell nicht eingehalten (siehe nächster Abschnitt). CI prüft nur, dass
-die Simulation deterministisch durchläuft (`--schnell --saat=1`, ~20 s,
-420 Partien) und legt den Report als Artefakt ab.
+Der Backtest-Smoke in CI läuft bewusst **ohne** `--streng`.
 
 ---
 
-## Balancing – Ausgangsmessung
+## Balancing
 
-Das hier ist eine **dokumentierte Ausgangsmessung, kein fertiges Balancing.**
+### Abgenommener Alpha-Stand (2026-08-02) – gilt weiterhin
 
-Letzter Volllauf: **2026-07-30**, 4200 Partien über 21 Matchups,
-sitzplatzgespiegelt, Saat 1, Bot-Profil `ausgewogen`.
-Reproduzierbar mit:
+Der verbindliche Stand steht in [BALANCING.md](BALANCING.md) und stammt aus
+`scripts/balancing/` (6.000 Partien, 500 je Startseite und Paarung, **nur die
+vier aktiven Alpha-Decks** aus `deck-status.json`). Alle Zielkorridore werden
+eingehalten:
 
-```
-npm run backtest -- --saat=1 --out=backtest-results/mein-lauf
-```
+| Kennzahl | Ergebnis | Ziel |
+|---|---:|---:|
+| Ø Rundenzahl | 9,35 | 7–10 |
+| Startspieler | 50,11 % | ≤ 54 % |
+| Rundenlimit erreicht | 0,00 % | < 10 % |
+| Forschung und Muskelkraft | 48,4 % | 45–55 % |
+| Rudeljäger | 49,1 % | 45–55 % |
+| Solidarität und Überleben | 49,9 % | 45–55 % |
+| Urzeitliche Kolosse | 52,6 % | 45–55 % |
 
-| Kennzahl | Korridor (Regelwerk V2 §7) | 2026-07-26 | 2026-07-30 |
-|---|---|---|---|
-| Ø Spieldauer | 7–10 Runden | 12.56 🔴 | **13.71** 🔴 |
-| Partien, die Zermürbung erreichen | ≤ 10 % | 59.0 % 🔴 | **77.7 %** 🔴 |
-| Startspieler-Vorteil | ≤ 54 % | 48.2 % 🟢 | **48.7 %** 🟢 |
-| Technische Notbremse (`roundLimit`) | 0 % | 0.0 % 🟢 | **0.0 %** 🟢 |
-| Winrate animals | 47–53 % | 48.1 % 🟢 | **45.5 %** 🟡 |
-| Winrate humans | 47–53 % | 51.9 % 🟢 | **54.5 %** 🟡 |
+Damit ist die frühere offene Frage „Schild nachjustieren **oder** die
+Zielkorridore anpassen?" erledigt – die Korridore werden gehalten.
 
-### Deck-Winraten (Korridor 45–55 %)
+### Messlücke: die Bank kommt darin nicht vor
 
-| Deck | 2026-07-26 | 2026-07-30 |
+Es gibt **zwei** Messsysteme, und nur das ältere sieht den Schild:
+
+| | `scripts/balancing/` (neu, abgenommen) | `scripts/backtest/` (älter) |
 |---|---|---|
-| `a1_rudeljaeger` | 46.5 % 🟢 | **32.7 %** 🔴 |
-| `a2_luftangriff` | 42.5 % 🟡 | **42.8 %** 🟡 |
-| `a3_gift_urgewalt` | 49.3 % 🟢 | **50.0 %** 🟢 |
-| `a4_urzeitliches_rudel` | 57.8 % 🟡 | **65.1 %** 🔴 |
-| `h1_solidaritaet` | 52.9 % 🟢 | **53.3 %** 🟢 |
-| `h2_schicht` | 50.2 % 🟢 | **53.3 %** 🟢 |
-| `h3_campus` | 50.6 % 🟢 | **53.1 %** 🟢 |
+| Deckfeld | die 4 aktiven Alpha-Decks | alle 11 Deckdateien |
+| Schild-Blocks, Cheerleader-Opfer | **nicht erfasst** | erfasst |
 
-**Der einzige Regeleingriff zwischen beiden Messungen ist das Basis-Schild
-(PR #8).** Die Zahlen legen nahe, dass die sieben Schildabschnitte Partien
-verlängern (Zermürbung 59 % → 78 %) und die Deck-Spreizung verschärfen:
-`a1_rudeljaeger` fällt um 14 Punkte, `a4_urzeitliches_rudel` steigt um 7. Das
-ist eine Hypothese aus zwei Messpunkten, kein Beweis – bestätigen ließe sie
-sich mit einem Vergleichslauf ohne Schild.
+Der abgenommene Alpha-Stand sagt also **nichts** über Schild und Bank aus. Wer
+die Bank bewerten will, braucht `npm run backtest`.
 
-Der Plan sieht das Balancing erst **nach** den Cheerleader-Kräften vor. Diese
-Messung ist deshalb bewusst nur festgehalten, nicht behoben.
+### Schild und Bank nach der Umstellung auf 8 Abschnitte
 
-Mit Cheerleader-Kräften (Engine-Stand, Smoke-Lauf `--schnell`): Ø 14,45 Runden,
-83,3 % erreichen Zermürbung – der Trend setzt sich fort. Kein Volllauf, weil
-das Balancing ohnehin erst nach der Client-Anbindung ansteht.
+A/B gemessen mit `npm run backtest -- --schnell --saat=1` – je 1.100 Partien
+über alle 55 Matchups, **gleiche Saat, einziger Unterschied ist `abschnitte`**:
 
-### Erste Cheerleader-Zahlen (Kurzlauf, 420 Partien, rotierende Bank)
+| | 7 Abschnitte | 8 Abschnitte (aktuell) |
+|---|---:|---:|
+| Blocks gesamt | 1.268 | **892** |
+| Blocks pro Spieler und Partie | 0,58 | **0,41** |
+| Ø Spieldauer (Runden) | 8,67 | **8,12** |
 
-| Cheerleader | angeboten | Einlösequote |
-|---|---|---|
-| Junger Neffe | 545 | **92,5 %** |
-| Alter Wissenschaftler | 584 | 86,3 % |
-| PC Principal | 626 | 80,5 % |
-| PC Babies | 1620 | 30,7 % |
-| Randy Marsh | 1817 | **22,1 %** |
+Acht Abschnitte kosten also rund **30 % der Blocks** und verkürzen die Partie
+um eine halbe Runde – weniger Blocks heißt mehr durchkommender Schaden. Beide
+Werte bleiben im Korridor 7–10.
 
-Die Spreizung ist der interessante Teil: Junger Neffe wird fast immer
-eingelöst (die Entscheidung ist also kaum eine), Randy Marsh fast nie – seine
-Kraft trifft die eigene Kreatur mit und lohnt den Bankplatz selten. Gemessen
-mit dem heuristischen Bot, also nur eine grobe Einschätzung.
+Von drei Bankplätzen kommt damit im Schnitt deutlich weniger als einer zum
+Einsatz – der Rest der Bank ist Deko. Soll die Bank eine echte Entscheidung
+werden, muss `abschnitte` *runter*, nicht rauf. Das ist bewusst so entschieden
+und hier nur festgehalten, nicht behoben.
 
-**Geplante 5-Lane-Erweiterung.** Der Konsolidierungsplan sieht perspektivisch
-mehr Lanes vor (`config.lanes`, aktuell 3 – die Engine ist bereits generisch
-darauf ausgelegt, siehe `CLAUDE.md`). Mehr Lanes bedeuten mehr gleichzeitige
-Angriffe pro Runde und damit **kürzere**, nicht längere Partien – das dürfte
-der Zermürbungs-Häufung entgegenwirken, ist aber unbestätigt.
+Der früher notierte Wert von 0,64 taugt **nicht** als Vergleichspunkt: er
+stammt aus 200 Partien vor der Feldumstellung (3 Bahnen, andere Kartenwerte).
+Die Tabelle oben ersetzt ihn.
 
-**Wichtiger Vorbehalt zum Bot-Balancing insgesamt:** Der Backtest-Bot bewertet
-kartenblind und heuristisch (`bot.ts`) – er taugt für grobe Regressionsprüfung
-und Terminierungsnachweise, aber nicht als Ersatz für menschliches Playtesting.
-Zug- und Cheerleader-Entscheidungen, die von echtem taktischem Verständnis
-abhängen (wann opfern, wann bluffen, Lane-Priorisierung bei 5 Lanes), kann nur
-ein spielender Mensch beurteilen. Bot-Zahlen in diesem Dokument sind daher
-**grobe Einschätzung, kein Abnahmekriterium**.
+| Cheerleader | angeboten | geopfert | Wahlquote |
+|---|---:|---:|---:|
+| PC Principal | 518 | 430 | 83,0 % |
+| Alter Wissenschaftler | 679 | 367 | 54,1 % |
+| Junger Neffe | 411 | 37 | 9,0 % |
+| Randy Marsh | 387 | 24 | 6,2 % |
+| PC Babies | 676 | 34 | 5,0 % |
+
+„Sicherer Raum" (PC Babies) bleibt das Schlusslicht: Der Block fällt meist im
+Kampf, und der Rundenstart hebt die Immunität sofort wieder auf.
+
+> **Nicht mit dem Alpha-Stand verwechseln.** Dieser Lauf misst das *gesamte*
+> Deckfeld inklusive der Alt-Decks, mit nur 10 Partien je Matchup. Die
+> Deck-Winraten daraus (`a3_gift_urgewalt` 24,2 %, `solidaritaet_ueberleben`
+> 67,5 %) sind **kein** Widerspruch zum abgenommenen Alpha – sie messen etwas
+> anderes. Die Alt-Decks sind in `deck-status.json` nicht freigeschaltet.
+
+**Vorbehalt zum Bot-Balancing insgesamt:** Der Backtest-Bot bewertet kartenblind
+und heuristisch (`bot.ts`). Er taugt für grobe Regressionsprüfung und
+Terminierungsnachweise, aber nicht als Ersatz für menschliches Playtesting.
+Wann man opfert, wann man blufft, Lane-Priorisierung bei 5 Bahnen – das kann nur
+ein spielender Mensch beurteilen. Bot-Zahlen sind **grobe Einschätzung, kein
+Abnahmekriterium**.
+
+---
+
+## Erledigte Meilensteine
+
+- **Cheerleader-Superkräfte** vollständig: datengetriebener Kandidatenpool,
+  pausierbare Auflösungssteuerung (`GameState.aufloesung`, reine Daten), alle
+  fünf Kräfte in `config.cheerleaders.kraefte`, Reaktionsfenster als
+  DOM-Overlay (identisch mit und ohne WebGL), Persistenz mit Migration
+  (`rooms_persist.json` Version 2, atomar geschrieben), Backtest-Kennzahlen und
+  eigene Client-Testsuite mit Fixtures aus der echten Engine.
+- **Die Bank IST der Schild.** Cheerleader lösen ausschließlich beim
+  Schild-Block aus, Verzichten gibt es nicht, und ohne Cheerleader existiert
+  kein Schild. Die drei zufälligen Schild-Superkräfte sind ersatzlos entfallen.
+- **Bot sieht Schild und Immunität** – beides fließt als Basis-Reserve in
+  `bewerteZustand` ein, in Basis-Leben umgerechnet.
+- **Feld und Tempo:** 5 Bahnen (pro Raum 3–6 wählbar, über `mitLanes()` am Raum
+  persistiert), Zermürbung ab Runde 15.
+- **Arena-Umbau:** bildschirmfüllende Arena ohne Kopf-/Fußleiste, Karten per
+  Ziehen in die Lane, **das CSS-Layout bestimmt die 3D-Positionen**
+  (`elementAnchor` projiziert `[data-slot]` und `[data-zone]` auf den Boden).
+- **Client aufgeräumt, Startladezeit gedrittelt:** `GameScreen.tsx` von 1.500 auf
+  700 Zeilen, `styles.css` als Sammler aus neun `@import`s, Three.js nicht mehr
+  im ersten Chunk.
+- **Balancing-System und vier Alpha-Decks** integriert, Zielkorridore erreicht
+  (siehe oben).
+- **UI im Sinne von Gamification:** `button`-Grundform, kuratierte Übergänge
+  statt `* { transition: all }`, Druck-Feedback, Wert-Blitze auf Energie-, Deck-
+  und Rundenchip, Basis-Lebensbalken mit Farbstufen, Gold-Fokusring,
+  `prefers-reduced-motion` durchgehend respektiert.
 
 ---
 
@@ -307,15 +227,16 @@ Emoji-Fallback. Beides ist regelkonform, nur optisch schwächer.
 
 ## Offene Entscheidungen
 
-- **Cheerleader-Kraftdefinitionen** sind noch nicht in `config.json`. Die
-  vorläufigen Effekte werden aus vorhandenen Kartenfähigkeiten kopiert, sollen
-  aber austauschbar bleiben.
+- **Schild-Abschnitte.** Steht auf 8 (1/8–3/8 pro Treffer). Messung oben: 0,41
+  Blocks pro Spieler und Partie. Soll die Bank häufiger ins Spiel kommen, muss
+  die Zahl sinken.
 - **Zwei offene Pull Requests** warten auf eine Entscheidung:
   - [#9 Vollständige Skript-Partie, Flugphase und Lückentests](https://github.com/TheGoldenSchmidt/PC_Fighters/pull/9) (2026-07-30)
   - [#5 Werkstatt-Lektionen aus dem Stahlgießer-Lauf](https://github.com/TheGoldenSchmidt/PC_Fighters/pull/5) (2026-07-29) – laut Plan inhaltlich überholt, Kandidat zum Schließen.
-- **Basis-Schild** (PR #8, gemergt am 2026-07-30) ist in keinem Detailplan
-  berücksichtigt und verschlechtert laut Messung oben mehrere Kennzahlen.
-  Offen: Schild nachjustieren oder die Zielkorridore anpassen?
+- **Golden-Master-Abdeckung.** Die Tabelle in `regression.test.ts` zählte bis
+  jetzt nur die sieben `a*`/`h*`-Alt-Decks auf, obwohl der Generator längst auch
+  die vier Alpha-Decks paart – die liefen also ungeprüft mit. Mit der
+  Schild-Umstellung neu erzeugt und damit korrigiert.
 
 ---
 
@@ -327,6 +248,3 @@ Reine Aufbewahrungs-Branches, **nicht für einen Merge nach `master` gedacht**:
 |---|---|
 | `archiv/figuren-wissen-kanonisierung` | TASK-002 aus dem Stash vom 2026-07-29: `docs/figure-generation/`, dünne Werkzeug-Adapter, eine `snap.mjs`, dazu die unversionierte Puma-Figur. |
 | `archiv/wildkatze-und-task-001` | TASK-001-Governance-Zweig samt geprüfter `wildkatze`-Figur. Später **nur die Figur** übernehmen, nicht den Zweig. |
-
-Alle nachweislich gemergten lokalen und Remote-Branches wurden am 2026-07-30
-gelöscht; der Stash ist geleert.
