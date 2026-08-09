@@ -985,6 +985,8 @@ export interface ClientView {
   round: number;
   roundLimit: number;
   lanes: number;
+  /** Startleben einer Basis – Bezugswert für den Lebensbalken. */
+  baseMax: number;
   /** Abschnitte des Basis-Schilds; 0 = Schild-Regel in der Config abgeschaltet. */
   schildAbschnitte: number;
   energyCap: number;

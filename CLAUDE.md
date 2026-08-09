@@ -85,6 +85,7 @@ Card art and 3D: a creature's `cardId` drives both. 2D art is `packages/client/p
 | `Anzeigen.tsx` | shield meter, base readout, cheerleader bench (2D fallback) |
 | `ReaktionsAuswahl.tsx` | the shield-block choice dialog |
 | `useLongPress.ts` | long-press detection |
+| `useWertPuls.ts` | one-shot flash class when a counter's value changes |
 
 `styles.css` is a barrel of `@import`s into `src/styles/*.css`. **The import order there is the old file's order** — CSS cascade depends on it, so append new rules inside the matching part rather than reordering the barrel.
 

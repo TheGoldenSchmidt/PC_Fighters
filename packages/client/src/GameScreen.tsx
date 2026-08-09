@@ -11,6 +11,7 @@
 //   Anzeigen.tsx       Schild, Basis, Cheerleader-Bank
 //   ReaktionsAuswahl.tsx  Auswahl beim Schild-Block
 //   useLongPress.ts    langes Druecken
+//   useWertPuls.ts     kurzer Blitz, wenn sich ein Zaehler aendert
 //
 // Zum Layout: Das Lane-Raster folgt der verbindlichen Fünf-Bahnen-Konfiguration.
 // liegt in einem mittleren Band, davor und dahinter steht mittig die
@@ -46,6 +47,7 @@ import { CoachHint } from './arena/CoachHint';
 import { useDialogFocus } from './arena/useDialogFocus';
 import { playFeedback } from './feedback';
 import { defaultProfile, type LocalProfileV1 } from './profile';
+import { useWertPuls } from './arena/useWertPuls';
 
 /**
  * Das 3D-Schlachtfeld zieht three.js nach (gut 600 kB). Es wird erst geladen,
@@ -156,6 +158,11 @@ export function GameScreen({
   const energy = shownView.players[me].energy;
   const playableCardCount = shownView.hand.filter((card) => card.cost <= energy).length;
   const canPlaySomething = myTurn && shownView.phase === 'play' && playableCardCount > 0;
+
+  // Zaehler-Blitz: die drei Chips aendern sich sonst lautlos mitten im Spiel.
+  const energiePuls = useWertPuls(energy);
+  const deckPuls = useWertPuls(shownView.players[me].deckCount);
+  const rundenPuls = useWertPuls(shownView.round);
 
   // Auswahl zurücksetzen, wenn sich die angezeigte Lage ändert
   useEffect(() => setSelection(null), [shownView]);
@@ -497,6 +504,7 @@ export function GameScreen({
           <div className="zone-mitte">
             <BasisAnzeige
               leben={shownView.players[opp].base}
+              max={shownView.baseMax}
               treffer={baseHit(opp)}
               schild={shownView.players[opp].schild}
               abschnitte={shownView.schildAbschnitte}
@@ -516,7 +524,7 @@ export function GameScreen({
           </div>
 
           <div className="hud-gruppe rechts">
-            <span className="runden-chip">
+            <span className={'runden-chip' + rundenPuls}>
               {topic && (
                 <span className="topic-badge" title={`Schauplatz: ${topic.name}`}>
                   {topic.emoji}{' '}
@@ -626,7 +634,7 @@ export function GameScreen({
         {/* ---- Eigene Zone: Bank mittig, Basis dahinter ---- */}
         <div className="zone-band zone-unten">
           <div className="hud-gruppe">
-            <div className={'energy-chip' + (canPlaySomething ? ' pulse' : '')}>
+            <div className={'energy-chip' + (canPlaySomething ? ' pulse' : '') + energiePuls}>
               ⚡ {energy}/{shownView.energyCap}
             </div>
           </div>
@@ -634,6 +642,7 @@ export function GameScreen({
           <div className="zone-mitte">
             <BasisAnzeige
               leben={shownView.players[me].base}
+              max={shownView.baseMax}
               treffer={baseHit(me)}
               schild={shownView.players[me].schild}
               abschnitte={shownView.schildAbschnitte}
@@ -656,7 +665,7 @@ export function GameScreen({
           </div>
 
           <div className="hud-gruppe rechts">
-            <div className="deck-chip">📚 {shownView.players[me].deckCount}</div>
+            <div className={'deck-chip' + deckPuls}>📚 {shownView.players[me].deckCount}</div>
             {shownView.phase === 'play' && myTurn && (
               <button
                 className="pass-button"
