@@ -114,7 +114,7 @@ export interface ZermuerbungConfig {
  * gibt es keinen Schild mehr – Treffer gehen dann ungehindert durch.
  */
 export interface SchildConfig {
-  /** Wie viele Abschnitte der Schild hat (Standard-Regel: 7). */
+  /** Wie viele Abschnitte der Schild hat (Standard-Regel: 8). */
   abschnitte: number;
   /** Spanne, um die ein Treffer den Schild auflädt (Standard-Regel: 1–3). */
   ladung: { min: number; max: number };

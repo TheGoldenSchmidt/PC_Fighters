@@ -536,6 +536,7 @@ export function StartScreen({ status, profile, onRememberLoadout, onCreate, onJo
           <div className="cheerleader-candidates">
             {info.cheerleaders.candidates.map((id) => {
               const card = cardById.get(id);
+              const kraft = info.cheerleaders.kraefte[id];
               const locked = !info.cheerleaders.allowDeckOverlap && deckContains(deck, id);
               const slot = cheerleaders.indexOf(id);
               return (
@@ -551,13 +552,18 @@ export function StartScreen({ status, profile, onRememberLoadout, onCreate, onJo
                   <span>
                     <strong>{card?.name ?? id}</strong>
                     <small>{locked ? 'Im Deck · nicht verfügbar' : slot >= 0 ? `Bankplatz ${slot + 1}` : 'Für die Bank verfügbar'}</small>
-                    {card?.text && <small className="candidate-power">{card.text}</small>}
+                    {kraft && <small className="candidate-power">{kraft.name}: {kraft.text}</small>}
                   </span>
                 </button>
               );
             })}
           </div>
-          <p className="hint">Die Reihenfolge bestimmt die festen Plätze. Deckfiguren bleiben sichtbar, sind aber gesperrt.</p>
+          <p className="hint">
+            Die Reihenfolge bestimmt die festen Plätze.{' '}
+            {info.cheerleaders.allowDeckOverlap
+              ? 'Dieselbe Figur darf gleichzeitig im Deck und auf der Bank stehen.'
+              : 'Deckfiguren bleiben sichtbar, sind aber für die Bank gesperrt.'}
+          </p>
         </section>
       )}
 

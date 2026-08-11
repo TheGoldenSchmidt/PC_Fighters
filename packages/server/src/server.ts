@@ -90,7 +90,7 @@ function testGameData(d: GameData): GameData {
       energy: { start: 40, perRound: 40, cap: null },
       // Schild nach EINEM Treffer voll: Im Testmodus soll man die
       // Cheerleader-Kräfte sofort sehen können, statt auf einen Block zu
-      // warten (regulär braucht der Schild 7 Abschnitte).
+      // warten (regulär braucht der Schild 8 Abschnitte).
       ...(d.config.schild ? { schild: { ...d.config.schild, abschnitte: 1 } } : {})
     }
   };

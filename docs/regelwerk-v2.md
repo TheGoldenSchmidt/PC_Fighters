@@ -24,7 +24,7 @@
 
 ### Basis-Schild und Cheerleader-Bank
 
-Neben jeder Basis steht ein Schild aus **7 Abschnitten**. Jeder **direkte** Treffer auf diese Basis lädt ihn zufällig um **1–3** Abschnitte auf. Erreicht er 7:
+Neben jeder Basis steht ein Schild aus **8 Abschnitten**. Jeder **direkte** Treffer auf diese Basis lädt ihn zufällig um **1–3** Abschnitte auf. Erreicht er 8:
 
 1. Der Treffer wird **komplett geblockt**.
 2. **Ein Cheerleader von der Bank opfert sich** und wirkt dabei seine Kraft. Der Schildbesitzer wählt nur, *wer* – verzichten ist nicht möglich, der Block ist bereits eingelöst.

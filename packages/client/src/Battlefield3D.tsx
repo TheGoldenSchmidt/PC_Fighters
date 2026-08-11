@@ -21,6 +21,7 @@ import * as THREE from 'three';
 import type { ClientView, EnvironmentKind, PlayerIndex, Topic, VisualCatalog } from '@pcf/engine';
 import { createFigure, type Figure } from './figures3d';
 import { createEnvironment, type EnvironmentRec, type FieldMetrics } from './environments3d';
+import { SACRIFICE_MS } from './arena/fx';
 
 /** Zauber-Effektarten der Aktionskarten (Spiegel des engine-SpellEvent). */
 export type SpellEffectKind = 'buff' | 'attackBuff' | 'summon' | 'move';
@@ -176,7 +177,10 @@ interface World {
 }
 
 const SPELL_MS = 900;
-const SACRIFICE_MS = 1250;
+// Dauer der Opfer-Animation. Kommt aus fx.ts, damit sie exakt so lange laeuft,
+// wie die Abspielung darauf wartet – sonst steht die Figur am Ende still
+// herum oder wird mitten im Sprung abgeraeumt, sobald jemand am Kampftempo
+// dreht. Der Import ist unbedenklich: fx.ts zieht kein three.js nach.
 const REDUCED_SACRIFICE_MS = 360;
 
 function setFigureOpacity(root: THREE.Object3D, opacity: number): void {
@@ -197,7 +201,7 @@ function setFigureOpacity(root: THREE.Object3D, opacity: number): void {
 function createTeamZone(): TeamZoneRec {
   const group = new THREE.Group();
   const steel = new THREE.MeshStandardMaterial({ color: 0x252a33, roughness: 0.7, metalness: 0.35 });
-  const wood = new THREE.MeshStandardMaterial({ color: 0x6b4634, roughness: 0.92, metalness: 0.02 });
+  const wood = new THREE.MeshStandardMaterial({ color: 0x9c6a44, roughness: 0.82, metalness: 0.04 });
   const gold = new THREE.MeshBasicMaterial({ color: 0xf5b74a, transparent: true, opacity: 0.72 });
   const light = new THREE.MeshBasicMaterial({
     color: 0xeaf4ff,
@@ -206,16 +210,24 @@ function createTeamZone(): TeamZoneRec {
     blending: THREE.AdditiveBlending,
     depthWrite: false
   });
-  const bench = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.28, 0.62), wood);
-  bench.position.y = 0.28;
+  // Bewusst OHNE Lehne: die Lehne stand genau zwischen Kamera und Bankfiguren
+  // und verdeckte sie von vorn. Ohne sie muss die Sitzfläche selbst die Bank
+  // lesbar machen – deshalb dicker, tiefer und heller als zuvor.
+  const bench = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.4, 0.92), wood);
+  bench.position.y = 0.32;
   bench.castShadow = true;
+  bench.receiveShadow = true;
   group.add(bench);
-  const back = new THREE.Mesh(new THREE.BoxGeometry(3.3, 0.85, 0.18), steel);
-  back.position.set(0, 0.76, -0.26);
-  back.castShadow = true;
-  group.add(back);
-  const markers = [-1, 0, 1].map((x) => {
-    const marker = new THREE.Mesh(new THREE.RingGeometry(0.28, 0.38, 18), gold.clone());
+  // Zwei Kufen statt einer Lehne: sie erden die Bank optisch, ohne etwas zu
+  // verdecken – sie liegen unter der Sitzfläche.
+  for (const x of [-1.45, 1.45]) {
+    const kufe = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.32, 0.86), steel);
+    kufe.position.set(x, 0.16, 0);
+    kufe.castShadow = true;
+    group.add(kufe);
+  }
+  const markers = [-1.05, 0, 1.05].map((x) => {
+    const marker = new THREE.Mesh(new THREE.RingGeometry(0.34, 0.5, 22), gold.clone());
     marker.rotation.x = -Math.PI / 2;
     marker.position.set(x, 0.015, 0.2);
     group.add(marker);
@@ -664,9 +676,11 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
         const oppSpot = elementAnchor(world, `[data-zone="${farSide}"]`);
         // Die Bank ist gut 3.4 Einheiten breit – der Anker gibt die Zielbreite vor.
         const BANK_BREITE = 3.4;
+        // Obergrenze 2.1 statt 1.6: die vergrößerten `.bank-anker` liefen sonst
+        // in den Deckel und die Bank wäre trotz breiterem Anker nicht gewachsen.
         const ownScale = Math.max(
           0.25,
-          Math.min(1.6, (ownSpot ? ownSpot.breite : laneStep) / BANK_BREITE)
+          Math.min(2.1, (ownSpot ? ownSpot.breite : laneStep) / BANK_BREITE)
         );
         const tiefenFaktor = a0!.scale > 0 ? Math.min(1, f0!.scale / a0!.scale) : 0.75;
 

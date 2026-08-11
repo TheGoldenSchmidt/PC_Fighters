@@ -174,7 +174,7 @@ Die Datei `packages/engine/src/data/config.json` enthält alle Spielregeln als Z
 | `deckbuilding.maxPrincipals` | Wie viele Principal-Karten (`"category": "principal"`) ein Deck enthalten darf (V2: 1) |
 | `zermuerbung.abRunde` / `.schaden` / `.steigerung` | Ab dieser Runde verlieren beide Basen am Rundenende `schaden` Leben, danach je weitere Runde zusätzlich `steigerung` mehr – das ist der reguläre Weg, wie lange Partien enden (V2 will explizit „kein Rundenlimit", siehe `docs/regelwerk-v2.md` §1/§7) |
 | `roundLimit` | Technische Notbremse weit über der Zermürbung (aktuell 30) – wird im Normalspiel nie erreicht; jeder Treffer ist ein Bug-Report |
-| `schild.abschnitte` | Wie viele Abschnitte der Basis-Schild hat (Standard 7) |
+| `schild.abschnitte` | Wie viele Abschnitte der Basis-Schild hat (Standard 8) |
 | `schild.ladung.min` / `.max` | Spanne, um die ein Treffer den Schild auflädt (Standard 1–3) |
 | `cheerleaders.kraefte` | Was die einzelnen Cheerleader beim Schild-Block bewirken (siehe unten) |
 
@@ -182,9 +182,9 @@ Zahl ändern, speichern, Server neu starten – fertig.
 
 ### Der Schild – und warum die Bank sein Motor ist
 
-Neben jeder Basis (🏰) steht ein Balken aus **7 Abschnitten**. Jedes Mal, wenn diese Basis
+Neben jeder Basis (🏰) steht ein Balken aus **8 Abschnitten**. Jedes Mal, wenn diese Basis
 getroffen wird, lädt sich der Schild **zufällig um 1 bis 3 Abschnitte** auf. Sobald er dabei
-7 erreicht, passiert dreierlei:
+8 erreicht, passiert dreierlei:
 
 1. **Der Treffer wird komplett geblockt** – die Basis verliert kein einziges Leben.
 2. **Ein Cheerleader von der Bank opfert sich** und wirkt dabei seine Kraft. Wer das ist,
