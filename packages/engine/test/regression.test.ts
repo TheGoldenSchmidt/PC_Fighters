@@ -16,14 +16,31 @@
 // Bewertungsverschiebungen, die die beste Zugwahl nicht ändern.
 
 import { describe, expect, it } from 'vitest';
-import { BOT_PROFILE, ladeDecks, loadGameData, spielePartie } from '../src/index.js';
+import {
+  BOT_PROFILE,
+  ladeAktiveDecks,
+  loadGameData,
+  spielePartie,
+  zustandsFingerabdruck
+} from '../src/index.js';
 import type { BotProfil } from '../src/index.js';
 
 const data = loadGameData();
-const decks = ladeDecks(data);
+const decks = ladeAktiveDecks(data);
 const profil: BotProfil = { ...BOT_PROFILE.ausgewogen, epsilonBand: 0 };
 
-/** deckA, deckB, Saat, erwarteter Hash `sieger:runden:basisA:basisB:uidCounter`. */
+/**
+ * deckA, deckB, Saat, lesbarer Kurzstand und Fingerabdruck des Endzustands.
+ *
+ * Der Golden Master folgt bewusst `deck-status.json`: Er prüft jede Paarung
+ * der vier veröffentlichten Alpha-Decks in beiden Sitzordnungen. Inaktive
+ * Legacy-Presets werden weiterhin als Deckdaten validiert, gehören aber nicht
+ * zum Verhaltensvertrag der aktuellen Alpha.
+ */
+// Neu erzeugt am 2026-08-09, nachdem Test und Generator auf die vier in
+// `deck-status.json` freigegebenen Alpha-Decks umgestellt wurden. Jede der
+// sechs Paarungen läuft in beiden Sitzordnungen; zusätzlich zum lesbaren
+// Kurzstand wird der vollständige deterministische Endzustand fingerprinted.
 // Neu erzeugt nach dem finalen Alpha-Balancing vom 2026-08-02: 10 statt 12
 // Basisleben sowie die bewusst angepassten Werte von T-Rex und PC Principal.
 // Die geänderte Konfiguration beeinflusst jede Partie.
@@ -46,33 +63,33 @@ const profil: BotProfil = { ...BOT_PROFILE.ausgewogen, epsilonBand: 0 };
 //
 // Davor: neu erzeugt nach Einführung der Cheerleader-Superkräfte, und davor
 // nach Einführung des Basis-Schilds.
-const GOLDEN_MASTER: [string, string, number, string][] = [
-  ['a1_rudeljaeger', 'a2_luftangriff', 5000, '0:8:4:0:20'],
-  ['a1_rudeljaeger', 'a3_gift_urgewalt', 5001, '1:9:-2:4:23'],
-  ['a1_rudeljaeger', 'a4_urzeitliches_rudel', 5002, '0:6:9:0:14'],
-  ['a1_rudeljaeger', 'h1_solidaritaet', 5003, '0:5:7:-2:11'],
-  ['a1_rudeljaeger', 'h2_schicht', 5004, '0:4:2:-2:9'],
-  ['a1_rudeljaeger', 'h3_campus', 5005, '1:7:0:3:17'],
-  ['a2_luftangriff', 'a3_gift_urgewalt', 5006, '0:8:10:-1:20'],
-  ['a2_luftangriff', 'a4_urzeitliches_rudel', 5007, '0:8:1:-2:19'],
-  ['a2_luftangriff', 'h1_solidaritaet', 5008, '0:9:2:-1:23'],
-  ['a2_luftangriff', 'h2_schicht', 5009, '0:11:3:-4:28'],
-  ['a2_luftangriff', 'h3_campus', 5010, '0:8:3:-3:21'],
-  ['a3_gift_urgewalt', 'a4_urzeitliches_rudel', 5011, '1:9:-4:1:20'],
-  ['a3_gift_urgewalt', 'h1_solidaritaet', 5012, '0:10:1:0:23'],
-  ['a3_gift_urgewalt', 'h2_schicht', 5013, '1:8:-3:10:16'],
-  ['a3_gift_urgewalt', 'h3_campus', 5014, '0:14:4:-3:32'],
-  ['a4_urzeitliches_rudel', 'h1_solidaritaet', 5015, '1:7:-2:6:14'],
-  ['a4_urzeitliches_rudel', 'h2_schicht', 5016, '0:9:5:-1:19'],
-  ['a4_urzeitliches_rudel', 'h3_campus', 5017, '1:13:-2:4:30'],
-  ['h1_solidaritaet', 'h2_schicht', 5018, '0:13:3:-2:28'],
-  ['h1_solidaritaet', 'h3_campus', 5019, '0:14:3:0:31']
+const GOLDEN_MASTER: [string, string, number, string, string][] = [
+  ['forschung_muskelkraft', 'rudeljaeger', 5000, '1:5:0:10:11', 'c3ff8929'],
+  ['rudeljaeger', 'forschung_muskelkraft', 5001, '1:9:-4:1:21', '2231ff25'],
+  ['forschung_muskelkraft', 'solidaritaet_ueberleben', 5002, '0:10:6:-2:24', 'aab39f6d'],
+  ['solidaritaet_ueberleben', 'forschung_muskelkraft', 5003, '0:9:4:-5:18', 'c673c8f7'],
+  ['forschung_muskelkraft', 'urzeitliche_kolosse', 5004, '0:6:6:-2:12', '3fe5d753'],
+  ['urzeitliche_kolosse', 'forschung_muskelkraft', 5005, '0:5:7:0:8', 'c44ca8a0'],
+  ['rudeljaeger', 'solidaritaet_ueberleben', 5006, '0:6:6:-1:14', 'e209b0e1'],
+  ['solidaritaet_ueberleben', 'rudeljaeger', 5007, '0:14:1:-3:33', '73c04bea'],
+  ['rudeljaeger', 'urzeitliche_kolosse', 5008, '1:9:-1:4:24', 'dc937fcd'],
+  ['urzeitliche_kolosse', 'rudeljaeger', 5009, '1:8:0:5:18', '7d3a02fd'],
+  ['solidaritaet_ueberleben', 'urzeitliche_kolosse', 5010, '0:5:6:0:9', '29e3ff0f'],
+  ['urzeitliche_kolosse', 'solidaritaet_ueberleben', 5011, '1:10:-4:4:23', '42f8baec']
 ];
 
 describe('Golden Master: Partie-Simulation bleibt bei Refactors unverändert', () => {
-  it.each(GOLDEN_MASTER)('%s vs %s (Saat %i)', (deckAId, deckBId, saat, erwarteterHash) => {
-    const r = spielePartie(data, decks[deckAId], decks[deckBId], { saat, profilA: profil, profilB: profil });
-    const hash = `${r.gewinner}:${r.runden}:${r.endState.players[0].base}:${r.endState.players[1].base}:${r.endState.uidCounter}`;
-    expect(hash).toBe(erwarteterHash);
-  });
+  it.each(GOLDEN_MASTER)(
+    '%s vs %s (Saat %i)',
+    (deckAId, deckBId, saat, erwarteterKurzstand, erwarteterZustand) => {
+      const r = spielePartie(data, decks[deckAId], decks[deckBId], {
+        saat,
+        profilA: profil,
+        profilB: profil
+      });
+      const kurzstand = `${r.gewinner}:${r.runden}:${r.endState.players[0].base}:${r.endState.players[1].base}:${r.endState.uidCounter}`;
+      expect(kurzstand).toBe(erwarteterKurzstand);
+      expect(zustandsFingerabdruck(r.endState)).toBe(erwarteterZustand);
+    }
+  );
 });
