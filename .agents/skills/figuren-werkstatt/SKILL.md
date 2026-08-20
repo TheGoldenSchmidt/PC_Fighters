@@ -31,6 +31,22 @@ damit niemand einen bekannten Fehler wiederholt.
 - Daraus einen kurzen **Design-Brief** bauen (cardId, Name, Text, Fraktion+Farbe,
   Projektil-Emoji, Nutzer-Prompt) **plus die passenden LESSONS.md-Punkte**.
 
+### 1a. Grundgeruest-Modus fuer die Varianten-Werkstatt
+
+Wenn die `varianten-werkstatt` ein fehlendes Rig meldet und der Auftrag ausdruecklich
+ein **Grundgeruest** nennt, erzeuge statt einer kartenspezifischen Vollfigur:
+
+- `packages/engine/src/data/figure-bases/<baseId>.json`,
+- bei Bedarf `packages/engine/src/data/animation-profiles/<rigId>.json`,
+- eine kleine Variante fuer den ersten Vertreter unter `data/figures/<cardId>.json`.
+
+Die Base enthaelt nur wiederverwendbare Anatomie und die Anschluesse `head`,
+`leftHand`, `rightHand`, `back`, `weapon`, `mount`. Kartenspezifische Farben,
+Koepfe und Accessoires gehoeren in die erste Variante. Lebende und untote Humans
+teilen dasselbe Humanoiden-Skelett. Fuehre die vollstaendige Designer-/Kritiker-
+Schleife fuer diesen ersten Rig-Vertreter aus und warte vor dem Commit wie gewohnt
+auf Nutzerfreigabe. Weitere Karten dieses Rigs gehen zurueck an die Varianten-Werkstatt.
+
 ### 2. Dev-Umgebung sicherstellen
 - Snap-Ordner wählen, z. B. `<scratchpad>/snaps`, und anlegen.
 - **Port 3000 vorher prüfen.** Ein Rest-Prozess aus einer früheren Sitzung (ohne

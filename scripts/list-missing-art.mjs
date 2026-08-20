@@ -5,10 +5,9 @@
 //
 // Aufruf:  node scripts/list-missing-art.mjs   (oder: npm run list-missing-art)
 //
-// Sobald ein Bild manuell geliefert wird (gemalt oder KI-generiert), einfach
-// als packages/client/public/assets/cards/<id>.png ablegen UND die Id in die
-// MANUAL_ART-Liste in scripts/render-card-art.mjs eintragen, damit ein
-// erneuter Lauf dieses Skripts das Bild nicht mit einem 3D-Render überschreibt.
+// Sobald ein Bild manuell geliefert wird (gemalt oder KI-generiert), als
+// packages/client/public/assets/cards/<id>.png ablegen und seine Quelle in
+// art-manifest.json auf "manual" setzen. Der Renderer ueberschreibt es dann nie.
 
 import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -18,6 +17,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
 const CARDS_DIR = join(ROOT, 'packages', 'engine', 'src', 'data', 'cards');
 const ART_DIR = join(ROOT, 'packages', 'client', 'public', 'assets', 'cards');
+const ART_MANIFEST = join(ART_DIR, 'art-manifest.json');
 const FACTIONS_FILE = join(ROOT, 'packages', 'engine', 'src', 'data', 'factions.json');
 
 function loadFactionNames() {
@@ -49,6 +49,7 @@ function main() {
   const factionNames = loadFactionNames();
   const cards = loadAllCards();
   const haveArt = existingArtIds();
+  const manifest = JSON.parse(readFileSync(ART_MANIFEST, 'utf8'));
   const missing = cards.filter((c) => !haveArt.has(c.id));
 
   const byFaction = new Map();
@@ -64,7 +65,7 @@ function main() {
     console.log(`## ${factionName}`);
     for (const card of factionCards.sort((a, b) => a.name.localeCompare(b.name, 'de'))) {
       console.log(
-        `- ${card.id}.png | ${card.name} (${card.type}) ${card.projectile ?? ''} — ${card.text ?? ''}`
+        `- ${card.id}.png | ${card.name} (${card.type}, Quelle: ${manifest.cards?.[card.id]?.source ?? (card.type === 'creature' ? 'figure-render' : 'template')}) ${card.projectile ?? ''} — ${card.text ?? ''}`
       );
     }
     console.log('');

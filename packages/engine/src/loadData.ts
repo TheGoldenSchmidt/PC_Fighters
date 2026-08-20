@@ -3,7 +3,7 @@
 // Eintrag in factions.json). Wird nur in Node (Server, Tests) benutzt –
 // der Client bekommt alles über das Netzwerk.
 
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DataError, validateDeck, validateGameData } from './schema.js';
@@ -49,19 +49,20 @@ export function loadGameData(dataDir: string = DATA_DIR): GameData {
     content: readJson(`cards/${file}`, join(cardsDir, file))
   }));
 
-  // 3D-Figuren: data/figures/*.json (Ordner darf fehlen → keine Figuren, Golem-Fallback).
-  const figuresDir = join(dataDir, 'figures');
-  let figureFiles: { file: string; content: unknown }[] = [];
-  try {
-    figureFiles = readdirSync(figuresDir)
-      .filter((f) => f.endsWith('.json'))
+  const loadOptionalJsonDir = (folder: string) => {
+    const dir = join(dataDir, folder);
+    if (!existsSync(dir)) return [];
+    return readdirSync(dir)
+      .filter((file) => file.endsWith('.json'))
       .map((file) => ({
-        file: `figures/${file}`,
-        content: readJson(`figures/${file}`, join(figuresDir, file))
+        file: `${folder}/${file}`,
+        content: readJson(`${folder}/${file}`, join(dir, file))
       }));
-  } catch {
-    // kein figures-Ordner vorhanden – das ist in Ordnung
-  }
+  };
+  // Die Ordner sind optional; fehlerhafte vorhandene Dateien werden dagegen bewusst gemeldet.
+  const figureFiles = loadOptionalJsonDir('figures');
+  const figureBaseFiles = loadOptionalJsonDir('figure-bases');
+  const animationProfileFiles = loadOptionalJsonDir('animation-profiles');
 
   const validated = validateGameData({
     config,
@@ -70,6 +71,8 @@ export function loadGameData(dataDir: string = DATA_DIR): GameData {
     topics,
     cardFiles,
     animations,
+    animationProfileFiles,
+    figureBaseFiles,
     figureFiles,
     identityCatalog
   });

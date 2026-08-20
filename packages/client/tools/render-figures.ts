@@ -9,23 +9,32 @@
 // Figur → dafür kleine Embleme aus Grundkörpern.
 
 import * as THREE from 'three';
-import type { Animations, Visual } from '@pcf/engine';
+import type { CardDef, VisualCatalog } from '@pcf/engine';
 import { createFigure, type Figure } from '../src/figures3d';
-
-// Daten-Figuren (data/figures/*.json) direkt aus der Engine laden – Vite bündelt
-// die JSONs mit. So rendert das Tool jede Figur, die auch das Spiel kennt, ohne
-// dass hier eine Liste gepflegt werden muss.
-import defaultClipsJson from '../../engine/src/data/animations.json';
-const figureModules = import.meta.glob('../../engine/src/data/figures/*.json', {
-  eager: true
-}) as Record<string, { default: { cardId: string; visual: Visual; animations?: Animations } }>;
-const dataFigures = new Map(
-  Object.values(figureModules).map((m) => [m.default.cardId, m.default])
-);
-const defaultClips = defaultClipsJson as unknown as Animations;
 
 const params = new URLSearchParams(location.search);
 const card = params.get('card') ?? 'rekrut';
+const serverBase = params.get('server') ?? 'http://localhost:3000';
+const renderState = window as unknown as { __renderReady?: boolean; __renderError?: string };
+
+interface RenderInfo {
+  cards: CardDef[];
+  visuals: VisualCatalog;
+  dataError?: string;
+}
+
+let info: RenderInfo;
+try {
+  const response = await fetch(`${serverBase}/info`, { cache: 'no-store' });
+  info = await response.json() as RenderInfo;
+  if (!response.ok || info.dataError) throw new Error(info.dataError || `Server antwortet mit ${response.status}.`);
+} catch (error) {
+  renderState.__renderError = `Figuren-Katalog nicht ladbar: ${error instanceof Error ? error.message : String(error)}`;
+  throw error;
+}
+const dataFigures = new Map(Object.entries(info.visuals.cards));
+const defaultClips = info.visuals.defaultClips;
+const cardDef = info.cards.find((entry) => entry.id === card);
 
 const canvas = document.getElementById('art') as HTMLCanvasElement;
 const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
@@ -123,7 +132,7 @@ const CREATURES = new Set([
 let figs: Figure[] = [];
 let root: THREE.Object3D;
 const dataFig = dataFigures.get(card);
-if (dataFig) {
+if (cardDef?.type === 'creature' && dataFig?.visual) {
   // Daten-Figur: identischer Aufbau wie im Spiel (visual + eigene/Default-Klips).
   const f = createFigure(
     card,
@@ -134,14 +143,22 @@ if (dataFig) {
   );
   figs = [f];
   root = f.root;
-} else if (CREATURES.has(card)) {
+} else if (cardDef?.type === 'creature' && CREATURES.has(card)) {
   const f = createFigure(card, 1, 5);
   figs = [f];
   root = f.root;
-} else {
+} else if (cardDef && cardDef.type !== 'creature') {
+  // Aktionen, Umgebungen und Superkraefte erhalten nur ein Template-Emblem.
+  // Sie laufen niemals durch createFigure und koennen daher kein Golem-Fallback werden.
   root = buildEmblem(card);
   const withFigs = root as THREE.Group & { figs?: Figure[] };
   if (withFigs.figs) figs = withFigs.figs;
+} else {
+  const message = cardDef
+    ? `Kreatur ${card} besitzt keine freigegebene Figur; Golem-Rendering ist gesperrt.`
+    : `Unbekannte Karte ${card}.`;
+  renderState.__renderError = message;
+  throw new Error(message);
 }
 scene.add(root);
 
@@ -170,7 +187,7 @@ function frame() {
   for (const f of figs) f.update(now);
   renderer.render(scene, camera);
   ready = true;
-  (window as unknown as { __renderReady: boolean }).__renderReady = ready;
+  renderState.__renderReady = ready;
   requestAnimationFrame(frame);
 }
 frame();

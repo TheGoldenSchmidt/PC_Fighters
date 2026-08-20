@@ -5,8 +5,9 @@
 #   1. npm ci        – reproduzierbare Installation aus package-lock.json
 #   2. npm test      – Engine-, Server- und Client-Testsuiten (Vitest)
 #   3. npm run typecheck – tsc --noEmit über alle Workspaces
-#   4. npm run build – Produktions-Build des Clients
-#   5. Backtest-Smoke – deterministischer Kurzlauf, damit die Simulation nicht
+#   4. npm run check:art – Manifest, Quellen und echte PNG-Signaturen
+#   5. npm run build – Produktions-Build des Clients
+#   6. Backtest-Smoke – deterministischer Kurzlauf, damit die Simulation nicht
 #      unbemerkt kaputtgeht. Bewusst OHNE --streng: die Zielkorridore aus
 #      Regelwerk V2 §7 sind aktuell nicht eingehalten (siehe docs/STATUS.md);
 #      CI prüft hier nur, dass der Backtest überhaupt durchläuft.
@@ -47,6 +48,9 @@ jobs:
 
       - name: Typecheck
         run: npm run typecheck
+
+      - name: Artwork-Manifest und Überschreibschutz
+        run: npm run check:art
 
       - name: Produktions-Build
         run: npm run build
