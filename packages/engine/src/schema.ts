@@ -8,6 +8,7 @@ import { KEYWORDS } from './keywords.js';
 import type {
   Animations,
   CardDef,
+  ChampionDef,
   CheerleaderSelection,
   DeckbuildingConfig,
   DeckList,
@@ -19,17 +20,15 @@ import type {
   Topic
 } from './types.js';
 
-/**
- * Basis-Schild. Was ein Block bewirkt, steht NICHT hier: Die Bank ist der
- * Schild, also liefern die Cheerleader-Kräfte die Wirkung (siehe unten).
- */
+/** Superblock mit drei sichtbaren Cheerleader-Trägern für Champ-Superkräfte. */
 export const schildSchema = z
   .object({
     abschnitte: z.number().int().min(1),
     ladung: z.object({
       min: z.number().int().min(1),
       max: z.number().int().min(1)
-    })
+    }),
+    cheerleaders: z.tuple([z.string().min(1), z.string().min(1), z.string().min(1)]).optional()
   })
   .strict()
   .refine((s) => s.ladung.max >= s.ladung.min, {
@@ -96,6 +95,7 @@ export const configSchema = z.object({
   baseHealth: z.number().int().min(1),
   startingHand: z.number().int().min(0),
   cardsDrawnPerTurn: z.number().int().min(0),
+  handLimit: z.number().int().min(1).optional().default(10),
   roundLimit: z.number().int().min(1),
   energy: z.object({
     start: z.number().int().min(0),
@@ -116,9 +116,8 @@ export const configSchema = z.object({
     selectionSize: z.literal(3),
     maxInDeck: z.number().int().min(0),
     allowDeckOverlap: z.boolean().optional().default(false),
-    // Ohne Eintrag sitzt ein Cheerleader nur dekorativ auf der Bank.
     kraefte: z.record(z.string().min(1), cheerleaderKraftSchema).default({})
-  }),
+  }).optional(),
   zermuerbung: z
     .object({
       abRunde: z.number().int().min(1),
@@ -141,6 +140,23 @@ export const factionSchema = z.object({
 });
 
 export const factionsSchema = z.array(factionSchema);
+
+export const championSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  side: z.enum(['animals', 'humans']),
+  classes: z.tuple([z.string().min(1), z.string().min(1)]),
+  superpowers: z.tuple([
+    z.string().min(1),
+    z.string().min(1),
+    z.string().min(1),
+    z.string().min(1)
+  ])
+});
+
+// Leere Listen bleiben für kleine Engine-Testdatensätze rückwärtskompatibel;
+// die ausgelieferten Produktionsdaten enthalten immer die sechs Champions.
+export const championsSchema = z.array(championSchema);
 
 export const topicSchema = z.object({
   id: z.string().min(1),
@@ -197,7 +213,8 @@ export const effectSchema = z.discriminatedUnion('kind', [
     kind: z.literal('spendKnowledge'),
     max: z.number().int().min(1),
     damagePerMarker: z.number().int().min(1)
-  })
+  }),
+  z.object({ kind: z.literal('referenz'), text: z.string() }).strict()
 ]);
 
 // --- Fähigkeiten (parametrisierte Primitive) ---
@@ -253,7 +270,8 @@ export const abilitySchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('ausspielwahl'), optionA: z.array(ausspielTeilSchema).min(1), optionB: z.array(ausspielTeilSchema).min(1), regel: z.literal('zielVorhanden') }).strict(),
   z.object({ kind: z.literal('umgruppieren'), tempAtkBonus: z.number().int().min(1).optional() }).strict(),
   z.object({ kind: z.literal('rueckstoss'), selbst: z.number().int().min(1), gegner: z.number().int().min(1).optional() }).strict(),
-  z.object({ kind: z.literal('peinigen'), atkDeckel: z.number().int().min(0), hpDeckel: z.number().int().min(1) }).strict()
+  z.object({ kind: z.literal('peinigen'), atkDeckel: z.number().int().min(0), hpDeckel: z.number().int().min(1) }).strict(),
+  z.object({ kind: z.literal('referenz'), text: z.string() }).strict()
 ]);
 
 // ---------------------------------------------------------------- Visuals
@@ -377,7 +395,10 @@ const cardBase = {
   cost: z.number().int().min(0),
   signature: z.boolean().optional(),
   category: z.enum(['hero', 'principal']).optional(),
-  text: z.string().optional()
+  text: z.string().optional(),
+  deckable: z.boolean().optional(),
+  tribes: z.array(z.string().min(1)).default([]),
+  referenceName: z.string().min(1).optional()
 };
 
 export const cardSchema = z.discriminatedUnion('type', [
@@ -393,6 +414,18 @@ export const cardSchema = z.discriminatedUnion('type', [
   z.object({
     ...cardBase,
     type: z.literal('action'),
+    effect: effectSchema
+  }),
+  z.object({
+    ...cardBase,
+    type: z.literal('environment'),
+    effect: effectSchema
+  }),
+  z.object({
+    ...cardBase,
+    type: z.literal('superpower'),
+    deckable: z.literal(false),
+    signaturePower: z.boolean().optional(),
     effect: effectSchema
   })
 ]);
@@ -466,6 +499,7 @@ function translateType(t: string): string {
 export function validateGameData(raw: {
   config: unknown;
   factions: unknown;
+  champions?: unknown;
   topics: unknown;
   cardFiles: { file: string; content: unknown }[];
   /** data/animations.json – geteilte Standard-Klips (optional; Default: {}). */
@@ -475,6 +509,7 @@ export function validateGameData(raw: {
 }): {
   config: GameConfig;
   factions: Faction[];
+  champions: ChampionDef[];
   topics: Topic[];
   cards: CardDef[];
   defaultClips: Animations;
@@ -509,6 +544,33 @@ export function validateGameData(raw: {
     }
   }
   if (factionProblems.length > 0) throw new DataError('factions.json', factionProblems);
+
+  const championsResult = championsSchema.safeParse(raw.champions ?? []);
+  if (!championsResult.success) {
+    throw new DataError('champions.json', describeZodError(championsResult.error));
+  }
+  const championIds = new Set<string>();
+  for (const champion of championsResult.data) {
+    if (championIds.has(champion.id)) {
+      throw new DataError('champions.json', [`Champ-ID "${champion.id}" kommt mehrfach vor.`]);
+    }
+    championIds.add(champion.id);
+    const side = factionsResult.data.find((entry) => entry.id === champion.side);
+    if (!side || side.parent !== null) {
+      throw new DataError('champions.json', [`Champ "${champion.name}": Seite "${champion.side}" ist ungültig.`]);
+    }
+    for (const classId of champion.classes) {
+      const cls = factionsResult.data.find((entry) => entry.id === classId);
+      if (!cls || cls.parent !== champion.side) {
+        throw new DataError('champions.json', [
+          `Champ "${champion.name}": Klasse "${classId}" gehört nicht zu ${champion.side}.`
+        ]);
+      }
+    }
+    if (champion.classes[0] === champion.classes[1]) {
+      throw new DataError('champions.json', [`Champ "${champion.name}" braucht zwei verschiedene Klassen.`]);
+    }
+  }
 
   const topicsResult = topicsSchema.safeParse(raw.topics);
   if (!topicsResult.success) {
@@ -553,33 +615,56 @@ export function validateGameData(raw: {
     cards.push(...(parsed.data as CardDef[]));
   }
 
-  const cheerleaderProblems: string[] = [];
-  const cheerleaderIds = configResult.data.cheerleaders.candidates;
-  if (new Set(cheerleaderIds).size !== cheerleaderIds.length) {
-    cheerleaderProblems.push('Cheerleader-Kandidaten dürfen nicht doppelt konfiguriert sein.');
+  const superblockCheerleaders = configResult.data.schild?.cheerleaders ?? [];
+  const superblockProblems: string[] = [];
+  if (new Set(superblockCheerleaders).size !== superblockCheerleaders.length) {
+    superblockProblems.push('Die drei Superblock-Cheerleader müssen unterschiedlich sein.');
   }
-  for (const id of cheerleaderIds) {
+  for (const id of superblockCheerleaders) {
     const card = cards.find((candidate) => candidate.id === id);
-    if (!card) {
-      cheerleaderProblems.push(`Cheerleader-Kandidat "${id}" ist keine bekannte Karte.`);
-    } else if (card.type !== 'creature') {
-      cheerleaderProblems.push(`Cheerleader-Kandidat "${id}" ist keine Kreatur.`);
+    if (!card) superblockProblems.push(`Superblock-Cheerleader "${id}" ist keine bekannte Karte.`);
+    else if (card.type !== 'creature') superblockProblems.push(`Superblock-Cheerleader "${id}" ist keine Kreatur.`);
+  }
+  if (superblockProblems.length > 0) throw new DataError('config.json', superblockProblems);
+
+  const cheerleaderProblems: string[] = [];
+  const cheerleaderConfig = configResult.data.cheerleaders;
+  if (cheerleaderConfig) {
+    const cheerleaderIds = cheerleaderConfig.candidates;
+    if (new Set(cheerleaderIds).size !== cheerleaderIds.length) {
+      cheerleaderProblems.push('Cheerleader-Kandidaten dürfen nicht doppelt konfiguriert sein.');
     }
-  }
-  if (configResult.data.cheerleaders.maxInDeck > cheerleaderIds.length) {
-    cheerleaderProblems.push('"maxInDeck" darf nicht größer als der Kandidatenpool sein.');
-  }
-  // Eine Kraft ohne zugehörigen Kandidaten wäre stumm: sie könnte nie auf der
-  // Bank landen und damit auch nie ausgelöst werden. Das ist fast immer ein
-  // Tippfehler in der cardId, deshalb ein harter Datenfehler.
-  for (const id of Object.keys(configResult.data.cheerleaders.kraefte)) {
-    if (!cheerleaderIds.includes(id)) {
-      cheerleaderProblems.push(
-        `Superkraft für "${id}" konfiguriert, aber "${id}" steht nicht in "candidates".`
-      );
+    for (const id of cheerleaderIds) {
+      const card = cards.find((candidate) => candidate.id === id);
+      if (!card) {
+        cheerleaderProblems.push(`Cheerleader-Kandidat "${id}" ist keine bekannte Karte.`);
+      } else if (card.type !== 'creature') {
+        cheerleaderProblems.push(`Cheerleader-Kandidat "${id}" ist keine Kreatur.`);
+      }
+    }
+    if (cheerleaderConfig.maxInDeck > cheerleaderIds.length) {
+      cheerleaderProblems.push('"maxInDeck" darf nicht größer als der Kandidatenpool sein.');
+    }
+    for (const id of Object.keys(cheerleaderConfig.kraefte)) {
+      if (!cheerleaderIds.includes(id)) {
+        cheerleaderProblems.push(
+          `Superkraft für "${id}" konfiguriert, aber "${id}" steht nicht in "candidates".`
+        );
+      }
     }
   }
   if (cheerleaderProblems.length > 0) throw new DataError('config.json', cheerleaderProblems);
+
+  for (const champion of championsResult.data) {
+    for (const powerId of champion.superpowers) {
+      const power = cards.find((card) => card.id === powerId);
+      if (!power || power.type !== 'superpower') {
+        throw new DataError('champions.json', [
+          `Champ "${champion.name}": Superkraft "${powerId}" ist nicht definiert.`
+        ]);
+      }
+    }
+  }
 
   // ---- 3D-Figuren (data/figures/*.json) ----
   const cardById = new Map(cards.map((c) => [c.id, c]));
@@ -624,6 +709,7 @@ export function validateGameData(raw: {
   return {
     config: configResult.data,
     factions: factionsResult.data,
+    champions: championsResult.data as ChampionDef[],
     topics: topicsResult.data,
     cards,
     defaultClips,
@@ -636,6 +722,7 @@ export function validateGameData(raw: {
 export const deckSchema = z.object({
   name: z.string().min(1).optional(),
   faction: z.string().min(1).optional(),
+  championId: z.string().min(1).optional(),
   cards: z
     .array(
       z.object({
@@ -697,8 +784,11 @@ export function validateDeck(deck: unknown, data: GameData): DeckList {
   const seen = new Set<string>();
   const tops = new Set<string>();
   const subs = new Set<string>();
-  const cheerleaderIds = new Set(data.config.cheerleaders.candidates);
+  const cheerleaderIds = new Set(data.config.cheerleaders?.candidates ?? []);
   let cheerleadersInDeck = 0;
+  const champion = dl.championId ? data.champions.find((entry) => entry.id === dl.championId) : undefined;
+  const usedChampionClasses = new Set<string>();
+  if (dl.championId && !champion) problems.push(`Unbekannter Champ "${dl.championId}".`);
 
   for (const entry of dl.cards) {
     const card = data.cardsById[entry.cardId];
@@ -709,6 +799,10 @@ export function validateDeck(deck: unknown, data: GameData): DeckList {
     if (seen.has(entry.cardId)) {
       problems.push(`Karte "${card.name}" ist mehrfach aufgeführt – bitte zusammenfassen.`);
     }
+    if (card.deckable === false) {
+      problems.push(`"${card.name}" ist eine Superkraft und gehört nicht in den Ziehstapel.`);
+      continue;
+    }
     seen.add(entry.cardId);
     if (cheerleaderIds.has(entry.cardId)) cheerleadersInDeck += 1;
     total += entry.count;
@@ -718,9 +812,17 @@ export function validateDeck(deck: unknown, data: GameData): DeckList {
     if (entry.count > max) {
       problems.push(`Zu viele Kopien von "${card.name}": ${entry.count}, erlaubt sind ${max}.`);
     }
-    // Die vier festen Alpha-Decks dürfen ihre einzeln limitierten Heroes
-    // fraktionsübergreifend verwenden; Principal ist ohnehin neutral.
-    if (card.category === 'hero' || card.category === 'principal' || isNeutralCard(card, data.factions, tree)) continue;
+    if (isNeutralCard(card, data.factions, tree)) continue;
+    if (champion) {
+      if (!champion.classes.includes(card.faction)) {
+        problems.push(`"${card.name}" gehört nicht zu den Klassen ${champion.classes.join(' + ')} von ${champion.name}.`);
+      } else {
+        usedChampionClasses.add(card.faction);
+      }
+      continue;
+    }
+    // Legacy-Decks ohne Champ behalten die bisherige Fraktionsprüfung.
+    if (card.category === 'hero' || card.category === 'principal') continue;
     tops.add(topOf(tree, card.faction));
     subs.add(card.faction);
   }
@@ -734,10 +836,17 @@ export function validateDeck(deck: unknown, data: GameData): DeckList {
   if (principals > maxPrincipals) {
     problems.push(`Zu viele PC Principals: ${principals}, erlaubt ist ${maxPrincipals}.`);
   }
-  if (cheerleadersInDeck > data.config.cheerleaders.maxInDeck) {
+  if (data.config.cheerleaders && cheerleadersInDeck > data.config.cheerleaders.maxInDeck) {
     problems.push(
       `Zu viele Cheerleader-Kandidaten im Deck: ${cheerleadersInDeck}, erlaubt sind ${data.config.cheerleaders.maxInDeck}.`
     );
+  }
+  if (champion) {
+    for (const classId of champion.classes) {
+      if (!usedChampionClasses.has(classId)) {
+        problems.push(`Das Deck muss mindestens eine Karte der Klasse ${classId} enthalten.`);
+      }
+    }
   }
   if (factionRule === 'singleTop' && tops.size > 1) {
     problems.push('Deck mischt mehrere Oberfraktionen – erlaubt ist nur Mensch ODER Tier.');
@@ -756,7 +865,9 @@ export function validateCheerleaderSelection(
   deck: DeckList | null,
   data: GameData
 ): CheerleaderSelection {
-  const expected = data.config.cheerleaders.selectionSize;
+  const config = data.config.cheerleaders;
+  if (!config) throw new DeckError(['In diesem Regelset gibt es keine Cheerleader-Bank.']);
+  const expected = config.selectionSize;
   if (!Array.isArray(selection) || selection.length !== expected) {
     throw new DeckError([`Wähle exakt ${expected} Cheerleader.`]);
   }
@@ -764,7 +875,7 @@ export function validateCheerleaderSelection(
   const ids = selection.filter((id): id is string => typeof id === 'string');
   if (ids.length !== expected) problems.push('Alle Cheerleader-Plätze müssen belegt sein.');
   if (new Set(ids).size !== ids.length) problems.push('Jeder Cheerleader darf nur einmal gewählt werden.');
-  const allowed = new Set(data.config.cheerleaders.candidates);
+  const allowed = new Set(config.candidates);
   for (const id of ids) {
     if (!allowed.has(id)) problems.push(`Unbekannter Cheerleader "${id}".`);
   }
@@ -772,7 +883,7 @@ export function validateCheerleaderSelection(
     deck?.cards.filter((entry) => entry.count > 0).map((entry) => entry.cardId) ?? []
   );
   for (const id of ids) {
-    if (!data.config.cheerleaders.allowDeckOverlap && deckIds.has(id)) {
+    if (!config.allowDeckOverlap && deckIds.has(id)) {
       const name = data.cardsById[id]?.name ?? id;
       problems.push(`"${name}" ist Bestandteil des Decks und kann nicht zugleich Cheerleader sein.`);
     }
@@ -786,11 +897,13 @@ export function defaultCheerleaderSelection(
   deck: DeckList | null,
   data: GameData
 ): CheerleaderSelection {
+  const config = data.config.cheerleaders;
+  if (!config) throw new DeckError(['In diesem Regelset gibt es keine Cheerleader-Bank.']);
   const deckIds = new Set(
     deck?.cards.filter((entry) => entry.count > 0).map((entry) => entry.cardId) ?? []
   );
-  const selection = data.config.cheerleaders.candidates
-    .filter((id) => data.config.cheerleaders.allowDeckOverlap || !deckIds.has(id))
-    .slice(0, data.config.cheerleaders.selectionSize);
+  const selection = config.candidates
+    .filter((id) => config.allowDeckOverlap || !deckIds.has(id))
+    .slice(0, config.selectionSize);
   return validateCheerleaderSelection(selection, deck, data);
 }

@@ -1,0 +1,996 @@
+[
+  {
+    "id": "cardboard_robot_zombie",
+    "name": "Cardboard Robot Zombie",
+    "faction": "brainy",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Cardboard Robot Zombie",
+    "text": "Keine zusätzliche Fähigkeit.",
+    "type": "creature",
+    "attack": 1,
+    "health": 1,
+    "keywords": [],
+    "abilities": [],
+    "projectile": "✨"
+  },
+  {
+    "id": "flugblatt_verteiler",
+    "name": "Flugblatt-Verteiler",
+    "faction": "brainy",
+    "type": "creature",
+    "cost": 1,
+    "attack": 1,
+    "health": 2,
+    "abilities": [
+      {
+        "kind": "bedingt",
+        "scope": "same_top",
+        "mindestAnzahl": 1,
+        "bonus": {
+          "atk": 1,
+          "hp": 0
+        }
+      }
+    ],
+    "text": "Solange du einen weiteren Menschen kontrollierst, erhält diese Kreatur +1 ATK.",
+    "projectile": "📄",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Paparazzi Zombie"
+  },
+  {
+    "id": "lurch_for_lunch",
+    "name": "Lurch for Lunch",
+    "faction": "brainy",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Lurch for Lunch",
+    "text": "Zombie macht Bonus Attack",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Zombie macht Bonus Attack"
+    }
+  },
+  {
+    "id": "fun_dead_raiser",
+    "name": "Fun-Dead Raiser",
+    "faction": "brainy",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Fun-Dead Raiser",
+    "text": "2 Karten ziehen",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "2 Karten ziehen"
+    }
+  },
+  {
+    "id": "drum_major",
+    "name": "Drum Major",
+    "faction": "brainy",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Drum Major",
+    "text": "Keine zusätzliche Fähigkeit.",
+    "type": "creature",
+    "attack": 4,
+    "health": 4,
+    "keywords": [],
+    "abilities": [],
+    "projectile": "✨"
+  },
+  {
+    "id": "chimney_sweep",
+    "name": "Chimney Sweep",
+    "faction": "brainy",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Chimney Sweep",
+    "text": "Auf Heights +1/+1",
+    "type": "creature",
+    "attack": 2,
+    "health": 1,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Auf Heights +1/+1"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "beam_me_up",
+    "name": "Beam Me Up",
+    "faction": "brainy",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Beam Me Up",
+    "text": "2/3 Space Cadet erzeugen",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "2/3 Space Cadet erzeugen"
+    }
+  },
+  {
+    "id": "cell_phone_zombie",
+    "name": "Cell Phone Zombie",
+    "faction": "brainy",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Cell Phone Zombie",
+    "text": "Karte ziehen",
+    "type": "creature",
+    "attack": 1,
+    "health": 1,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Karte ziehen"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "erstsemester",
+    "name": "Erstsemester",
+    "faction": "brainy",
+    "type": "creature",
+    "cost": 2,
+    "attack": 2,
+    "health": 2,
+    "abilities": [
+      {
+        "kind": "lernen",
+        "n": 1
+      }
+    ],
+    "text": "Beim Ausspielen: Ziehe 1 Karte.",
+    "projectile": "📚",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Pool Shark"
+  },
+  {
+    "id": "koffein_junkie",
+    "name": "Koffein-Junkie",
+    "faction": "brainy",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Zombot Drone Engineer",
+    "text": "Science-Zombie verursacht Schaden → +1/+1",
+    "type": "creature",
+    "attack": 1,
+    "health": 3,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Science-Zombie verursacht Schaden → +1/+1"
+      }
+    ],
+    "projectile": "☕"
+  },
+  {
+    "id": "brain_vendor",
+    "name": "Brain Vendor",
+    "faction": "brainy",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Brain Vendor",
+    "text": "Beim Ausspielen +3 Brains diese Runde",
+    "type": "creature",
+    "attack": 2,
+    "health": 1,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Beim Ausspielen +3 Brains diese Runde"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "mountain_climber",
+    "name": "Mountain Climber",
+    "faction": "brainy",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Mountain Climber",
+    "text": "Auf Heights +2/+2",
+    "type": "creature",
+    "attack": 2,
+    "health": 2,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Auf Heights +2/+2"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "cryo_brain",
+    "name": "Cryo-Brain",
+    "faction": "brainy",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Cryo-Brain",
+    "text": "Dauerhaft +1 Brain pro Runde",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Dauerhaft +1 Brain pro Runde"
+    }
+  },
+  {
+    "id": "medulla_nebula",
+    "name": "Medulla Nebula",
+    "faction": "brainy",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Medulla Nebula",
+    "text": "Zombie hier gespielt → +2 Brains",
+    "type": "environment",
+    "effect": {
+      "kind": "referenz",
+      "text": "Zombie hier gespielt → +2 Brains"
+    }
+  },
+  {
+    "id": "moonwalker",
+    "name": "Moonwalker",
+    "faction": "brainy",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Moonwalker",
+    "text": "Auf Heights +2/+2",
+    "type": "creature",
+    "attack": 2,
+    "health": 2,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Auf Heights +2/+2"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "copter_commando",
+    "name": "Copter Commando",
+    "faction": "brainy",
+    "cost": 5,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Copter Commando",
+    "text": "Keine zusätzliche Fähigkeit.",
+    "type": "creature",
+    "attack": 6,
+    "health": 5,
+    "keywords": [],
+    "abilities": [],
+    "projectile": "✨"
+  },
+  {
+    "id": "mustache_waxer",
+    "name": "Mustache Waxer",
+    "faction": "brainy",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Mustache Waxer",
+    "text": "Mustache gespielt → +2 Leben und +1 Brain",
+    "type": "creature",
+    "attack": 2,
+    "health": 2,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Mustache gespielt → +2 Leben und +1 Brain"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "quarterly_bonus",
+    "name": "Quarterly Bonus",
+    "faction": "brainy",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Quarterly Bonus",
+    "text": "Zombie-Angriff wird 4; dann Bonus Attack",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Zombie-Angriff wird 4; dann Bonus Attack"
+    }
+  },
+  {
+    "id": "gentleman_zombie",
+    "name": "Gentleman Zombie",
+    "faction": "brainy",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Gentleman Zombie",
+    "text": "Gravestone; Reveal +2 Brains diese Runde",
+    "type": "creature",
+    "attack": 1,
+    "health": 4,
+    "keywords": [
+      "gravestone"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Gravestone; Reveal +2 Brains diese Runde"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "kite_flyer",
+    "name": "Kite Flyer",
+    "faction": "brainy",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Kite Flyer",
+    "text": "Rundenstart Karte ziehen",
+    "type": "creature",
+    "attack": 1,
+    "health": 3,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Rundenstart Karte ziehen"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "gadget_scientist",
+    "name": "Gadget Scientist",
+    "faction": "brainy",
+    "cost": 5,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Gadget Scientist",
+    "text": "Alle Science-Zombies machen Bonus Attack",
+    "type": "creature",
+    "attack": 3,
+    "health": 3,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Alle Science-Zombies machen Bonus Attack"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "hail_a_copter",
+    "name": "Hail-a-Copter",
+    "faction": "brainy",
+    "cost": 6,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Hail-a-Copter",
+    "text": "6/5 Copter Commando erzeugen",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "6/5 Copter Commando erzeugen"
+    }
+  },
+  {
+    "id": "doktorandin",
+    "name": "Doktorandin",
+    "faction": "brainy",
+    "cost": 6,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Wizard Gargantuar",
+    "text": "Gargantuars Bullseye; anderen Zombie in Kosten+1 transformieren",
+    "type": "creature",
+    "attack": 5,
+    "health": 6,
+    "keywords": [
+      "bullseye"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Gargantuars Bullseye; anderen Zombie in Kosten+1 transformieren"
+      }
+    ],
+    "projectile": "🎓"
+  },
+  {
+    "id": "nachhilfe",
+    "name": "Nachhilfe",
+    "faction": "brainy",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Cosmic Scientist",
+    "text": "Bullseye; Science conjuren und Bullseye geben",
+    "type": "creature",
+    "attack": 1,
+    "health": 2,
+    "keywords": [
+      "bullseye"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Bullseye; Science conjuren und Bullseye geben"
+      }
+    ],
+    "projectile": "✏️"
+  },
+  {
+    "id": "triplication",
+    "name": "Triplication",
+    "faction": "brainy",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Triplication",
+    "text": "Imp, normalen Zombie und Gargantuar conjuren",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Imp, normalen Zombie und Gargantuar conjuren"
+    }
+  },
+  {
+    "id": "zom_blob",
+    "name": "Zom-Blob",
+    "faction": "brainy",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Zom-Blob",
+    "text": "Zombie Evolution: +1 Angriff je Brain, das diese Runde erzeugt wurde",
+    "type": "creature",
+    "attack": 2,
+    "health": 5,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Zombie Evolution: +1 Angriff je Brain, das diese Runde erzeugt wurde"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "mustache_monument",
+    "name": "Mustache Monument",
+    "faction": "brainy",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Mustache Monument",
+    "text": "Fusion: darüber gespielter Zombie macht Bonus Attack",
+    "type": "creature",
+    "attack": 1,
+    "health": 5,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Fusion: darüber gespielter Zombie macht Bonus Attack"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "electrician",
+    "name": "Electrician",
+    "faction": "brainy",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Electrician",
+    "text": "Gravestone; Reveal: Zombie macht Bonus Attack",
+    "type": "creature",
+    "attack": 2,
+    "health": 3,
+    "keywords": [
+      "gravestone"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Gravestone; Reveal: Zombie macht Bonus Attack"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "rocket_science",
+    "name": "Rocket Science",
+    "faction": "brainy",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Rocket Science",
+    "text": "Pflanze mit ≥4 Angriff zerstören",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Pflanze mit ≥4 Angriff zerstören"
+    }
+  },
+  {
+    "id": "bibliothekar",
+    "name": "Bibliothekar",
+    "faction": "brainy",
+    "type": "creature",
+    "cost": 4,
+    "attack": 2,
+    "health": 5,
+    "abilities": [
+      {
+        "kind": "wahl",
+        "optionA": {
+          "art": "ziehen",
+          "n": 1
+        },
+        "optionB": {
+          "art": "wissen",
+          "x": 1
+        },
+        "regel": "handKlein"
+      },
+      {
+        "kind": "aura",
+        "scope": "same_sub",
+        "buff": {
+          "atk": 1,
+          "hp": 0
+        },
+        "timing": "dauerhaft"
+      }
+    ],
+    "text": "★ Rundenbeginn: Wähle – Ziehe 1 Karte oder erhalte 1 Wissen. Andere Studenten erhalten +1 ATK.",
+    "projectile": "📖",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Mad Chemist"
+  },
+  {
+    "id": "pc_babies",
+    "name": "PC Babies",
+    "faction": "brainy",
+    "cost": 5,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Portal Technician",
+    "text": "Beim Tod zufälligen Zombie hier erzeugen",
+    "type": "creature",
+    "attack": 5,
+    "health": 4,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Beim Tod zufälligen Zombie hier erzeugen"
+      }
+    ],
+    "projectile": "🍼"
+  },
+  {
+    "id": "neutron_imp",
+    "name": "Neutron Imp",
+    "faction": "brainy",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Neutron Imp",
+    "text": "Environment gespielt → Bonus Attack",
+    "type": "creature",
+    "attack": 2,
+    "health": 2,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Environment gespielt → Bonus Attack"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "transformation_station",
+    "name": "Transformation Station",
+    "faction": "brainy",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Transformation Station",
+    "text": "Rundenstart Zombie hier → zufälliger Zombie Kosten +1",
+    "type": "environment",
+    "effect": {
+      "kind": "referenz",
+      "text": "Rundenstart Zombie hier → zufälliger Zombie Kosten +1"
+    }
+  },
+  {
+    "id": "alter_wissenschaftler",
+    "name": "Alter Wissenschaftler",
+    "faction": "brainy",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Wormhole Gatekeeper",
+    "text": "Conjures kosten 1 weniger; Rundenstart beide Spieler conjuren",
+    "type": "creature",
+    "attack": 2,
+    "health": 5,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Conjures kosten 1 weniger; Rundenstart beide Spieler conjuren"
+      }
+    ],
+    "projectile": "🧪"
+  },
+  {
+    "id": "experimentelle_formel",
+    "name": "Experimentelle Formel",
+    "faction": "brainy",
+    "type": "action",
+    "cost": 2,
+    "effect": {
+      "kind": "spendKnowledge",
+      "max": 3,
+      "damagePerMarker": 2
+    },
+    "text": "Gib bis zu 3 Wissen aus. Verteile entsprechend viel Schaden auf gegnerische Kreaturen.",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Evolutionary Leap"
+  },
+  {
+    "id": "parasol_zombie",
+    "name": "Parasol Zombie",
+    "faction": "brainy",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Parasol Zombie",
+    "text": "Untrickable; Zombies nebenan ebenfalls Untrickable",
+    "type": "creature",
+    "attack": 3,
+    "health": 6,
+    "keywords": [
+      "untrickable"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Untrickable; Zombies nebenan ebenfalls Untrickable"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "gruppenarbeit",
+    "name": "Gruppenarbeit",
+    "faction": "brainy",
+    "type": "creature",
+    "cost": 3,
+    "attack": 3,
+    "health": 4,
+    "abilities": [
+      {
+        "kind": "synergie",
+        "scope": "same_top",
+        "bonus": {
+          "atk": 1,
+          "hp": 1
+        }
+      }
+    ],
+    "text": "Wenn du in derselben Runde bereits einen anderen Menschen ausgespielt hast, kommt Gruppenarbeit mit +1/+1 ins Spiel.",
+    "projectile": "📎",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Duckstache"
+  },
+  {
+    "id": "teleport",
+    "name": "Teleport",
+    "faction": "brainy",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Teleport",
+    "text": "Diese Runde Zombie in Trick-Phase spielbar; Karte ziehen",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Diese Runde Zombie in Trick-Phase spielbar; Karte ziehen"
+    }
+  },
+  {
+    "id": "shieldcrusher_viking",
+    "name": "Shieldcrusher Viking",
+    "faction": "brainy",
+    "cost": 5,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Shieldcrusher Viking",
+    "text": "Bullseye; beim Ausspielen/Heldentreffer gegnerischen Block-Meter leeren",
+    "type": "creature",
+    "attack": 7,
+    "health": 5,
+    "keywords": [
+      "bullseye"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Bullseye; beim Ausspielen/Heldentreffer gegnerischen Block-Meter leeren"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "trickster",
+    "name": "Trickster",
+    "faction": "brainy",
+    "cost": 10,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Trickster",
+    "text": "-1 Kosten je gespieltem Trick; beim Ausspielen Bonus Attack",
+    "type": "creature",
+    "attack": 6,
+    "health": 6,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "-1 Kosten je gespieltem Trick; beim Ausspielen Bonus Attack"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "interdimensional_zombie",
+    "name": "Interdimensional Zombie",
+    "faction": "brainy",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Interdimensional Zombie",
+    "text": "Science-Karte gespielt → zufälliger 3-Kosten-Zombie",
+    "type": "creature",
+    "attack": 2,
+    "health": 2,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Science-Karte gespielt → zufälliger 3-Kosten-Zombie"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "teleportation_zombie",
+    "name": "Teleportation Zombie",
+    "faction": "brainy",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Teleportation Zombie",
+    "text": "Bullseye; Zombies dürfen in Trick-Phase gespielt werden",
+    "type": "creature",
+    "attack": 1,
+    "health": 5,
+    "keywords": [
+      "bullseye"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Bullseye; Zombies dürfen in Trick-Phase gespielt werden"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "die_fakultaet",
+    "name": "Die Fakultät",
+    "faction": "brainy",
+    "cost": 5,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Gargantuar Mime",
+    "text": "Nicht-Mime macht Bonus Attack → Mime ebenfalls",
+    "type": "creature",
+    "attack": 5,
+    "health": 7,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Nicht-Mime macht Bonus Attack → Mime ebenfalls"
+      }
+    ],
+    "projectile": "🏛️"
+  },
+  {
+    "id": "zombot_dinotronic_mechasaur",
+    "name": "Zombot Dinotronic Mechasaur",
+    "faction": "brainy",
+    "cost": 7,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Zombot Dinotronic Mechasaur",
+    "text": "Dino-Roar: zufälligen History-Zombie erzeugen",
+    "type": "creature",
+    "attack": 8,
+    "health": 8,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Dino-Roar: zufälligen History-Zombie erzeugen"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "leprechaun_imp",
+    "name": "Leprechaun Imp",
+    "faction": "brainy",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Leprechaun Imp",
+    "text": "Pot of Gold ins Deck mischen",
+    "type": "creature",
+    "attack": 1,
+    "health": 1,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Pot of Gold ins Deck mischen"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "regifting_zombie",
+    "name": "Regifting Zombie",
+    "faction": "brainy",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Regifting Zombie",
+    "text": "Zombie +1/+1 conjuren; Gegner conjured Pflanze mit -1/-1",
+    "type": "creature",
+    "attack": 3,
+    "health": 2,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Zombie +1/+1 conjuren; Gegner conjured Pflanze mit -1/-1"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "trick_or_treater",
+    "name": "Trick-or-Treater",
+    "faction": "brainy",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Trick-or-Treater",
+    "text": "Erster Trick pro Runde erzeugt Treat",
+    "type": "creature",
+    "attack": 2,
+    "health": 4,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Erster Trick pro Runde erzeugt Treat"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "thinking_cap",
+    "name": "Thinking Cap",
+    "faction": "brainy",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Thinking Cap",
+    "text": "2 Superkräfte conjuren",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "2 Superkräfte conjuren"
+    }
+  },
+  {
+    "id": "kitchen_sink_zombie",
+    "name": "Kitchen Sink Zombie",
+    "faction": "brainy",
+    "cost": 6,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Kitchen Sink Zombie",
+    "text": "Bullseye, Frenzy, Armored 1, Anti-Hero 3, Overshoot 2",
+    "type": "creature",
+    "attack": 3,
+    "health": 6,
+    "keywords": [
+      "bullseye",
+      "armored",
+      "anti_hero",
+      "frenzy",
+      "overshoot"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Bullseye, Frenzy, Armored 1, Anti-Hero 3, Overshoot 2"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "bad_moon_rising",
+    "name": "Bad Moon Rising",
+    "faction": "brainy",
+    "cost": 7,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Bad Moon Rising",
+    "text": "Alle Zombies in zufällige Zombies mit Kosten ≥5 transformieren",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Alle Zombies in zufällige Zombies mit Kosten ≥5 transformieren"
+    }
+  }
+]

@@ -1,0 +1,1003 @@
+[
+  {
+    "id": "peashooter",
+    "name": "Peashooter",
+    "faction": "mega_grow",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Peashooter",
+    "text": "Keine zusätzliche Fähigkeit.",
+    "type": "creature",
+    "attack": 1,
+    "health": 1,
+    "keywords": [],
+    "abilities": [],
+    "projectile": "✨"
+  },
+  {
+    "id": "torchwood",
+    "name": "Torchwood",
+    "faction": "mega_grow",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Torchwood",
+    "text": "Team-Up; Peas dahinter +2 Angriff",
+    "type": "creature",
+    "attack": 0,
+    "health": 3,
+    "keywords": [
+      "team_up"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Team-Up; Peas dahinter +2 Angriff"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "wolf",
+    "name": "Wolf",
+    "faction": "mega_grow",
+    "type": "creature",
+    "cost": 2,
+    "attack": 2,
+    "health": 3,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "skalierung",
+        "scope": "same_sub",
+        "per": {
+          "atk": 1,
+          "hp": 0
+        },
+        "cap": 1,
+        "includeSelf": false
+      }
+    ],
+    "text": "Rudel: +1 ATK, solange mindestens ein weiteres verbündetes Tier auf dem Feld ist.",
+    "projectile": "🐾",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Cabbage-Pult"
+  },
+  {
+    "id": "fertilize",
+    "name": "Fertilize",
+    "faction": "mega_grow",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Fertilize",
+    "text": "Pflanze +4/+4",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Pflanze +4/+4"
+    }
+  },
+  {
+    "id": "flourish",
+    "name": "Flourish",
+    "faction": "mega_grow",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Flourish",
+    "text": "2 Karten ziehen",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "2 Karten ziehen"
+    }
+  },
+  {
+    "id": "grow_shroom",
+    "name": "Grow-Shroom",
+    "faction": "mega_grow",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Grow-Shroom",
+    "text": "Andere Pflanze +2/+2",
+    "type": "creature",
+    "attack": 2,
+    "health": 1,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Andere Pflanze +2/+2"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "repeater",
+    "name": "Repeater",
+    "faction": "mega_grow",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Repeater",
+    "text": "Double Strike",
+    "type": "creature",
+    "attack": 2,
+    "health": 3,
+    "keywords": [
+      "double_strike"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Double Strike"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "bonk_choy",
+    "name": "Bonk Choy",
+    "faction": "mega_grow",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Bonk Choy",
+    "text": "Team-Up; beim Ausspielen +1 Angriff für diese Runde",
+    "type": "creature",
+    "attack": 2,
+    "health": 1,
+    "keywords": [
+      "team_up"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Team-Up; beim Ausspielen +1 Angriff für diese Runde"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "pea_pod",
+    "name": "Pea Pod",
+    "faction": "mega_grow",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Pea Pod",
+    "text": "Rundenstart +1/+1",
+    "type": "creature",
+    "attack": 1,
+    "health": 1,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Rundenstart +1/+1"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "sweet_potato",
+    "name": "Sweet Potato",
+    "faction": "mega_grow",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Sweet Potato",
+    "text": "Team-Up; Zombie hierher bewegen",
+    "type": "creature",
+    "attack": 0,
+    "health": 3,
+    "keywords": [
+      "team_up"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Team-Up; Zombie hierher bewegen"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "fire_peashooter",
+    "name": "Fire Peashooter",
+    "faction": "mega_grow",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Fire Peashooter",
+    "text": "Keine zusätzliche Fähigkeit.",
+    "type": "creature",
+    "attack": 3,
+    "health": 2,
+    "keywords": [],
+    "abilities": [],
+    "projectile": "✨"
+  },
+  {
+    "id": "skyshooter",
+    "name": "Skyshooter",
+    "faction": "mega_grow",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Skyshooter",
+    "text": "Auf Heights gespielt +2/+2",
+    "type": "creature",
+    "attack": 3,
+    "health": 3,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Auf Heights gespielt +2/+2"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "coffee_grounds",
+    "name": "Coffee Grounds",
+    "faction": "mega_grow",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Coffee Grounds",
+    "text": "Pflanzen hier haben Double Strike",
+    "type": "environment",
+    "effect": {
+      "kind": "referenz",
+      "text": "Pflanzen hier haben Double Strike"
+    }
+  },
+  {
+    "id": "sweet_pea",
+    "name": "Sweet Pea",
+    "faction": "mega_grow",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Sweet Pea",
+    "text": "Zombie hierher bewegen",
+    "type": "creature",
+    "attack": 2,
+    "health": 3,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Zombie hierher bewegen"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "vegetation_mutation",
+    "name": "Vegetation Mutation",
+    "faction": "mega_grow",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Vegetation Mutation",
+    "text": "Pflanzen auf Heights/Environments +2/+2",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Pflanzen auf Heights/Environments +2/+2"
+    }
+  },
+  {
+    "id": "umbrella_leaf",
+    "name": "Umbrella Leaf",
+    "faction": "mega_grow",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Umbrella Leaf",
+    "text": "Team-Up; Pflanzen hier/nebenan Untrickable",
+    "type": "creature",
+    "attack": 0,
+    "health": 2,
+    "keywords": [
+      "team_up",
+      "untrickable"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Team-Up; Pflanzen hier/nebenan Untrickable"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "half_banana",
+    "name": "Half-Banana",
+    "faction": "mega_grow",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Half-Banana",
+    "text": "Beim Tod Fruits in Hand +1/+1",
+    "type": "creature",
+    "attack": 2,
+    "health": 2,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Beim Tod Fruits in Hand +1/+1"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "pferd",
+    "name": "Pferd",
+    "faction": "mega_grow",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Typical Beanstalk",
+    "text": "Neben Leafy: +1 Angriff und Leafy conjuren",
+    "type": "creature",
+    "attack": 3,
+    "health": 3,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Neben Leafy: +1 Angriff und Leafy conjuren"
+      }
+    ],
+    "projectile": "🐎"
+  },
+  {
+    "id": "the_podfather",
+    "name": "The Podfather",
+    "faction": "mega_grow",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "The Podfather",
+    "text": "Neu ausgespielte Peas +2/+2",
+    "type": "creature",
+    "attack": 2,
+    "health": 3,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Neu ausgespielte Peas +2/+2"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "plant_food",
+    "name": "Plant Food",
+    "faction": "mega_grow",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Plant Food",
+    "text": "Pflanze +1/+1 und Bonus Attack",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Pflanze +1/+1 und Bonus Attack"
+    }
+  },
+  {
+    "id": "re_peat_moss",
+    "name": "Re-Peat Moss",
+    "faction": "mega_grow",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Re-Peat Moss",
+    "text": "Jeder eigene Trick → Bonus Attack",
+    "type": "creature",
+    "attack": 2,
+    "health": 3,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Jeder eigene Trick → Bonus Attack"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "der_puma",
+    "name": "Der Puma",
+    "faction": "mega_grow",
+    "type": "creature",
+    "cost": 6,
+    "attack": 6,
+    "health": 5,
+    "abilities": [
+      {
+        "kind": "neugier",
+        "bonus": {
+          "atk": 2,
+          "hp": 0
+        }
+      },
+      {
+        "kind": "wucht"
+      }
+    ],
+    "text": "Pirsch: +2 ATK und Wucht, solange die gegnerische Seite dieser Lane leer ist.",
+    "projectile": "🐾",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Whipvine"
+  },
+  {
+    "id": "spinosaurus",
+    "name": "Spinosaurus",
+    "faction": "mega_grow",
+    "type": "creature",
+    "cost": 7,
+    "attack": 4,
+    "health": 4,
+    "abilities": [
+      {
+        "kind": "wucht"
+      },
+      {
+        "kind": "aura",
+        "scope": "same_sub",
+        "buff": {
+          "atk": 1,
+          "hp": 0
+        },
+        "timing": "dauerhaft"
+      }
+    ],
+    "text": "Wucht. Andere Dinos erhalten +1 ATK.",
+    "projectile": "🦖",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Super-Phat Beets"
+  },
+  {
+    "id": "banana_peel",
+    "name": "Banana Peel",
+    "faction": "mega_grow",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Banana Peel",
+    "text": "Zombie bewegen; Fruit conjuren",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Zombie bewegen; Fruit conjuren"
+    }
+  },
+  {
+    "id": "cosmic_pea",
+    "name": "Cosmic Pea",
+    "faction": "mega_grow",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Cosmic Pea",
+    "text": "Double Strike; Pea conjuren und Double Strike geben",
+    "type": "creature",
+    "attack": 2,
+    "health": 2,
+    "keywords": [
+      "double_strike"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Double Strike; Pea conjuren und Double Strike geben"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "bamboozle",
+    "name": "Bamboozle",
+    "faction": "mega_grow",
+    "cost": 6,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Bamboozle",
+    "text": "Plant Evolution: 2 Karten ziehen",
+    "type": "creature",
+    "attack": 6,
+    "health": 6,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Plant Evolution: 2 Karten ziehen"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "kraehe",
+    "name": "Krähe",
+    "faction": "mega_grow",
+    "type": "creature",
+    "cost": 2,
+    "attack": 3,
+    "health": 3,
+    "keywords": [
+      "fliegend"
+    ],
+    "abilities": [
+      {
+        "kind": "bedingt",
+        "scope": "same_sub",
+        "mindestAnzahl": 1,
+        "bonus": {
+          "atk": 1,
+          "hp": 0
+        }
+      }
+    ],
+    "text": "Fliegend. Solange du einen weiteren Vogel kontrollierst, +1 ATK.",
+    "projectile": "🪶",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Pea Patch"
+  },
+  {
+    "id": "party_thyme",
+    "name": "Party Thyme",
+    "faction": "mega_grow",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Party Thyme",
+    "text": "Pflanze macht Bonus Attack → Karte ziehen",
+    "type": "creature",
+    "attack": 2,
+    "health": 2,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Pflanze macht Bonus Attack → Karte ziehen"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "hauskater",
+    "name": "Hauskater",
+    "faction": "mega_grow",
+    "type": "creature",
+    "cost": 2,
+    "attack": 2,
+    "health": 2,
+    "abilities": [
+      {
+        "kind": "neugier",
+        "bonus": {
+          "atk": 1,
+          "hp": 0
+        }
+      }
+    ],
+    "text": "Pirsch: +1 ATK, solange die gegnerische Seite dieser Lane leer ist.",
+    "projectile": "🐾",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Black-Eyed Pea"
+  },
+  {
+    "id": "alphawolf",
+    "name": "Alphawolf",
+    "faction": "mega_grow",
+    "type": "creature",
+    "cost": 5,
+    "attack": 4,
+    "health": 5,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "aura",
+        "scope": "same_top",
+        "buff": {
+          "atk": 1,
+          "hp": 0
+        },
+        "timing": "dauerhaft"
+      }
+    ],
+    "text": "★ Andere verbündete Tiere erhalten +1 ATK.",
+    "projectile": "🐺",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Potted Powerhouse"
+  },
+  {
+    "id": "espresso_fiesta",
+    "name": "Espresso Fiesta",
+    "faction": "mega_grow",
+    "cost": 7,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Espresso Fiesta",
+    "text": "Pflanze macht 3 Bonus Attacks",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Pflanze macht 3 Bonus Attacks"
+    }
+  },
+  {
+    "id": "luchs",
+    "name": "Luchs",
+    "faction": "mega_grow",
+    "type": "creature",
+    "cost": 4,
+    "attack": 3,
+    "health": 3,
+    "keywords": [
+      "flink"
+    ],
+    "abilities": [
+      {
+        "kind": "rettung",
+        "mode": "survive_1hp"
+      },
+      {
+        "kind": "neugier",
+        "basisschaden": 1
+      }
+    ],
+    "text": "★ Flink und Zäh. Pirsch: Verursacht beim Angriff auf die Basis 1 zusätzlichen Schaden.",
+    "projectile": "🐾",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Moonbean"
+  },
+  {
+    "id": "pod_fighter",
+    "name": "Pod Fighter",
+    "faction": "mega_grow",
+    "cost": 5,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Pod Fighter",
+    "text": "Pflanze hier/nebenan gespielt → Bonus Attack",
+    "type": "creature",
+    "attack": 3,
+    "health": 4,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Pflanze hier/nebenan gespielt → Bonus Attack"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "the_red_plant_it",
+    "name": "The Red Plant-It",
+    "faction": "mega_grow",
+    "cost": 5,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "The Red Plant-It",
+    "text": "Pflanzen hier +5/+5",
+    "type": "environment",
+    "effect": {
+      "kind": "referenz",
+      "text": "Pflanzen hier +5/+5"
+    }
+  },
+  {
+    "id": "split_pea",
+    "name": "Split Pea",
+    "faction": "mega_grow",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Split Pea",
+    "text": "Vor Kampf 1 Schaden am eigenen Helden",
+    "type": "creature",
+    "attack": 4,
+    "health": 1,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Vor Kampf 1 Schaden am eigenen Helden"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "grape_power",
+    "name": "Grape Power",
+    "faction": "mega_grow",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Grape Power",
+    "text": "Angriff verdoppeln; Grape Responsibility erhalten",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Angriff verdoppeln; Grape Responsibility erhalten"
+    }
+  },
+  {
+    "id": "der_schwarm",
+    "name": "Der Schwarm",
+    "faction": "mega_grow",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Savage Spinach",
+    "text": "Leafy Evolution: Pflanzen auf Feld und Hand +2 Angriff",
+    "type": "creature",
+    "attack": 3,
+    "health": 6,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Leafy Evolution: Pflanzen auf Feld und Hand +2 Angriff"
+      }
+    ],
+    "projectile": "🪶"
+  },
+  {
+    "id": "doubled_mint",
+    "name": "Doubled Mint",
+    "faction": "mega_grow",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Doubled Mint",
+    "text": "Rundenstart Angriff und Leben verdoppeln",
+    "type": "creature",
+    "attack": 1,
+    "health": 2,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Rundenstart Angriff und Leben verdoppeln"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "muscle_sprout",
+    "name": "Muscle Sprout",
+    "faction": "mega_grow",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Muscle Sprout",
+    "text": "Pflanze gespielt → +1/+1",
+    "type": "creature",
+    "attack": 3,
+    "health": 2,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Pflanze gespielt → +1/+1"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "bananasaurus_rex",
+    "name": "Bananasaurus Rex",
+    "faction": "mega_grow",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Bananasaurus Rex",
+    "text": "Double Strike; Dino-Roar +1/+1",
+    "type": "creature",
+    "attack": 3,
+    "health": 3,
+    "keywords": [
+      "double_strike"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Double Strike; Dino-Roar +1/+1"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "captain_cucumber",
+    "name": "Captain Cucumber",
+    "faction": "mega_grow",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Captain Cucumber",
+    "text": "Conjures kosten 1 weniger; bei Schaden Legendary conjuren",
+    "type": "creature",
+    "attack": 1,
+    "health": 4,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Conjures kosten 1 weniger; bei Schaden Legendary conjuren"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "onion_rings",
+    "name": "Onion Rings",
+    "faction": "mega_grow",
+    "cost": 5,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Onion Rings",
+    "text": "Pflanzen in Hand werden 4/4",
+    "type": "creature",
+    "attack": 4,
+    "health": 4,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Pflanzen in Hand werden 4/4"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "wildkatze",
+    "name": "Wildkatze",
+    "faction": "mega_grow",
+    "cost": 5,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Gatling Pea",
+    "text": "Double Strike; Pea Evolution: Bonus Attack",
+    "type": "creature",
+    "attack": 5,
+    "health": 4,
+    "keywords": [
+      "double_strike"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Double Strike; Pea Evolution: Bonus Attack"
+      }
+    ],
+    "projectile": "🐾"
+  },
+  {
+    "id": "tyrannosaurus_rex",
+    "name": "Tyrannosaurus Rex",
+    "faction": "mega_grow",
+    "cost": 6,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Apotatosaurus",
+    "text": "Untrickable; Root conjuren; Dino-Roar +1/+1",
+    "type": "creature",
+    "attack": 5,
+    "health": 5,
+    "keywords": [
+      "untrickable"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Untrickable; Root conjuren; Dino-Roar +1/+1"
+      }
+    ],
+    "projectile": "🦖"
+  },
+  {
+    "id": "clique_peas",
+    "name": "Clique Peas",
+    "faction": "mega_grow",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Clique Peas",
+    "text": "Zwei Kopien ins Deck; alle Clique Peas dauerhaft +1/+1 und +1 Kosten",
+    "type": "creature",
+    "attack": 1,
+    "health": 1,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Zwei Kopien ins Deck; alle Clique Peas dauerhaft +1/+1 und +1 Kosten"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "lily_of_the_valley",
+    "name": "Lily of the Valley",
+    "faction": "mega_grow",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Lily of the Valley",
+    "text": "Pflanzen auf Heights erhalten beim Spielen +2/+2",
+    "type": "creature",
+    "attack": 2,
+    "health": 2,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Pflanzen auf Heights erhalten beim Spielen +2/+2"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "banana_split",
+    "name": "Banana Split",
+    "faction": "mega_grow",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Banana Split",
+    "text": "Beim Tod zwei Half-Bananas nebenan",
+    "type": "creature",
+    "attack": 4,
+    "health": 5,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Beim Tod zwei Half-Bananas nebenan"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "plucky_clover",
+    "name": "Plucky Clover",
+    "faction": "mega_grow",
+    "cost": 5,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Plucky Clover",
+    "text": "Event-Karte conjuren; Angriff + deren Kosten",
+    "type": "creature",
+    "attack": 2,
+    "health": 5,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Event-Karte conjuren; Angriff + deren Kosten"
+      }
+    ],
+    "projectile": "✨"
+  }
+]

@@ -1,39 +1,65 @@
 [
   {
+    "id": "animals",
+    "name": "Animals",
+    "parent": null,
+    "color": "#3fae5a",
+    "description": "Animals führen die vier ehemaligen Pflanzenklassen."
+  },
+  {
+    "id": "guardian",
+    "name": "Guardian",
+    "parent": "animals",
+    "description": "Schutz, Team-Up und widerstandsfähige Kämpfer."
+  },
+  {
+    "id": "kabloom",
+    "name": "Kabloom",
+    "parent": "animals",
+    "description": "Direktschaden, Schwärme und explosive Effekte."
+  },
+  {
+    "id": "mega_grow",
+    "name": "Mega-Grow",
+    "parent": "animals",
+    "description": "Wachstum, Verstärkung und Bonusangriffe."
+  },
+  {
+    "id": "solar",
+    "name": "Solar",
+    "parent": "animals",
+    "description": "Heilung, Ressourcen und Durchschlag."
+  },
+  {
     "id": "humans",
-    "name": "Menschen",
+    "name": "Humans",
     "parent": null,
     "color": "#4a7dff",
-    "description": "Ordnung & Synergie: Menschen stärken sich gegenseitig mit Auren, Wachstum und Solidarität.",
-    "theme": { "color": "#3b6ea5" }
+    "description": "Humans führen die vier ehemaligen Zombieklassen."
   },
   {
-    "id": "sozis",
-    "name": "Die Sozis",
+    "id": "beastly",
+    "name": "Beastly",
     "parent": "humans",
-    "description": "Einzeln mittelmäßig, kollektiv gefährlich – bestrafen starke Einzelgegner.",
-    "theme": { "color": "#b23b3b" }
+    "description": "Große Kämpfer, Jagd und Raserei."
   },
   {
-    "id": "arbeiter",
-    "name": "Die Arbeiter",
+    "id": "brainy",
+    "name": "Brainy",
     "parent": "humans",
-    "description": "Wert über Zeit: jede Runde stärker.",
-    "theme": { "color": "#c98a3b" }
+    "description": "Kartenvorteil, Ressourcen und Trickketten."
   },
   {
-    "id": "obdachlose",
-    "name": "Die Obdachlosen",
+    "id": "hearty",
+    "name": "Hearty",
     "parent": "humans",
-    "description": "Underdogs: stark, wenn ihr hinten liegt.",
-    "theme": { "color": "#7a6f5d" }
+    "description": "Rüstung, Leben und Mannschaftsboni."
   },
   {
-    "id": "studenten",
-    "name": "Die Studenten",
+    "id": "sneaky",
+    "name": "Sneaky",
     "parent": "humans",
-    "description": "Kartenvorteil und Combos – zerbrechlich, aber explosiv.",
-    "theme": { "color": "#6a5acd" }
+    "description": "Grabsteine, Bewegung und tödliche Treffer."
   },
   {
     "id": "neutral",
@@ -41,43 +67,6 @@
     "parent": null,
     "neutral": true,
     "color": "#8a8f98",
-    "description": "Fraktionslose Karten – in jedem Deck erlaubt, aber keine spielbare Oberfraktion.",
-    "theme": { "color": "#6b7280" }
-  },
-  {
-    "id": "animals",
-    "name": "Tiere",
-    "parent": null,
-    "color": "#3fae5a",
-    "description": "Tempo & Mobilität: Tiere schlagen schnell zu und wechseln flink die Lane.",
-    "theme": { "color": "#4a7c59" }
-  },
-  {
-    "id": "katzen",
-    "name": "Katzen",
-    "parent": "animals",
-    "description": "Schnelle Glaskanonen, am stärksten allein.",
-    "theme": { "color": "#d98a2b" }
-  },
-  {
-    "id": "voegel",
-    "name": "Vögel",
-    "parent": "animals",
-    "description": "Fliegend, evasiv, Schwarm-Chip.",
-    "theme": { "color": "#4aa3d4" }
-  },
-  {
-    "id": "reptilien",
-    "name": "Reptilien",
-    "parent": "animals",
-    "description": "Gift, Zähigkeit, Zermürbung.",
-    "theme": { "color": "#4a9c5a" }
-  },
-  {
-    "id": "dinos",
-    "name": "Dinos",
-    "parent": "animals",
-    "description": "Rohe Wucht, Apex-Bedrohungen.",
-    "theme": { "color": "#8a5a2b" }
+    "description": "Neutrale Karten sind für jeden Champ erlaubt."
   }
 ]

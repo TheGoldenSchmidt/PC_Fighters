@@ -8,9 +8,17 @@
     "attack": 3,
     "health": 4,
     "keywords": [],
-    "abilities": [{ "kind": "peinigen", "atkDeckel": 2, "hpDeckel": 3 }],
-    "category": "principal",
+    "abilities": [
+      {
+        "kind": "peinigen",
+        "atkDeckel": 2,
+        "hpDeckel": 3
+      }
+    ],
     "text": "Beim Ausspielen: Peinige alle gegnerischen Kreaturen. Setze ihre ATK auf 2 und ihre Verteidigung auf 3.",
-    "projectile": "📣"
+    "projectile": "📣",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Chum Champion"
   }
 ]

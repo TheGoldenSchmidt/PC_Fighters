@@ -1,0 +1,1097 @@
+[
+  {
+    "id": "imp",
+    "name": "Imp",
+    "faction": "sneaky",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Imp",
+    "text": "Keine zusätzliche Fähigkeit.",
+    "type": "creature",
+    "attack": 1,
+    "health": 1,
+    "keywords": [],
+    "abilities": [],
+    "projectile": "✨"
+  },
+  {
+    "id": "mini_ninja",
+    "name": "Mini-Ninja",
+    "faction": "sneaky",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Mini-Ninja",
+    "text": "Anti-Hero 2",
+    "type": "creature",
+    "attack": 2,
+    "health": 1,
+    "keywords": [
+      "anti_hero"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Anti-Hero 2"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "smoke_bomb",
+    "name": "Smoke Bomb",
+    "faction": "sneaky",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Smoke Bomb",
+    "text": "Zombie bewegen; +1 Angriff",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Zombie bewegen; +1 Angriff"
+    }
+  },
+  {
+    "id": "fishy_imp",
+    "name": "Fishy Imp",
+    "faction": "sneaky",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Fishy Imp",
+    "text": "Amphibious",
+    "type": "creature",
+    "attack": 2,
+    "health": 1,
+    "keywords": [
+      "amphibious"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Amphibious"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "smelly_zombie",
+    "name": "Smelly Zombie",
+    "faction": "sneaky",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Smelly Zombie",
+    "text": "Deadly",
+    "type": "creature",
+    "attack": 2,
+    "health": 4,
+    "keywords": [
+      "deadly"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Deadly"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "werkzeugkiste",
+    "name": "Werkzeugkiste",
+    "faction": "sneaky",
+    "type": "creature",
+    "cost": 2,
+    "attack": 0,
+    "health": 3,
+    "abilities": [
+      {
+        "kind": "werkzeug",
+        "atk": 2
+      }
+    ],
+    "text": "Beim Ausspielen: Ein anderer Arbeiter erhält +2 ATK, solange die Werkzeugkiste lebt; stirbt sie, springt der Bonus weiter.",
+    "projectile": "🧰",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Headstone Carver"
+  },
+  {
+    "id": "zombie_chicken",
+    "name": "Zombie Chicken",
+    "faction": "sneaky",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Zombie Chicken",
+    "text": "Pflanze hier gespielt → zufällige Lane",
+    "type": "creature",
+    "attack": 2,
+    "health": 2,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Pflanze hier gespielt → zufällige Lane"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "hot_dog_imp",
+    "name": "Hot Dog Imp",
+    "faction": "sneaky",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Hot Dog Imp",
+    "text": "Strikethrough",
+    "type": "creature",
+    "attack": 2,
+    "health": 2,
+    "keywords": [
+      "strikethrough"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Strikethrough"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "pfandsammler",
+    "name": "Pfandsammler",
+    "faction": "sneaky",
+    "type": "creature",
+    "cost": 2,
+    "attack": 2,
+    "health": 2,
+    "abilities": [
+      {
+        "kind": "sammeln",
+        "bonus": {
+          "atk": 1,
+          "hp": 0
+        },
+        "trigger": "any",
+        "firstPerRound": true,
+        "maxTriggers": 2
+      }
+    ],
+    "text": "Wenn zum ersten Mal in einer Runde eine Kreatur stirbt: dauerhaft +1/+0, maximal zweimal.",
+    "projectile": "🍾",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Swashbuckler Zombie"
+  },
+  {
+    "id": "backyard_bounce",
+    "name": "Backyard Bounce",
+    "faction": "sneaky",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Backyard Bounce",
+    "text": "Pflanze auf Hand zurück",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Pflanze auf Hand zurück"
+    }
+  },
+  {
+    "id": "stealthy_imp",
+    "name": "Stealthy Imp",
+    "faction": "sneaky",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Stealthy Imp",
+    "text": "Anti-Hero 3",
+    "type": "creature",
+    "attack": 4,
+    "health": 2,
+    "keywords": [
+      "anti_hero"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Anti-Hero 3"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "firefighter",
+    "name": "Firefighter",
+    "faction": "sneaky",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Firefighter",
+    "text": "Gravestone; Reveal anderen Zombie zurück auf Hand",
+    "type": "creature",
+    "attack": 5,
+    "health": 5,
+    "keywords": [
+      "gravestone"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Gravestone; Reveal anderen Zombie zurück auf Hand"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "graveyard",
+    "name": "Graveyard",
+    "faction": "sneaky",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Graveyard",
+    "text": "Zombies hier werden Gravestones; Reveal +1 Angriff",
+    "type": "environment",
+    "effect": {
+      "kind": "referenz",
+      "text": "Zombies hier werden Gravestones; Reveal +1 Angriff"
+    }
+  },
+  {
+    "id": "ice_pirate",
+    "name": "Ice Pirate",
+    "faction": "sneaky",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Ice Pirate",
+    "text": "Gravestone; in Environment eine Pflanze einfrieren",
+    "type": "creature",
+    "attack": 1,
+    "health": 2,
+    "keywords": [
+      "gravestone"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Gravestone; in Environment eine Pflanze einfrieren"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "frosty_mustache",
+    "name": "Frosty Mustache",
+    "faction": "sneaky",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Frosty Mustache",
+    "text": "Pflanze einfrieren; Mustache conjuren",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Pflanze einfrieren; Mustache conjuren"
+    }
+  },
+  {
+    "id": "swabbie",
+    "name": "Swabbie",
+    "faction": "sneaky",
+    "cost": 0,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Swabbie",
+    "text": "Amphibious",
+    "type": "creature",
+    "attack": 1,
+    "health": 1,
+    "keywords": [
+      "amphibious"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Amphibious"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "barrel_of_barrels",
+    "name": "Barrel of Barrels",
+    "faction": "sneaky",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Barrel of Barrels",
+    "text": "Zombie erhält Deadly; Barrel conjuren",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Zombie erhält Deadly; Barrel conjuren"
+    }
+  },
+  {
+    "id": "streikposten",
+    "name": "Streikposten",
+    "faction": "sneaky",
+    "type": "creature",
+    "cost": 2,
+    "attack": 2,
+    "health": 3,
+    "abilities": [
+      {
+        "kind": "nachbar",
+        "effect": "schadensuebernahme",
+        "scope": "same_top",
+        "amount": 1
+      }
+    ],
+    "text": "Verhindert einen tödlichen Treffer für einen benachbarten Menschen (einmal pro Spiel).",
+    "projectile": "✊",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Monkey Smuggler"
+  },
+  {
+    "id": "imp_commander",
+    "name": "Imp Commander",
+    "faction": "sneaky",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Imp Commander",
+    "text": "Gravestone; Imp trifft Held → Karte ziehen",
+    "type": "creature",
+    "attack": 2,
+    "health": 4,
+    "keywords": [
+      "gravestone"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Gravestone; Imp trifft Held → Karte ziehen"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "barrel_roller_zombie",
+    "name": "Barrel Roller Zombie",
+    "faction": "sneaky",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Barrel Roller Zombie",
+    "text": "Deadly; beim Tod 1/1 Amphibious Swabbies nebenan",
+    "type": "creature",
+    "attack": 3,
+    "health": 3,
+    "keywords": [
+      "amphibious",
+      "deadly"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Deadly; beim Tod 1/1 Amphibious Swabbies nebenan"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "surprise_gargantuar",
+    "name": "Surprise Gargantuar",
+    "faction": "sneaky",
+    "cost": 5,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Surprise Gargantuar",
+    "text": "Gravestone; beim Reveal bewegen",
+    "type": "creature",
+    "attack": 5,
+    "health": 6,
+    "keywords": [
+      "gravestone"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Gravestone; beim Reveal bewegen"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "walrus_rider",
+    "name": "Walrus Rider",
+    "faction": "sneaky",
+    "cost": 5,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Walrus Rider",
+    "text": "Amphibious, Anti-Hero 3",
+    "type": "creature",
+    "attack": 3,
+    "health": 4,
+    "keywords": [
+      "amphibious",
+      "anti_hero"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Amphibious, Anti-Hero 3"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "zombot_stomp",
+    "name": "Zombot Stomp",
+    "faction": "sneaky",
+    "cost": 6,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Zombot Stomp",
+    "text": "Alle Boden-Pflanzen auf Hand zurück",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Alle Boden-Pflanzen auf Hand zurück"
+    }
+  },
+  {
+    "id": "cosmic_imp",
+    "name": "Cosmic Imp",
+    "faction": "sneaky",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Cosmic Imp",
+    "text": "Deadly; Imp conjuren und Deadly geben",
+    "type": "creature",
+    "attack": 1,
+    "health": 1,
+    "keywords": [
+      "deadly"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Deadly; Imp conjuren und Deadly geben"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "space_pirate",
+    "name": "Space Pirate",
+    "faction": "sneaky",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Space Pirate",
+    "text": "Anti-Hero 2; bei Pflanze hier in zufällige Lane bewegen",
+    "type": "creature",
+    "attack": 3,
+    "health": 2,
+    "keywords": [
+      "anti_hero"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Anti-Hero 2; bei Pflanze hier in zufällige Lane bewegen"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "blowgun_imp",
+    "name": "Blowgun Imp",
+    "faction": "sneaky",
+    "cost": 5,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Blowgun Imp",
+    "text": "Deadly, Strikethrough; Zombie Evolution: Pflanze auf Hand",
+    "type": "creature",
+    "attack": 3,
+    "health": 4,
+    "keywords": [
+      "deadly",
+      "strikethrough"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Deadly, Strikethrough; Zombie Evolution: Pflanze auf Hand"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "buried_treasure",
+    "name": "Buried Treasure",
+    "faction": "sneaky",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Buried Treasure",
+    "text": "Fusion: Legendary Zombie conjuren; kostet 1 weniger",
+    "type": "creature",
+    "attack": 2,
+    "health": 2,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Fusion: Legendary Zombie conjuren; kostet 1 weniger"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "toxic_waste_imp",
+    "name": "Toxic Waste Imp",
+    "faction": "sneaky",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Toxic Waste Imp",
+    "text": "Amphibious; alle Imps haben Deadly",
+    "type": "creature",
+    "attack": 2,
+    "health": 1,
+    "keywords": [
+      "amphibious",
+      "deadly"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Amphibious; alle Imps haben Deadly"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "improvisiertes_lager",
+    "name": "Improvisiertes Lager",
+    "faction": "sneaky",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Line Dancing Zombie",
+    "text": "Gravestone; Reveal bewegen und +1 Angriff",
+    "type": "creature",
+    "attack": 3,
+    "health": 1,
+    "keywords": [
+      "gravestone"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Gravestone; Reveal bewegen und +1 Angriff"
+      }
+    ],
+    "projectile": "⛺"
+  },
+  {
+    "id": "pogo_bouncer",
+    "name": "Pogo Bouncer",
+    "faction": "sneaky",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Pogo Bouncer",
+    "text": "Gravestone; Reveal Pflanze auf Hand",
+    "type": "creature",
+    "attack": 2,
+    "health": 1,
+    "keywords": [
+      "gravestone"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Gravestone; Reveal Pflanze auf Hand"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "tomb_raiser_zombie",
+    "name": "Tomb Raiser Zombie",
+    "faction": "sneaky",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Tomb Raiser Zombie",
+    "text": "Gravestone; Heldenschaden → zufälligen Gravestone erzeugen",
+    "type": "creature",
+    "attack": 5,
+    "health": 3,
+    "keywords": [
+      "gravestone"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Gravestone; Heldenschaden → zufälligen Gravestone erzeugen"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "ducky_tube_zombie",
+    "name": "Ducky Tube Zombie",
+    "faction": "sneaky",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Ducky Tube Zombie",
+    "text": "Amphibious; Heldenschaden → +1/+1",
+    "type": "creature",
+    "attack": 1,
+    "health": 2,
+    "keywords": [
+      "amphibious"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Amphibious; Heldenschaden → +1/+1"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "dr_spacetime",
+    "name": "Dr. Spacetime",
+    "faction": "sneaky",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Dr. Spacetime",
+    "text": "Eigene Conjures -1 Kosten; Heldenschaden → Galactic-Karte",
+    "type": "creature",
+    "attack": 1,
+    "health": 5,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Eigene Conjures -1 Kosten; Heldenschaden → Galactic-Karte"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "laser_base_alpha",
+    "name": "Laser Base Alpha",
+    "faction": "sneaky",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Laser Base Alpha",
+    "text": "Zombies hier Deadly + Strikethrough",
+    "type": "environment",
+    "effect": {
+      "kind": "referenz",
+      "text": "Zombies hier Deadly + Strikethrough"
+    }
+  },
+  {
+    "id": "cursed_gargolith",
+    "name": "Cursed Gargolith",
+    "faction": "sneaky",
+    "cost": 6,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Cursed Gargolith",
+    "text": "Gravestone; 2 Blocksegmente stehlen; Gargantuars am Rundenende verstecken",
+    "type": "creature",
+    "attack": 7,
+    "health": 6,
+    "keywords": [
+      "gravestone"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Gravestone; 2 Blocksegmente stehlen; Gargantuars am Rundenende verstecken"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "excavator_zombie",
+    "name": "Excavator Zombie",
+    "faction": "sneaky",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Excavator Zombie",
+    "text": "Gravestone; Environment + Pflanzen darin auf Hand",
+    "type": "creature",
+    "attack": 4,
+    "health": 1,
+    "keywords": [
+      "gravestone"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Gravestone; Environment + Pflanzen darin auf Hand"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "kranfuehrer",
+    "name": "Kranführer",
+    "faction": "sneaky",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Unthawed Viking",
+    "text": "Amphibious; Pflanzen hier einfrieren; Pirate Evolution friert alle ein und +1/+1",
+    "type": "creature",
+    "attack": 4,
+    "health": 3,
+    "keywords": [
+      "amphibious"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Amphibious; Pflanzen hier einfrieren; Pirate Evolution friert alle ein und +1/+1"
+      }
+    ],
+    "projectile": "🏗️"
+  },
+  {
+    "id": "mixed_up_gravedigger",
+    "name": "Mixed-Up Gravedigger",
+    "faction": "sneaky",
+    "cost": 5,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Mixed-Up Gravedigger",
+    "text": "Alle Zombies in Gravestones verstecken und Positionen mischen",
+    "type": "creature",
+    "attack": 5,
+    "health": 5,
+    "keywords": [
+      "gravestone"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Alle Zombies in Gravestones verstecken und Positionen mischen"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "die_massen",
+    "name": "Die Massen",
+    "faction": "sneaky",
+    "type": "creature",
+    "cost": 6,
+    "attack": 5,
+    "health": 7,
+    "abilities": [
+      {
+        "kind": "wucht"
+      },
+      {
+        "kind": "bedingt",
+        "scope": "same_top",
+        "mindestAnzahl": 2,
+        "bonus": {
+          "atk": 1,
+          "hp": 1
+        }
+      }
+    ],
+    "text": "Wucht. Solange du mindestens zwei weitere Menschen kontrollierst, erhält diese Kreatur +1/+1.",
+    "projectile": "👥",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Zombot Sharktronic Sub"
+  },
+  {
+    "id": "zombot_plank_walker",
+    "name": "Zombot Plank Walker",
+    "faction": "sneaky",
+    "cost": 8,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Zombot Plank Walker",
+    "text": "Amphibious, Strikethrough; 2 zufällige Pirates erzeugen",
+    "type": "creature",
+    "attack": 6,
+    "health": 6,
+    "keywords": [
+      "amphibious",
+      "strikethrough"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Amphibious, Strikethrough; 2 zufällige Pirates erzeugen"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "space_cowboy",
+    "name": "Space Cowboy",
+    "faction": "sneaky",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Space Cowboy",
+    "text": "Amphibious, Strikethrough; nach Heldentreffer nach rechts bewegen",
+    "type": "creature",
+    "attack": 3,
+    "health": 5,
+    "keywords": [
+      "amphibious",
+      "strikethrough"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Amphibious, Strikethrough; nach Heldentreffer nach rechts bewegen"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "ueberlebenskuenstler",
+    "name": "Überlebenskünstler",
+    "faction": "sneaky",
+    "cost": 5,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Cryo-Yeti",
+    "text": "Gravestone; Pflanze einfrieren; Freeze bufft ihn",
+    "type": "creature",
+    "attack": 5,
+    "health": 6,
+    "keywords": [
+      "gravestone"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Gravestone; Pflanze einfrieren; Freeze bufft ihn"
+      }
+    ],
+    "projectile": "🔥"
+  },
+  {
+    "id": "zombot_aerostatic_gondola",
+    "name": "Zombot Aerostatic Gondola",
+    "faction": "sneaky",
+    "cost": 6,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Zombot Aerostatic Gondola",
+    "text": "Amphibious; Heldentreffer → zufällige Lane + Zombie zurücklassen",
+    "type": "creature",
+    "attack": 5,
+    "health": 6,
+    "keywords": [
+      "amphibious"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Amphibious; Heldentreffer → zufällige Lane + Zombie zurücklassen"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "gewerkschaftssekretaerin",
+    "name": "Gewerkschaftssekretärin",
+    "faction": "sneaky",
+    "type": "creature",
+    "cost": 4,
+    "attack": 3,
+    "health": 5,
+    "abilities": [
+      {
+        "kind": "aura",
+        "scope": "same_sub",
+        "buff": {
+          "atk": 1,
+          "hp": 1
+        },
+        "timing": "dauerhaft"
+      },
+      {
+        "kind": "umverteilung",
+        "menge": 1,
+        "schwelle": 5,
+        "ziel": "einer",
+        "art": "atk",
+        "dauer": "dauerhaft"
+      }
+    ],
+    "text": "★ Andere Sozis erhalten +1/+1. Beim Ausspielen: Eine gegnerische Kreatur mit mindestens 5 ATK verliert dauerhaft 1 ATK.",
+    "projectile": "📢",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Raiding Raptor"
+  },
+  {
+    "id": "imposter",
+    "name": "Imposter",
+    "faction": "sneaky",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Imposter",
+    "text": "Beim Tod 1-Kosten-Imp conjuren und Mustache geben",
+    "type": "creature",
+    "attack": 2,
+    "health": 1,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Beim Tod 1-Kosten-Imp conjuren und Mustache geben"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "fire_rooster",
+    "name": "Fire Rooster",
+    "faction": "sneaky",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Fire Rooster",
+    "text": "Bei Pflanze hier zufällig bewegen; beim Lane-Eintritt 1 Schaden an Pflanzen dort",
+    "type": "creature",
+    "attack": 3,
+    "health": 1,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Bei Pflanze hier zufällig bewegen; beim Lane-Eintritt 1 Schaden an Pflanzen dort"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "imp_throwing_imp",
+    "name": "Imp-Throwing Imp",
+    "faction": "sneaky",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Imp-Throwing Imp",
+    "text": "Wenn verletzt: zufälligen Imp ≤2 Kosten erzeugen",
+    "type": "creature",
+    "attack": 1,
+    "health": 3,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Wenn verletzt: zufälligen Imp ≤2 Kosten erzeugen"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "junger_neffe",
+    "name": "Junger Neffe",
+    "faction": "sneaky",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Captain Flameface",
+    "text": "Alle Pirates haben Strikethrough",
+    "type": "creature",
+    "attack": 2,
+    "health": 4,
+    "keywords": [
+      "strikethrough"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Alle Pirates haben Strikethrough"
+      }
+    ],
+    "projectile": "🎒"
+  },
+  {
+    "id": "vorarbeiter",
+    "name": "Vorarbeiter",
+    "faction": "sneaky",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Zombie High Diver",
+    "text": "Gravestone; auf Heights Reveal → Water, +1/+1",
+    "type": "creature",
+    "attack": 3,
+    "health": 2,
+    "keywords": [
+      "gravestone"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Gravestone; auf Heights Reveal → Water, +1/+1"
+      }
+    ],
+    "projectile": "🚩"
+  },
+  {
+    "id": "trapper_zombie",
+    "name": "Trapper Zombie",
+    "faction": "sneaky",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Trapper Zombie",
+    "text": "Gravestone; Reveal erzeugt Trapper Territory",
+    "type": "creature",
+    "attack": 3,
+    "health": 3,
+    "keywords": [
+      "gravestone"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Gravestone; Reveal erzeugt Trapper Territory"
+      }
+    ],
+    "projectile": "✨"
+  }
+]

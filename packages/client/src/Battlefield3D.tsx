@@ -23,7 +23,7 @@ import { createFigure, type Figure } from './figures3d';
 import { createEnvironment, type EnvironmentRec, type FieldMetrics } from './environments3d';
 
 /** Zauber-Effektarten der Aktionskarten (Spiegel des engine-SpellEvent). */
-export type SpellEffectKind = 'buff' | 'attackBuff' | 'summon' | 'move';
+export type SpellEffectKind = 'buff' | 'attackBuff' | 'summon' | 'move' | 'environment' | 'reveal' | 'superpower';
 
 /** Teilmenge des GameScreen-FxState, die das Schlachtfeld braucht. */
 export interface BattlefieldFx {

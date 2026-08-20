@@ -1,9 +1,9 @@
-// Auswahl beim Schild-Block.
+// Auswahl der auf den Cheerleadern verteilten Champ-Superkräfte.
 
 import type { ReaktionsView } from '@pcf/engine';
 
 const AUSLOESER_TEXT: Record<ReaktionsView['ausloeser'], string> = {
-  schildBlock: 'Dein Schild hat den Treffer geblockt.'
+  schildBlock: 'Dein Superblock hat den Treffer geblockt.'
 };
 
 /**
@@ -11,8 +11,8 @@ const AUSLOESER_TEXT: Record<ReaktionsView['ausloeser'], string> = {
  * Interaktion auf der Bank: so ist die Bedienung in 3D und im `?no3d`-Fallback
  * exakt dieselbe.
  *
- * Es gibt bewusst KEIN „Verzichten": Der Block ist bereits eingelöst und wird
- * mit dem Bankplatz bezahlt – gewählt wird nur, wer sich opfert.
+ * Es gibt bewusst KEIN „Verzichten": Der Block ist bereits eingelöst. Der
+ * gewählte Cheerleader gibt seine zugewiesene Kraft und verlässt die Bank.
  */
 export function ReaktionsAuswahl({
   reaktion,
@@ -23,19 +23,19 @@ export function ReaktionsAuswahl({
 }) {
   return (
     <div className="overlay reaction-overlay">
-      <div className="reaction-box" role="dialog" aria-label="Cheerleader-Reaktion">
-        <h2 className="reaction-title">📣 Cheerleader-Reaktion</h2>
+      <div className="reaction-box" role="dialog" aria-label="Superkraft wählen">
+        <h2 className="reaction-title">📣 Superkraft wählen</h2>
         <p className="reaction-trigger">{AUSLOESER_TEXT[reaktion.ausloeser]}</p>
         <p className="reaction-cost">
-          Ein Cheerleader opfert sich dafür. Wähle, wer – das kostet weder
-          Energie noch deinen Zug, nur den Bankplatz.
+          Jeder Cheerleader trägt eine andere deiner übrigen Superkräfte. Wähle
+          eine davon – sie ist sofort kostenlos spielbar.
         </p>
 
         <div className="reaction-offers">
           {reaktion.angebote.map((angebot) => (
             <div key={angebot.slot} className="reaction-offer">
               <div className="reaction-offer-head">
-                <span className="reaction-slot">Platz {angebot.slot + 1}</span>
+                <span className="reaction-slot">{angebot.traeger ?? `Platz ${angebot.slot + 1}`}</span>
                 <strong>{angebot.kraft}</strong>
               </div>
               <p className="reaction-offer-text">{angebot.text}</p>
@@ -50,7 +50,7 @@ export function ReaktionsAuswahl({
                 </div>
               ) : (
                 <button className="primary" onClick={() => onEntscheiden(angebot.slot)}>
-                  {angebot.kraft} einsetzen
+                  {angebot.kraft} wählen
                 </button>
               )}
             </div>

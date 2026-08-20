@@ -104,20 +104,14 @@ export interface ZermuerbungConfig {
   steigerung: number;
 }
 
-/**
- * Schild der Basis: jeder Treffer lädt ihn zufällig um `ladung.min`–`ladung.max`
- * Abschnitte auf. Erreicht er `abschnitte`, wird DIESER Treffer komplett
- * geblockt und der Schild geht auf 0 zurück.
- *
- * Die Bank IST der Schild: Was der Block bewirkt, entscheidet der Cheerleader,
- * der sich dafür opfert (`config.cheerleaders.kraefte`). Ist die Bank leer,
- * gibt es keinen Schild mehr – Treffer gehen dann ungehindert durch.
- */
+/** Superblock-Leiste: volle Ladung blockt den aktuellen Treffer vollständig. */
 export interface SchildConfig {
-  /** Wie viele Abschnitte der Schild hat (Standard-Regel: 7). */
+  /** Wie viele Abschnitte die Leiste hat (Champ-Regel: 8). */
   abschnitte: number;
   /** Spanne, um die ein Treffer den Schild auflädt (Standard-Regel: 1–3). */
   ladung: { min: number; max: number };
+  /** Drei sichtbare Träger für die nach der Startkraft übrigen Superkräfte. */
+  cheerleaders?: [string, string, string];
 }
 
 export interface GameConfig {
@@ -125,10 +119,13 @@ export interface GameConfig {
   baseHealth: number;
   startingHand: number;
   cardsDrawnPerTurn: number;
+  /** Maximale Handgröße; weitere regulär gezogene Karten verfallen. */
+  handLimit?: number;
   roundLimit: number;
   energy: EnergyConfig;
   deckbuilding: DeckbuildingConfig;
-  cheerleaders: CheerleaderConfig;
+  /** Nur für historische Zustände; das Champ-Spiel verwendet keine Bank mehr. */
+  cheerleaders?: CheerleaderConfig;
   /** Optional: ohne sie endet eine Partie nur über roundLimit/Basiszerstörung (V1-Verhalten). */
   zermuerbung?: ZermuerbungConfig;
   /** Optional: ohne sie nimmt die Basis Treffer ungehindert (Verhalten vor dem Schild-Feature). */
@@ -146,6 +143,8 @@ export interface DeckList {
   name?: string;
   /** Optional: Oberfraktion des Decks (rein informativ). */
   faction?: string;
+  /** Champ, dessen zwei Klassen dieses Deck verwenden darf. */
+  championId?: string;
   cards: DeckEntry[];
 }
 
@@ -175,6 +174,18 @@ export interface Faction {
    * werden nicht als spielbare Oberfraktion angeboten.
    */
   neutral?: boolean;
+}
+
+/** Die beiden spielbaren Seiten. Klassen hängen im Fraktionsbaum darunter. */
+export type SideId = 'animals' | 'humans';
+
+/** Ein Champ legt Seite, zwei Deckbauklassen und vier Superkräfte fest. */
+export interface ChampionDef {
+  id: string;
+  name: string;
+  side: SideId;
+  classes: [string, string];
+  superpowers: [string, string, string, string];
 }
 
 /** Parent-Lookup: fraktion-id → Oberfraktion-id (null = ist selbst Oberfraktion). */
@@ -233,7 +244,8 @@ export type Effect =
   // Verbraucht bis zu `max` Wissen aus dem eigenen Pool; verteilt
   // `damagePerMarker` Schaden je verbrauchtem Marker auf gegnerische Kreaturen
   // (reihum wie bei der Ability `experiment`, sonst auf die Basis).
-  | { kind: 'spendKnowledge'; max: number; damagePerMarker: number };
+  | { kind: 'spendKnowledge'; max: number; damagePerMarker: number }
+  | { kind: 'referenz'; text: string };
 
 /**
  * Kreatur-Fähigkeiten: parametrisierte, generische Primitive (Daten, keine
@@ -336,7 +348,11 @@ export type Ability =
   | { kind: 'rueckstoss'; selbst: number; gegner?: number }
   // Beim Ausspielen: setzt bei ALLEN gegnerischen Kreaturen auf dem Feld ATK und
   // Verteidigung dauerhaft auf einen Deckel (Peinigung, siehe Creature.atkDeckel).
-  | { kind: 'peinigen'; atkDeckel: number; hpDeckel: number };
+  | { kind: 'peinigen'; atkDeckel: number; hpDeckel: number }
+  /** Originalregel aus der großen Kartenreferenz; zentrale PvZ-Primitive
+   * werden über Keywords/Engine-Hooks umgesetzt, der vollständige Text bleibt
+   * als überprüfbare Datenquelle an der Karte. */
+  | { kind: 'referenz'; text: string };
 
 /** Option einer `wahl`-Fähigkeit (siehe oben). */
 export type WahlOption = { art: 'ziehen'; n: number } | { art: 'wissen'; x: number };
@@ -451,6 +467,9 @@ export interface CreatureCard {
   /** Emoji, das beim Angriff als Projektil fliegt (z. B. "🗡️"). */
   projectile?: string;
   text?: string;
+  deckable?: boolean;
+  tribes?: string[];
+  referenceName?: string;
 }
 
 /**
@@ -475,13 +494,48 @@ export interface ActionCard {
   /** Deckbau-Kategorie mit eigenem Limit (Hero/Principal). */
   category?: CardCategory;
   text?: string;
+  deckable?: boolean;
+  tribes?: string[];
+  referenceName?: string;
 }
 
-export type CardDef = CreatureCard | ActionCard;
+export interface EnvironmentCard {
+  id: string;
+  name: string;
+  faction: string;
+  type: 'environment';
+  cost: number;
+  effect: Effect;
+  signature?: boolean;
+  category?: CardCategory;
+  text?: string;
+  deckable?: boolean;
+  tribes?: string[];
+  referenceName?: string;
+}
+
+export interface SuperpowerCard {
+  id: string;
+  name: string;
+  faction: string;
+  type: 'superpower';
+  cost: number;
+  effect: Effect;
+  deckable: false;
+  signature?: boolean;
+  category?: CardCategory;
+  signaturePower?: boolean;
+  text?: string;
+  tribes?: string[];
+  referenceName?: string;
+}
+
+export type CardDef = CreatureCard | ActionCard | EnvironmentCard | SuperpowerCard;
 
 export interface GameData {
   config: GameConfig;
   factions: Faction[];
+  champions: ChampionDef[];
   topics: Topic[];
   cards: CardDef[];
   cardsById: Record<string, CardDef>;
@@ -556,6 +610,8 @@ export interface Creature {
    * Ursache/Karte zuzuordnen (z. B. "Giftzerstörungen", "Kills je Karte").
    */
   letzterSchaden?: SchadensUrsache;
+  /** Grabstein-Kreaturen bleiben bis zum Vorkampf-Fenster verdeckt. */
+  faceDown?: boolean;
 }
 
 // ---- Telemetrie (Backtest-Sidecar) --------------------------------------
@@ -661,9 +717,13 @@ export interface MatchStatistik {
 
 export interface PlayerState {
   faction: string;
+  championId?: string;
+  classes?: [string, string];
   /** Öffentlicher Anzeigename, niemals die gegnerische Deckliste. */
   deckName?: string;
   cheerleaders: CheerleaderSlots;
+  /** Champ-Spiel: je Bankplatz die dort angebotene, noch nicht gewählte Superkraft. */
+  cheerleaderPowers?: [string | null, string | null, string | null];
   deck: string[];
   hand: string[];
   base: number;
@@ -676,8 +736,8 @@ export interface PlayerState {
   mulliganDone: boolean;
   /**
    * Ladung des Basis-Schilds in Abschnitten. Erreicht sie
-   * `config.schild.abschnitte`, blockt der Schild den Treffer, löst eine
-   * zufällige Superkraft aus und geht auf 0 zurück (siehe schild.ts).
+   * `config.schild.abschnitte`, blockt der Schild den Treffer, öffnet die
+   * Cheerleader-Auswahl und geht auf 0 zurück (siehe schild.ts).
    */
   schild: number;
   /**
@@ -691,9 +751,17 @@ export interface PlayerState {
    * cardId gespeichert). Wird in startRound() geleert.
    */
   gespieltDieseRunde: string[];
+  /** Noch nicht erhaltene Superkräfte des Champs. */
+  superpowersRemaining?: string[];
+  /** Höchstens drei Superblocks je Partie. */
+  blocksRemaining?: number;
+  /** Beim letzten Block gezogene Kraft darf in ihrem Fenster kostenlos wirken. */
+  freeSuperpowerId?: string;
+  /** Dauerhafter Bonus auf die rundenweise Energie (z. B. Sunburn). */
+  energyPerRoundBonus?: number;
 }
 
-export type Phase = 'mulligan' | 'play' | 'fly' | 'ended';
+export type Phase = 'mulligan' | 'play' | 'precombat' | 'fly' | 'ended';
 
 /**
  * Strukturierte Kampf-Ereignisse am Log-Eintrag – die UI spielt sie als
@@ -762,7 +830,7 @@ export interface SpellEvent {
   kind: 'spell';
   lane: number;
   /** Welche Art Effekt gespielt wird (bestimmt Farbe/Form der Animation). */
-  effect: 'buff' | 'attackBuff' | 'summon' | 'move';
+  effect: 'buff' | 'attackBuff' | 'summon' | 'move' | 'environment' | 'reveal' | 'superpower';
   /** Fraktion des Ausspielenden – färbt den Effekt ein. */
   faction: string;
 }
@@ -860,6 +928,10 @@ export interface GameState {
   players: [PlayerState, PlayerState];
   /** board[spieler][lane] – pro Lane maximal eine Kreatur pro Spieler. */
   board: (Creature | null)[][];
+  /** Zweiter eigener Fighter derselben Lane (Team-Up). */
+  teamBoard?: (Creature | null)[][];
+  /** Genau ein Environment je Lane; ein neues ersetzt das vorhandene. */
+  environments?: ({ cardId: string; owner: PlayerIndex } | null)[];
   log: LogEntry[];
   winner: PlayerIndex | 'draw' | null;
   uidCounter: number;
@@ -893,6 +965,7 @@ export type PlayerAction =
   | { type: 'mulligan'; handIndices: number[] }
   | { type: 'playCreature'; handIndex: number; lane: number }
   | { type: 'playAction'; handIndex: number; targetLane?: number; toLane?: number }
+  | { type: 'playEnvironment'; handIndex: number; lane: number }
   | { type: 'pass' }
   | { type: 'flyMove'; fromLane: number; toLane: number }
   | { type: 'flyDone' }
@@ -924,10 +997,13 @@ export interface CreatureView {
   /** Emoji des Angriffs-Projektils (aus der Kartendatei, optional). */
   projectile?: string;
   text?: string;
+  faceDown?: boolean;
 }
 
 export interface PlayerPublicView {
   faction: string;
+  championId?: string;
+  classes?: [string, string];
   deckName?: string;
   cheerleaders: CheerleaderSlots;
   base: number;
@@ -940,12 +1016,15 @@ export interface PlayerPublicView {
   schild: number;
   /** Superkraft „Schutzschild" aktiv: die Basis ist bis Rundenende unverwundbar. */
   basisImmun: boolean;
+  blocksRemaining?: number;
 }
 
 /** Ein einlösbarer Bankplatz im offenen Reaktionsfenster. */
 export interface ReaktionsAngebot {
   slot: 0 | 1 | 2;
   cardId: string;
+  /** Anzeigename des Cheerleaders, der diese Superkraft trägt. */
+  traeger?: string;
   /** Anzeigename der Kraft. */
   kraft: string;
   text: string;
@@ -996,6 +1075,9 @@ export interface ClientView {
   players: [PlayerPublicView, PlayerPublicView];
   hand: CardDef[];
   board: (CreatureView | null)[][];
+  teamBoard: (CreatureView | null)[][];
+  environments: ({ cardId: string; owner: PlayerIndex; name: string; text?: string } | null)[];
+  laneKinds: ('height' | 'ground' | 'water')[];
   log: LogEntry[];
   /** Nur nach Matchende gesetzt; wird vor dem Kuerzen des sichtbaren Logs berechnet. */
   matchSummary?: MatchSummaryView;

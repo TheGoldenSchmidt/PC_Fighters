@@ -1,0 +1,1011 @@
+[
+  {
+    "id": "bellflower",
+    "name": "Bellflower",
+    "faction": "solar",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Bellflower",
+    "text": "Keine zusätzliche Fähigkeit.",
+    "type": "creature",
+    "attack": 1,
+    "health": 1,
+    "keywords": [],
+    "abilities": [],
+    "projectile": "✨"
+  },
+  {
+    "id": "sunflower",
+    "name": "Sunflower",
+    "faction": "solar",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Sunflower",
+    "text": "Team-Up; Rundenstart +1 Sun für diese Runde",
+    "type": "creature",
+    "attack": 0,
+    "health": 1,
+    "keywords": [
+      "team_up"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Team-Up; Rundenstart +1 Sun für diese Runde"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "mixed_nuts",
+    "name": "Mixed Nuts",
+    "faction": "solar",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Mixed Nuts",
+    "text": "Mit Team-Up-Pflanze hier: +2/+2",
+    "type": "creature",
+    "attack": 2,
+    "health": 2,
+    "keywords": [
+      "team_up"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Mit Team-Up-Pflanze hier: +2/+2"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "squash",
+    "name": "Squash",
+    "faction": "solar",
+    "cost": 5,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Squash",
+    "text": "Zombie zerstören",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Zombie zerstören"
+    }
+  },
+  {
+    "id": "smashing_pumpkin",
+    "name": "Smashing Pumpkin",
+    "faction": "solar",
+    "cost": 6,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Smashing Pumpkin",
+    "text": "Keine zusätzliche Fähigkeit.",
+    "type": "creature",
+    "attack": 6,
+    "health": 6,
+    "keywords": [],
+    "abilities": [],
+    "projectile": "✨"
+  },
+  {
+    "id": "morning_glory",
+    "name": "Morning Glory",
+    "faction": "solar",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Morning Glory",
+    "text": "Bei ≥6 erzeugter Sun diese Runde +1/+1",
+    "type": "creature",
+    "attack": 2,
+    "health": 2,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Bei ≥6 erzeugter Sun diese Runde +1/+1"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "fume_shroom",
+    "name": "Fume-Shroom",
+    "faction": "solar",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Fume-Shroom",
+    "text": "Strikethrough",
+    "type": "creature",
+    "attack": 2,
+    "health": 1,
+    "keywords": [
+      "strikethrough"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Strikethrough"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "pepper_m_d",
+    "name": "Pepper M.D.",
+    "faction": "solar",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Pepper M.D.",
+    "text": "Heilung einer Pflanze/des Helden → +2/+2",
+    "type": "creature",
+    "attack": 2,
+    "health": 2,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Heilung einer Pflanze/des Helden → +2/+2"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "hetzjagd",
+    "name": "Hetzjagd",
+    "faction": "solar",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Water Balloons",
+    "text": "Zombie -2/-2; bei ≥6 Sun stattdessen -3/-3",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Zombie -2/-2; bei ≥6 Sun stattdessen -3/-3"
+    }
+  },
+  {
+    "id": "koenig_der_kobras",
+    "name": "König der Kobras",
+    "faction": "solar",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Venus Flytrap",
+    "text": "Verursachter Schaden heilt eigenen Helden gleich stark",
+    "type": "creature",
+    "attack": 3,
+    "health": 1,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Verursachter Schaden heilt eigenen Helden gleich stark"
+      }
+    ],
+    "projectile": "🐍"
+  },
+  {
+    "id": "bloomerang",
+    "name": "Bloomerang",
+    "faction": "solar",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Bloomerang",
+    "text": "Strikethrough",
+    "type": "creature",
+    "attack": 3,
+    "health": 5,
+    "keywords": [
+      "strikethrough"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Strikethrough"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "metal_petal_sunflower",
+    "name": "Metal Petal Sunflower",
+    "faction": "solar",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Metal Petal Sunflower",
+    "text": "Rundenstart +1 Sun",
+    "type": "creature",
+    "attack": 3,
+    "health": 4,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Rundenstart +1 Sun"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "cosmoss",
+    "name": "Cosmoss",
+    "faction": "solar",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Cosmoss",
+    "text": "Environment gespielt → +2/+2",
+    "type": "creature",
+    "attack": 2,
+    "health": 2,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Environment gespielt → +2/+2"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "moewe",
+    "name": "Möwe",
+    "faction": "solar",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Apple-Saucer",
+    "text": "Bei ≥6 Sun erhält Strikethrough",
+    "type": "creature",
+    "attack": 3,
+    "health": 1,
+    "keywords": [
+      "strikethrough"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Bei ≥6 Sun erhält Strikethrough"
+      }
+    ],
+    "projectile": "🪶"
+  },
+  {
+    "id": "venus_flytraplanet",
+    "name": "Venus Flytraplanet",
+    "faction": "solar",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Venus Flytraplanet",
+    "text": "Schaden von Pflanzen hier heilt den Helden",
+    "type": "environment",
+    "effect": {
+      "kind": "referenz",
+      "text": "Schaden von Pflanzen hier heilt den Helden"
+    }
+  },
+  {
+    "id": "kernel_pult",
+    "name": "Kernel-Pult",
+    "faction": "solar",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Kernel-Pult",
+    "text": "Team-Up; auf Heights Zombie -1/-1",
+    "type": "creature",
+    "attack": 1,
+    "health": 1,
+    "keywords": [
+      "team_up"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Team-Up; auf Heights Zombie -1/-1"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "lil_buddy",
+    "name": "Lil' Buddy",
+    "faction": "solar",
+    "cost": 0,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Lil' Buddy",
+    "text": "Team-Up; Held +2 heilen",
+    "type": "creature",
+    "attack": 0,
+    "health": 1,
+    "keywords": [
+      "team_up"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Team-Up; Held +2 heilen"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "sunnier_shroom",
+    "name": "Sunnier-Shroom",
+    "faction": "solar",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Sunnier-Shroom",
+    "text": "Team-Up; Rundenstart +2 Sun",
+    "type": "creature",
+    "attack": 0,
+    "health": 3,
+    "keywords": [
+      "team_up"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Team-Up; Rundenstart +2 Sun"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "sage_sage",
+    "name": "Sage Sage",
+    "faction": "solar",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Sage Sage",
+    "text": "Bei ≥6 Sun Karte ziehen",
+    "type": "creature",
+    "attack": 2,
+    "health": 3,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Bei ≥6 Sun Karte ziehen"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "magnifying_grass",
+    "name": "Magnifying Grass",
+    "faction": "solar",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Magnifying Grass",
+    "text": "Angriff = erzeugte Sun dieser Runde",
+    "type": "creature",
+    "attack": 0,
+    "health": 2,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Angriff = erzeugte Sun dieser Runde"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "whack_a_zombie",
+    "name": "Whack-a-Zombie",
+    "faction": "solar",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Whack-a-Zombie",
+    "text": "Zombie mit ≤3 Angriff zerstören",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Zombie mit ≤3 Angriff zerstören"
+    }
+  },
+  {
+    "id": "lawnmower",
+    "name": "Lawnmower",
+    "faction": "solar",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Lawnmower",
+    "text": "Boden-Zombie zerstören",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Boden-Zombie zerstören"
+    }
+  },
+  {
+    "id": "power_flower",
+    "name": "Power Flower",
+    "faction": "solar",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Power Flower",
+    "text": "Strikethrough; Rundenstart Held +1 je Flower",
+    "type": "creature",
+    "attack": 3,
+    "health": 5,
+    "keywords": [
+      "strikethrough"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Strikethrough; Rundenstart Held +1 je Flower"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "adler",
+    "name": "Steinadler",
+    "faction": "solar",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Cosmic Flower",
+    "text": "Strikethrough; Flower conjuren und Strikethrough geben",
+    "type": "creature",
+    "attack": 2,
+    "health": 2,
+    "keywords": [
+      "strikethrough"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Strikethrough; Flower conjuren und Strikethrough geben"
+      }
+    ],
+    "projectile": "🪶"
+  },
+  {
+    "id": "pteranodon",
+    "name": "Pteranodon",
+    "faction": "solar",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Heartichoke",
+    "text": "Heilung → gleicher Schaden am Zombie-Held",
+    "type": "creature",
+    "attack": 3,
+    "health": 3,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Heilung → gleicher Schaden am Zombie-Held"
+      }
+    ],
+    "projectile": "🦅"
+  },
+  {
+    "id": "elderberry",
+    "name": "Elderberry",
+    "faction": "solar",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Elderberry",
+    "text": "Strikethrough; Plant Evolution +3 Angriff",
+    "type": "creature",
+    "attack": 2,
+    "health": 3,
+    "keywords": [
+      "strikethrough"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Strikethrough; Plant Evolution +3 Angriff"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "eyespore",
+    "name": "Eyespore",
+    "faction": "solar",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Eyespore",
+    "text": "Fusion: Zombie hier zerstören",
+    "type": "creature",
+    "attack": 2,
+    "health": 1,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Fusion: Zombie hier zerstören"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "twin_sunflower",
+    "name": "Twin Sunflower",
+    "faction": "solar",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Twin Sunflower",
+    "text": "Team-Up; Rundenstart +2 Sun",
+    "type": "creature",
+    "attack": 0,
+    "health": 2,
+    "keywords": [
+      "team_up"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Team-Up; Rundenstart +2 Sun"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "2nd_best_taco_of_all_time",
+    "name": "2nd-Best Taco of All Time",
+    "faction": "solar",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "2nd-Best Taco of All Time",
+    "text": "4 heilen; Karte ziehen",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "4 heilen; Karte ziehen"
+    }
+  },
+  {
+    "id": "eule",
+    "name": "Eule",
+    "faction": "solar",
+    "type": "creature",
+    "cost": 3,
+    "attack": 3,
+    "health": 4,
+    "keywords": [
+      "fliegend"
+    ],
+    "abilities": [
+      {
+        "kind": "entwaffnen",
+        "entfernt": [
+          "fliegend",
+          "flink"
+        ]
+      }
+    ],
+    "text": "Fliegend. Beim Ausspielen verliert eine gegnerische Kreatur Fliegend und Flink.",
+    "projectile": "🪶",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Chomper"
+  },
+  {
+    "id": "laser_bean",
+    "name": "Laser Bean",
+    "faction": "solar",
+    "cost": 6,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Laser Bean",
+    "text": "Strikethrough; Angriff = erzeugte Sun dieser Runde",
+    "type": "creature",
+    "attack": 0,
+    "health": 5,
+    "keywords": [
+      "strikethrough"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Strikethrough; Angriff = erzeugte Sun dieser Runde"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "solar_winds",
+    "name": "Solar Winds",
+    "faction": "solar",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Solar Winds",
+    "text": "Rundenende ohne Zombie hier → Sunflower",
+    "type": "environment",
+    "effect": {
+      "kind": "referenz",
+      "text": "Rundenende ohne Zombie hier → Sunflower"
+    }
+  },
+  {
+    "id": "wing_nut",
+    "name": "Wing-Nut",
+    "faction": "solar",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Wing-Nut",
+    "text": "Zombies können keine Bonus Attacks machen",
+    "type": "creature",
+    "attack": 3,
+    "health": 7,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Zombies können keine Bonus Attacks machen"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "tactical_cuke",
+    "name": "Tactical Cuke",
+    "faction": "solar",
+    "cost": 5,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Tactical Cuke",
+    "text": "Alle Boden-Pflanzen und -Zombies zerstören",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Alle Boden-Pflanzen und -Zombies zerstören"
+    }
+  },
+  {
+    "id": "spatz",
+    "name": "Spatz",
+    "faction": "solar",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Primal Sunflower",
+    "text": "Rundenstart +1 Sun",
+    "type": "creature",
+    "attack": 2,
+    "health": 1,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Rundenstart +1 Sun"
+      }
+    ],
+    "projectile": "🪶"
+  },
+  {
+    "id": "sunflower_seed",
+    "name": "Sunflower Seed",
+    "faction": "solar",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Sunflower Seed",
+    "text": "Beim Tod Sunflower hier",
+    "type": "creature",
+    "attack": 2,
+    "health": 2,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Beim Tod Sunflower hier"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "cross_pollination",
+    "name": "Cross-Pollination",
+    "faction": "solar",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Cross-Pollination",
+    "text": "Flower + Fruit conjuren; beide kosten 1 weniger",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Flower + Fruit conjuren; beide kosten 1 weniger"
+    }
+  },
+  {
+    "id": "briar_rose",
+    "name": "Briar Rose",
+    "faction": "solar",
+    "cost": 5,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Briar Rose",
+    "text": "Verletzt Zombie eine Flower → Zombie zerstören",
+    "type": "creature",
+    "attack": 4,
+    "health": 5,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Verletzt Zombie eine Flower → Zombie zerstören"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "three_headed_chomper",
+    "name": "Three-Headed Chomper",
+    "faction": "solar",
+    "cost": 6,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Three-Headed Chomper",
+    "text": "Rundenende Zombies hier/nebenan zerstören",
+    "type": "creature",
+    "attack": 6,
+    "health": 6,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Rundenende Zombies hier/nebenan zerstören"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "cornucopia",
+    "name": "Cornucopia",
+    "faction": "solar",
+    "cost": 9,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Cornucopia",
+    "text": "Zufällige Pflanze in jede freie Lane",
+    "type": "creature",
+    "attack": 6,
+    "health": 6,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Zufällige Pflanze in jede freie Lane"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "astrocado",
+    "name": "Astrocado",
+    "faction": "solar",
+    "cost": 5,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Astrocado",
+    "text": "Strikethrough; beim Tod Astrocado Pit erhalten",
+    "type": "creature",
+    "attack": 5,
+    "health": 3,
+    "keywords": [
+      "strikethrough"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Strikethrough; beim Tod Astrocado Pit erhalten"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "astro_vera",
+    "name": "Astro Vera",
+    "faction": "solar",
+    "cost": 8,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Astro Vera",
+    "text": "Max-Leben +10 und 10 heilen",
+    "type": "creature",
+    "attack": 5,
+    "health": 5,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Max-Leben +10 und 10 heilen"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "cob_cannon",
+    "name": "Cob Cannon",
+    "faction": "solar",
+    "cost": 6,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Cob Cannon",
+    "text": "Zombies hier/nebenan -1/-1; Team-Up Evolution zerstört Zombie",
+    "type": "creature",
+    "attack": 4,
+    "health": 6,
+    "keywords": [
+      "team_up"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Zombies hier/nebenan -1/-1; Team-Up Evolution zerstört Zombie"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "uralte_schlange",
+    "name": "Uralte Schlange",
+    "faction": "solar",
+    "type": "creature",
+    "cost": 6,
+    "attack": 4,
+    "health": 8,
+    "abilities": [
+      {
+        "kind": "gift",
+        "staerke": 2
+      },
+      {
+        "kind": "shedding",
+        "schwelle": 3,
+        "heilung": 3,
+        "entferntGift": true
+      }
+    ],
+    "text": "Gift 2. Häutung: Das erste Mal bei 3 oder weniger HP heilt sie 3 und entfernt alle eigenen Giftmarken.",
+    "projectile": "🐍",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Aloesaurus"
+  },
+  {
+    "id": "haunted_pumpking",
+    "name": "Haunted Pumpking",
+    "faction": "solar",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Haunted Pumpking",
+    "text": "Gegner conjured Monster",
+    "type": "creature",
+    "attack": 4,
+    "health": 1,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Gegner conjured Monster"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "sun_shroom",
+    "name": "Sun-Shroom",
+    "faction": "solar",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Sun-Shroom",
+    "text": "Team-Up; verwandelt sich später in Sunnier-Shroom",
+    "type": "creature",
+    "attack": 0,
+    "health": 2,
+    "keywords": [
+      "team_up"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Team-Up; verwandelt sich später in Sunnier-Shroom"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "schlange",
+    "name": "Schlange",
+    "faction": "solar",
+    "type": "creature",
+    "cost": 2,
+    "attack": 1,
+    "health": 2,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "gift",
+        "staerke": 2
+      }
+    ],
+    "text": "Gift 2.",
+    "projectile": "☠️",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Jack O' Lantern"
+  },
+  {
+    "id": "ketchup_mechanic",
+    "name": "Ketchup Mechanic",
+    "faction": "solar",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Ketchup Mechanic",
+    "text": "Je Zombie +1/+1 und Held 1 heilen",
+    "type": "creature",
+    "attack": 1,
+    "health": 1,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Je Zombie +1/+1 und Held 1 heilen"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "vogelmensch",
+    "name": "Vogelmensch",
+    "faction": "solar",
+    "type": "creature",
+    "cost": 5,
+    "attack": 4,
+    "health": 5,
+    "keywords": [
+      "fliegend"
+    ],
+    "abilities": [
+      {
+        "kind": "umgruppieren",
+        "tempAtkBonus": 1
+      }
+    ],
+    "text": "Fliegend. Beim Ausspielen: Du darfst eine andere verbündete Kreatur in eine freie eigene Lane bewegen. Bewegst du sie, erhält sie bis zum Rundenende +1 ATK.",
+    "projectile": "🪶",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Toadstool"
+  }
+]

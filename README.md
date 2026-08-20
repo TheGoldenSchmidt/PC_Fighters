@@ -50,8 +50,8 @@ Auch hier erscheint eine „Network"-Adresse, z. B. `http://192.168.178.66:5173`
 
 **Schritt 5 – Auf den Handys spielen:**
 
-1. **Spieler 1** öffnet auf seinem Handy im Browser die Client-Adresse (z. B. `http://192.168.178.66:5173`), wählt eine Fraktion und einen Schauplatz und tippt auf **„Partie erstellen"**. Es erscheinen ein 4-stelliger Raum-Code und ein QR-Code.
-2. **Spieler 2** scannt einfach den QR-Code mit der Handy-Kamera – Adresse und Raum-Code werden automatisch ausgefüllt. (Oder von Hand: dieselbe Adresse im Browser öffnen, Fraktion wählen, „Partie beitreten", Raum-Code eintippen.)
+1. **Spieler 1** öffnet auf seinem Handy im Browser die Client-Adresse (z. B. `http://192.168.178.66:5173`), wählt einen Champ, ein passendes Deck und einen Schauplatz und tippt auf **„Partie erstellen"**. Es erscheinen ein 4-stelliger Raum-Code und ein QR-Code.
+2. **Spieler 2** scannt einfach den QR-Code mit der Handy-Kamera – Adresse und Raum-Code werden automatisch ausgefüllt. (Oder von Hand: dieselbe Adresse im Browser öffnen, Champ und Deck wählen, „Partie beitreten", Raum-Code eintippen.)
 
 > **Tipp:** Falls du deine WLAN-Adresse selbst herausfinden willst: Im Terminal `ipconfig` eintippen (Mac/Linux: `ifconfig`) und nach „IPv4-Adresse" suchen – das ist die Nummer im Format `192.168.x.x`.
 
@@ -66,7 +66,7 @@ Auch hier erscheint eine „Network"-Adresse, z. B. `http://192.168.178.66:5173`
 
 ### Deckwahl und Mulligan
 
-Vor einer Partie wählst du zuerst **Humans** oder **Animals** und danach eines der vier für die Alpha freigeschalteten Decks. Weitere Presets und lokal gespeicherte eigene Decks bleiben erhalten, sind bis zur späteren Freischaltung aber ausgegraut. Nach dem Beitritt tauschen beide Spieler im Mulligan optional beliebig viele Karten; Runde 1 beginnt erst nach beiden Bestätigungen.
+Vor einer Partie wählst du einen von sechs **Champs**. Jeder Champ gehört zu Humans oder Animals und legt genau zwei Klassen fest. Sein Deck enthält 40 Karten aus beiden Klassen (plus optional neutrale Karten), höchstens vier Exemplare je Karte. Zu jedem Champ gibt es ein Startdeck; eigene Decks werden lokal im Browser gespeichert. Nach dem Beitritt tauschen beide Spieler im Mulligan optional beliebig viele Karten; Runde 1 beginnt erst nach beiden Bestätigungen.
 
 ### Balancing-Backtest
 
@@ -87,20 +87,27 @@ Das Ergebnis des jeweils letzten vollständigen Laufs steht in [docs/STATUS.md](
 Alle Karten liegen als einfache Textdateien hier:
 
 ```
-packages/engine/src/data/cards/humans.json
-packages/engine/src/data/cards/animals.json
+packages/engine/src/data/cards/guardian.json
+packages/engine/src/data/cards/kabloom.json
+packages/engine/src/data/cards/mega_grow.json
+packages/engine/src/data/cards/solar.json
+packages/engine/src/data/cards/beastly.json
+packages/engine/src/data/cards/brainy.json
+packages/engine/src/data/cards/hearty.json
+packages/engine/src/data/cards/sneaky.json
 packages/engine/src/data/cards/neutral.json
+packages/engine/src/data/cards/superpowers.json
 ```
 
 **So geht's:** Datei mit einem Texteditor öffnen (z. B. Editor/Notepad), einen bestehenden Karten-Block **kopieren**, ein Komma dahinter setzen, die Werte ändern, speichern, Server neu starten (im Server-Fenster `Strg+C`, dann wieder `npm run server`) und die Seite im Browser neu laden.
 
-Beispiel – eine neue Human-Kreatur:
+Beispiel – eine neue Kreatur der Human-Klasse `hearty`:
 
 ```json
 {
   "id": "veteranin",
   "name": "Veteranin",
-  "faction": "humans",
+  "faction": "hearty",
   "type": "creature",
   "cost": 3,
   "attack": 3,
@@ -113,18 +120,10 @@ Beispiel – eine neue Human-Kreatur:
 Wichtig:
 
 - **`id`** muss einmalig sein (kleingeschrieben, keine Leerzeichen).
-- Jede Karte kommt automatisch **2×** ins Deck. Steht `"signature": true` dabei (die ★-Karte), nur **1×**.
-- **`"category"`** (optional) gibt einer Karte ein eigenes Deck-Limit:
-
-| Kategorie | Regel |
-|---|---|
-| `"hero"` | Höchstens **2 Heroes** je Deck, und jeder Hero nur **1×** (`deckbuilding.maxHeroes` / `.maxHeroCopies`). |
-| `"principal"` | Höchstens **1** je Deck (`deckbuilding.maxPrincipals`) – zählt **nicht** zum Hero-Limit. |
-
-  Beides zählt regulär zur Deckgröße von 20 Karten. Karten der Oberfraktion
-  `neutral` (z. B. der PC Principal) gehören zu keiner Seite: sie sind in
-  **jedem** Deck erlaubt und werden nicht als spielbare Oberfraktion angeboten.
-- **Aktionskarten** haben `"type": "action"` und statt Angriff/Leben ein `"effect"`. Es gibt vier Effekt-Arten:
+- **`faction`** ist die Klasse, nicht nur die Seite. Animals nutzen `guardian`, `kabloom`, `mega_grow`, `solar`; Humans nutzen `beastly`, `brainy`, `hearty`, `sneaky`.
+- Ein Champ-Deck enthält genau **40 Karten**, höchstens **4×** dieselbe Karte und mindestens eine Karte aus jeder seiner beiden Klassen. `neutral` ist für jeden Champ erlaubt.
+- Superkräfte stehen in `superpowers.json`, sind `"deckable": false` und werden ausschließlich vom Champ vergeben.
+- **Aktionskarten** haben `"type": "action"` und statt Angriff/Leben ein `"effect"`. Umgebungen verwenden `"type": "environment"` und belegen eine Lane. Der generische Effekt `referenz` bewahrt den Originaltext des importierten Sets; für individuelle Regeln können weiterhin feste Effekt-Primitiven ergänzt werden.
 
 | Effekt | Was er tut | Beispiel |
 |---|---|---|
@@ -139,6 +138,18 @@ Wichtig:
 |---|---|
 | `flink` | Kreatur ist beim Ausspielen nicht erschöpft und kämpft sofort mit. |
 | `fliegend` | Darf nach der Kampfphase in eine freie eigene Lane wechseln. |
+| `team_up` | Darf sich eine Lane mit genau einer weiteren eigenen Kreatur teilen. |
+| `amphibious` | Darf in der Wasser-Lane gespielt werden. |
+| `bullseye` | Basistreffer laden den Superblock nicht auf. |
+| `armored` | Reduziert erlittenen Kampfschaden. |
+| `deadly` | Zerstört eine getroffene Kreatur unabhängig von deren Restleben. |
+| `double_strike` | Greift in derselben Kampfphase ein zweites Mal an. |
+| `frenzy` | Greift nach dem Besiegen eines Gegners erneut an. |
+| `hunt` | Folgt einer neu gespielten gegnerischen Kreatur in deren Lane. |
+| `strikethrough` | Überschüssiger Schaden trifft die gegnerische Basis. |
+| `untrickable` | Kann nicht von gegnerischen Aktionen als Ziel gewählt werden. |
+| `gravestone` | Liegt bis zum Vor-Kampf-Fenster verdeckt. |
+| `overshoot` | Fügt beim Aufdecken vor dem Kampf Basisschaden zu. |
 
 Alles Parametrisierbare (Auren, Gift, Heilung, Skalierung nach Anzahl
 Verbündeter, Kampfboni, …) ist kein Keyword mehr, sondern eine **Fähigkeit**
@@ -161,108 +172,63 @@ Die Datei `packages/engine/src/data/config.json` enthält alle Spielregeln als Z
 | Wert | Bedeutung |
 |---|---|
 | `lanes` | Verbindliche Anzahl der Kampfbahnen. Dieser Wert muss dauerhaft `5` sein und kann beim Erstellen einer Partie nicht geändert werden. |
-| `baseHealth` | Lebenspunkte jeder Basis (aktuell: 10) |
-| `startingHand` | Handkarten zu Spielbeginn (V2: 4) |
+| `baseHealth` | Lebenspunkte jeder Basis (aktuell: 20) |
+| `startingHand` | Reguläre Handkarten zu Spielbeginn (aktuell: 4; dazu kommt eine zufällige Champ-Superkraft) |
+| `handLimit` | Maximale Handgröße (aktuell: 10) |
 | `cardsDrawnPerTurn` | Karten, die jede Runde gezogen werden |
-| `energy.start` / `energy.perRound` | Energie in Runde 1 bzw. Zuwachs pro Runde danach (V2: 1 / 1) |
-| `energy.cap` | Maximale Energie, oder `null` für unbegrenzt |
-| `deckbuilding.size` | Karten pro Deck (V2: 20) |
-| `deckbuilding.maxCopies` | Wie oft eine normale Karte im Deck stecken darf (V2: 3) |
-| `deckbuilding.maxCopiesSignature` | Wie oft eine ★-Signature-Karte im Deck stecken darf (V2: 2) |
-| `deckbuilding.maxHeroes` | Wie viele Hero-Karten (`"category": "hero"`) ein Deck insgesamt enthalten darf (V2: 2) |
-| `deckbuilding.maxHeroCopies` | Wie oft EIN einzelner Hero im Deck stecken darf (V2: 1) |
-| `deckbuilding.maxPrincipals` | Wie viele Principal-Karten (`"category": "principal"`) ein Deck enthalten darf (V2: 1) |
+| `energy.start` / `energy.perRound` | Energie in Runde 1 bzw. Zuwachs pro Runde danach (aktuell: 1 / 1) |
+| `energy.cap` | Maximale Energie (aktuell: 10) |
+| `deckbuilding.size` | Karten pro Deck (aktuell: 40) |
+| `deckbuilding.maxCopies` | Wie oft dieselbe deckbare Karte im Deck stecken darf (aktuell: 4) |
 | `zermuerbung.abRunde` / `.schaden` / `.steigerung` | Ab dieser Runde verlieren beide Basen am Rundenende `schaden` Leben, danach je weitere Runde zusätzlich `steigerung` mehr – das ist der reguläre Weg, wie lange Partien enden (V2 will explizit „kein Rundenlimit", siehe `docs/regelwerk-v2.md` §1/§7) |
 | `roundLimit` | Technische Notbremse weit über der Zermürbung (aktuell 30) – wird im Normalspiel nie erreicht; jeder Treffer ist ein Bug-Report |
-| `schild.abschnitte` | Wie viele Abschnitte der Basis-Schild hat (Standard 7) |
+| `schild.abschnitte` | Wie viele Abschnitte der Superblock-Leiste voll werden müssen (aktuell: 8) |
 | `schild.ladung.min` / `.max` | Spanne, um die ein Treffer den Schild auflädt (Standard 1–3) |
-| `cheerleaders.kraefte` | Was die einzelnen Cheerleader beim Schild-Block bewirken (siehe unten) |
+| `schild.cheerleaders` | Die drei sichtbaren Träger der nach der Startkraft übrigen Champ-Superkräfte |
 
 Zahl ändern, speichern, Server neu starten – fertig.
 
-### Der Schild – und warum die Bank sein Motor ist
+### Superblock und Champ-Superkräfte
 
-Neben jeder Basis (🏰) steht ein Balken aus **7 Abschnitten**. Jedes Mal, wenn diese Basis
-getroffen wird, lädt sich der Schild **zufällig um 1 bis 3 Abschnitte** auf. Sobald er dabei
-7 erreicht, passiert dreierlei:
+Neben jeder Basis steht eine Leiste aus **8 Abschnitten**. Normale Basistreffer laden sie
+zufällig um 1 bis 3 Abschnitte. Wird sie voll, wird der aktuelle Treffer vollständig
+geblockt und die Leiste zurückgesetzt. Die drei nach der zufälligen Startkraft übrigen
+Superkräfte liegen auf den drei Cheerleadern. Du wählst einen Cheerleader und damit gezielt
+die gewünschte Kraft für deine Hand. Diese Superkraft kann unmittelbar kostenlos gespielt werden. Wer
+stattdessen passt oder eine andere Karte spielt, behält sie auf der Hand und zahlt später
+ihre regulären Kosten von 1 Energie.
 
-1. **Der Treffer wird komplett geblockt** – die Basis verliert kein einziges Leben.
-2. **Ein Cheerleader von der Bank opfert sich** und wirkt dabei seine Kraft. Wer das ist,
-   entscheidet der Besitzer des Schilds in einem kurzen Auswahlfenster.
-3. Der Schild ist wieder **leer** und muss von vorn aufgeladen werden.
-
-Zwei Regeln fallen daraus:
-
-- **Verzichten geht nicht.** Der Block ist schon eingelöst; bezahlt wird er mit dem Bankplatz.
-  Gewählt wird nur, *wer* sich opfert.
-- **Ohne Cheerleader gibt es keinen Schild.** Sind alle drei Bankplätze leer, lädt sich der
-  Balken gar nicht mehr auf und Treffer gehen ungehindert durch. Die Bank ist damit ein
-  Vorrat von genau drei Blocks pro Partie.
-
-**Was NICHT auf den Schild geht:** die Zermürbung am Rundenende. Die ist die Uhr, die lange
-Partien beendet – sie soll unblockbar bleiben. Alles andere (Kreaturen, die auf eine leere
-Bahn treffen, Wucht-Überschuss, Kartenschaden) lädt den Schild auf.
-
-**Die fünf Kräfte** (in `config.json` unter `cheerleaders.kraefte`):
-
-| Cheerleader | Kraft | Wirkung |
-|---|---|---|
-| PC Principal | Machtwort | Alle gegnerischen Kreaturen werden dauerhaft auf 0 ATK und 1 Verteidigung gedeckelt. |
-| PC Babies | Sicherer Raum | Die eigene Basis nimmt in dieser Runde gar keinen Schaden mehr. |
-| Alter Wissenschaftler | Feldforschung | Wahl: 1 Karte + 1 Wissen – oder 2 Schaden auf jede gegnerische Kreatur. |
-| Randy Marsh | Handgemenge | Jede Kreatur im Feld nimmt 2 Schaden, auch die eigenen. |
-| Junger Neffe | Zweite Chance | Alle eigenen Kreaturen werden voll geheilt, dazu 1 Karte. |
-
-Alle fünf wirken auf das Feld als Ganzes. Das ist kein Zufall: Ein Schild-Block passiert an
-der Basis, es gibt also keine „neue" oder „sterbende" Kreatur, auf die eine Kraft zielen
-könnte.
-
-Den Schild ganz abschalten geht, indem man den kompletten `"schild"`-Block aus `config.json`
-löscht – dann spielt sich alles wie vorher.
-
-**Im 🧪 Testmodus** ist der Schild schon nach *einem* Treffer voll. So sieht man die Kräfte
-sofort, ohne auf einen Block warten zu müssen.
-
-### Eine neue Cheerleader-Kraft hinzufügen
-
-Das braucht drei kleine Code-Stellen (mehr nicht):
-
-1. **`packages/engine/src/types.ts`** – eine Variante beim Typ `CheerleaderWirkung` ergänzen,
-   z. B. `| { kind: 'heilung'; menge: number }`.
-2. **`packages/engine/src/cheerleader.ts`** – einen Eintrag in `CHEERLEADER_WIRKUNGEN` mit
-   demselben Namen schreiben; dort steht, was die Kraft tut. (Vergisst man das, meckert
-   TypeScript – die Liste muss vollständig sein.)
-3. **`packages/engine/src/schema.ts`** – im `einfacheWirkungSchema` einen Zweig ergänzen,
-   damit die Prüfung die neue Art kennt.
-
-Danach nur noch in `config.json` unter `cheerleaders.kraefte` eintragen:
-
-```json
-"randy_marsh": {
-  "name": "Feldlazarett",
-  "text": "Wenn dein Schild blockt: Heile deine Basis um 3.",
-  "ausloeser": "schildBlock",
-  "wirkung": { "kind": "heilung", "menge": 3 }
-}
-```
+Jeder Champ startet mit einer zufälligen seiner vier Superkräfte und kann höchstens drei
+weitere über Superblocks erhalten. Der gewählte Cheerleader verlässt danach die Bank, die
+beiden anderen Angebote bleiben erhalten. `bullseye`-Treffer laden die Leiste nicht auf;
+Zermürbung am Rundenende bleibt ebenfalls unblockbar.
 
 ---
 
-## 4. Eine neue Fraktion anlegen
+## 4. Eine neue Klasse oder einen Champ anlegen
 
-1. Neue Datei in `packages/engine/src/data/cards/` anlegen, z. B. `roboter.json` – mit einer Kartenliste wie in Abschnitt 2 (bei allen Karten `"faction": "roboter"`).
-2. In `packages/engine/src/data/factions.json` einen Eintrag ergänzen:
+Die Hierarchie lautet **Seite → Klasse → Tribe**. `animals` und `humans` sind Seiten,
+darunter liegen die deckbaurelevanten Klassen. Tribes sind optionale Merkmale direkt auf
+Karten und keine eigene Deckauswahl.
+
+1. Neue Datei in `packages/engine/src/data/cards/` anlegen, z. B. `technik.json` – mit einer Kartenliste wie in Abschnitt 2 (bei allen Karten `"faction": "technik"`).
+2. In `packages/engine/src/data/factions.json` die Klasse mit ihrer Seite als `parent` ergänzen:
 
 ```json
 {
-  "id": "roboter",
-  "name": "Roboter",
-  "color": "#8888ff",
+  "id": "technik",
+  "name": "Technik",
+  "parent": "humans",
   "description": "Kalte Logik und Stahl."
 }
 ```
 
-Das Spiel lädt **automatisch alle** Kartendateien aus dem Ordner – die neue Fraktion erscheint nach dem Server-Neustart im Startbildschirm.
+3. Einen Champ in `packages/engine/src/data/champions.json` ergänzen. Er braucht genau zwei
+   Klassen sowie vier IDs aus `cards/superpowers.json`. Ein spielbares Preset liegt als
+   gleichnamige Datei unter `data/decks/` und nennt den `championId`.
+
+Das Spiel lädt **automatisch alle** Kartendateien aus dem Ordner und prüft beim Serverstart,
+ob Klassen, Champ, Superkräfte und Deck zueinander passen.
 
 **Neuer Schauplatz** geht genauso einfach: In `packages/engine/src/data/topics.json` einen Block kopieren und anpassen (Name, Emoji und vier Farben – `background` darf auch ein Farbverlauf sein). Der Ersteller einer Partie kann ihn dann auswählen.
 
@@ -278,7 +244,7 @@ Letzte Änderung rückgängig machen:
 - Oder mit Git alles auf den letzten gespeicherten Stand zurücksetzen:
 
 ```
-git restore packages/engine/src/data/cards/humans.json
+git restore packages/engine/src/data/cards/hearty.json
 ```
 
 (Dateiname anpassen – das holt die zuletzt committete Version zurück.)
@@ -330,7 +296,7 @@ Verbindungen.
 4. Render baut jetzt das Spiel (dauert 2–3 Minuten). Danach bekommst du oben eine
    Adresse wie **`https://pc-fighters.onrender.com`**.
 5. Fertig. Diese Adresse teilst du – beide Spieler öffnen sie auf dem Handy,
-   wählen Fraktion + Schauplatz, „Partie erstellen", Code oder QR-Code teilen,
+   wählen Champ, Deck + Schauplatz, „Partie erstellen", Code oder QR-Code teilen,
    der andere tritt bei. Los geht's.
 
 **Gut zu wissen:**

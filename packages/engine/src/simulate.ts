@@ -156,7 +156,7 @@ export function spielePartie(
   const profilB = opts.profilB ?? BOT_PROFILE.ausgewogen;
   let s = createGame(
     data,
-    [deckA.faction ?? 'humans', deckB.faction ?? 'animals'],
+    [deckA.championId ?? deckA.faction ?? 'humans', deckB.championId ?? deckB.faction ?? 'animals'],
     random,
     [deckA, deckB],
     opts.cheerleaders

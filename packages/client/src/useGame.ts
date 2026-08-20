@@ -3,7 +3,6 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type {
-  CheerleaderSelection,
   ClientView,
   DeckSelection,
   PlayerAction,
@@ -186,7 +185,7 @@ export function useGame() {
     (
       serverInput: string,
       deckSelection: DeckSelection,
-      cheerleaders: CheerleaderSelection,
+      championId: string,
       topicId: string,
       testMode = false
     ) => {
@@ -199,7 +198,7 @@ export function useGame() {
           JSON.stringify({
             type: 'create',
             deckSelection,
-            cheerleaders,
+            championId,
             topic: topicId,
             testMode
           })
@@ -214,7 +213,7 @@ export function useGame() {
       serverInput: string,
       code: string,
       deckSelection: DeckSelection,
-      cheerleaders: CheerleaderSelection
+      championId: string
     ) => {
       const url = toWsUrl(serverInput);
       session.current = { url, code: '', token: '' };
@@ -222,7 +221,7 @@ export function useGame() {
       loadCatalog(serverInput);
       open(url, (socket) =>
         socket.send(
-          JSON.stringify({ type: 'join', code: code.trim(), deckSelection, cheerleaders })
+          JSON.stringify({ type: 'join', code: code.trim(), deckSelection, championId })
         )
       );
     },

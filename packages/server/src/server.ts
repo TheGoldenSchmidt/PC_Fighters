@@ -12,22 +12,17 @@ import sirv from 'sirv';
 import {
   applyAction,
   buildClientView,
-  buildFactionTree,
   buildVisualCatalog,
   createGame,
   DataError,
-  defaultCheerleaderSelection,
   GameRuleError,
   loadGameData,
   ladeDecks,
   ladeDeckStatus,
-  topOf,
   validateDeck,
-  validateCheerleaderSelection,
   DeckError,
   type DeckList,
   type DeckSelection,
-  type CheerleaderSelection,
   type GameData,
   type GameState,
   type PlayerAction,
@@ -49,9 +44,8 @@ const abilityInfo = Object.fromEntries(
 
 interface RoomPlayer {
   token: string;
-  faction: string;
+  championId: string;
   deck: DeckList | null;
-  cheerleaders: CheerleaderSelection;
   socket: WebSocket | null;
 }
 
@@ -88,9 +82,8 @@ function testGameData(d: GameData): GameData {
     config: {
       ...d.config,
       energy: { start: 40, perRound: 40, cap: null },
-      // Schild nach EINEM Treffer voll: Im Testmodus soll man die
-      // Cheerleader-Kräfte sofort sehen können, statt auf einen Block zu
-      // warten (regulär braucht der Schild 7 Abschnitte).
+      // Superblock nach EINEM Treffer voll: Im Testmodus lassen sich Block und
+      // gewährte Champ-Superkraft sofort prüfen (regulär: 8 Abschnitte).
       ...(d.config.schild ? { schild: { ...d.config.schild, abschnitte: 1 } } : {})
     }
   };
@@ -125,8 +118,9 @@ const persistTempPath = persistFilePath + '.tmp';
  *   trägt GameState einen Auflösungszustand, der ein offenes Reaktionsfenster
  *   über einen Serverneustart hinweg erhalten muss.
  * 3 – Rückspiel-Bereitschaft und Matchnummer werden mit dem Raum gespeichert.
+ * 4 – Champ, Zwei-Klassen-Deck und Superkräfte ersetzen das alte Loadout.
  */
-const PERSIST_VERSION = 3;
+const PERSIST_VERSION = 4;
 
 interface PersistedRoom {
   code: string;
@@ -139,9 +133,8 @@ interface PersistedRoom {
   matchNumber?: number;
   players: Array<{
     token: string;
-    faction: string;
+    championId?: string;
     deck?: DeckList | null;
-    cheerleaders?: unknown;
   }>;
 }
 
@@ -164,9 +157,8 @@ function saveRooms(rooms: Map<string, Room>) {
         matchNumber: room.matchNumber,
         players: room.players.map((p) => ({
           token: p.token,
-          faction: p.faction,
-          deck: p.deck,
-          cheerleaders: p.cheerleaders
+          championId: p.championId,
+          deck: p.deck
         }))
       }))
     };
@@ -181,12 +173,7 @@ function saveRooms(rooms: Map<string, Room>) {
   }
 }
 
-/**
- * Bringt einen persistierten GameState auf den aktuellen Stand. Räume, die vor
- * den Cheerleader-Reaktionen gespeichert wurden, kennen die Felder der
- * Auflösungssteuerung nicht; ohne sie würde applyAction über `undefined`
- * stolpern. Ein alter Zustand hat nie ein offenes Fenster.
- */
+/** Vervollständigt optionale Auflösungsfelder eines Zustands derselben Version. */
 function migriereZustand(state: GameState): GameState {
   state.aufloesung ??= [];
   state.reaktion ??= null;
@@ -204,6 +191,10 @@ function loadRooms(data: GameData): Map<string, Room> {
       // erkannt. Neuere Versionen tragen { version, rooms }.
       const parsed: PersistedRoom[] = Array.isArray(wurzel) ? wurzel : (wurzel.rooms ?? []);
       const version = Array.isArray(wurzel) ? 1 : wurzel.version;
+      if (version < PERSIST_VERSION) {
+        console.warn(`Historische Räume (Version ${version}) werden wegen der Champion-Migration verworfen.`);
+        return map;
+      }
       if (!Array.isArray(wurzel) && version > PERSIST_VERSION) {
         // Neuere Datei als dieser Server sie versteht: lieber mit leerem
         // Raumverzeichnis starten, als Zustände halb interpretiert zu laden.
@@ -221,24 +212,11 @@ function loadRooms(data: GameData): Map<string, Room> {
           }
           const players = item.players.map((p, idx) => {
             const deck = p.deck ?? null;
-            const cheerleaders = p.cheerleaders
-              ? validateCheerleaderSelection(p.cheerleaders, deck, data)
-              : defaultCheerleaderSelection(deck, data);
-            const persistedSlots = item.state?.players[idx]?.cheerleaders;
-            if (item.state?.players[idx] && !persistedSlots) {
-              item.state.players[idx].cheerleaders = [...cheerleaders];
-            } else if (
-              persistedSlots &&
-              (persistedSlots.length !== cheerleaders.length ||
-                persistedSlots.some(
-                  (cardId, slot) => cardId !== null && cardId !== cheerleaders[slot]
-                ))
-            ) {
-              throw new GameRuleError(
-                `Die gespeicherten Cheerleader-Plätze von Spieler ${idx + 1} sind ungültig.`
-              );
+            const championId = p.championId ?? deck?.championId;
+            if (!championId || !data.champions.some((champion) => champion.id === championId)) {
+              throw new GameRuleError(`Der gespeicherte Champ von Spieler ${idx + 1} ist ungültig.`);
             }
-            return { token: p.token, faction: p.faction, deck, cheerleaders, socket: null };
+            return { token: p.token, championId, deck, socket: null };
           });
           map.set(item.code, {
             code: item.code,
@@ -315,10 +293,9 @@ export function startServer(port: number): Promise<RunningServer> {
     }
     room.state = createGame(
       room.testMode ? testGameData(data) : data,
-      [room.players[0].faction, room.players[1].faction],
+      [room.players[0].championId, room.players[1].championId],
       Math.random,
-      [room.players[0].deck, room.players[1].deck],
-      [room.players[0].cheerleaders, room.players[1].cheerleaders]
+      [room.players[0].deck, room.players[1].deck]
     );
     if (room.testMode) {
       const testCards = testCardIds(data);
@@ -400,13 +377,13 @@ export function startServer(port: number): Promise<RunningServer> {
         JSON.stringify({
           name: 'Political Correct Fighters',
           factions: data!.factions,
+          champions: data!.champions,
           topics: data!.topics,
           // Aussehen/Animation als OPAKE Daten – der Server interpretiert sie nie,
           // er reicht sie nur weiter (wie factions/keywords). Der Client rendert.
           visuals: buildVisualCatalog(data!),
           cards: data!.cards,
           deckbuilding: data!.config.deckbuilding,
-          cheerleaders: data!.config.cheerleaders,
           // Aus Kompatibilitätsgründen bleibt die bisherige Form erhalten,
           // enthält aber nur noch die verbindliche Feldbreite.
           lanes: { optionen: [FESTE_BAHNEN], standard: FESTE_BAHNEN },
@@ -485,20 +462,20 @@ export function startServer(port: number): Promise<RunningServer> {
       return data;
     }
 
-    function validFaction(faction: unknown): string {
+    function validChampion(championId: unknown): string {
       const d = requireData();
-      if (typeof faction !== 'string' || !d.factions.some((f) => f.id === faction)) {
+      if (typeof championId !== 'string' || !d.champions.some((champion) => champion.id === championId)) {
         throw new GameRuleError(
-          `Unbekannte Fraktion. Verfügbar: ${d.factions.map((f) => f.id).join(', ')}`
+          `Unbekannter Champ. Verfügbar: ${d.champions.map((champion) => champion.id).join(', ')}`
         );
       }
-      return faction;
+      return championId;
     }
 
-    function resolveDeck(selection: unknown, legacyFaction: unknown): { faction: string; deck: DeckList | null } {
+    function resolveDeck(selection: unknown, requestedChampion: unknown): { championId: string; deck: DeckList | null } {
       const d = requireData();
       if (!selection || typeof selection !== 'object') {
-        return { faction: validFaction(legacyFaction), deck: null };
+        return { championId: validChampion(requestedChampion), deck: null };
       }
       const value = selection as DeckSelection;
       let deck: DeckList;
@@ -524,21 +501,11 @@ export function startServer(port: number): Promise<RunningServer> {
       } else {
         throw new GameRuleError('Ungültige Deckauswahl.');
       }
-      const first = d.cardsById[deck.cards[0]?.cardId];
-      if (!first) throw new GameRuleError('Das Deck enthält keine gültige Karte.');
-      return { faction: topOf(buildFactionTree(d.factions), first.faction), deck };
-    }
-
-    function resolveCheerleaders(
-      selection: unknown,
-      deck: DeckList | null
-    ): CheerleaderSelection {
-      try {
-        return validateCheerleaderSelection(selection, deck, requireData());
-      } catch (e) {
-        if (e instanceof DeckError) throw new GameRuleError(e.message);
-        throw e;
+      const championId = validChampion(deck.championId ?? requestedChampion);
+      if (deck.championId && deck.championId !== championId) {
+        throw new GameRuleError('Deck und ausgewählter Champ passen nicht zusammen.');
       }
+      return { championId, deck };
     }
 
     /** Thema auflösen; ohne Angabe gilt das erste Thema aus topics.json. */
@@ -577,17 +544,15 @@ export function startServer(port: number): Promise<RunningServer> {
     function handleMessage(msg: Record<string, unknown>): void {
       switch (msg.type) {
         case 'create': {
-          const { faction, deck } = resolveDeck(msg.deckSelection, msg.faction);
-          const cheerleaders = resolveCheerleaders(msg.cheerleaders, deck);
+          const { championId, deck } = resolveDeck(msg.deckSelection, msg.championId ?? msg.faction);
           const topic = validTopic(msg.topic);
           const lanes = validLanes(msg.lanes);
           const room: Room = {
             code: newRoomCode(),
             players: [{
               token: randomBytes(12).toString('hex'),
-              faction,
+              championId,
               deck,
-              cheerleaders,
               socket: null
             }],
             state: null,
@@ -610,14 +575,14 @@ export function startServer(port: number): Promise<RunningServer> {
             testMode: room.testMode,
             keywords: keywordInfo,
             abilities: abilityInfo,
-            factions: requireData().factions
+            factions: requireData().factions,
+            champions: requireData().champions
           });
           break;
         }
 
         case 'join': {
-          const { faction, deck } = resolveDeck(msg.deckSelection, msg.faction);
-          const cheerleaders = resolveCheerleaders(msg.cheerleaders, deck);
+          const { championId, deck } = resolveDeck(msg.deckSelection, msg.championId ?? msg.faction);
           const room = rooms.get(String(msg.code));
           if (!room) {
             throw new GameRuleError('Diesen Raum-Code gibt es nicht. Tippfehler?');
@@ -627,9 +592,8 @@ export function startServer(port: number): Promise<RunningServer> {
           }
           room.players.push({
             token: randomBytes(12).toString('hex'),
-            faction,
+            championId,
             deck,
-            cheerleaders,
             socket: null
           });
           attach(room, 1);
@@ -648,10 +612,9 @@ export function startServer(port: number): Promise<RunningServer> {
           const d = requireData();
           room.state = createGame(
             room.testMode ? testGameData(d) : d,
-            [room.players[0].faction, faction],
+            [room.players[0].championId, championId],
             Math.random,
-            [room.players[0].deck, deck],
-            [room.players[0].cheerleaders, cheerleaders]
+            [room.players[0].deck, deck]
           );
           if (room.testMode) {
             // Beide Hände direkt mit allen Figuren-Karten füllen, damit sich

@@ -1,0 +1,1025 @@
+[
+  {
+    "id": "button_mushroom",
+    "name": "Button Mushroom",
+    "faction": "kabloom",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Button Mushroom",
+    "text": "Keine zusätzliche Fähigkeit.",
+    "type": "creature",
+    "attack": 1,
+    "health": 1,
+    "keywords": [],
+    "abilities": [],
+    "projectile": "✨"
+  },
+  {
+    "id": "berry_blast",
+    "name": "Berry Blast",
+    "faction": "kabloom",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Berry Blast",
+    "text": "3 Schaden",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "3 Schaden"
+    }
+  },
+  {
+    "id": "buff_shroom",
+    "name": "Buff-Shroom",
+    "faction": "kabloom",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Buff-Shroom",
+    "text": "Alle eigenen Mushrooms +1/+1",
+    "type": "creature",
+    "attack": 1,
+    "health": 1,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Alle eigenen Mushrooms +1/+1"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "seedling",
+    "name": "Seedling",
+    "faction": "kabloom",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Seedling",
+    "text": "Rundenstart: verwandelt sich in zufällige Pflanze bis Kosten 6",
+    "type": "creature",
+    "attack": 0,
+    "health": 2,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Rundenstart: verwandelt sich in zufällige Pflanze bis Kosten 6"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "zapricot",
+    "name": "Zapricot",
+    "faction": "kabloom",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Zapricot",
+    "text": "Keine zusätzliche Fähigkeit.",
+    "type": "creature",
+    "attack": 4,
+    "health": 1,
+    "keywords": [],
+    "abilities": [],
+    "projectile": "✨"
+  },
+  {
+    "id": "poison_mushroom",
+    "name": "Poison Mushroom",
+    "faction": "kabloom",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Poison Mushroom",
+    "text": "Anti-Hero 2",
+    "type": "creature",
+    "attack": 1,
+    "health": 1,
+    "keywords": [
+      "anti_hero"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Anti-Hero 2"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "wilder_instinkt",
+    "name": "Wilder Instinkt",
+    "faction": "kabloom",
+    "type": "action",
+    "cost": 2,
+    "effect": {
+      "kind": "buffAttackTemp",
+      "amount": 2,
+      "target": "friendlyCreature"
+    },
+    "text": "Eine verbündete Kreatur erhält bis zum Rundenende +2 ATK.",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Berry Angry"
+  },
+  {
+    "id": "mushroom_ringleader",
+    "name": "Mushroom Ringleader",
+    "faction": "kabloom",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Mushroom Ringleader",
+    "text": "+2 Angriff je anderer eigener Pflanze",
+    "type": "creature",
+    "attack": 0,
+    "health": 1,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "+2 Angriff je anderer eigener Pflanze"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "poison_ivy",
+    "name": "Poison Ivy",
+    "faction": "kabloom",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Poison Ivy",
+    "text": "Anti-Hero 4",
+    "type": "creature",
+    "attack": 1,
+    "health": 3,
+    "keywords": [
+      "anti_hero"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Anti-Hero 4"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "taubenschwarm",
+    "name": "Taubenschwarm",
+    "faction": "kabloom",
+    "type": "creature",
+    "cost": 3,
+    "attack": 3,
+    "health": 4,
+    "keywords": [
+      "fliegend"
+    ],
+    "abilities": [
+      {
+        "kind": "beschwoeren",
+        "timing": "beim_ausspielen",
+        "count": 1,
+        "token": {
+          "name": "Taube",
+          "attack": 1,
+          "health": 1,
+          "keywords": [
+            "fliegend"
+          ]
+        }
+      }
+    ],
+    "text": "Fliegend. Beim Ausspielen: Beschwöre eine 1/1-Taube mit Fliegend in eine freie Lane.",
+    "projectile": "🪶",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Pair of Pears"
+  },
+  {
+    "id": "bluesberry",
+    "name": "Bluesberry",
+    "faction": "kabloom",
+    "cost": 5,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Bluesberry",
+    "text": "Beim Ausspielen 2 Schaden",
+    "type": "creature",
+    "attack": 3,
+    "health": 3,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Beim Ausspielen 2 Schaden"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "sizzle",
+    "name": "Sizzle",
+    "faction": "kabloom",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Sizzle",
+    "text": "5 Schaden an einem Zombie",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "5 Schaden an einem Zombie"
+    }
+  },
+  {
+    "id": "banana_bomb",
+    "name": "Banana Bomb",
+    "faction": "kabloom",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Banana Bomb",
+    "text": "2 Schaden an einem Zombie",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "2 Schaden an einem Zombie"
+    }
+  },
+  {
+    "id": "mushroom_grotto",
+    "name": "Mushroom Grotto",
+    "faction": "kabloom",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Mushroom Grotto",
+    "text": "Beim Spielen einer Pflanze hier entsteht ein Puff-Shroom in anderer Lane",
+    "type": "environment",
+    "effect": {
+      "kind": "referenz",
+      "text": "Beim Spielen einer Pflanze hier entsteht ein Puff-Shroom in anderer Lane"
+    }
+  },
+  {
+    "id": "invasive_species",
+    "name": "Invasive Species",
+    "faction": "kabloom",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Invasive Species",
+    "text": "In Environment +3 Angriff",
+    "type": "creature",
+    "attack": 1,
+    "health": 4,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "In Environment +3 Angriff"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "puff_shroom",
+    "name": "Puff-Shroom",
+    "faction": "kabloom",
+    "cost": 0,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Puff-Shroom",
+    "text": "Team-Up",
+    "type": "creature",
+    "attack": 1,
+    "health": 1,
+    "keywords": [
+      "team_up"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Team-Up"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "hot_lava",
+    "name": "Hot Lava",
+    "faction": "kabloom",
+    "cost": 0,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Hot Lava",
+    "text": "Vor Kampf 1 Schaden an jeder Einheit hier",
+    "type": "environment",
+    "effect": {
+      "kind": "referenz",
+      "text": "Vor Kampf 1 Schaden an jeder Einheit hier"
+    }
+  },
+  {
+    "id": "veloci_radish_hatchling",
+    "name": "Veloci-Radish Hatchling",
+    "faction": "kabloom",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Veloci-Radish Hatchling",
+    "text": "Dino-Roar +1 Angriff",
+    "type": "creature",
+    "attack": 1,
+    "health": 2,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Dino-Roar +1 Angriff"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "shroom_for_two",
+    "name": "Shroom for Two",
+    "faction": "kabloom",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Shroom for Two",
+    "text": "Erzeugt 1/1 Team-Up Puff-Shroom",
+    "type": "creature",
+    "attack": 1,
+    "health": 1,
+    "keywords": [
+      "team_up"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Erzeugt 1/1 Team-Up Puff-Shroom"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "wild_berry",
+    "name": "Wild Berry",
+    "faction": "kabloom",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Wild Berry",
+    "text": "Anti-Hero 2; bewegt sich beim Ausspielen zufällig",
+    "type": "creature",
+    "attack": 4,
+    "health": 1,
+    "keywords": [
+      "anti_hero"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Anti-Hero 2; bewegt sich beim Ausspielen zufällig"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "petal_morphosis",
+    "name": "Petal-Morphosis",
+    "faction": "kabloom",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Petal-Morphosis",
+    "text": "Eigene Pflanze zufällig transformieren; Karte ziehen",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Eigene Pflanze zufällig transformieren; Karte ziehen"
+    }
+  },
+  {
+    "id": "sour_grapes",
+    "name": "Sour Grapes",
+    "faction": "kabloom",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Sour Grapes",
+    "text": "1 Schaden an jedem Zombie",
+    "type": "creature",
+    "attack": 2,
+    "health": 2,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "1 Schaden an jedem Zombie"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "poison_oak",
+    "name": "Poison Oak",
+    "faction": "kabloom",
+    "cost": 6,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Poison Oak",
+    "text": "Anti-Hero 5",
+    "type": "creature",
+    "attack": 5,
+    "health": 6,
+    "keywords": [
+      "anti_hero"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Anti-Hero 5"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "velociraptor",
+    "name": "Velociraptor",
+    "faction": "kabloom",
+    "type": "creature",
+    "cost": 3,
+    "attack": 2,
+    "health": 2,
+    "keywords": [
+      "flink"
+    ],
+    "abilities": [
+      {
+        "kind": "bedingt",
+        "scope": "same_sub",
+        "mindestAnzahl": 1,
+        "bonus": {
+          "atk": 1,
+          "hp": 0
+        }
+      }
+    ],
+    "text": "Flink. Solange du einen weiteren Dino kontrollierst, +1 ATK.",
+    "projectile": "🦖",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Cosmic Mushroom"
+  },
+  {
+    "id": "lava_guava",
+    "name": "Lava Guava",
+    "faction": "kabloom",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Lava Guava",
+    "text": "2 Schaden an Zombies hier/nebenan; am Boden Hot Lava erzeugen",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "2 Schaden an Zombies hier/nebenan; am Boden Hot Lava erzeugen"
+    }
+  },
+  {
+    "id": "cro_magnolia",
+    "name": "Cro-Magnolia",
+    "faction": "kabloom",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Cro-Magnolia",
+    "text": "Plant Evolution: Pflanzen hier/nebenan +2 Angriff",
+    "type": "creature",
+    "attack": 2,
+    "health": 4,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Plant Evolution: Pflanzen hier/nebenan +2 Angriff"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "shelf_mushroom",
+    "name": "Shelf Mushroom",
+    "faction": "kabloom",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Shelf Mushroom",
+    "text": "Fusion: 2 Schaden",
+    "type": "creature",
+    "attack": 2,
+    "health": 2,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Fusion: 2 Schaden"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "schwarze_katze",
+    "name": "Schwarze Katze",
+    "faction": "kabloom",
+    "type": "creature",
+    "cost": 3,
+    "attack": 3,
+    "health": 2,
+    "keywords": [
+      "flink"
+    ],
+    "abilities": [
+      {
+        "kind": "todesfluch",
+        "atk": 1
+      }
+    ],
+    "text": "Flink. Beim Tod verliert ihr letzter Angreifer dauerhaft 1 ATK.",
+    "projectile": "🐾",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Punish-Shroom"
+  },
+  {
+    "id": "falke",
+    "name": "Falke",
+    "faction": "kabloom",
+    "type": "creature",
+    "cost": 4,
+    "attack": 4,
+    "health": 4,
+    "keywords": [
+      "fliegend",
+      "flink"
+    ],
+    "abilities": [
+      {
+        "kind": "sturzflug",
+        "x": 1
+      }
+    ],
+    "text": "★ Fliegend, Flink und Sturzflug 1.",
+    "projectile": "🦅",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Sergeant Strongberry"
+  },
+  {
+    "id": "cherry_bomb",
+    "name": "Cherry Bomb",
+    "faction": "kabloom",
+    "cost": 6,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Cherry Bomb",
+    "text": "Je 4 Schaden an Zombies hier und nebenan",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Je 4 Schaden an Zombies hier und nebenan"
+    }
+  },
+  {
+    "id": "grapes_of_wrath",
+    "name": "Grapes of Wrath",
+    "faction": "kabloom",
+    "cost": 7,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Grapes of Wrath",
+    "text": "Beim Tod 6 Schaden am Zombie-Held",
+    "type": "creature",
+    "attack": 6,
+    "health": 6,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Beim Tod 6 Schaden am Zombie-Held"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "astro_shroom",
+    "name": "Astro-Shroom",
+    "faction": "kabloom",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Astro-Shroom",
+    "text": "Bullseye; jede ausgespielte Pflanze → 1 Heldenschaden",
+    "type": "creature",
+    "attack": 1,
+    "health": 1,
+    "keywords": [
+      "bullseye"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Bullseye; jede ausgespielte Pflanze → 1 Heldenschaden"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "banana_launcher",
+    "name": "Banana Launcher",
+    "faction": "kabloom",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Banana Launcher",
+    "text": "Rundenstart: Banana Bomb erhalten",
+    "type": "creature",
+    "attack": 0,
+    "health": 3,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Rundenstart: Banana Bomb erhalten"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "pair_pearadise",
+    "name": "Pair Pearadise",
+    "faction": "kabloom",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Pair Pearadise",
+    "text": "Gespielte Pflanze wird hier als Team-Up-Kopie dupliziert",
+    "type": "environment",
+    "effect": {
+      "kind": "referenz",
+      "text": "Gespielte Pflanze wird hier als Team-Up-Kopie dupliziert"
+    }
+  },
+  {
+    "id": "getigerter",
+    "name": "Getigerter",
+    "faction": "kabloom",
+    "type": "creature",
+    "cost": 2,
+    "attack": 3,
+    "health": 1,
+    "keywords": [
+      "flink"
+    ],
+    "text": "Flink.",
+    "projectile": "🐾",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Fireweed"
+  },
+  {
+    "id": "imitater",
+    "name": "Imitater",
+    "faction": "kabloom",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Imitater",
+    "text": "Wird zur Kopie der nächsten ausgespielten Pflanze",
+    "type": "creature",
+    "attack": 1,
+    "health": 4,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Wird zur Kopie der nächsten ausgespielten Pflanze"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "klapperschlange",
+    "name": "Klapperschlange",
+    "faction": "kabloom",
+    "type": "creature",
+    "cost": 3,
+    "attack": 2,
+    "health": 3,
+    "abilities": [
+      {
+        "kind": "gift",
+        "staerke": 2
+      }
+    ],
+    "text": "Gift 2.",
+    "projectile": "🐍",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Strawberrian"
+  },
+  {
+    "id": "pineclone",
+    "name": "Pineclone",
+    "faction": "kabloom",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Pineclone",
+    "text": "Alle eigenen Pflanzen werden 3/3 Pineclones",
+    "type": "creature",
+    "attack": 3,
+    "health": 3,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Alle eigenen Pflanzen werden 3/3 Pineclones"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "dandy_lion_king",
+    "name": "Dandy Lion King",
+    "faction": "kabloom",
+    "cost": 6,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Dandy Lion King",
+    "text": "Zombie-Held verliert die Hälfte seines aktuellen Lebens",
+    "type": "creature",
+    "attack": 4,
+    "health": 4,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Zombie-Held verliert die Hälfte seines aktuellen Lebens"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "kernel_corn",
+    "name": "Kernel Corn",
+    "faction": "kabloom",
+    "cost": 8,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Kernel Corn",
+    "text": "Beim Ausspielen 4 Schaden an allen Zombies",
+    "type": "creature",
+    "attack": 6,
+    "health": 6,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Beim Ausspielen 4 Schaden an allen Zombies"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "streunerkatze",
+    "name": "Streunerkatze",
+    "faction": "kabloom",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Reincarnation",
+    "text": "Verwandelt sich in der Hand jede Runde zufällig und erhält +1/+1",
+    "type": "creature",
+    "attack": 2,
+    "health": 2,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Verwandelt sich in der Hand jede Runde zufällig und erhält +1/+1"
+      }
+    ],
+    "projectile": "🐾"
+  },
+  {
+    "id": "molekale",
+    "name": "Molekale",
+    "faction": "kabloom",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Molekale",
+    "text": "Andere Pflanzen werden in Pflanzen mit Kosten +1 verwandelt",
+    "type": "creature",
+    "attack": 3,
+    "health": 2,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Andere Pflanzen werden in Pflanzen mit Kosten +1 verwandelt"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "adler_voegel",
+    "name": "Adler",
+    "faction": "kabloom",
+    "type": "creature",
+    "cost": 5,
+    "attack": 5,
+    "health": 5,
+    "keywords": [
+      "fliegend"
+    ],
+    "abilities": [
+      {
+        "kind": "sturzflug",
+        "x": 2
+      }
+    ],
+    "text": "Fliegend und Sturzflug 2.",
+    "projectile": "🦅",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Gloom-Shroom"
+  },
+  {
+    "id": "katzenmutter",
+    "name": "Katzenmutter",
+    "faction": "kabloom",
+    "type": "creature",
+    "cost": 3,
+    "attack": 2,
+    "health": 3,
+    "abilities": [
+      {
+        "kind": "beschwoeren",
+        "timing": "beim_ausspielen",
+        "count": 1,
+        "token": {
+          "name": "Kätzchen",
+          "attack": 1,
+          "health": 1,
+          "keywords": [
+            "flink"
+          ]
+        }
+      }
+    ],
+    "text": "Beim Ausspielen: Beschwöre ein 1/1-Kätzchen mit Flink in eine freie Lane.",
+    "projectile": "🐈",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Veloci-Radish Packmate"
+  },
+  {
+    "id": "ratte",
+    "name": "Ratte",
+    "faction": "kabloom",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Blooming Heart",
+    "text": "Nach verursachtem Schaden +1 Angriff",
+    "type": "creature",
+    "attack": 2,
+    "health": 1,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Nach verursachtem Schaden +1 Angriff"
+      }
+    ],
+    "projectile": "🦷"
+  },
+  {
+    "id": "high_voltage_currant",
+    "name": "High-Voltage Currant",
+    "faction": "kabloom",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "High-Voltage Currant",
+    "text": "Andere Berry verursacht Schaden → +1 Angriff; Berry conjuren",
+    "type": "creature",
+    "attack": 1,
+    "health": 1,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Andere Berry verursacht Schaden → +1 Angriff; Berry conjuren"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "sonic_bloom",
+    "name": "Sonic Bloom",
+    "faction": "kabloom",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Sonic Bloom",
+    "text": "Zombie-Held bekommt 1 Schaden je eigener Pflanze",
+    "type": "creature",
+    "attack": 3,
+    "health": 1,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Zombie-Held bekommt 1 Schaden je eigener Pflanze"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "transfiguration",
+    "name": "Transfiguration",
+    "faction": "kabloom",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Transfiguration",
+    "text": "Rundenende → zufällige Pflanze Kosten +1; Effekt bleibt",
+    "type": "creature",
+    "attack": 4,
+    "health": 7,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Rundenende → zufällige Pflanze Kosten +1; Effekt bleibt"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "atomic_bombegranate",
+    "name": "Atomic Bombegranate",
+    "faction": "kabloom",
+    "cost": 5,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Atomic Bombegranate",
+    "text": "Beim Tod Seedlings hier und nebenan",
+    "type": "creature",
+    "attack": 5,
+    "health": 2,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Beim Tod Seedlings hier und nebenan"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "electric_blueberry",
+    "name": "Electric Blueberry",
+    "faction": "kabloom",
+    "cost": 5,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Electric Blueberry",
+    "text": "Nach Kampf 6 Schaden an zufälligem Zombie oder Held",
+    "type": "creature",
+    "attack": 0,
+    "health": 5,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Nach Kampf 6 Schaden an zufälligem Zombie oder Held"
+      }
+    ],
+    "projectile": "✨"
+  }
+]

@@ -11,7 +11,7 @@ import { useDialogFocus } from './useDialogFocus';
 export interface DetailData {
   cardId: string;
   faction?: string;
-  type?: 'creature' | 'action';
+  type?: CardDef['type'];
   name: string;
   cost?: number;
   attack?: number;
@@ -67,14 +67,24 @@ export function CardPosterFallback({
   compact = false
 }: {
   faction?: string;
-  type?: 'creature' | 'action';
+  type?: CardDef['type'];
   name: string;
   compact?: boolean;
 }) {
   return (
     <div className={`card-poster ${faction ? `faction-${faction}` : ''} ${compact ? 'compact' : ''}`}>
       <span className="card-poster-show">PC FIGHTERS</span>
-      <strong>{type === 'action' ? 'AKTION' : type === 'creature' ? 'KÄMPFER' : 'DUELLKARTE'}</strong>
+      <strong>
+        {type === 'action'
+          ? 'AKTION'
+          : type === 'environment'
+            ? 'UMGEBUNG'
+            : type === 'superpower'
+              ? 'SUPERKRAFT'
+              : type === 'creature'
+                ? 'KÄMPFER'
+                : 'DUELLKARTE'}
+      </strong>
       {!compact && <small>{name}</small>}
     </div>
   );

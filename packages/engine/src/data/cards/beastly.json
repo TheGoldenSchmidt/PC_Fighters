@@ -1,0 +1,1089 @@
+[
+  {
+    "id": "skunk_punk",
+    "name": "Skunk Punk",
+    "faction": "beastly",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Skunk Punk",
+    "text": "Keine zusätzliche Fähigkeit.",
+    "type": "creature",
+    "attack": 1,
+    "health": 1,
+    "keywords": [],
+    "abilities": [],
+    "projectile": "✨"
+  },
+  {
+    "id": "pied_piper",
+    "name": "Pied Piper",
+    "faction": "beastly",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Pied Piper",
+    "text": "Gravestone; Plants hier beim Reveal -1/-1",
+    "type": "creature",
+    "attack": 2,
+    "health": 1,
+    "keywords": [
+      "gravestone"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Gravestone; Plants hier beim Reveal -1/-1"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "fliessbandarbeiter",
+    "name": "Fließbandarbeiter",
+    "faction": "beastly",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Zookeeper",
+    "text": "Pet gespielt → alle Pets +1 Angriff",
+    "type": "creature",
+    "attack": 1,
+    "health": 3,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Pet gespielt → alle Pets +1 Angriff"
+      }
+    ],
+    "projectile": "🔩"
+  },
+  {
+    "id": "dolphin_rider",
+    "name": "Dolphin Rider",
+    "faction": "beastly",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Dolphin Rider",
+    "text": "Amphibious",
+    "type": "creature",
+    "attack": 3,
+    "health": 2,
+    "keywords": [
+      "amphibious"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Amphibious"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "locust_swarm",
+    "name": "Locust Swarm",
+    "faction": "beastly",
+    "cost": 5,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Locust Swarm",
+    "text": "Pflanze zerstören",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Pflanze zerstören"
+    }
+  },
+  {
+    "id": "dog_walker",
+    "name": "Dog Walker",
+    "faction": "beastly",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Dog Walker",
+    "text": "Hunt",
+    "type": "creature",
+    "attack": 2,
+    "health": 2,
+    "keywords": [
+      "hunt"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Hunt"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "nibble",
+    "name": "Nibble",
+    "faction": "beastly",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Nibble",
+    "text": "Pflanze -1/-1; bei Zerstörung Gourmet conjuren",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Pflanze -1/-1; bei Zerstörung Gourmet conjuren"
+    }
+  },
+  {
+    "id": "snorkel_zombie",
+    "name": "Snorkel Zombie",
+    "faction": "beastly",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Snorkel Zombie",
+    "text": "Amphibious",
+    "type": "creature",
+    "attack": 2,
+    "health": 1,
+    "keywords": [
+      "amphibious"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Amphibious"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "yeti_lunchbox",
+    "name": "Yeti Lunchbox",
+    "faction": "beastly",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Yeti Lunchbox",
+    "text": "Zombie +1/+1; Pet stattdessen +2/+1",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Zombie +1/+1; Pet stattdessen +2/+1"
+    }
+  },
+  {
+    "id": "haunting_zombie",
+    "name": "Haunting Zombie",
+    "faction": "beastly",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Haunting Zombie",
+    "text": "Beim Tod Haunting Ghost erhalten",
+    "type": "creature",
+    "attack": 2,
+    "health": 1,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Beim Tod Haunting Ghost erhalten"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "loudmouth",
+    "name": "Loudmouth",
+    "faction": "beastly",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Loudmouth",
+    "text": "Gravestone; Zombie +2/+2",
+    "type": "creature",
+    "attack": 1,
+    "health": 1,
+    "keywords": [
+      "gravestone"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Gravestone; Zombie +2/+2"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "b_flat",
+    "name": "B-Flat",
+    "faction": "beastly",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "B-Flat",
+    "text": "Zufällige Pflanze zerstören",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Zufällige Pflanze zerstören"
+    }
+  },
+  {
+    "id": "total_eclipse",
+    "name": "Total Eclipse",
+    "faction": "beastly",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Total Eclipse",
+    "text": "Pflanzen hier -1/-1",
+    "type": "environment",
+    "effect": {
+      "kind": "referenz",
+      "text": "Pflanzen hier -1/-1"
+    }
+  },
+  {
+    "id": "alien_ooze",
+    "name": "Alien Ooze",
+    "faction": "beastly",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Alien Ooze",
+    "text": "Pflanze -3/-3; Heights/Environment -6/-6",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Pflanze -3/-3; Heights/Environment -6/-6"
+    }
+  },
+  {
+    "id": "surfer_zombie",
+    "name": "Surfer Zombie",
+    "faction": "beastly",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Surfer Zombie",
+    "text": "Amphibious, Frenzy",
+    "type": "creature",
+    "attack": 4,
+    "health": 3,
+    "keywords": [
+      "amphibious",
+      "frenzy"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Amphibious, Frenzy"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "haunting_ghost",
+    "name": "Haunting Ghost",
+    "faction": "beastly",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Haunting Ghost",
+    "text": "Amphibious; Pflanze -1/-1",
+    "type": "creature",
+    "attack": 2,
+    "health": 1,
+    "keywords": [
+      "amphibious"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Amphibious; Pflanze -1/-1"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "goat",
+    "name": "Goat",
+    "faction": "beastly",
+    "cost": 0,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Goat",
+    "text": "Wird irgendeine Goat verletzt → +1/+1",
+    "type": "creature",
+    "attack": 1,
+    "health": 1,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Wird irgendeine Goat verletzt → +1/+1"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "vengeful_cyborg",
+    "name": "Vengeful Cyborg",
+    "faction": "beastly",
+    "cost": 5,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Vengeful Cyborg",
+    "text": "Hunt",
+    "type": "creature",
+    "attack": 5,
+    "health": 6,
+    "keywords": [
+      "hunt"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Hunt"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "squirrel_herder",
+    "name": "Squirrel Herder",
+    "faction": "beastly",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Squirrel Herder",
+    "text": "Gravestone; Nut oder Berry zerstören",
+    "type": "creature",
+    "attack": 2,
+    "health": 2,
+    "keywords": [
+      "gravestone"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Gravestone; Nut oder Berry zerstören"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "schichtwechsel",
+    "name": "Schichtwechsel",
+    "faction": "beastly",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Vimpire",
+    "text": "Frenzy; tötet Pflanze → +2/+2",
+    "type": "creature",
+    "attack": 2,
+    "health": 3,
+    "keywords": [
+      "frenzy"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Frenzy; tötet Pflanze → +2/+2"
+      }
+    ],
+    "projectile": "🕗"
+  },
+  {
+    "id": "vitamin_z",
+    "name": "Vitamin Z",
+    "faction": "beastly",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Vitamin Z",
+    "text": "Zombie +3/+3",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Zombie +3/+3"
+    }
+  },
+  {
+    "id": "randy_marsh",
+    "name": "Randy Marsh",
+    "faction": "beastly",
+    "type": "creature",
+    "cost": 5,
+    "attack": 5,
+    "health": 6,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "wucht"
+      },
+      {
+        "kind": "rueckstoss",
+        "selbst": 2,
+        "gegner": 2
+      }
+    ],
+    "text": "Wucht. Beim Ausspielen: Randy Marsh und die gegnerische Kreatur in dieser Lane erleiden jeweils 2 Schaden.",
+    "projectile": "⛏️",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Kangaroo Rider"
+  },
+  {
+    "id": "smashing_gargantuar",
+    "name": "Smashing Gargantuar",
+    "faction": "beastly",
+    "cost": 5,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Smashing Gargantuar",
+    "text": "Alle Gargantuars haben Frenzy",
+    "type": "creature",
+    "attack": 5,
+    "health": 5,
+    "keywords": [
+      "frenzy"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Alle Gargantuars haben Frenzy"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "biodome_botanist",
+    "name": "Biodome Botanist",
+    "faction": "beastly",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Biodome Botanist",
+    "text": "Erzeugt für Gegner eine 1/1-Pflanze",
+    "type": "creature",
+    "attack": 2,
+    "health": 3,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Erzeugt für Gegner eine 1/1-Pflanze"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "cosmic_yeti",
+    "name": "Cosmic Yeti",
+    "faction": "beastly",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Cosmic Yeti",
+    "text": "Pet +1/+1 conjuren; Rundenende zurück auf Hand",
+    "type": "creature",
+    "attack": 3,
+    "health": 3,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Pet +1/+1 conjuren; Rundenende zurück auf Hand"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "primordial_cheese_shover",
+    "name": "Primordial Cheese Shover",
+    "faction": "beastly",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Primordial Cheese Shover",
+    "text": "Zombie Evolution: Pflanze zerstören",
+    "type": "creature",
+    "attack": 4,
+    "health": 4,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Zombie Evolution: Pflanze zerstören"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "killer_whale",
+    "name": "Killer Whale",
+    "faction": "beastly",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Killer Whale",
+    "text": "Amphibious; Fusion gibt +2/+1 und Amphibious",
+    "type": "creature",
+    "attack": 2,
+    "health": 1,
+    "keywords": [
+      "amphibious"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Amphibious; Fusion gibt +2/+1 und Amphibious"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "streuner",
+    "name": "Streuner",
+    "faction": "beastly",
+    "type": "creature",
+    "cost": 1,
+    "attack": 1,
+    "health": 2,
+    "abilities": [
+      {
+        "kind": "sammeln",
+        "bonus": {
+          "atk": 0,
+          "hp": 1
+        },
+        "trigger": "own",
+        "firstPerRound": true,
+        "maxTriggers": 2
+      }
+    ],
+    "text": "Wenn zum ersten Mal in einer Runde eine andere verbündete Kreatur stirbt: dauerhaft +0/+1, maximal zweimal.",
+    "projectile": "🥫",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Cat Lady"
+  },
+  {
+    "id": "schrottsammlerin",
+    "name": "Schrottsammlerin",
+    "faction": "beastly",
+    "type": "creature",
+    "cost": 3,
+    "attack": 3,
+    "health": 3,
+    "abilities": [
+      {
+        "kind": "beschwoeren",
+        "timing": "beim_tod",
+        "count": 1,
+        "token": {
+          "name": "Fund-Token",
+          "attack": 1,
+          "health": 1,
+          "keywords": []
+        }
+      }
+    ],
+    "text": "Beim Tod: Beschwöre einen 1/1-Fund in eine freie eigene Lane.",
+    "projectile": "🔦",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Zombie Yeti"
+  },
+  {
+    "id": "stahlgiesser",
+    "name": "Stahlgießer",
+    "faction": "beastly",
+    "type": "creature",
+    "cost": 6,
+    "attack": 5,
+    "health": 7,
+    "abilities": [
+      {
+        "kind": "wachstum",
+        "per_round": {
+          "atk": 1,
+          "hp": 0
+        }
+      }
+    ],
+    "text": "Rundenbeginn: dauerhaft +1/+0.",
+    "projectile": "🔥",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Deep Sea Gargantuar"
+  },
+  {
+    "id": "maniacal_laugh",
+    "name": "Maniacal Laugh",
+    "faction": "beastly",
+    "cost": 6,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Maniacal Laugh",
+    "text": "Zombie +5/+5 und Frenzy",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Zombie +5/+5 und Frenzy"
+    }
+  },
+  {
+    "id": "cheese_cutter",
+    "name": "Cheese Cutter",
+    "faction": "beastly",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Cheese Cutter",
+    "text": "Heldenschaden → Gourmet conjuren, Kosten -1",
+    "type": "creature",
+    "attack": 2,
+    "health": 2,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Heldenschaden → Gourmet conjuren, Kosten -1"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "cyborg_zombie",
+    "name": "Cyborg Zombie",
+    "faction": "beastly",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Cyborg Zombie",
+    "text": "Hunt; beim Tod Vengeful Cyborg erhalten",
+    "type": "creature",
+    "attack": 5,
+    "health": 3,
+    "keywords": [
+      "hunt"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Hunt; beim Tod Vengeful Cyborg erhalten"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "area_22",
+    "name": "Area 22",
+    "faction": "beastly",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Area 22",
+    "text": "Zombies hier +2/+2 und Frenzy",
+    "type": "environment",
+    "effect": {
+      "kind": "referenz",
+      "text": "Zombies hier +2/+2 und Frenzy"
+    }
+  },
+  {
+    "id": "extinction_event",
+    "name": "Extinction Event",
+    "faction": "beastly",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Extinction Event",
+    "text": "Ziel -2/-2; alle anderen Kopien ebenfalls -2/-2",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Ziel -2/-2; alle anderen Kopien ebenfalls -2/-2"
+    }
+  },
+  {
+    "id": "ancient_vimpire",
+    "name": "Ancient Vimpire",
+    "faction": "beastly",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Ancient Vimpire",
+    "text": "Amphibious, Frenzy; Frenzy-Zombie tötet Pflanze → +2/+2",
+    "type": "creature",
+    "attack": 3,
+    "health": 4,
+    "keywords": [
+      "amphibious",
+      "frenzy"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Amphibious, Frenzy; Frenzy-Zombie tötet Pflanze → +2/+2"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "hunting_grounds",
+    "name": "Hunting Grounds",
+    "faction": "beastly",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Hunting Grounds",
+    "text": "Zombies hier Hunt; Betreten/Verlassen → +1/+1",
+    "type": "environment",
+    "effect": {
+      "kind": "referenz",
+      "text": "Zombies hier Hunt; Betreten/Verlassen → +1/+1"
+    }
+  },
+  {
+    "id": "nurse_gargantuar",
+    "name": "Nurse Gargantuar",
+    "faction": "beastly",
+    "cost": 7,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Nurse Gargantuar",
+    "text": "Schaden eines Gargantuars heilt den Zombie-Held gleich stark",
+    "type": "creature",
+    "attack": 6,
+    "health": 6,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Schaden eines Gargantuars heilt den Zombie-Held gleich stark"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "octo_zombie",
+    "name": "Octo Zombie",
+    "faction": "beastly",
+    "cost": 8,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Octo Zombie",
+    "text": "Amphibious, Frenzy; erzeugt Octo-Pet; beim Tod neue Octo-Zombie-Karte",
+    "type": "creature",
+    "attack": 8,
+    "health": 8,
+    "keywords": [
+      "amphibious",
+      "frenzy"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Amphibious, Frenzy; erzeugt Octo-Pet; beim Tod neue Octo-Zombie-Karte"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "zombot_1000",
+    "name": "Zombot 1000",
+    "faction": "beastly",
+    "cost": 9,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Zombot 1000",
+    "text": "Gravestone; Reveal zerstört Pflanzen hier/nebenan",
+    "type": "creature",
+    "attack": 9,
+    "health": 9,
+    "keywords": [
+      "gravestone"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Gravestone; Reveal zerstört Pflanzen hier/nebenan"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "interstellar_bounty_hunter",
+    "name": "Interstellar Bounty Hunter",
+    "faction": "beastly",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Interstellar Bounty Hunter",
+    "text": "Hunt, Frenzy; tötet Pflanze → Karte ziehen",
+    "type": "creature",
+    "attack": 4,
+    "health": 4,
+    "keywords": [
+      "frenzy",
+      "hunt"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Hunt, Frenzy; tötet Pflanze → Karte ziehen"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "supernova_gargantuar",
+    "name": "Supernova Gargantuar",
+    "faction": "beastly",
+    "cost": 5,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Supernova Gargantuar",
+    "text": "Frenzy; Gargantuar tötet Pflanze → alle Kopien dieser Pflanze zerstören",
+    "type": "creature",
+    "attack": 5,
+    "health": 7,
+    "keywords": [
+      "frenzy"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Frenzy; Gargantuar tötet Pflanze → alle Kopien dieser Pflanze zerstören"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "betriebsrat",
+    "name": "Betriebsrat",
+    "faction": "beastly",
+    "cost": 5,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Mondo Bronto",
+    "text": "Amphibious; Dino-Roar +1/+1 und Pflanzen hier zerstören",
+    "type": "creature",
+    "attack": 5,
+    "health": 5,
+    "keywords": [
+      "amphibious"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Amphibious; Dino-Roar +1/+1 und Pflanzen hier zerstören"
+      }
+    ],
+    "projectile": "📋"
+  },
+  {
+    "id": "gargantuar_throwing_gargantuar",
+    "name": "Gargantuar-Throwing Gargantuar",
+    "faction": "beastly",
+    "cost": 7,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Gargantuar-Throwing Gargantuar",
+    "text": "Wenn verletzt, zufälligen Gargantuar erzeugen",
+    "type": "creature",
+    "attack": 6,
+    "health": 6,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Wenn verletzt, zufälligen Gargantuar erzeugen"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "lehrling",
+    "name": "Lehrling",
+    "faction": "beastly",
+    "type": "creature",
+    "cost": 1,
+    "attack": 2,
+    "health": 2,
+    "abilities": [
+      {
+        "kind": "wachstum",
+        "per_round": {
+          "atk": 0,
+          "hp": 1
+        },
+        "maxTriggers": 2
+      }
+    ],
+    "text": "Rundenbeginn: +0/+1, maximal zweimal.",
+    "projectile": "🔧",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Fraidy Cat"
+  },
+  {
+    "id": "secret_agent",
+    "name": "Secret Agent",
+    "faction": "beastly",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Secret Agent",
+    "text": "Zombie auf Hand; erhält dauerhaft +3/+3",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Zombie auf Hand; erhält dauerhaft +3/+3"
+    }
+  },
+  {
+    "id": "energy_drink_zombie",
+    "name": "Energy Drink Zombie",
+    "faction": "beastly",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Energy Drink Zombie",
+    "text": "Frenzy; Start Tricks +1/+1 und zufällig bewegen",
+    "type": "creature",
+    "attack": 1,
+    "health": 1,
+    "keywords": [
+      "frenzy"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Frenzy; Start Tricks +1/+1 und zufällig bewegen"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "der_alte_hund",
+    "name": "Der alte Hund",
+    "faction": "beastly",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Synchronized Swimmer",
+    "text": "Amphibious; kopiert Angriff/Leben eines anderen Zombies",
+    "type": "creature",
+    "attack": 2,
+    "health": 1,
+    "keywords": [
+      "amphibious"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Amphibious; kopiert Angriff/Leben eines anderen Zombies"
+      }
+    ],
+    "projectile": "🦴"
+  },
+  {
+    "id": "hover_goat_3000",
+    "name": "Hover-Goat 3000",
+    "faction": "beastly",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Hover-Goat 3000",
+    "text": "Amphibious; anderer Zombie +2/+2; bei Verletzung auf Hand",
+    "type": "creature",
+    "attack": 1,
+    "health": 3,
+    "keywords": [
+      "amphibious"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Amphibious; anderer Zombie +2/+2; bei Verletzung auf Hand"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "meute_der_vergessenen",
+    "name": "Die Meute der Vergessenen",
+    "faction": "beastly",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Overstuffed Zombie",
+    "text": "Hunt; Kill + Überleben → voll heilen und Held +2",
+    "type": "creature",
+    "attack": 4,
+    "health": 4,
+    "keywords": [
+      "hunt"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Hunt; Kill + Überleben → voll heilen und Held +2"
+      }
+    ],
+    "projectile": "🐕"
+  },
+  {
+    "id": "suppenkueche",
+    "name": "Suppenküche",
+    "faction": "beastly",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Sneezing Zombie",
+    "text": "Pflanzen/Held können nicht heilen; alle Pflanzen beim Ausspielen -1/-1",
+    "type": "creature",
+    "attack": 2,
+    "health": 4,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Pflanzen/Held können nicht heilen; alle Pflanzen beim Ausspielen -1/-1"
+      }
+    ],
+    "projectile": "🍲"
+  },
+  {
+    "id": "king_of_the_grill",
+    "name": "King of the Grill",
+    "faction": "beastly",
+    "cost": 6,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "King of the Grill",
+    "text": "Frenzy; Gargantuar-Kill → Gargantuar conjuren",
+    "type": "creature",
+    "attack": 6,
+    "health": 6,
+    "keywords": [
+      "frenzy"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Frenzy; Gargantuar-Kill → Gargantuar conjuren"
+      }
+    ],
+    "projectile": "✨"
+  }
+]

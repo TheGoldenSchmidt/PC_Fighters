@@ -37,6 +37,7 @@ function readJson(file: string, path: string): unknown {
 export function loadGameData(dataDir: string = DATA_DIR): GameData {
   const config = readJson('config.json', join(dataDir, 'config.json'));
   const factions = readJson('factions.json', join(dataDir, 'factions.json'));
+  const champions = readJson('champions.json', join(dataDir, 'champions.json'));
   const topics = readJson('topics.json', join(dataDir, 'topics.json'));
   const animations = readJson('animations.json', join(dataDir, 'animations.json'));
 
@@ -61,7 +62,7 @@ export function loadGameData(dataDir: string = DATA_DIR): GameData {
     // kein figures-Ordner vorhanden – das ist in Ordnung
   }
 
-  const validated = validateGameData({ config, factions, topics, cardFiles, animations, figureFiles });
+  const validated = validateGameData({ config, factions, champions, topics, cardFiles, animations, figureFiles });
   return {
     ...validated,
     cardsById: Object.fromEntries(validated.cards.map((c) => [c.id, c]))
@@ -107,8 +108,8 @@ export function ladeDeckStatus(data: GameData, dataDir: string = DATA_DIR): Deck
   for (const id of active) {
     if (!decks[id]) problems.push(`Aktives Deck "${id}" existiert nicht in data/decks/.`);
   }
-  if (active.length !== 4) {
-    problems.push(`Für die Alpha müssen genau vier Decks aktiv sein (aktuell ${active.length}).`);
+  if (active.length !== data.champions.length) {
+    problems.push(`Es muss genau ein aktives Starterdeck je Champ geben (aktuell ${active.length}, erwartet ${data.champions.length}).`);
   }
   if (typeof raw.disabledReason !== 'string' || raw.disabledReason.trim().length === 0) {
     problems.push('"disabledReason" muss ein nicht-leerer Text sein.');
@@ -132,22 +133,14 @@ export function ladeAktiveDecks(data: GameData, dataDir: string = DATA_DIR): Rec
   return active;
 }
 
-/** Strenger Vertrag der vier Veröffentlichungs-Testdecks, unabhängig von Legacy-Presets. */
+/** Vertrag der ausgelieferten Champion-Starterdecks. */
 export function validateAlphaTestDeck(id: string, deck: DeckList, data: GameData): void {
   const problems: string[] = [];
-  let heroes = 0;
-  let principals = 0;
-  for (const entry of deck.cards) {
-    const card = data.cardsById[entry.cardId];
-    if (!card) continue; // validateDeck meldet unbekannte IDs bereits vorher.
-    if (card.category === 'hero') heroes += entry.count;
-    if (card.category === 'principal') principals += entry.count;
-    const alphaMax = card.category === 'hero' || card.category === 'principal' || card.signature ? 1 : 2;
-    if (entry.count > alphaMax) {
-      problems.push(`${card.name}: ${entry.count} Kopien, im Alpha-Testdeck erlaubt sind ${alphaMax}.`);
-    }
+  if (!deck.championId) problems.push('Das Starterdeck braucht eine championId.');
+  if (deck.championId && !data.champions.some((champion) => champion.id === deck.championId)) {
+    problems.push(`Unbekannter Champ "${deck.championId}".`);
   }
-  if (heroes !== 2) problems.push(`Exakt zwei Heroes erforderlich, gefunden: ${heroes}.`);
-  if (principals !== 1) problems.push(`Exakt ein PC Principal erforderlich, gefunden: ${principals}.`);
+  const total = deck.cards.reduce((sum, entry) => sum + entry.count, 0);
+  if (total !== data.config.deckbuilding.size) problems.push(`Das Starterdeck enthält ${total} statt ${data.config.deckbuilding.size} Karten.`);
   if (problems.length > 0) throw new DataError(`decks/${id}.json`, problems);
 }

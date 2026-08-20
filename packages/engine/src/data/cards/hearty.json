@@ -1,0 +1,1013 @@
+[
+  {
+    "id": "baseball_zombie",
+    "name": "Baseball Zombie",
+    "faction": "hearty",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Baseball Zombie",
+    "text": "Keine zusätzliche Fähigkeit.",
+    "type": "creature",
+    "attack": 1,
+    "health": 1,
+    "keywords": [],
+    "abilities": [],
+    "projectile": "✨"
+  },
+  {
+    "id": "rolling_stone",
+    "name": "Rolling Stone",
+    "faction": "hearty",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Rolling Stone",
+    "text": "Pflanze mit ≤2 Angriff zerstören",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Pflanze mit ≤2 Angriff zerstören"
+    }
+  },
+  {
+    "id": "feldscherin",
+    "name": "Feldscherin",
+    "faction": "hearty",
+    "type": "creature",
+    "cost": 2,
+    "attack": 1,
+    "health": 3,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "heilung",
+        "scope": "any",
+        "reichweite": "nachbarn",
+        "amount": 1,
+        "maxTargets": 1
+      }
+    ],
+    "text": "Rundenende: Heile eine benachbarte verbündete Kreatur um 1.",
+    "projectile": "✨",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Conehead"
+  },
+  {
+    "id": "bannertraeger",
+    "name": "Bannerträger",
+    "faction": "hearty",
+    "type": "creature",
+    "cost": 3,
+    "attack": 2,
+    "health": 4,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "nachbar",
+        "effect": "banner",
+        "scope": "same_top",
+        "amount": 1
+      }
+    ],
+    "text": "Benachbarte verbündete Menschen erhalten +1/+0, solange der Bannerträger lebt.",
+    "projectile": "🚩",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Team Mascot"
+  },
+  {
+    "id": "medic",
+    "name": "Medic",
+    "faction": "hearty",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Medic",
+    "text": "Zombie-Held 4 heilen",
+    "type": "creature",
+    "attack": 3,
+    "health": 3,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Zombie-Held 4 heilen"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "arm_wrestler",
+    "name": "Arm Wrestler",
+    "faction": "hearty",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Arm Wrestler",
+    "text": "Pflanze kommt in diese Lane → +1/+1",
+    "type": "creature",
+    "attack": 2,
+    "health": 2,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Pflanze kommt in diese Lane → +1/+1"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "schildwall",
+    "name": "Schildwall",
+    "faction": "hearty",
+    "type": "action",
+    "cost": 1,
+    "effect": {
+      "kind": "buffHealth",
+      "amount": 3,
+      "target": "friendlyCreature"
+    },
+    "text": "Eine verbündete Kreatur erhält dauerhaft +0/+3.",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Camel Crossing"
+  },
+  {
+    "id": "flag_zombie",
+    "name": "Flag Zombie",
+    "faction": "hearty",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Flag Zombie",
+    "text": "Zombies kosten 1 weniger",
+    "type": "creature",
+    "attack": 1,
+    "health": 3,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Zombies kosten 1 weniger"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "terrify",
+    "name": "Terrify",
+    "faction": "hearty",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Terrify",
+    "text": "Pflanze bewegen; Monster conjuren",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Pflanze bewegen; Monster conjuren"
+    }
+  },
+  {
+    "id": "solidaritaetskasse",
+    "name": "Solidaritätskasse",
+    "faction": "hearty",
+    "type": "creature",
+    "cost": 3,
+    "attack": 2,
+    "health": 4,
+    "abilities": [
+      {
+        "kind": "heilung",
+        "scope": "same_top",
+        "reichweite": "scope",
+        "amount": 1,
+        "maxTargets": 2
+      }
+    ],
+    "text": "Rundenende: Heile bis zu zwei beschädigte Menschen um 1.",
+    "projectile": "💰",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Trash Can Zombie"
+  },
+  {
+    "id": "buckethead",
+    "name": "Buckethead",
+    "faction": "hearty",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Buckethead",
+    "text": "Armored 1",
+    "type": "creature",
+    "attack": 3,
+    "health": 4,
+    "keywords": [
+      "armored"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Armored 1"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "ra_zombie",
+    "name": "Ra Zombie",
+    "faction": "hearty",
+    "cost": 5,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Ra Zombie",
+    "text": "Gegner verliert 2 Sun für diese Runde",
+    "type": "creature",
+    "attack": 3,
+    "health": 4,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Gegner verliert 2 Sun für diese Runde"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "cone_zone",
+    "name": "Cone Zone",
+    "faction": "hearty",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Cone Zone",
+    "text": "Zombies hier +3 Leben",
+    "type": "environment",
+    "effect": {
+      "kind": "referenz",
+      "text": "Zombies hier +3 Leben"
+    }
+  },
+  {
+    "id": "celestial_custodian",
+    "name": "Celestial Custodian",
+    "faction": "hearty",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Celestial Custodian",
+    "text": "Gravestone; in Environment Pflanze ≤3 Angriff zerstören",
+    "type": "creature",
+    "attack": 3,
+    "health": 4,
+    "keywords": [
+      "gravestone"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Gravestone; in Environment Pflanze ≤3 Angriff zerstören"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "screen_door_zombie",
+    "name": "Screen Door Zombie",
+    "faction": "hearty",
+    "cost": 5,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Screen Door Zombie",
+    "text": "Gravestone; Reveal: diese Runde unverwundbar",
+    "type": "creature",
+    "attack": 4,
+    "health": 4,
+    "keywords": [
+      "gravestone"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Gravestone; Reveal: diese Runde unverwundbar"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "healthy_treat",
+    "name": "Healthy Treat",
+    "faction": "hearty",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Healthy Treat",
+    "text": "Zombie +1/+3",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Zombie +1/+3"
+    }
+  },
+  {
+    "id": "zombie_middle_manager",
+    "name": "Zombie Middle Manager",
+    "faction": "hearty",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Zombie Middle Manager",
+    "text": "Professional conjuren; Professional gespielt → +1/+1",
+    "type": "creature",
+    "attack": 1,
+    "health": 2,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Professional conjuren; Professional gespielt → +1/+1"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "leftovers",
+    "name": "Leftovers",
+    "faction": "hearty",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Leftovers",
+    "text": "Alle Zombies +1/+1",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Alle Zombies +1/+1"
+    }
+  },
+  {
+    "id": "sumo_wrestler",
+    "name": "Sumo Wrestler",
+    "faction": "hearty",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Sumo Wrestler",
+    "text": "Gravestone; Reveal: Pflanze bewegen",
+    "type": "creature",
+    "attack": 2,
+    "health": 3,
+    "keywords": [
+      "gravestone"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Gravestone; Reveal: Pflanze bewegen"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "zombie_coach",
+    "name": "Zombie Coach",
+    "faction": "hearty",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Zombie Coach",
+    "text": "Beim Ausspielen können Sports-Zombies diese Runde nicht verletzt werden",
+    "type": "creature",
+    "attack": 3,
+    "health": 3,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Beim Ausspielen können Sports-Zombies diese Runde nicht verletzt werden"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "monster_mash",
+    "name": "Monster Mash",
+    "faction": "hearty",
+    "cost": 5,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Monster Mash",
+    "text": "Alle Zombies +2/+2",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Alle Zombies +2/+2"
+    }
+  },
+  {
+    "id": "knight_of_the_living_dead",
+    "name": "Knight of the Living Dead",
+    "faction": "hearty",
+    "cost": 7,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Knight of the Living Dead",
+    "text": "Armored 2",
+    "type": "creature",
+    "attack": 5,
+    "health": 5,
+    "keywords": [
+      "armored"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Armored 2"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "rodeo_gargantuar",
+    "name": "Rodeo Gargantuar",
+    "faction": "hearty",
+    "cost": 7,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Rodeo Gargantuar",
+    "text": "Gravestone; Reveal Pflanze bewegen",
+    "type": "creature",
+    "attack": 5,
+    "health": 9,
+    "keywords": [
+      "gravestone"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Gravestone; Reveal Pflanze bewegen"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "escape_through_time",
+    "name": "Escape through Time",
+    "faction": "hearty",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Escape through Time",
+    "text": "Zombie diese Runde unverwundbar; History conjuren",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Zombie diese Runde unverwundbar; History conjuren"
+    }
+  },
+  {
+    "id": "cosmic_sports_star",
+    "name": "Cosmic Sports Star",
+    "faction": "hearty",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Cosmic Sports Star",
+    "text": "Sports conjuren; kostet 2 weniger",
+    "type": "creature",
+    "attack": 2,
+    "health": 2,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Sports conjuren; kostet 2 weniger"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "kommandantin",
+    "name": "Kommandantin",
+    "faction": "hearty",
+    "type": "creature",
+    "cost": 5,
+    "attack": 3,
+    "health": 6,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "aura",
+        "scope": "same_top",
+        "buff": {
+          "atk": 1,
+          "hp": 1
+        },
+        "timing": "dauerhaft"
+      }
+    ],
+    "text": "★ Andere verbündete Menschen erhalten +1/+1, solange die Kommandantin lebt.",
+    "projectile": "⚔️",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Primeval Yeti"
+  },
+  {
+    "id": "lost_colosseum",
+    "name": "Lost Colosseum",
+    "faction": "hearty",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Lost Colosseum",
+    "text": "Fusion gibt darüber gespieltem Zombie +2/+3",
+    "type": "creature",
+    "attack": 2,
+    "health": 3,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Fusion gibt darüber gespieltem Zombie +2/+3"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "landscaper",
+    "name": "Landscaper",
+    "faction": "hearty",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Landscaper",
+    "text": "Gravestone; Reveal Pflanze -2 Angriff",
+    "type": "creature",
+    "attack": 2,
+    "health": 3,
+    "keywords": [
+      "gravestone"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Gravestone; Reveal Pflanze -2 Angriff"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "weed_spray",
+    "name": "Weed Spray",
+    "faction": "hearty",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Weed Spray",
+    "text": "Alle Pflanzen mit ≤2 Angriff zerstören",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Alle Pflanzen mit ≤2 Angriff zerstören"
+    }
+  },
+  {
+    "id": "all_star_zombie",
+    "name": "All-Star Zombie",
+    "faction": "hearty",
+    "cost": 5,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "All-Star Zombie",
+    "text": "Armored 1, Frenzy, Untrickable",
+    "type": "creature",
+    "attack": 4,
+    "health": 6,
+    "keywords": [
+      "armored",
+      "frenzy",
+      "untrickable"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Armored 1, Frenzy, Untrickable"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "coffee_zombie",
+    "name": "Coffee Zombie",
+    "faction": "hearty",
+    "cost": 6,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Coffee Zombie",
+    "text": "Alle Zombies +1/+1 und Frenzy",
+    "type": "creature",
+    "attack": 5,
+    "health": 4,
+    "keywords": [
+      "frenzy"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Alle Zombies +1/+1 und Frenzy"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "black_hole",
+    "name": "Black Hole",
+    "faction": "hearty",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Black Hole",
+    "text": "Pflanzen hier -1 Angriff; neu gespielte Pflanzen werden hierher gezogen",
+    "type": "environment",
+    "effect": {
+      "kind": "referenz",
+      "text": "Pflanzen hier -1 Angriff; neu gespielte Pflanzen werden hierher gezogen"
+    }
+  },
+  {
+    "id": "rekrut",
+    "name": "Rekrut",
+    "faction": "hearty",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Genetic Experiment",
+    "text": "Heldenschaden → +1/+1",
+    "type": "creature",
+    "attack": 2,
+    "health": 1,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Heldenschaden → +1/+1"
+      }
+    ],
+    "projectile": "🗡️"
+  },
+  {
+    "id": "planetary_gladiator",
+    "name": "Planetary Gladiator",
+    "faction": "hearty",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Planetary Gladiator",
+    "text": "Armored 1; übernimmt Heldenschaden",
+    "type": "creature",
+    "attack": 1,
+    "health": 3,
+    "keywords": [
+      "armored"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Armored 1; übernimmt Heldenschaden"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "schildwache",
+    "name": "Schildwache",
+    "faction": "hearty",
+    "type": "creature",
+    "cost": 2,
+    "attack": 1,
+    "health": 4,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "nachbar",
+        "effect": "schild",
+        "scope": "same_top",
+        "amount": 1
+      }
+    ],
+    "text": "Benachbarte verbündete Menschen erhalten +0/+1, solange die Schildwache lebt.",
+    "projectile": "🗡️",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Jurassic Fossilhead"
+  },
+  {
+    "id": "mobilmachung",
+    "name": "Mobilmachung",
+    "faction": "hearty",
+    "type": "action",
+    "cost": 3,
+    "effect": {
+      "kind": "summon",
+      "count": 2,
+      "token": {
+        "name": "Rekrut-Token",
+        "attack": 1,
+        "health": 1,
+        "keywords": []
+      }
+    },
+    "text": "Beschwöre bis zu zwei 1/1-Rekrut-Token in freie eigene Lanes.",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Knockout"
+  },
+  {
+    "id": "turquoise_skull_zombie",
+    "name": "Turquoise Skull Zombie",
+    "faction": "hearty",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Turquoise Skull Zombie",
+    "text": "Gravestone; Rundenstart Gegner -1 Sun und selbst +1/+1",
+    "type": "creature",
+    "attack": 2,
+    "health": 6,
+    "keywords": [
+      "gravestone"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Gravestone; Rundenstart Gegner -1 Sun und selbst +1/+1"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "zombie_king",
+    "name": "Zombie King",
+    "faction": "hearty",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Zombie King",
+    "text": "Rundenende anderen Zombie in Knight of Living Dead transformieren",
+    "type": "creature",
+    "attack": 3,
+    "health": 6,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Rundenende anderen Zombie in Knight of Living Dead transformieren"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "undying_pharaoh",
+    "name": "Undying Pharaoh",
+    "faction": "hearty",
+    "cost": 6,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Undying Pharaoh",
+    "text": "Armored 1; Heldenleben kann nicht unter 1 sinken",
+    "type": "creature",
+    "attack": 5,
+    "health": 5,
+    "keywords": [
+      "armored"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Armored 1; Heldenleben kann nicht unter 1 sinken"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "wannabe_hero",
+    "name": "Wannabe Hero",
+    "faction": "hearty",
+    "cost": 7,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Wannabe Hero",
+    "text": "Frenzy; Held +3; +1 Leben je aktuellem Heldenleben",
+    "type": "creature",
+    "attack": 6,
+    "health": 1,
+    "keywords": [
+      "frenzy"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Frenzy; Held +3; +1 Leben je aktuellem Heldenleben"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "intergalactic_warlord",
+    "name": "Intergalactic Warlord",
+    "faction": "hearty",
+    "cost": 5,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Intergalactic Warlord",
+    "text": "Alle Zombies überall +1/+1",
+    "type": "creature",
+    "attack": 2,
+    "health": 2,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Alle Zombies überall +1/+1"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "zombot_battlecruiser_5000",
+    "name": "Zombot Battlecruiser 5000",
+    "faction": "hearty",
+    "cost": 6,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Zombot Battlecruiser 5000",
+    "text": "Gravestone; Reveal: Zombies diese Runde unverwundbar",
+    "type": "creature",
+    "attack": 6,
+    "health": 6,
+    "keywords": [
+      "gravestone"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Gravestone; Reveal: Zombies diese Runde unverwundbar"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "basisdemokratie",
+    "name": "Basisdemokratie",
+    "faction": "hearty",
+    "type": "creature",
+    "cost": 3,
+    "attack": 1,
+    "health": 5,
+    "abilities": [
+      {
+        "kind": "skalierung",
+        "scope": "same_top",
+        "per": {
+          "atk": 1,
+          "hp": 0
+        },
+        "cap": 2
+      }
+    ],
+    "text": "+1 ATK je weiterem verbündeten Menschen, maximal +2 ATK.",
+    "projectile": "🗳️",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Stompadon"
+  },
+  {
+    "id": "zombology_teacher",
+    "name": "Zombology Teacher",
+    "faction": "hearty",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Zombology Teacher",
+    "text": "Zombie-Tricks kosten 1 weniger",
+    "type": "creature",
+    "attack": 2,
+    "health": 1,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Zombie-Tricks kosten 1 weniger"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "gargologist",
+    "name": "Gargologist",
+    "faction": "hearty",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Gargologist",
+    "text": "Gargantuars kosten 2 weniger",
+    "type": "creature",
+    "attack": 2,
+    "health": 3,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Gargantuars kosten 2 weniger"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "turkey_rider",
+    "name": "Turkey Rider",
+    "faction": "hearty",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Turkey Rider",
+    "text": "Beim Tod Leftovers erhalten",
+    "type": "creature",
+    "attack": 2,
+    "health": 2,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Beim Tod Leftovers erhalten"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "generalstreik",
+    "name": "Generalstreik",
+    "faction": "hearty",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Going Viral",
+    "text": "Zombies +1/+1 und Frenzy; 3 Kopien ins Deck; Karte ziehen",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Zombies +1/+1 und Frenzy; 3 Kopien ins Deck; Karte ziehen"
+    }
+  },
+  {
+    "id": "ritter",
+    "name": "Ritter",
+    "faction": "hearty",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Bonus Track Buckethead",
+    "text": "Armored 1; Pflanzen können keine Bonus Attacks machen",
+    "type": "creature",
+    "attack": 4,
+    "health": 4,
+    "keywords": [
+      "armored"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Armored 1; Pflanzen können keine Bonus Attacks machen"
+      }
+    ],
+    "projectile": "⚔️"
+  },
+  {
+    "id": "defensive_end",
+    "name": "Defensive End",
+    "faction": "hearty",
+    "cost": 6,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Defensive End",
+    "text": "Armored 1; Plant-Tricks kosten 2 mehr",
+    "type": "creature",
+    "attack": 6,
+    "health": 5,
+    "keywords": [
+      "armored"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Armored 1; Plant-Tricks kosten 2 mehr"
+      }
+    ],
+    "projectile": "✨"
+  }
+]

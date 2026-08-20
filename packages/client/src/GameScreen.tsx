@@ -157,7 +157,8 @@ export function GameScreen({
   const myBoard = shownView.board[me];
   const energy = shownView.players[me].energy;
   const playableCardCount = shownView.hand.filter((card) => card.cost <= energy).length;
-  const canPlaySomething = myTurn && shownView.phase === 'play' && playableCardCount > 0;
+  const canPlaySomething =
+    myTurn && (shownView.phase === 'play' || shownView.phase === 'precombat') && playableCardCount > 0;
 
   // Zaehler-Blitz: die drei Chips aendern sich sonst lautlos mitten im Spiel.
   const energiePuls = useWertPuls(energy);
@@ -260,11 +261,23 @@ export function GameScreen({
     const occupied = new Set<number>();
     myBoard.forEach((c, i) => (c ? occupied.add(i) : free.add(i)));
     if (!card) return new Set<number>();
-    if (card.type === 'creature') return free;
+    if (card.type === 'creature') {
+      if (shownView.phase !== 'play') return new Set<number>();
+      const result = new Set<number>();
+      myBoard.forEach((creature, lane) => {
+        const team = shownView.teamBoard[me]?.[lane];
+        const waterAllowed = lane !== shownView.lanes - 1 || card.keywords.includes('amphibious');
+        if (!waterAllowed || team) return;
+        if (!creature || creature.keywords.includes('team_up') || card.keywords.includes('team_up')) result.add(lane);
+      });
+      return result;
+    }
+    if (card.type === 'environment') return new Set(Array.from({ length: shownView.lanes }, (_, lane) => lane));
     const kind = card.effect.kind;
     if (kind === 'buffHealth' || kind === 'buffAttackTemp' || kind === 'moveCreature') {
       return occupied;
     }
+    if (kind === 'referenz') return new Set(Array.from({ length: shownView.lanes }, (_, lane) => lane));
     return new Set<number>();
   }
 
@@ -329,6 +342,8 @@ export function GameScreen({
     playFeedback('card', profile.settings.sound, profile.settings.haptics);
     if (card.type === 'creature') {
       onAction({ type: 'playCreature', handIndex, lane });
+    } else if (card.type === 'environment') {
+      onAction({ type: 'playEnvironment', handIndex, lane });
     } else if (card.effect.kind === 'moveCreature') {
       // Zwei Schritte: erst die zu versetzende Kreatur, dann die Ziel-Lane.
       setSelection({ kind: 'move', index: handIndex, fromLane: lane });
@@ -342,7 +357,13 @@ export function GameScreen({
   /** Kann diese Handkarte gerade bezahlt und gespielt werden? */
   function karteSpielbar(index: number): boolean {
     const card = shownView.hand[index];
-    return Boolean(myTurn && shownView.phase === 'play' && card && card.cost <= energy);
+    return Boolean(
+      myTurn &&
+      (shownView.phase === 'play' || shownView.phase === 'precombat') &&
+      card &&
+      card.cost <= energy &&
+      (shownView.phase !== 'precombat' || card.type !== 'creature')
+    );
   }
 
   const kartenZug = useKartenZug({
@@ -392,9 +413,13 @@ export function GameScreen({
     });
   }
 
-  const showSummonConfirm =
-    selection?.kind === 'hand' && selectedCard?.type === 'action' &&
-    selectedCard.effect.kind === 'summon';
+  const showDirectConfirm =
+    selection?.kind === 'hand' &&
+    selectedCard != null &&
+    selectedCard.type !== 'creature' &&
+    selectedCard.type !== 'environment' &&
+    selectedCard.effect.kind !== 'moveCreature' &&
+    laneZieleFuerKarte(selectedCard).size === 0;
 
   const statusText = isReplaying
     ? '⚔️ Kampf läuft …'
@@ -408,6 +433,8 @@ export function GameScreen({
         ? myTurn
           ? '🕊 Flug-Phase: fliegende Kreatur antippen und Ziel-Lane wählen'
           : 'Flug-Phase des Gegners …'
+        : shownView.phase === 'precombat'
+          ? myTurn ? 'Letzte Aktionen vor dem Kampf' : 'Gegner spielt die letzten Aktionen …'
         : myTurn
           ? selection
             ? selection.kind === 'move'
@@ -560,7 +587,9 @@ export function GameScreen({
             const flySource = selection?.kind === 'fly' && selection.fromLane === lane;
             const moveSource = selection?.kind === 'move' && selection.fromLane === lane;
             const enemyCreature = shownView.board[opp][lane];
+            const enemyTeamCreature = shownView.teamBoard[opp]?.[lane] ?? null;
             const ownCreature = myBoard[lane];
+            const ownTeamCreature = shownView.teamBoard[me]?.[lane] ?? null;
             const enemyDmg = incomingDamage(opp, lane);
             const ownDmg = incomingDamage(me, lane);
             const combatActive = isReplaying && fx.activeLane === lane;
@@ -576,9 +605,11 @@ export function GameScreen({
                     moveDelta={enemyCreature ? moveFx[enemyCreature.uid] : undefined}
                     onDetail={openCreatureDetail}
                   />
+                  {enemyTeamCreature && <div className="team-up-secondary"><CreatureTile creature={enemyTeamCreature} flat3d={false} onDetail={openCreatureDetail} /></div>}
                   {enemyDmg && <span className="dmg-float">-{enemyDmg.damage}</span>}
                 </div>
-                <div className="lane-label">{lane + 1}</div>
+                <div className="lane-label">{shownView.laneKinds[lane] === 'height' ? '▲' : shownView.laneKinds[lane] === 'water' ? '≋' : lane + 1}</div>
+                {shownView.environments[lane] && <div className="lane-environment" title={shownView.environments[lane]?.text}>{shownView.environments[lane]?.name}</div>}
                 <button
                   className={
                     'slot own-slot' +
@@ -607,6 +638,7 @@ export function GameScreen({
                     moveDelta={ownCreature ? moveFx[ownCreature.uid] : undefined}
                     onDetail={openCreatureDetail}
                   />
+                  {ownTeamCreature && <div className="team-up-secondary"><CreatureTile creature={ownTeamCreature} own flat3d={false} onDetail={openCreatureDetail} /></div>}
                   {ownDmg && <span className="dmg-float">-{ownDmg.damage}</span>}
                   {/* Zauber-Effekt (2D-Fallback ohne WebGL) */}
                   {!use3d && spellOnLane(lane) && (
@@ -666,7 +698,7 @@ export function GameScreen({
 
           <div className="hud-gruppe rechts">
             <div className={'deck-chip' + deckPuls}>📚 {shownView.players[me].deckCount}</div>
-            {shownView.phase === 'play' && myTurn && (
+            {(shownView.phase === 'play' || shownView.phase === 'precombat') && myTurn && (
               <button
                 className="pass-button"
                 onClick={() => {
@@ -746,7 +778,7 @@ export function GameScreen({
           )}
         </div>
 
-        {showSummonConfirm && (
+        {showDirectConfirm && (
           <button
             className="primary summon-confirm"
             onClick={() => {
@@ -755,7 +787,7 @@ export function GameScreen({
               setSelection(null);
             }}
           >
-            {selectedCard?.name} ausspielen (freie Lanes werden automatisch gefüllt)
+            {selectedCard?.name} ausspielen
           </button>
         )}
 

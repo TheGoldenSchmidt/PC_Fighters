@@ -67,6 +67,10 @@ export const ABILITIES: Record<Ability['kind'], { label: string; description: st
   peinigen: {
     label: 'Peinigen',
     description: 'Beim Ausspielen: setzt Angriff und Verteidigung aller Gegner dauerhaft auf einen Deckel.'
+  },
+  referenz: {
+    label: 'Referenzregel',
+    description: 'Regeltext aus dem neuen Kartenset; bekannte Schlüsselwörter werden zentral ausgewertet.'
   }
 };
 
