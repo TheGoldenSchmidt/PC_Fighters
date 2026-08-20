@@ -17,6 +17,7 @@ import type {
   FigureDef,
   GameConfig,
   GameData,
+  IdentityCatalog,
   Topic
 } from './types.js';
 
@@ -430,6 +431,47 @@ export const cardSchema = z.discriminatedUnion('type', [
   })
 ]);
 
+const identityFormSchema = z.enum([
+  'livingHuman',
+  'undeadHuman',
+  'humanMachine',
+  'animal',
+  'animalMachine',
+  'vehicle',
+  'action',
+  'environment',
+  'superpower'
+]);
+
+const cardIdentitySchema = z.object({
+  cardId: z.string().min(1),
+  side: z.enum(['animals', 'humans', 'neutral']),
+  classId: z.string().min(1),
+  cardType: z.enum(['creature', 'action', 'environment', 'superpower']),
+  concept: z.string().min(1),
+  form: identityFormSchema,
+  rigId: z.string().min(1).nullable(),
+  variantBrief: z.string().min(1),
+  artBrief: z.string().min(1)
+}).strict();
+
+const championIdentitySchema = z.object({
+  championId: z.string().min(1),
+  side: z.enum(['animals', 'humans']),
+  classIds: z.tuple([z.string().min(1), z.string().min(1)]),
+  concept: z.string().min(1),
+  form: z.enum(['livingHuman', 'undeadHuman', 'humanMachine', 'animal', 'animalMachine', 'vehicle']),
+  rigId: z.string().min(1),
+  variantBrief: z.string().min(1),
+  artBrief: z.string().min(1)
+}).strict();
+
+export const identityCatalogSchema = z.object({
+  version: z.literal(1),
+  cards: z.array(cardIdentitySchema),
+  champions: z.array(championIdentitySchema)
+}).strict();
+
 export const cardFileSchema = z.array(cardSchema);
 
 /** Fehler beim Laden/Validieren der Datendateien – mit lesbarer Meldung. */
@@ -506,6 +548,8 @@ export function validateGameData(raw: {
   animations?: unknown;
   /** data/figures/*.json – 3D-Figuren (optional; Default: keine). */
   figureFiles?: { file: string; content: unknown }[];
+  /** data/identity-catalog.json – vollständige Autorenbriefe (in kleinen Tests optional). */
+  identityCatalog?: unknown;
 }): {
   config: GameConfig;
   factions: Faction[];
@@ -514,6 +558,7 @@ export function validateGameData(raw: {
   cards: CardDef[];
   defaultClips: Animations;
   figures: Record<string, FigureDef>;
+  identityCatalog: IdentityCatalog;
 } {
   const configResult = configSchema.safeParse(raw.config);
   if (!configResult.success) {
@@ -615,6 +660,95 @@ export function validateGameData(raw: {
     cards.push(...(parsed.data as CardDef[]));
   }
 
+  const emptyIdentityCatalog: IdentityCatalog = { version: 1, cards: [], champions: [] };
+  let identityCatalog = emptyIdentityCatalog;
+  if (raw.identityCatalog !== undefined) {
+    const identityResult = identityCatalogSchema.safeParse(raw.identityCatalog);
+    if (!identityResult.success) {
+      throw new DataError('identity-catalog.json', describeZodError(identityResult.error));
+    }
+    identityCatalog = identityResult.data as IdentityCatalog;
+
+    const identityProblems: string[] = [];
+    const cardIdentities = new Map<string, IdentityCatalog['cards'][number]>();
+    for (const entry of identityCatalog.cards) {
+      if (cardIdentities.has(entry.cardId)) {
+        identityProblems.push(`Kartenidentität "${entry.cardId}" kommt mehrfach vor.`);
+      }
+      cardIdentities.set(entry.cardId, entry);
+      const card = cards.find((candidate) => candidate.id === entry.cardId);
+      if (!card) {
+        identityProblems.push(`Kartenidentität "${entry.cardId}" verweist auf keine bekannte Karte.`);
+        continue;
+      }
+      if (entry.classId !== card.faction) {
+        identityProblems.push(`Karte "${card.name}": Katalog-Klasse "${entry.classId}" muss "${card.faction}" sein.`);
+      }
+      if (entry.cardType !== card.type) {
+        identityProblems.push(`Karte "${card.name}": Katalog-Typ "${entry.cardType}" muss "${card.type}" sein.`);
+      }
+      const faction = factionsResult.data.find((candidate) => candidate.id === card.faction);
+      const expectedSide = faction?.neutral ? 'neutral' : faction?.parent ?? faction?.id;
+      if (entry.side !== expectedSide) {
+        identityProblems.push(`Karte "${card.name}": Katalog-Seite "${entry.side}" muss "${expectedSide}" sein.`);
+      }
+      if (card.type === 'creature' && entry.rigId === null) {
+        identityProblems.push(`Kreatur "${card.name}" braucht ein geplantes Grundgerüst (rigId).`);
+      }
+      if (card.type !== 'creature' && entry.rigId !== null) {
+        identityProblems.push(`Nicht-Kreatur "${card.name}" darf kein Grundgerüst besitzen.`);
+      }
+      if (card.type !== 'creature' && entry.form !== card.type) {
+        identityProblems.push(`Karte "${card.name}": Darstellungsform muss "${card.type}" sein.`);
+      }
+      if (entry.side === 'animals' && card.type === 'creature' && !['animal', 'animalMachine', 'vehicle'].includes(entry.form)) {
+        identityProblems.push(`Animals-Kreatur "${card.name}" braucht eine tierische Identität.`);
+      }
+      if (entry.side === 'humans' && card.type === 'creature' && !['livingHuman', 'undeadHuman', 'humanMachine', 'vehicle'].includes(entry.form)) {
+        identityProblems.push(`Humans-Kreatur "${card.name}" braucht eine humanoide oder technische Identität.`);
+      }
+    }
+    for (const card of cards) {
+      if (!cardIdentities.has(card.id)) identityProblems.push(`Für Karte "${card.name}" (${card.id}) fehlt die Identität.`);
+    }
+
+    const championIdentities = new Map<string, IdentityCatalog['champions'][number]>();
+    for (const entry of identityCatalog.champions) {
+      if (championIdentities.has(entry.championId)) {
+        identityProblems.push(`Champ-Identität "${entry.championId}" kommt mehrfach vor.`);
+      }
+      championIdentities.set(entry.championId, entry);
+      const champion = championsResult.data.find((candidate) => candidate.id === entry.championId);
+      if (!champion) {
+        identityProblems.push(`Champ-Identität "${entry.championId}" verweist auf keinen bekannten Champ.`);
+      } else {
+        if (entry.side !== champion.side) {
+          identityProblems.push(`Champ "${champion.name}": Katalog-Seite "${entry.side}" muss "${champion.side}" sein.`);
+        }
+        if (
+          entry.classIds.length !== champion.classes.length ||
+          !entry.classIds.every((classId) => champion.classes.includes(classId))
+        ) {
+          identityProblems.push(
+            `Champ "${champion.name}": Katalog-Klassen müssen "${champion.classes.join(' + ')}" sein.`
+          );
+        }
+        if (entry.side === 'animals' && !['animal', 'animalMachine', 'vehicle'].includes(entry.form)) {
+          identityProblems.push(`Animals-Champ "${champion.name}" braucht eine tierische Identität.`);
+        }
+        if (entry.side === 'humans' && !['livingHuman', 'undeadHuman', 'humanMachine', 'vehicle'].includes(entry.form)) {
+          identityProblems.push(`Humans-Champ "${champion.name}" braucht eine humanoide oder technische Identität.`);
+        }
+      }
+    }
+    for (const champion of championsResult.data) {
+      if (!championIdentities.has(champion.id)) {
+        identityProblems.push(`Für Champ "${champion.name}" (${champion.id}) fehlt die Identität.`);
+      }
+    }
+    if (identityProblems.length > 0) throw new DataError('identity-catalog.json', identityProblems);
+  }
+
   const superblockCheerleaders = configResult.data.schild?.cheerleaders ?? [];
   const superblockProblems: string[] = [];
   if (new Set(superblockCheerleaders).size !== superblockCheerleaders.length) {
@@ -712,6 +846,7 @@ export function validateGameData(raw: {
     champions: championsResult.data as ChampionDef[],
     topics: topicsResult.data,
     cards,
+    identityCatalog,
     defaultClips,
     figures
   };

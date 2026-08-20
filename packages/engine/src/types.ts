@@ -532,6 +532,53 @@ export interface SuperpowerCard {
 
 export type CardDef = CreatureCard | ActionCard | EnvironmentCard | SuperpowerCard;
 
+/** Körper-/Darstellungsfamilie einer sichtbaren PC-Fighters-Identität. */
+export type IdentityForm =
+  | 'livingHuman'
+  | 'undeadHuman'
+  | 'humanMachine'
+  | 'animal'
+  | 'animalMachine'
+  | 'vehicle'
+  | 'action'
+  | 'environment'
+  | 'superpower';
+
+/**
+ * Autorenbrief einer Karte. Die eigentlichen Namen und Regeln bleiben in den
+ * Kartendateien; dieser Katalog hält die visuelle Identität für Artwork und
+ * Figuren-Werkstätten fest.
+ */
+export interface CardIdentity {
+  cardId: string;
+  side: SideId | 'neutral';
+  classId: string;
+  cardType: CardDef['type'];
+  concept: string;
+  form: IdentityForm;
+  /** Geplantes/geteiltes Grundgerüst; Nicht-Kreaturen haben null. */
+  rigId: string | null;
+  variantBrief: string;
+  artBrief: string;
+}
+
+export interface ChampionIdentity {
+  championId: string;
+  side: SideId;
+  classIds: [string, string];
+  concept: string;
+  form: Exclude<IdentityForm, 'action' | 'environment' | 'superpower'>;
+  rigId: string;
+  variantBrief: string;
+  artBrief: string;
+}
+
+export interface IdentityCatalog {
+  version: 1;
+  cards: CardIdentity[];
+  champions: ChampionIdentity[];
+}
+
 export interface GameData {
   config: GameConfig;
   factions: Faction[];
@@ -539,6 +586,8 @@ export interface GameData {
   topics: Topic[];
   cards: CardDef[];
   cardsById: Record<string, CardDef>;
+  /** Vollständige Autorenbriefe für Namen, Artwork und Figurenvarianten. */
+  identityCatalog: IdentityCatalog;
   /** Geteilte Standard-Animations-Klips (data/animations.json). */
   defaultClips: Animations;
   /** 3D-Figuren aus data/figures/ (cardId → Figur). */
