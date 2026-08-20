@@ -23,7 +23,6 @@ import { fileURLToPath } from 'node:url';
 import {
   BOT_PROFILE,
   buildFactionTree,
-  defaultCheerleaderSelection,
   ladeDecks,
   loadGameData,
   spielePartie,
@@ -31,7 +30,6 @@ import {
 } from '../../packages/engine/src/index.js';
 import type {
   BotProfil,
-  CheerleaderSelection,
   DeckList,
   GameData
 } from '../../packages/engine/src/index.js';
@@ -115,27 +113,6 @@ function mische(...teile: number[]): number {
   return h >>> 0;
 }
 
-/**
- * Bank-Auswahl für eine Partie. Die Standardauswahl nimmt immer die ersten
- * gültigen Kandidaten – damit kämen Kräfte am Ende des Pools (aktuell
- * `junger_neffe` und `randy_marsh`) in KEINER simulierten Partie vor und
- * blieben ohne Balancing-Daten. Der Versatz rotiert deshalb je Partie.
- */
-function waehleCheerleader(data: GameData, deck: DeckList, versatz: number): CheerleaderSelection {
-  const imDeck = new Set(deck.cards.map((c) => c.cardId));
-  const erlaubt = data.config.cheerleaders.candidates.filter((id) => !imDeck.has(id));
-  const n = data.config.cheerleaders.selectionSize;
-  // Zu kleiner Pool: die Engine-Standardauswahl entscheidet (und wirft, wenn
-  // die Deckliste gar keine gültige Bank zulässt).
-  if (erlaubt.length < n) return defaultCheerleaderSelection(deck, data);
-  const versatzPositiv = ((versatz % erlaubt.length) + erlaubt.length) % erlaubt.length;
-  // n <= erlaubt.length, deshalb sind die Indizes paarweise verschieden.
-  return Array.from(
-    { length: n },
-    (_, i) => erlaubt[(versatzPositiv + i) % erlaubt.length]
-  ) as CheerleaderSelection;
-}
-
 function spieleMatchup(
   data: GameData,
   deckA: DeckList,
@@ -167,15 +144,10 @@ function spieleMatchup(
     // Sitzplatz-Spiegelung: dieselbe Saat für "A auf Platz 0" und "A auf Platz 1".
     const saat = mische(saatBasis, g);
 
-    // Beide Sitzordnungen bekommen dieselben Bänke, damit die Spiegelung fair
-    // bleibt; der Versatz wandert nur von Partie zu Partie.
-    const bankA = waehleCheerleader(data, deckA, g);
-    const bankB = waehleCheerleader(data, deckB, g + 1);
     const r1 = spielePartie(data, deckA, deckB, {
       saat,
       profilA,
-      profilB,
-      cheerleaders: [bankA, bankB]
+      profilB
     });
     ergebnis.spiele += 1;
     ergebnis.rundenSumme += r1.runden;
@@ -196,8 +168,7 @@ function spieleMatchup(
     const r2 = spielePartie(data, deckB, deckA, {
       saat,
       profilA: profilB,
-      profilB: profilA,
-      cheerleaders: [bankB, bankA]
+      profilB: profilA
     });
     ergebnis.spiele += 1;
     ergebnis.rundenSumme += r2.runden;
