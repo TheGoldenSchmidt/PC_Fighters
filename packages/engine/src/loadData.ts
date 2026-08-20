@@ -40,6 +40,7 @@ export function loadGameData(dataDir: string = DATA_DIR): GameData {
   const champions = readJson('champions.json', join(dataDir, 'champions.json'));
   const topics = readJson('topics.json', join(dataDir, 'topics.json'));
   const animations = readJson('animations.json', join(dataDir, 'animations.json'));
+  const identityCatalog = readJson('identity-catalog.json', join(dataDir, 'identity-catalog.json'));
 
   const cardsDir = join(dataDir, 'cards');
   const files = readdirSync(cardsDir).filter((f) => f.endsWith('.json'));
@@ -62,7 +63,16 @@ export function loadGameData(dataDir: string = DATA_DIR): GameData {
     // kein figures-Ordner vorhanden – das ist in Ordnung
   }
 
-  const validated = validateGameData({ config, factions, champions, topics, cardFiles, animations, figureFiles });
+  const validated = validateGameData({
+    config,
+    factions,
+    champions,
+    topics,
+    cardFiles,
+    animations,
+    figureFiles,
+    identityCatalog
+  });
   return {
     ...validated,
     cardsById: Object.fromEntries(validated.cards.map((c) => [c.id, c]))

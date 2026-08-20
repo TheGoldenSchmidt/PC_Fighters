@@ -135,6 +135,7 @@ Wichtig:
 
 - **`id`** muss einmalig sein (kleingeschrieben, keine Leerzeichen).
 - **`faction`** ist die Klasse, nicht nur die Seite. Animals nutzen `guardian`, `kabloom`, `mega_grow`, `solar`; Humans nutzen `beastly`, `brainy`, `hearty`, `sneaky`.
+- Die sichtbaren Klassennamen sind **Schutzinstinkt**, **Wildtrieb**, **Rudelstärke**, **Lebenskreis**, **Muskelkraft**, **Denkfabrik**, **Zusammenhalt** und **Untergrund**. Die technischen IDs bleiben absichtlich stabil.
 - Ein Champ-Deck enthält genau **40 Karten**, höchstens **4×** dieselbe Karte und mindestens eine Karte aus jeder seiner beiden Klassen. `neutral` ist für jeden Champ erlaubt.
 - Superkräfte stehen in `superpowers.json`, sind `"deckable": false` und werden ausschließlich vom Champ vergeben.
 - **Aktionskarten** haben `"type": "action"` und statt Angriff/Leben ein `"effect"`. Umgebungen verwenden `"type": "environment"` und belegen eine Lane. Der generische Effekt `referenz` bewahrt den Originaltext des importierten Sets; für individuelle Regeln können weiterhin feste Effekt-Primitiven ergänzt werden.
@@ -174,6 +175,12 @@ oder `{ "kind": "aura", "scope": "any", "buff": { "atk": 1, "hp": 1 },
 Primitiv im `Ability`-Union-Typ in `packages/engine/src/types.ts`.
 
 **Bild für eine Karte:** Lege einfach ein PNG mit dem Namen der Karten-id in den Ordner `packages/client/public/assets/cards/` – z. B. `veteranin.png`. Fertig, kein Code nötig. Ohne Bild zeigt die Karte ein Symbol.
+
+### Identitätskatalog
+
+`packages/engine/src/data/identity-catalog.json` ist der Autorenbrief für den gesamten Kartenkosmos. Jede Karte und jeder Champ steht dort genau einmal mit Seite, Klasse, Körperform, geplantem Grundgerüst sowie kurzen Briefs für Figur und Kartenbild. Beim Serverstart wird der Katalog gegen die echten Kartendaten geprüft; fehlende, doppelte oder zur Seite unpassende Einträge erscheinen als verständlicher Datenfehler.
+
+Die Kartendateien bleiben die Quelle für sichtbaren Namen und Regeln. `referenceName` sowie `referenz.text` bewahren nur intern die importierte Regelherkunft und werden von Umbenennungen nicht verändert. Karten-IDs sollten nicht geändert werden, weil Decks, Bilder und Figuren sie als stabilen Schlüssel benutzen.
 
 `npm run list-missing-art` zeigt alle Karten ohne Bild, gruppiert nach Fraktion, inkl. Name/Typ/Text – praktisch als Grundlage für Prompts (z. B. bei ChatGPT). Kommt das Bild von Hand (gemalt oder KI-generiert) statt aus `scripts/render-card-art.mjs`, die Karten-id zusätzlich in die `MANUAL_ART`-Liste am Kopf dieses Skripts eintragen, sonst überschreibt ein erneuter Render-Lauf das Bild wieder.
 
