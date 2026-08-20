@@ -38,3 +38,8 @@ export function toInfoUrl(input: string): string {
   if (!s.includes(':') && !secure) s += ':3000';
   return `${secure ? 'https' : 'http'}://${s}/info`;
 }
+
+/** Host[:Port] → Konto-Endpunkt für Login und servergespeicherte Decks. */
+export function toAccountUrl(input: string): string {
+  return toInfoUrl(input).replace(/\/info$/, '/account');
+}
