@@ -9,13 +9,23 @@ import type {
   Topic,
   VisualCatalog
 } from '@pcf/engine';
-import { toInfoUrl, toWsUrl } from './config';
+import { toAccountUrl, toInfoUrl, toWsUrl } from './config';
+import type { SavedDeck } from './deckLibrary';
+import type { LocalProfileV1 } from './profile';
 
 export type ConnectionStatus = 'idle' | 'connecting' | 'connected' | 'reconnecting';
 export type Screen = 'start' | 'lobby' | 'game';
 
 /** Keyword-Erklärungen (id → Label + Beschreibung), kommen vom Server. */
 export type KeywordInfo = Record<string, { label: string; description: string }>;
+
+export interface UserAccount {
+  username: string;
+  stats: LocalProfileV1['stats'];
+  decks: SavedDeck[];
+  /** Server, zu dem dieses Konto gehört (nur clientseitig ergänzt). */
+  server: string;
+}
 
 export interface GameClientState {
   screen: Screen;
@@ -35,6 +45,8 @@ export interface GameClientState {
   opponentConnected: boolean;
   rematchReady: [boolean, boolean];
   matchNumber: number;
+  account: UserAccount | null;
+  accountBusy: boolean;
 }
 
 const initial: GameClientState = {
@@ -51,8 +63,29 @@ const initial: GameClientState = {
   dataError: null,
   opponentConnected: true,
   rematchReady: [false, false],
-  matchNumber: 1
+  matchNumber: 1,
+  account: null,
+  accountBusy: false
 };
+
+async function accountRequest(
+  server: string,
+  body: Record<string, unknown>
+): Promise<Omit<UserAccount, 'server'>> {
+  const response = await fetch(toAccountUrl(server), {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  const json = await response.json() as {
+    account?: Omit<UserAccount, 'server'>;
+    error?: string;
+  };
+  if (!response.ok || !json.account) {
+    throw new Error(json.error || 'Das Benutzerkonto konnte nicht geladen werden.');
+  }
+  return json.account;
+}
 
 export function useGame() {
   const [state, setState] = useState<GameClientState>(initial);
@@ -127,6 +160,17 @@ export function useGame() {
         case 'rematchState':
           patch({ rematchReady: msg.ready as [boolean, boolean] });
           break;
+        case 'account':
+          setState((current) => current.account
+            ? {
+                ...current,
+                account: {
+                  ...(msg.account as Omit<UserAccount, 'server'>),
+                  server: current.account.server
+                }
+              }
+            : current);
+          break;
         case 'dataError':
           patch({ dataError: msg.message as string });
           break;
@@ -200,12 +244,15 @@ export function useGame() {
             deckSelection,
             championId,
             topic: topicId,
-            testMode
+            testMode,
+            username: state.account?.server === serverInput.trim()
+              ? state.account.username
+              : null
           })
         )
       );
     },
-    [open, loadCatalog]
+    [open, loadCatalog, state.account?.username]
   );
 
   const joinGame = useCallback(
@@ -221,11 +268,70 @@ export function useGame() {
       loadCatalog(serverInput);
       open(url, (socket) =>
         socket.send(
-          JSON.stringify({ type: 'join', code: code.trim(), deckSelection, championId })
+          JSON.stringify({
+            type: 'join',
+            code: code.trim(),
+            deckSelection,
+            championId,
+            username: state.account?.server === serverInput.trim()
+              ? state.account.username
+              : null
+          })
         )
       );
     },
-    [open, loadCatalog]
+    [open, loadCatalog, state.account?.username]
+  );
+
+  const loginAccount = useCallback(
+    async (serverInput: string, username: string): Promise<boolean> => {
+      patch({ accountBusy: true });
+      try {
+        const server = serverInput.trim();
+        const account = { ...(await accountRequest(server, { action: 'login', username })), server };
+        localStorage.setItem(
+          'pcf.account.v1',
+          JSON.stringify({ server, username: account.username })
+        );
+        patch({ account, accountBusy: false });
+        return true;
+      } catch (error) {
+        patch({ accountBusy: false });
+        showError(error instanceof Error ? error.message : 'Anmeldung fehlgeschlagen.');
+        return false;
+      }
+    },
+    [showError]
+  );
+
+  const logoutAccount = useCallback(() => {
+    localStorage.removeItem('pcf.account.v1');
+    patch({ account: null, accountBusy: false });
+  }, []);
+
+  const saveAccountDeck = useCallback(
+    async (deck: SavedDeck): Promise<boolean> => {
+      const current = state.account;
+      if (!current) return false;
+      patch({ accountBusy: true });
+      try {
+        const account = {
+          ...(await accountRequest(current.server, {
+            action: 'saveDeck',
+            username: current.username,
+            deck
+          })),
+          server: current.server
+        };
+        patch({ account, accountBusy: false });
+        return true;
+      } catch (error) {
+        patch({ accountBusy: false });
+        showError(error instanceof Error ? error.message : 'Deck konnte nicht gespeichert werden.');
+        return false;
+      }
+    },
+    [showError, state.account]
   );
 
   const sendAction = useCallback(
@@ -256,8 +362,24 @@ export function useGame() {
     ws.current?.close();
     session.current = null;
     sessionStorage.removeItem('pcf.session');
-    setState(initial);
+    setState((current) => ({
+      ...initial,
+      account: current.account,
+      accountBusy: false
+    }));
   }, []);
+
+  // Benutzerkonten bleiben nach einem Seiten-Reload auf diesem Gerät angemeldet.
+  useEffect(() => {
+    const stored = localStorage.getItem('pcf.account.v1');
+    if (!stored) return;
+    try {
+      const value = JSON.parse(stored) as { server?: string; username?: string };
+      if (value.server && value.username) void loginAccount(value.server, value.username);
+    } catch {
+      localStorage.removeItem('pcf.account.v1');
+    }
+  }, [loginAccount]);
 
   // Nach einem Seiten-Reload: laufende Partie automatisch wieder aufnehmen.
   useEffect(() => {
@@ -283,5 +405,15 @@ export function useGame() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return { state, createGame, joinGame, sendAction, setRematchReady, leaveGame };
+  return {
+    state,
+    createGame,
+    joinGame,
+    loginAccount,
+    logoutAccount,
+    saveAccountDeck,
+    sendAction,
+    setRematchReady,
+    leaveGame
+  };
 }

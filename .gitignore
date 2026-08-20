@@ -12,6 +12,7 @@ _tmp_*.mjs
 
 # Laufzeit-Zustand des Servers (persistierte Räume), gehört nicht ins Repo
 rooms_persist.json
+users_persist.json
 
 # Generierte Backtest-Reports (npm run backtest -- --out=...) – Rohdaten, nicht versioniert
 backtest-report*.md

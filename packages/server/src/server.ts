@@ -2,13 +2,24 @@
 // Engine auf und schickt jedem Client seine GEFILTERTE Sicht zurück.
 // Der Server ist die einzige Quelle der Wahrheit über den Spielzustand.
 
-import { createServer, type Server } from 'node:http';
+import {
+  createServer,
+  type IncomingMessage,
+  type Server,
+  type ServerResponse
+} from 'node:http';
 import { randomBytes } from 'node:crypto';
 import { WebSocketServer, WebSocket } from 'ws';
 import { writeFileSync, readFileSync, existsSync, renameSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sirv from 'sirv';
+import {
+  createUserStore,
+  UserAccountError,
+  type SavedUserDeck,
+  type UserStore
+} from './users.js';
 import {
   applyAction,
   buildClientView,
@@ -44,6 +55,8 @@ const abilityInfo = Object.fromEntries(
 
 interface RoomPlayer {
   token: string;
+  /** null = Gast. Benutzerkonten werden ausschließlich über users.json freigeschaltet. */
+  username: string | null;
   championId: string;
   deck: DeckList | null;
   socket: WebSocket | null;
@@ -99,10 +112,58 @@ export interface RunningServer {
   close: () => Promise<void>;
 }
 
+export interface StartServerOptions {
+  /** Austauschbarer Speicher für Integrationstests. */
+  userStore?: UserStore;
+}
+
 function send(socket: WebSocket, message: unknown): void {
   if (socket.readyState === WebSocket.OPEN) {
     socket.send(JSON.stringify(message));
   }
+}
+
+function sendHttpJson(
+  response: ServerResponse,
+  status: number,
+  body: unknown,
+  headers: Record<string, string>
+): void {
+  response.writeHead(status, {
+    'content-type': 'application/json; charset=utf-8',
+    'cache-control': 'no-store',
+    ...headers
+  });
+  response.end(JSON.stringify(body));
+}
+
+function readJsonRequest(request: IncomingMessage): Promise<Record<string, unknown>> {
+  return new Promise((resolve, reject) => {
+    let body = '';
+    let tooLarge = false;
+    request.setEncoding('utf-8');
+    request.on('data', (chunk: string) => {
+      if (tooLarge) return;
+      body += chunk;
+      if (body.length > 1_000_000) tooLarge = true;
+    });
+    request.on('end', () => {
+      if (tooLarge) {
+        reject(new UserAccountError('Die Anfrage ist zu groß.'));
+        return;
+      }
+      try {
+        const parsed = JSON.parse(body) as unknown;
+        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+          throw new Error('kein Objekt');
+        }
+        resolve(parsed as Record<string, unknown>);
+      } catch {
+        reject(new UserAccountError('Ungültige Konto-Anfrage.'));
+      }
+    });
+    request.on('error', reject);
+  });
 }
 
 const persistFilePath = join(process.cwd(), 'rooms_persist.json');
@@ -119,6 +180,7 @@ const persistTempPath = persistFilePath + '.tmp';
  *   über einen Serverneustart hinweg erhalten muss.
  * 3 – Rückspiel-Bereitschaft und Matchnummer werden mit dem Raum gespeichert.
  * 4 – Champ, Zwei-Klassen-Deck und Superkräfte ersetzen das alte Loadout.
+ *     Der optionale Benutzername ist innerhalb dieses Formats abwärtskompatibel.
  */
 const PERSIST_VERSION = 4;
 
@@ -133,6 +195,7 @@ interface PersistedRoom {
   matchNumber?: number;
   players: Array<{
     token: string;
+    username?: string | null;
     championId?: string;
     deck?: DeckList | null;
   }>;
@@ -157,6 +220,7 @@ function saveRooms(rooms: Map<string, Room>) {
         matchNumber: room.matchNumber,
         players: room.players.map((p) => ({
           token: p.token,
+          username: p.username,
           championId: p.championId,
           deck: p.deck
         }))
@@ -216,7 +280,7 @@ function loadRooms(data: GameData): Map<string, Room> {
             if (!championId || !data.champions.some((champion) => champion.id === championId)) {
               throw new GameRuleError(`Der gespeicherte Champ von Spieler ${idx + 1} ist ungültig.`);
             }
-            return { token: p.token, championId, deck, socket: null };
+            return { token: p.token, username: p.username ?? null, championId, deck, socket: null };
           });
           map.set(item.code, {
             code: item.code,
@@ -240,7 +304,7 @@ function loadRooms(data: GameData): Map<string, Room> {
   return map;
 }
 
-export function startServer(port: number): Promise<RunningServer> {
+export function startServer(port: number, options: StartServerOptions = {}): Promise<RunningServer> {
   let data: GameData | null = null;
   let dataError: string | null = null;
   try {
@@ -258,6 +322,7 @@ export function startServer(port: number): Promise<RunningServer> {
   }
 
   const rooms = data ? loadRooms(data) : new Map<string, Room>();
+  const users = options.userStore ?? createUserStore();
 
   const newRoomCode = (): string => {
     for (let i = 0; i < 1000; i++) {
@@ -284,6 +349,41 @@ export function startServer(port: number): Promise<RunningServer> {
   const broadcastRematchState = (room: Room): void => {
     room.players.forEach((player) => {
       if (player.socket) send(player.socket, { type: 'rematchState', ready: room.rematchReady });
+    });
+  };
+
+  const sendAccount = (player: RoomPlayer): void => {
+    if (!player.socket || !player.username) return;
+    try {
+      send(player.socket, { type: 'account', account: users.login(player.username) });
+    } catch (error) {
+      if (error instanceof UserAccountError) {
+        // Aus users.json entfernte Konten werden in alten Räumen zu Gästen.
+        player.username = null;
+        return;
+      }
+      throw error;
+    }
+  };
+
+  /** Eine beendete Partie wird je Raum/Match genau einmal im Benutzerkonto verbucht. */
+  const recordRoomResult = (room: Room): void => {
+    if (room.testMode || !room.state || room.state.winner === null) return;
+    const matchId = `${room.code}:${room.matchNumber}`;
+    room.players.forEach((player, index) => {
+      if (!player.username) return;
+      const result = room.state!.winner === 'draw'
+        ? 'draw'
+        : room.state!.winner === index
+          ? 'win'
+          : 'loss';
+      try {
+        users.recordMatch(player.username, matchId, result);
+        sendAccount(player);
+      } catch (error) {
+        if (error instanceof UserAccountError) player.username = null;
+        else throw error;
+      }
     });
   };
 
@@ -332,7 +432,71 @@ export function startServer(port: number): Promise<RunningServer> {
   const httpServer: Server = createServer((req, res) => {
     // /info: Fraktions- und Themenliste für den Startbildschirm des Clients.
     // CORS offen, weil der Client lokal von einem anderen Port (Vite) kommt.
-    const cors = { 'access-control-allow-origin': '*' };
+    const cors = {
+      'access-control-allow-origin': '*',
+      'access-control-allow-methods': 'GET, POST, OPTIONS',
+      'access-control-allow-headers': 'content-type'
+    };
+
+    if (req.method === 'OPTIONS') {
+      res.writeHead(204, cors);
+      res.end();
+      return;
+    }
+
+    if (req.url?.startsWith('/account')) {
+      if (req.method !== 'POST') {
+        sendHttpJson(res, 405, { error: 'Nur POST ist erlaubt.' }, cors);
+        return;
+      }
+      readJsonRequest(req)
+        .then((body) => {
+          if (body.action === 'login') {
+            sendHttpJson(res, 200, { account: users.login(body.username) }, cors);
+            return;
+          }
+          if (body.action === 'saveDeck') {
+            if (!data) throw new UserAccountError('Decks sind wegen fehlerhafter Spieldaten nicht verfügbar.');
+            const account = users.login(body.username);
+            const raw = body.deck && typeof body.deck === 'object'
+              ? body.deck as Record<string, unknown>
+              : {};
+            const checked = validateDeck(raw, data);
+            const id = typeof raw.id === 'string' && /^[a-zA-Z0-9._:-]{1,100}$/.test(raw.id)
+              ? raw.id
+              : randomBytes(12).toString('hex');
+            const name = checked.name?.trim();
+            const championId = checked.championId;
+            if (!name || name.length > 60 || !championId) {
+              throw new UserAccountError('Deckname oder Champ fehlt beziehungsweise ist zu lang.');
+            }
+            const champion = data.champions.find((entry) => entry.id === championId);
+            if (!champion) throw new UserAccountError('Der Champ des Decks ist unbekannt.');
+            const deck: SavedUserDeck = {
+              ...checked,
+              id,
+              name,
+              championId,
+              faction: champion.side,
+              updatedAt: new Date().toISOString()
+            };
+            sendHttpJson(res, 200, { account: users.saveDeck(account.username, deck) }, cors);
+            return;
+          }
+          throw new UserAccountError('Unbekannte Konto-Aktion.');
+        })
+        .catch((error) => {
+          const expected = error instanceof UserAccountError || error instanceof DeckError;
+          if (!expected) console.error(error);
+          sendHttpJson(
+            res,
+            expected ? 400 : 500,
+            { error: expected ? error.message : 'Interner Serverfehler.' },
+            cors
+          );
+        });
+      return;
+    }
 
     // /snap: NUR-DEV-Werkzeug für die Figuren-Werkstatt. Der Client schickt ein
     // Canvas-Bild (data-URL/base64) per POST; der Server legt es als PNG ab.
@@ -472,6 +636,16 @@ export function startServer(port: number): Promise<RunningServer> {
       return championId;
     }
 
+    function optionalUsername(raw: unknown): string | null {
+      if (raw === undefined || raw === null || raw === '') return null;
+      try {
+        return users.login(raw).username;
+      } catch (error) {
+        if (error instanceof UserAccountError) throw new GameRuleError(error.message);
+        throw error;
+      }
+    }
+
     function resolveDeck(selection: unknown, requestedChampion: unknown): { championId: string; deck: DeckList | null } {
       const d = requireData();
       if (!selection || typeof selection !== 'object') {
@@ -544,6 +718,7 @@ export function startServer(port: number): Promise<RunningServer> {
     function handleMessage(msg: Record<string, unknown>): void {
       switch (msg.type) {
         case 'create': {
+          const username = optionalUsername(msg.username);
           const { championId, deck } = resolveDeck(msg.deckSelection, msg.championId ?? msg.faction);
           const topic = validTopic(msg.topic);
           const lanes = validLanes(msg.lanes);
@@ -551,6 +726,7 @@ export function startServer(port: number): Promise<RunningServer> {
             code: newRoomCode(),
             players: [{
               token: randomBytes(12).toString('hex'),
+              username,
               championId,
               deck,
               socket: null
@@ -578,10 +754,12 @@ export function startServer(port: number): Promise<RunningServer> {
             factions: requireData().factions,
             champions: requireData().champions
           });
+          sendAccount(room.players[0]);
           break;
         }
 
         case 'join': {
+          const username = optionalUsername(msg.username);
           const { championId, deck } = resolveDeck(msg.deckSelection, msg.championId ?? msg.faction);
           const room = rooms.get(String(msg.code));
           if (!room) {
@@ -590,8 +768,12 @@ export function startServer(port: number): Promise<RunningServer> {
           if (room.players.length >= 2) {
             throw new GameRuleError('Dieser Raum ist schon voll (2 Spieler).');
           }
+          if (username && room.players.some((player) => player.username === username)) {
+            throw new GameRuleError('Dieses Benutzerkonto spielt bereits in diesem Raum.');
+          }
           room.players.push({
             token: randomBytes(12).toString('hex'),
+            username,
             championId,
             deck,
             socket: null
@@ -608,6 +790,7 @@ export function startServer(port: number): Promise<RunningServer> {
             keywords: keywordInfo,
             abilities: abilityInfo
           });
+          sendAccount(room.players[1]);
           // Beide Spieler da → Partie starten
           const d = requireData();
           room.state = createGame(
@@ -649,6 +832,7 @@ export function startServer(port: number): Promise<RunningServer> {
             keywords: keywordInfo,
             abilities: abilityInfo
           });
+          sendAccount(room.players[idx]);
           notifyOpponentConnection(room, idx as PlayerIndex);
           if (room.state) {
             send(socket, {
@@ -689,12 +873,14 @@ export function startServer(port: number): Promise<RunningServer> {
           if (!ctx.room.state) {
             throw new GameRuleError('Die Partie hat noch nicht begonnen (Gegner fehlt).');
           }
+          const wasEnded = ctx.room.state.phase === 'ended';
           ctx.room.state = applyAction(
             ctx.room.state,
             ctx.playerIndex,
             msg.action as PlayerAction,
             requireData()
           );
+          if (!wasEnded && ctx.room.state.phase === 'ended') recordRoomResult(ctx.room);
           saveRooms(rooms);
           broadcastState(ctx.room);
           break;

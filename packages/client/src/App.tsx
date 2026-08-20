@@ -35,8 +35,19 @@ export function App() {
 }
 
 function Game() {
-  const { state, createGame, joinGame, sendAction, setRematchReady, leaveGame } = useGame();
+  const {
+    state,
+    createGame,
+    joinGame,
+    loginAccount,
+    logoutAccount,
+    saveAccountDeck,
+    sendAction,
+    setRematchReady,
+    leaveGame
+  } = useGame();
   const { profile, updateProfile, rememberLoadout, recordMatch } = useLocalProfile();
+  const activeProfile = state.account ? { ...profile, stats: state.account.stats } : profile;
 
   // Schauplatz-Hintergrund auf die ganze Seite anwenden (Lobby + Spiel).
   useEffect(() => {
@@ -70,7 +81,12 @@ function Game() {
           onCreate={createGame}
           onJoin={joinGame}
           status={state.status}
-          profile={profile}
+          profile={activeProfile}
+          account={state.account}
+          accountBusy={state.accountBusy}
+          onLogin={loginAccount}
+          onLogout={logoutAccount}
+          onSaveAccountDeck={saveAccountDeck}
           onRememberLoadout={rememberLoadout}
         />
       )}
@@ -85,7 +101,7 @@ function Game() {
       {state.screen === 'game' && state.view?.phase === 'mulligan' && (
         <MulliganScreen
           view={state.view}
-          profile={profile}
+          profile={activeProfile}
           onUpdateProfile={updateProfile}
           onAction={sendAction}
           onLeave={leaveGame}
@@ -99,12 +115,12 @@ function Game() {
           catalog={state.catalog}
           status={state.status}
           opponentConnected={state.opponentConnected}
-          profile={profile}
+          profile={activeProfile}
           roomCode={state.roomCode ?? ''}
           matchNumber={state.matchNumber}
           rematchReady={state.rematchReady}
           onUpdateProfile={updateProfile}
-          onRecordMatch={recordMatch}
+          onRecordMatch={state.account ? undefined : recordMatch}
           onRematchReady={setRematchReady}
           onAction={sendAction}
           onLeave={leaveGame}

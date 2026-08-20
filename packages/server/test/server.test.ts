@@ -7,8 +7,9 @@ import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import WebSocket from 'ws';
 import type { ClientView } from '@pcf/engine';
-import { buildFactionTree, loadGameData, topOf } from '@pcf/engine';
+import { buildFactionTree, ladeDecks, loadGameData, topOf } from '@pcf/engine';
 import { startServer, type RunningServer } from '../src/server.js';
+import { createUserStore } from '../src/users.js';
 
 const factionTree = buildFactionTree(loadGameData().factions);
 const SUPERPOWER_BANK = ['pc_principal', 'pc_babies', 'alter_wissenschaftler'] as const;
@@ -316,6 +317,41 @@ describe('Server: Raum, Beitritt, Aktionen, gefilterte Sicht', () => {
       'schrottsammlerin',
       'eule'
     ]));
+  });
+
+  it('/account meldet nur freigeschaltete Namen an und speichert validierte Decks', async () => {
+    const accountPath = join(process.cwd(), 'tmp', `server-account-${Date.now()}.json`);
+    const accountServer = await startServer(0, {
+      userStore: createUserStore({ allowedUsernames: ['Ada'], persistPath: accountPath })
+    });
+    try {
+      const post = (body: unknown) => fetch(`http://127.0.0.1:${accountServer.port}/account`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+
+      const rejected = await post({ action: 'login', username: 'Nicht Ada' });
+      expect(rejected.status).toBe(400);
+
+      const loggedIn = await post({ action: 'login', username: 'ada' });
+      expect(loggedIn.status).toBe(200);
+      expect((await loggedIn.json() as { account: { username: string } }).account.username).toBe('Ada');
+
+      const preset = ladeDecks(loadGameData()).rostbolzen;
+      const saved = await post({
+        action: 'saveDeck',
+        username: 'Ada',
+        deck: { ...preset, id: 'adas-deck', name: 'Adas Deck' }
+      });
+      expect(saved.status).toBe(200);
+      const account = (await saved.json() as { account: { decks: Array<{ id: string }> } }).account;
+      expect(account.decks.map((deck) => deck.id)).toContain('adas-deck');
+    } finally {
+      await accountServer.close();
+      if (existsSync(accountPath)) rmSync(accountPath);
+      if (existsSync(accountPath + '.tmp')) rmSync(accountPath + '.tmp');
+    }
   });
 
   it('nicht angebotene Preset-Decks koennen auch manipuliert nicht gestartet werden', async () => {

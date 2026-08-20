@@ -66,7 +66,21 @@ Auch hier erscheint eine „Network"-Adresse, z. B. `http://192.168.178.66:5173`
 
 ### Deckwahl und Mulligan
 
-Vor einer Partie wählst du einen von sechs **Champs**. Jeder Champ gehört zu Humans oder Animals und legt genau zwei Klassen fest. Sein Deck enthält 40 Karten aus beiden Klassen (plus optional neutrale Karten), höchstens vier Exemplare je Karte. Zu jedem Champ gibt es ein Startdeck; eigene Decks werden lokal im Browser gespeichert. Nach dem Beitritt tauschen beide Spieler im Mulligan optional beliebig viele Karten; Runde 1 beginnt erst nach beiden Bestätigungen.
+Vor einer Partie wählst du einen von sechs **Champs**. Jeder Champ gehört zu Humans oder Animals und legt genau zwei Klassen fest. Sein Deck enthält 40 Karten aus beiden Klassen (plus optional neutrale Karten), höchstens vier Exemplare je Karte. Zu jedem Champ gibt es ein Startdeck. Nach dem Beitritt tauschen beide Spieler im Mulligan optional beliebig viele Karten; Runde 1 beginnt erst nach beiden Bestätigungen.
+
+### Optionale Benutzerkonten
+
+Ohne Anmeldung funktioniert das Spiel unverändert als Gast; eigene Decks und die Bilanz bleiben dann lokal in diesem Browser. Mit einem freigeschalteten Benutzernamen speichert der Server eigene Decks, Siege, Niederlagen, Unentschieden und Siegesserien. Ein Passwort gibt es in dieser ersten Version bewusst noch nicht – der Benutzername identifiziert nur das Profil und schützt es nicht vor anderen Personen.
+
+Welche Namen sich anmelden dürfen, legst du in `users.json` im Hauptordner fest:
+
+```json
+{
+  "users": ["Ada", "Berta", "Chris"]
+}
+```
+
+Nach einer Änderung den Server neu starten. Die eigentlichen Kontodaten schreibt der Server automatisch nach `users_persist.json`; diese Datei gehört nicht ins Git-Repository. Für einen Cloud-Server muss der Ordner dauerhaft gespeichert werden, sonst gehen die Laufzeitdaten bei einem vollständigen Neuaufsetzen des Dienstes verloren.
 
 ### Balancing-Backtest
 

@@ -107,6 +107,49 @@ input:focus {
 
 .profile-strip strong { color: var(--gold); }
 
+.account-panel h2 {
+  margin-bottom: 8px;
+}
+
+.account-panel p {
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.account-head,
+.account-login-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.account-head h2 {
+  margin: 2px 0 0;
+  border: 0;
+  padding: 0;
+}
+
+.account-login-row label {
+  flex: 1;
+  margin: 0;
+}
+
+.account-login-row input {
+  margin: 4px 0 0;
+}
+
+.account-login-row .secondary {
+  margin-bottom: 0;
+}
+
+@media (max-width: 440px) {
+  .account-login-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+
 .candidate-power {
   display: block;
   margin-top: 3px;
