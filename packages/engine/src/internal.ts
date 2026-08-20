@@ -299,7 +299,8 @@ export function makeCreature(
     rettungUsed: false,
     schutzUsed: false,
     zaehler: {},
-    rundenZaehler: {}
+    rundenZaehler: {},
+    faceDown: def.keywords.some((k) => KEYWORDS[k]?.gravestone)
   };
 }
 

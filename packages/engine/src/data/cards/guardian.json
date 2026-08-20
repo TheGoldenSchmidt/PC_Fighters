@@ -1,0 +1,1100 @@
+[
+  {
+    "id": "small_nut",
+    "name": "Small-Nut",
+    "faction": "guardian",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Small-Nut",
+    "text": "Keine zusätzliche Fähigkeit.",
+    "type": "creature",
+    "attack": 1,
+    "health": 1,
+    "keywords": [],
+    "abilities": [],
+    "projectile": "✨"
+  },
+  {
+    "id": "sting_bean",
+    "name": "Sting Bean",
+    "faction": "guardian",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Sting Bean",
+    "text": "Amphibious, Bullseye, Team-Up",
+    "type": "creature",
+    "attack": 1,
+    "health": 2,
+    "keywords": [
+      "amphibious",
+      "bullseye",
+      "team_up"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Amphibious, Bullseye, Team-Up"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "wall_nut",
+    "name": "Wall-Nut",
+    "faction": "guardian",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Wall-Nut",
+    "text": "Team-Up",
+    "type": "creature",
+    "attack": 0,
+    "health": 6,
+    "keywords": [
+      "team_up"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Team-Up"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "pismashio",
+    "name": "Pismashio",
+    "faction": "guardian",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Pismashio",
+    "text": "Team-Up",
+    "type": "creature",
+    "attack": 2,
+    "health": 4,
+    "keywords": [
+      "team_up"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Team-Up"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "spineapple",
+    "name": "Spineapple",
+    "faction": "guardian",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Spineapple",
+    "text": "Beim Ausspielen: Pflanzen mit 0 Angriff erhalten +2 Angriff",
+    "type": "creature",
+    "attack": 0,
+    "health": 3,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Beim Ausspielen: Pflanzen mit 0 Angriff erhalten +2 Angriff"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "potato_mine",
+    "name": "Potato Mine",
+    "faction": "guardian",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Potato Mine",
+    "text": "Team-Up; beim Zerstören 2 Schaden am Zombie hier",
+    "type": "creature",
+    "attack": 0,
+    "health": 1,
+    "keywords": [
+      "team_up"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Team-Up; beim Zerstören 2 Schaden am Zombie hier"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "cactus",
+    "name": "Cactus",
+    "faction": "guardian",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Cactus",
+    "text": "Bullseye",
+    "type": "creature",
+    "attack": 2,
+    "health": 5,
+    "keywords": [
+      "bullseye"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Bullseye"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "gardening_gloves",
+    "name": "Gardening Gloves",
+    "faction": "guardian",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Gardening Gloves",
+    "text": "Pflanze bewegen; einen Plant-Trick conjuren",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Pflanze bewegen; einen Plant-Trick conjuren"
+    }
+  },
+  {
+    "id": "sea_shroom",
+    "name": "Sea-Shroom",
+    "faction": "guardian",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Sea-Shroom",
+    "text": "Amphibious",
+    "type": "creature",
+    "attack": 2,
+    "health": 2,
+    "keywords": [
+      "amphibious"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Amphibious"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "water_chestnut",
+    "name": "Water Chestnut",
+    "faction": "guardian",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Water Chestnut",
+    "text": "Amphibious, Team-Up",
+    "type": "creature",
+    "attack": 0,
+    "health": 8,
+    "keywords": [
+      "amphibious",
+      "team_up"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Amphibious, Team-Up"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "pea_nut",
+    "name": "Pea-Nut",
+    "faction": "guardian",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Pea-Nut",
+    "text": "Team-Up",
+    "type": "creature",
+    "attack": 2,
+    "health": 4,
+    "keywords": [
+      "team_up"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Team-Up"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "steel_magnolia",
+    "name": "Steel Magnolia",
+    "faction": "guardian",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Steel Magnolia",
+    "text": "Pflanzen hier und nebenan +2 Leben",
+    "type": "creature",
+    "attack": 3,
+    "health": 2,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Pflanzen hier und nebenan +2 Leben"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "photosynthesizer",
+    "name": "Photosynthesizer",
+    "faction": "guardian",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Photosynthesizer",
+    "text": "Pflanze +2 Leben; Galactic-Gardens-Karte conjuren",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Pflanze +2 Leben; Galactic-Gardens-Karte conjuren"
+    }
+  },
+  {
+    "id": "spikeweed_sector",
+    "name": "Spikeweed Sector",
+    "faction": "guardian",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Spikeweed Sector",
+    "text": "Vor Kampf: 2 Schaden am Zombie hier",
+    "type": "environment",
+    "effect": {
+      "kind": "referenz",
+      "text": "Vor Kampf: 2 Schaden am Zombie hier"
+    }
+  },
+  {
+    "id": "plantern",
+    "name": "Plantern",
+    "faction": "guardian",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Plantern",
+    "text": "In Environment +1/+1 und Bullseye",
+    "type": "creature",
+    "attack": 3,
+    "health": 3,
+    "keywords": [
+      "bullseye"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "In Environment +1/+1 und Bullseye"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "grape_responsibility",
+    "name": "Grape Responsibility",
+    "faction": "guardian",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Grape Responsibility",
+    "text": "Leben einer Pflanze verdoppeln",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Leben einer Pflanze verdoppeln"
+    }
+  },
+  {
+    "id": "primal_potato_mine",
+    "name": "Primal Potato Mine",
+    "faction": "guardian",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Primal Potato Mine",
+    "text": "Beim Zerstören 3 Schaden am Zombie hier",
+    "type": "creature",
+    "attack": 0,
+    "health": 1,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Beim Zerstören 3 Schaden am Zombie hier"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "grizzly_pear",
+    "name": "Grizzly Pear",
+    "faction": "guardian",
+    "cost": 5,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Grizzly Pear",
+    "text": "Amphibious",
+    "type": "creature",
+    "attack": 5,
+    "health": 4,
+    "keywords": [
+      "amphibious"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Amphibious"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "grave_buster",
+    "name": "Grave Buster",
+    "faction": "guardian",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Grave Buster",
+    "text": "Gravestone zerstören",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Gravestone zerstören"
+    }
+  },
+  {
+    "id": "schildkroete",
+    "name": "Schildkröte",
+    "faction": "guardian",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Hibernating Beary",
+    "text": "Wenn verletzt: +4 Angriff",
+    "type": "creature",
+    "attack": 0,
+    "health": 8,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Wenn verletzt: +4 Angriff"
+      }
+    ],
+    "projectile": "🐢"
+  },
+  {
+    "id": "brachiosaurus",
+    "name": "Brachiosaurus",
+    "faction": "guardian",
+    "cost": 5,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Prickly Pear",
+    "text": "Team-Up; wenn verletzt 2 Schaden am Zombie-Held",
+    "type": "creature",
+    "attack": 0,
+    "health": 10,
+    "keywords": [
+      "team_up"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Team-Up; wenn verletzt 2 Schaden am Zombie-Held"
+      }
+    ],
+    "projectile": "🦕"
+  },
+  {
+    "id": "krokodil",
+    "name": "Krokodil",
+    "faction": "guardian",
+    "type": "creature",
+    "cost": 5,
+    "attack": 5,
+    "health": 5,
+    "abilities": [
+      {
+        "kind": "hunter",
+        "bonusAtk": 2
+      }
+    ],
+    "text": "Im Kampf gegen eine vergiftete Kreatur erhält das Krokodil für diesen Kampf +2 ATK.",
+    "projectile": "🐊",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Smackadamia"
+  },
+  {
+    "id": "tough_beets",
+    "name": "Tough Beets",
+    "faction": "guardian",
+    "cost": 5,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Tough Beets",
+    "text": "Armored 1; +1/+1 je anderer Pflanze/Zombie",
+    "type": "creature",
+    "attack": 2,
+    "health": 2,
+    "keywords": [
+      "armored"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Armored 1; +1/+1 je anderer Pflanze/Zombie"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "baer",
+    "name": "Bär",
+    "faction": "guardian",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Cosmic Nut",
+    "text": "Nut conjuren; deren Angriff wird 4",
+    "type": "creature",
+    "attack": 4,
+    "health": 3,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Nut conjuren; deren Angriff wird 4"
+      }
+    ],
+    "projectile": "🐾"
+  },
+  {
+    "id": "starch_lord",
+    "name": "Starch-Lord",
+    "faction": "guardian",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Starch-Lord",
+    "text": "Gespielte Roots buffen sich und Starch-Lord +1/+1; pro Runde Root conjuren",
+    "type": "creature",
+    "attack": 2,
+    "health": 4,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Gespielte Roots buffen sich und Starch-Lord +1/+1; pro Runde Root conjuren"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "waran",
+    "name": "Waran",
+    "faction": "guardian",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Blockbuster",
+    "text": "Bullseye; Plant Evolution zerstört Gravestones hier/nebenan",
+    "type": "creature",
+    "attack": 3,
+    "health": 3,
+    "keywords": [
+      "bullseye",
+      "gravestone"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Bullseye; Plant Evolution zerstört Gravestones hier/nebenan"
+      }
+    ],
+    "projectile": "🦎"
+  },
+  {
+    "id": "pumpkin_shell",
+    "name": "Pumpkin Shell",
+    "faction": "guardian",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Pumpkin Shell",
+    "text": "Fusion: darüber gespielte Pflanze +2/+4",
+    "type": "creature",
+    "attack": 2,
+    "health": 4,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Fusion: darüber gespielte Pflanze +2/+4"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "jugger_nut",
+    "name": "Jugger-Nut",
+    "faction": "guardian",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Jugger-Nut",
+    "text": "Armored 1, Bullseye, Team-Up",
+    "type": "creature",
+    "attack": 2,
+    "health": 3,
+    "keywords": [
+      "bullseye",
+      "team_up",
+      "armored"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Armored 1, Bullseye, Team-Up"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "stegosaurus",
+    "name": "Stegosaurus",
+    "faction": "guardian",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Guacodile",
+    "text": "Amphibious; beim Tod 4 Schaden am Zombie hier",
+    "type": "creature",
+    "attack": 4,
+    "health": 3,
+    "keywords": [
+      "amphibious"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Amphibious; beim Tod 4 Schaden am Zombie hier"
+      }
+    ],
+    "projectile": "🦕"
+  },
+  {
+    "id": "triceratops",
+    "name": "Triceratops",
+    "faction": "guardian",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Mirror-Nut",
+    "text": "Team-Up, Bullseye; verletzte Nuts → 1 Schaden am Zombie-Held",
+    "type": "creature",
+    "attack": 0,
+    "health": 11,
+    "keywords": [
+      "bullseye",
+      "team_up"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Team-Up, Bullseye; verletzte Nuts → 1 Schaden am Zombie-Held"
+      }
+    ],
+    "projectile": "🦕"
+  },
+  {
+    "id": "doom_shroom",
+    "name": "Doom-Shroom",
+    "faction": "guardian",
+    "cost": 5,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Doom-Shroom",
+    "text": "Alle Einheiten mit ≥4 Angriff zerstören; Mushroom ≤4 conjuren",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Alle Einheiten mit ≥4 Angriff zerstören; Mushroom ≤4 conjuren"
+    }
+  },
+  {
+    "id": "eidechse",
+    "name": "Eidechse",
+    "faction": "guardian",
+    "type": "creature",
+    "cost": 1,
+    "attack": 1,
+    "health": 2,
+    "abilities": [
+      {
+        "kind": "gift",
+        "staerke": 1
+      }
+    ],
+    "text": "Gift 1.",
+    "projectile": "🦎",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Galacta-Cactus"
+  },
+  {
+    "id": "force_field",
+    "name": "Force Field",
+    "faction": "guardian",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Force Field",
+    "text": "Pflanzen hier können nicht verletzt werden",
+    "type": "environment",
+    "effect": {
+      "kind": "referenz",
+      "text": "Pflanzen hier können nicht verletzt werden"
+    }
+  },
+  {
+    "id": "gravitree",
+    "name": "Gravitree",
+    "faction": "guardian",
+    "cost": 6,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Gravitree",
+    "text": "Armored 1, Untrickable; neu gespielte Zombies werden hierher bewegt",
+    "type": "creature",
+    "attack": 7,
+    "health": 7,
+    "keywords": [
+      "armored",
+      "untrickable"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Armored 1, Untrickable; neu gespielte Zombies werden hierher bewegt"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "three_nut",
+    "name": "Three-Nut",
+    "faction": "guardian",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Three-Nut",
+    "text": "Angriff jeder ausgespielten Pflanze wird 3",
+    "type": "creature",
+    "attack": 3,
+    "health": 2,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Angriff jeder ausgespielten Pflanze wird 3"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "primal_wall_nut",
+    "name": "Primal Wall-Nut",
+    "faction": "guardian",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Primal Wall-Nut",
+    "text": "Team-Up, Untrickable; Plant mit Kosten ≥4 conjuren",
+    "type": "creature",
+    "attack": 0,
+    "health": 8,
+    "keywords": [
+      "team_up",
+      "untrickable"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Team-Up, Untrickable; Plant mit Kosten ≥4 conjuren"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "marine_bean",
+    "name": "Marine Bean",
+    "faction": "guardian",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Marine Bean",
+    "text": "Amphibious; +1/+1 je anderer Amphibious-Pflanze",
+    "type": "creature",
+    "attack": 3,
+    "health": 2,
+    "keywords": [
+      "amphibious"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Amphibious; +1/+1 je anderer Amphibious-Pflanze"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "poppin_poppies",
+    "name": "Poppin' Poppies",
+    "faction": "guardian",
+    "cost": 6,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Poppin' Poppies",
+    "text": "Lil' Buddies hier und nebenan erzeugen",
+    "type": "creature",
+    "attack": 4,
+    "health": 4,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Lil' Buddies hier und nebenan erzeugen"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "eisbaer",
+    "name": "Eisbär",
+    "faction": "guardian",
+    "cost": 6,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Soul Patch",
+    "text": "Armored 1; übernimmt Schaden für den Helden",
+    "type": "creature",
+    "attack": 5,
+    "health": 10,
+    "keywords": [
+      "armored"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Armored 1; übernimmt Schaden für den Helden"
+      }
+    ],
+    "projectile": "❄️"
+  },
+  {
+    "id": "wall_nut_bowling",
+    "name": "Wall-Nut Bowling",
+    "faction": "guardian",
+    "cost": 8,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Wall-Nut Bowling",
+    "text": "Wall-Nut in jede Bodenlane; dort jeweils 6 Schaden",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Wall-Nut in jede Bodenlane; dort jeweils 6 Schaden"
+    }
+  },
+  {
+    "id": "body_gourd",
+    "name": "Body-Gourd",
+    "faction": "guardian",
+    "cost": 5,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Body-Gourd",
+    "text": "Amphibious, Team-Up; Block-Meter vollständig füllen",
+    "type": "creature",
+    "attack": 4,
+    "health": 6,
+    "keywords": [
+      "amphibious",
+      "team_up"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Amphibious, Team-Up; Block-Meter vollständig füllen"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "pecanolith",
+    "name": "Pecanolith",
+    "faction": "guardian",
+    "cost": 5,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Pecanolith",
+    "text": "Alle Einheiten greifen mit ihrem Leben statt Angriff an",
+    "type": "creature",
+    "attack": 0,
+    "health": 7,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Alle Einheiten greifen mit ihrem Leben statt Angriff an"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "tricarrotops",
+    "name": "Tricarrotops",
+    "faction": "guardian",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Tricarrotops",
+    "text": "Bullseye; Dino-Roar +1/+1",
+    "type": "creature",
+    "attack": 1,
+    "health": 2,
+    "keywords": [
+      "bullseye"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Bullseye; Dino-Roar +1/+1"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "loco_coco",
+    "name": "Loco Coco",
+    "faction": "guardian",
+    "cost": 6,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Loco Coco",
+    "text": "Wall-Nuts nebenan; Nut Evolution: 0-Angriff-Pflanzen +3 Angriff",
+    "type": "creature",
+    "attack": 3,
+    "health": 4,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Wall-Nuts nebenan; Nut Evolution: 0-Angriff-Pflanzen +3 Angriff"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "compsognathus",
+    "name": "Compsognathus",
+    "faction": "guardian",
+    "type": "creature",
+    "cost": 1,
+    "attack": 1,
+    "health": 1,
+    "abilities": [
+      {
+        "kind": "bedingt",
+        "scope": "same_sub",
+        "mindestAnzahl": 1,
+        "bonus": {
+          "atk": 0,
+          "hp": 1
+        }
+      }
+    ],
+    "text": "Solange du einen weiteren Dino kontrollierst, erhält er +0/+1.",
+    "projectile": "🦖",
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Forget-Me-Nuts"
+  },
+  {
+    "id": "garlic",
+    "name": "Garlic",
+    "faction": "guardian",
+    "cost": 1,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Garlic",
+    "text": "Team-Up; verletzender Zombie bewegt sich nach links; Vimpire wird zerstört",
+    "type": "creature",
+    "attack": 1,
+    "health": 5,
+    "keywords": [
+      "team_up"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Team-Up; verletzender Zombie bewegt sich nach links; Vimpire wird zerstört"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "corn_dog",
+    "name": "Corn Dog",
+    "faction": "guardian",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Corn Dog",
+    "text": "Amphibious, Hunt",
+    "type": "creature",
+    "attack": 3,
+    "health": 2,
+    "keywords": [
+      "amphibious",
+      "hunt"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Amphibious, Hunt"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "gecko",
+    "name": "Gecko",
+    "faction": "guardian",
+    "cost": 2,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Hot Date",
+    "text": "Zombie hierher bewegen; beim Tod 3 Schaden an ihm",
+    "type": "creature",
+    "attack": 0,
+    "health": 1,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Zombie hierher bewegen; beim Tod 3 Schaden an ihm"
+      }
+    ],
+    "projectile": "🦎"
+  },
+  {
+    "id": "health_nut",
+    "name": "Health-Nut",
+    "faction": "guardian",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Health-Nut",
+    "text": "Greift mit Leben statt Angriff an",
+    "type": "creature",
+    "attack": 0,
+    "health": 4,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Greift mit Leben statt Angriff an"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "pear_cub",
+    "name": "Pear Cub",
+    "faction": "guardian",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Pear Cub",
+    "text": "Amphibious; beim Tod Grizzly Pear; alle Fruit-Pflanzen +1/+1",
+    "type": "creature",
+    "attack": 1,
+    "health": 1,
+    "keywords": [
+      "amphibious"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Amphibious; beim Tod Grizzly Pear; alle Fruit-Pflanzen +1/+1"
+      }
+    ],
+    "projectile": "✨"
+  },
+  {
+    "id": "shamrocket",
+    "name": "Shamrocket",
+    "faction": "guardian",
+    "cost": 3,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Shamrocket",
+    "text": "Zombie mit ≥4 Angriff zerstören",
+    "type": "action",
+    "effect": {
+      "kind": "referenz",
+      "text": "Zombie mit ≥4 Angriff zerstören"
+    }
+  },
+  {
+    "id": "red_stinger",
+    "name": "Red Stinger",
+    "faction": "guardian",
+    "cost": 4,
+    "deckable": true,
+    "tribes": [],
+    "referenceName": "Red Stinger",
+    "text": "Team-Up; hinter Pflanze gespielt → 7/3",
+    "type": "creature",
+    "attack": 3,
+    "health": 7,
+    "keywords": [
+      "team_up"
+    ],
+    "abilities": [
+      {
+        "kind": "referenz",
+        "text": "Team-Up; hinter Pflanze gespielt → 7/3"
+      }
+    ],
+    "projectile": "✨"
+  }
+]

@@ -394,6 +394,35 @@
   line-height: 1;
 }
 
+.lane-environment {
+  position: absolute;
+  inset-inline: 4px;
+  top: 50%;
+  z-index: 4;
+  overflow: hidden;
+  padding: 2px 5px;
+  border: 1px solid color-mix(in srgb, var(--lane-border) 65%, white);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--lane-bg) 78%, #111);
+  color: #fff;
+  font-size: 0.58rem;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.team-up-secondary {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  z-index: 6;
+  width: 46%;
+  height: 56%;
+  transform: scale(0.82);
+  transform-origin: right bottom;
+}
+
 .slot {
   flex: 1;
   min-height: 100px;

@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import type { CheerleaderSelection, DeckSelection } from '@pcf/engine';
+import type { DeckSelection } from '@pcf/engine';
 
 const STORAGE_KEY = 'pcf.profile.v1';
 const ONBOARDING_KEY = 'pcf.onboarding.v1';
@@ -8,7 +8,7 @@ export type ReplaySpeed = 1 | 1.5 | 2;
 
 export interface StoredLoadout {
   deckSelection: DeckSelection;
-  cheerleaders: CheerleaderSelection;
+  championId: string;
   topicId: string;
 }
 

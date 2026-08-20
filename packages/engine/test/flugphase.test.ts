@@ -27,7 +27,7 @@ describe('Flugphase', () => {
   it('aktiviert nur den Spieler mit einem beweglichen Flieger', () => {
     const state = emptyState();
     put(state, 0, 0, 'rekrut');
-    put(state, 1, 1, 'adler');
+    put(state, 1, 1, 'eule');
 
     const result = bisFlugphase(state);
     expect(result.players[0].flyDone).toBe(true);
@@ -37,8 +37,8 @@ describe('Flugphase', () => {
 
   it('beendet die Runde erst, nachdem beide Seiten fertig sind', () => {
     const state = emptyState();
-    put(state, 0, 0, 'pteranodon');
-    put(state, 1, 1, 'adler');
+    put(state, 0, 0, 'falke');
+    put(state, 1, 1, 'eule');
     const flight = bisFlugphase(state);
 
     const first = applyAction(flight, flight.active, { type: 'flyDone' }, data);
@@ -50,9 +50,9 @@ describe('Flugphase', () => {
 
   it('bewegt einen Flieger genau einmal und setzt die Markierung am Rundenende zurück', () => {
     const state = emptyState();
-    put(state, 0, 0, 'pteranodon');
+    put(state, 0, 0, 'falke');
     put(state, 0, 1, 'adler_voegel');
-    put(state, 1, 4, 'adler');
+    put(state, 1, 4, 'eule');
     const flight = bisFlugphase(state);
     const player = flight.active;
     const fromLane = player === 0 ? 0 : 4;
@@ -83,7 +83,7 @@ describe('Flugphase', () => {
   it('weist Nichtflieger, leere Quellen und eigene belegte Ziele zurück', () => {
     const state = emptyState();
     put(state, 1, 0, 'wolf');
-    put(state, 1, 1, 'adler');
+    put(state, 1, 1, 'eule');
     const flight = bisFlugphase(state);
 
     expect(() =>
@@ -99,7 +99,7 @@ describe('Flugphase', () => {
 
   it('erlaubt als Ziel eine gegnerisch, aber nicht selbst belegte Lane', () => {
     const state = emptyState();
-    put(state, 1, 1, 'adler');
+    put(state, 1, 1, 'eule');
     put(state, 0, 2, 'rekrut', { exhausted: true });
     const flight = bisFlugphase(state);
 
@@ -109,13 +109,13 @@ describe('Flugphase', () => {
       { type: 'flyMove', fromLane: 1, toLane: 2 },
       data
     );
-    expect(result.board[1][2]?.cardId).toBe('adler');
+    expect(result.board[1][2]?.cardId).toBe('eule');
   });
 
   it('grenzt das Aktionsvokabular gegen Ausspiel- und gegnerische Züge ab', () => {
     const state = emptyState();
-    put(state, 0, 0, 'pteranodon');
-    put(state, 1, 1, 'adler');
+    put(state, 0, 0, 'falke');
+    put(state, 1, 1, 'eule');
     const flight = bisFlugphase(state);
     const waiting = (flight.active === 0 ? 1 : 0) as PlayerIndex;
 
@@ -132,8 +132,8 @@ describe('Flugphase', () => {
 
   it('generiert ausschließlich von applyAction akzeptierte Flugaktionen', () => {
     const state = emptyState();
-    put(state, 1, 0, 'adler');
-    put(state, 1, 1, 'moewe');
+    put(state, 1, 0, 'eule');
+    put(state, 1, 1, 'adler_voegel');
     const flight = bisFlugphase(state);
     const actions = legaleAktionen(flight, 1, data);
     const freeOwnLanes = data.config.lanes - 2;
@@ -147,8 +147,8 @@ describe('Flugphase', () => {
 
   it('zeigt canFly nur dem Besitzer und nur während der Flugphase', () => {
     const state = emptyState();
-    put(state, 0, 0, 'pteranodon');
-    put(state, 1, 1, 'adler');
+    put(state, 0, 0, 'falke');
+    put(state, 1, 1, 'eule');
     const flight = bisFlugphase(state);
 
     const view0 = buildClientView(flight, 0, data);

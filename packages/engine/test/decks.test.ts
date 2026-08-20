@@ -24,25 +24,23 @@ describe('Backtest-Testdecks (data/decks/)', () => {
     });
   }
 
-  it('jedes Deck besteht aus Karten genau einer Oberfraktion (singleTop)', () => {
+  it('enthält genau ein Starterdeck für jeden Champ', () => {
     // ladeDecks() hätte sonst schon beim Laden eine DeckError geworfen -
     // dieser Test dokumentiert die Erwartung explizit und bricht den Testlauf
     // mit einer klaren Fehlermeldung, statt nur beim Import zu crashen.
     expect(() => ladeDecks(data)).not.toThrow();
     expect(Object.keys(decks).sort()).toEqual(
       [
-        'a1_rudeljaeger',
-        'a2_luftangriff',
-        'a3_gift_urgewalt',
-        'a4_urzeitliches_rudel',
-        'forschung_muskelkraft',
-        'h1_solidaritaet',
-        'h2_schicht',
-        'h3_campus'
-        ,'rudeljaeger'
-        ,'solidaritaet_ueberleben'
-        ,'urzeitliche_kolosse'
+        'sonnenfackel',
+        'kaeptn_kompostible',
+        'wall_halla',
+        'super_brainz',
+        'rostbolzen',
+        'der_zerschmetterer'
       ].sort()
+    );
+    expect(Object.values(decks).map((deck) => deck.championId).sort()).toEqual(
+      data.champions.map((champion) => champion.id).sort()
     );
   });
 });

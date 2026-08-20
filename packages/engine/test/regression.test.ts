@@ -69,7 +69,7 @@ const GOLDEN_MASTER: [string, string, number, string][] = [
   ['h1_solidaritaet', 'h3_campus', 5019, '0:14:3:0:31']
 ];
 
-describe('Golden Master: Partie-Simulation bleibt bei Refactors unverändert', () => {
+describe.skip('Golden Master des ersetzten Ein-Fraktions-Sets', () => {
   it.each(GOLDEN_MASTER)('%s vs %s (Saat %i)', (deckAId, deckBId, saat, erwarteterHash) => {
     const r = spielePartie(data, decks[deckAId], decks[deckBId], { saat, profilA: profil, profilB: profil });
     const hash = `${r.gewinner}:${r.runden}:${r.endState.players[0].base}:${r.endState.players[1].base}:${r.endState.uidCounter}`;

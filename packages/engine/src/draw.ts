@@ -10,6 +10,10 @@ export function zieheKarten(state: GameState, spieler: PlayerIndex, anzahl: numb
   for (let i = 0; i < anzahl; i++) {
     const card = state.players[spieler].deck.shift();
     if (!card) break;
+    if (state.players[spieler].hand.length >= (state.config.handLimit ?? 10)) {
+      zaehleSpieler(state, spieler, 'kartenGezogen');
+      continue;
+    }
     state.players[spieler].hand.push(card);
     registriereZug(state, spieler);
     zaehleSpieler(state, spieler, 'kartenGezogen');

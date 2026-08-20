@@ -69,11 +69,22 @@ function legaleSpielAktionen(state: GameState, player: PlayerIndex, data: GameDa
   const frei = freieLanes(state, player);
   p.hand.forEach((cardId, handIndex) => {
     const card = data.cardsById[cardId];
-    if (!card || card.cost > p.energy) return;
+    const cost = card?.type === 'superpower' && p.freeSuperpowerId === cardId ? 0 : card?.cost;
+    if (!card || cost === undefined || cost > p.energy) return;
     if (card.type === 'creature') {
-      for (const lane of frei) actions.push({ type: 'playCreature', handIndex, lane });
-    } else {
+      if (state.phase === 'precombat') return;
+      for (const lane of frei) {
+        if (lane === state.config.lanes - 1 && !card.keywords.includes('amphibious')) continue;
+        actions.push({ type: 'playCreature', handIndex, lane });
+      }
+    } else if (card.type === 'action') {
       actions.push(...aktionskartenZuege(state, player, handIndex, card));
+    } else if (card.type === 'environment') {
+      for (let lane = 0; lane < state.config.lanes; lane++) {
+        actions.push({ type: 'playEnvironment', handIndex, lane });
+      }
+    } else {
+      actions.push({ type: 'playAction', handIndex });
     }
   });
   actions.push({ type: 'pass' });
@@ -108,6 +119,10 @@ export function legaleAktionen(state: GameState, player: PlayerIndex, data: Game
     // WER sich dafür opfert.
     const actions: PlayerAction[] = [];
     for (const slot of state.reaktion.slots) {
+      if (state.players[player].cheerleaderPowers?.[slot]) {
+        actions.push({ type: 'cheerleaderReaction', reactionId, slot });
+        continue;
+      }
       const eintrag = kraftVonSlot(state, player, slot);
       if (!eintrag) continue;
       if (eintrag.kraft.wirkung.kind === 'wahl') {

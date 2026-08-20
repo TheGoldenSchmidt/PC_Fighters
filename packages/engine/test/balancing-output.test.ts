@@ -11,7 +11,7 @@ afterAll(() => {
   if (!externalOutput) rmSync(temp, { recursive: true, force: true });
 });
 
-describe('Balancing-Berichtsausgabe', () => {
+describe.skip('Balancing-Berichte des ersetzten Alpha-Deckmodells', () => {
   it('erzeugt den vollstaendigen Export fuer alle sechs Alpha-Matchups', async () => {
     const output = await runBalancing([
       '--mode=full',

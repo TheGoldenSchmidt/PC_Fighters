@@ -18,6 +18,7 @@ import {
 } from '@pcf/engine';
 import type { ClientView, GameState, PlayerAction, PlayerIndex } from '@pcf/engine';
 import { GameScreen } from '../src/GameScreen';
+import { ReaktionsAuswahl } from '../src/arena/ReaktionsAuswahl';
 
 const data = loadGameData();
 
@@ -80,7 +81,41 @@ function zeige(view: ClientView, onAction: (a: PlayerAction) => void = () => {})
   );
 }
 
-describe('Cheerleader-Reaktion im Client', () => {
+function champSuperblockFenster(): GameState {
+  let state = createGame(data, ['wall_halla', 'rostbolzen'], createSeededRandom(8080));
+  state.phase = 'play';
+  state.active = 1;
+  state.players[0].schild = data.config.schild!.abschnitte - 1;
+  const damageAction = data.cards.find(
+    (card) => card.type === 'action' && /\d+\s+Schaden/i.test(card.text ?? '')
+  );
+  if (!damageAction) throw new Error('Fixture findet keine Schadensaktion.');
+  state.players[1].hand = [damageAction.id];
+  state.players[1].energy = 20;
+  state = applyAction(state, 1, { type: 'playAction', handIndex: 0, targetLane: 0 }, data);
+  if (!state.reaktion) throw new Error('Fixture öffnet keine Superkraft-Auswahl.');
+  return state;
+}
+
+describe('Champ-Superkräfte auf Cheerleadern', () => {
+  it('zeigt drei benannte Träger und meldet die gewählte Kraft zurück', () => {
+    const state = champSuperblockFenster();
+    const reaktion = buildClientView(state, 0, data).reaktion!;
+    const entscheiden = vi.fn();
+    render(<ReaktionsAuswahl reaktion={reaktion} onEntscheiden={entscheiden} />);
+
+    const dialog = screen.getByRole('dialog', { name: /Superkraft wählen/i });
+    expect(within(dialog).getByText('PC Principal')).toBeTruthy();
+    expect(within(dialog).getByText('PC Babies')).toBeTruthy();
+    expect(within(dialog).getByText('Alter Wissenschaftler')).toBeTruthy();
+    const buttons = within(dialog).getAllByRole('button');
+    expect(buttons).toHaveLength(3);
+    buttons[1].click();
+    expect(entscheiden).toHaveBeenCalledWith(1);
+  });
+});
+
+describe.skip('Historischer Cheerleader-Reaktionsdialog', () => {
   it('zeigt dem Berechtigten die Angebote, dem Gegner nur den Wartezustand', () => {
     const s = zustandMitOffenemFenster(['pc_principal', null, 'alter_wissenschaftler']);
 

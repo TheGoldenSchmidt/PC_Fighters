@@ -21,7 +21,7 @@ import {
 } from './cheerleader.js';
 import { resolveEffect } from './effects.js';
 import { zieheKarten } from './draw.js';
-import { buildFactionTree, matchesScope } from './factions.js';
+import { buildFactionTree, matchesScope, topOf } from './factions.js';
 import { defaultCheerleaderSelection, maxCopiesOf, validateDeck } from './schema.js';
 import {
   freeLanes,
@@ -51,7 +51,8 @@ import type {
   MatchSummaryView,
   PlayerAction,
   PlayerIndex,
-  PlayerState
+  PlayerState,
+  ReaktionsAngebot
 } from './types.js';
 
 export { GameRuleError, getEffectiveAttack, getMaxHealth };
@@ -96,8 +97,28 @@ function logDeaths(state: GameState): void {
     for (const d of deaths) {
       log(state, `${d.name} wird zerstört.`, { kind: 'death', lane: d.lane, owner: d.owner });
     }
-    if (deaths.length > 0) onDeathTriggers(state, deaths);
-    if (deaths.length === 0) return;
+    const teamDeaths = [] as typeof deaths;
+    for (const owner of [0, 1] as PlayerIndex[]) {
+      for (let lane = 0; lane < state.config.lanes; lane++) {
+        const creature = state.teamBoard?.[owner]?.[lane];
+        if (!creature || creature.currentHealth > 0) continue;
+        state.teamBoard![owner][lane] = null;
+        teamDeaths.push({ owner, lane, name: creature.name, faction: creature.faction, creature });
+        log(state, `${creature.name} wird zerstört.`, { kind: 'death', lane, owner });
+      }
+    }
+    const allDeaths = [...deaths, ...teamDeaths];
+    if (allDeaths.length > 0) onDeathTriggers(state, allDeaths);
+    // Ist der vordere Kämpfer gefallen, rückt der Team-Up-Partner nach.
+    for (const owner of [0, 1] as PlayerIndex[]) {
+      for (let lane = 0; lane < state.config.lanes; lane++) {
+        if (!state.board[owner][lane] && state.teamBoard?.[owner]?.[lane]) {
+          state.board[owner][lane] = state.teamBoard[owner][lane];
+          state.teamBoard[owner][lane] = null;
+        }
+      }
+    }
+    if (allDeaths.length === 0) return;
     guard += 1;
   }
 }
@@ -134,7 +155,9 @@ export function buildDeck(data: GameData, faction: string, random: () => number)
   // Parent-aware: wählt der Spieler eine Oberfraktion, gehören alle Karten ihrer
   // Sub-Fraktionen dazu (same_top). Eine Sub-Fraktion liefert nur ihre Karten.
   const tree = buildFactionTree(data.factions);
-  const cards = data.cards.filter((c) => matchesScope(tree, 'same_top', c.faction, faction));
+  const cards = data.cards.filter(
+    (c) => c.deckable !== false && matchesScope(tree, 'same_top', c.faction, faction)
+  );
   if (cards.length === 0) {
     throw new GameRuleError(`Für die Fraktion "${faction}" gibt es keine Karten.`);
   }
@@ -164,6 +187,35 @@ export function buildDeck(data: GameData, faction: string, random: () => number)
   return shuffle(deck, random).slice(0, rules.size);
 }
 
+/** Automatisches 40-Karten-Deck aus genau den beiden Klassen eines Champs. */
+function buildChampionDeck(data: GameData, championId: string, random: () => number): string[] {
+  const champion = data.champions.find((entry) => entry.id === championId);
+  if (!champion) throw new GameRuleError(`Unbekannter Champ "${championId}".`);
+  const tree = buildFactionTree(data.factions);
+  const candidates = shuffle(
+    data.cards.filter(
+      (card) =>
+        card.deckable !== false &&
+        (champion.classes.includes(card.faction) || isNeutralForGame(card, data, tree))
+    ),
+    random
+  );
+  const deck: string[] = [];
+  for (const card of candidates) {
+    for (let copy = 0; copy < maxCopiesOf(card, data.config.deckbuilding); copy++) deck.push(card.id);
+    if (deck.length >= data.config.deckbuilding.size) break;
+  }
+  if (deck.length < data.config.deckbuilding.size) {
+    throw new GameRuleError(`Für ${champion.name} gibt es nicht genug Karten für ein vollständiges Deck.`);
+  }
+  return shuffle(deck.slice(0, data.config.deckbuilding.size), random);
+}
+
+function isNeutralForGame(card: CardDef, data: GameData, tree: ReturnType<typeof buildFactionTree>): boolean {
+  const top = topOf(tree, card.faction);
+  return data.factions.some((faction) => faction.id === top && faction.neutral);
+}
+
 /** Baut den Ziehstapel aus einer geprüften Deckliste (spielergewählt). */
 export function buildDeckFromList(data: GameData, deck: DeckList, random: () => number): string[] {
   validateDeck(deck, data); // wirft DeckError bei ungültigem Deck
@@ -187,24 +239,41 @@ export function createGame(
   cheerleaders?: [CheerleaderSelection, CheerleaderSelection]
 ): GameState {
   const makePlayer = (
-    faction: string,
+    selectionId: string,
     deck: DeckList | null,
-    selection: CheerleaderSelection
-  ): PlayerState => ({
-    faction,
-    deckName: deck?.name,
-    cheerleaders: [...selection],
-    deck: deck ? buildDeckFromList(data, deck, random) : buildDeck(data, faction, random),
-    hand: [],
-    base: data.config.baseHealth,
-    energy: 0,
-    knowledge: 0,
-    flyDone: false,
-    mulliganDone: false,
-    schild: 0,
-    basisImmun: false,
-    gespieltDieseRunde: []
-  });
+    selection: CheerleaderSelection | null
+  ): PlayerState => {
+    const champion = data.champions.find((entry) => entry.id === selectionId);
+    const championCheerleaders = data.config.schild?.cheerleaders ?? [null, null, null];
+    return {
+      faction: champion?.side ?? selectionId,
+      championId: champion?.id,
+      classes: champion ? [...champion.classes] : undefined,
+      deckName: deck?.name,
+      cheerleaders: champion
+        ? [...championCheerleaders] as CheerleaderSlots
+        : !selection
+          ? [null, null, null]
+          : [...selection],
+      cheerleaderPowers: champion ? [null, null, null] : undefined,
+      deck: deck
+        ? buildDeckFromList(data, deck, random)
+        : champion
+          ? buildChampionDeck(data, champion.id, random)
+          : buildDeck(data, selectionId, random),
+      hand: [],
+      base: data.config.baseHealth,
+      energy: 0,
+      knowledge: 0,
+      flyDone: false,
+      mulliganDone: false,
+      schild: 0,
+      basisImmun: false,
+      gespieltDieseRunde: [],
+      superpowersRemaining: champion ? [...champion.superpowers] : undefined,
+      blocksRemaining: champion ? 3 : undefined
+    };
+  };
 
   const state: GameState = {
     config: data.config,
@@ -218,18 +287,27 @@ export function createGame(
       makePlayer(
         factions[0],
         decks?.[0] ?? null,
-        cheerleaders?.[0] ?? defaultCheerleaderSelection(decks?.[0] ?? null, data)
+        data.champions.some((champion) => champion.id === factions[0]) || !data.config.cheerleaders
+          ? null
+          : cheerleaders?.[0] ?? defaultCheerleaderSelection(decks?.[0] ?? null, data)
       ),
       makePlayer(
         factions[1],
         decks?.[1] ?? null,
-        cheerleaders?.[1] ?? defaultCheerleaderSelection(decks?.[1] ?? null, data)
+        data.champions.some((champion) => champion.id === factions[1]) || !data.config.cheerleaders
+          ? null
+          : cheerleaders?.[1] ?? defaultCheerleaderSelection(decks?.[1] ?? null, data)
       )
     ],
     board: [
       Array.from({ length: data.config.lanes }, () => null),
       Array.from({ length: data.config.lanes }, () => null)
     ],
+    teamBoard: [
+      Array.from({ length: data.config.lanes }, () => null),
+      Array.from({ length: data.config.lanes }, () => null)
+    ],
+    environments: Array.from({ length: data.config.lanes }, () => null),
     log: [],
     winner: null,
     uidCounter: 0,
@@ -244,6 +322,19 @@ export function createGame(
 
   drawCards(state, 0, data.config.startingHand);
   drawCards(state, 1, data.config.startingHand);
+  // Jeder Champ beginnt mit einer zufälligen seiner vier Superkräfte; die
+  // übrigen drei kommen über die höchstens drei Superblocks ins Spiel.
+  for (const player of [0, 1] as PlayerIndex[]) {
+    const remaining = state.players[player].superpowersRemaining;
+    if (!remaining?.length) continue;
+    const index = Math.floor(random() * remaining.length);
+    state.players[player].hand.push(remaining.splice(index, 1)[0]);
+    state.players[player].cheerleaderPowers = [
+      remaining[0] ?? null,
+      remaining[1] ?? null,
+      remaining[2] ?? null
+    ];
+  }
   return state;
 }
 
@@ -298,8 +389,8 @@ function startRound(state: GameState): void {
   zaehleSpieler(state, 0, 'energieVerfallen', state.players[0].energy);
   zaehleSpieler(state, 1, 'energieVerfallen', state.players[1].energy);
   const energy = roundEnergy(state.config, state.round);
-  state.players[0].energy = energy;
-  state.players[1].energy = energy;
+  state.players[0].energy = Math.min(state.config.energy.cap ?? Infinity, energy + (state.players[0].energyPerRoundBonus ?? 0));
+  state.players[1].energy = Math.min(state.config.energy.cap ?? Infinity, energy + (state.players[1].energyPerRoundBonus ?? 0));
 
   state.phase = 'play';
   state.active = state.startingPlayer;
@@ -327,7 +418,7 @@ function startRound(state: GameState): void {
 function rundenAbschluss(state: GameState): void {
   onRoundEndAbilities(state);
   // Temporäre Buffs entfernen, Erschöpfung aufheben, Rundenzustand zurücksetzen.
-  for (const row of state.board) {
+  for (const row of [...state.board, ...(state.teamBoard ?? [])]) {
     for (const creature of row) {
       if (!creature) continue;
       creature.tempAttackBonus = 0;
@@ -403,6 +494,15 @@ function soloBasisschaden(c: Creature): number {
   return getAbilities(c, 'neugier').reduce((sum, n) => sum + (n.basisschaden ?? 0), 0);
 }
 
+function referenzZahl(creature: Creature, begriff: string, fallback: number): number {
+  for (const ability of creature.abilities) {
+    if (ability.kind !== 'referenz') continue;
+    const match = ability.text.match(new RegExp(`${begriff}\\s*(\\d+)`, 'i'));
+    if (match) return Number(match[1]);
+  }
+  return fallback;
+}
+
 /** Ein Angriff Kreatur→Kreatur inkl. Gift, Wucht (Überschuss→Basis) und Dornen. */
 function creatureStrike(
   state: GameState,
@@ -411,29 +511,37 @@ function creatureStrike(
   atk: number,
   attackerIdx: PlayerIndex,
   lane: number
-): void {
+): boolean {
   const defenderHealthBefore = defender.currentHealth;
   const defenderIdx = otherPlayer(attackerIdx);
-  defender.currentHealth -= atk;
+  const damage = Math.max(0, atk - (hasKeyword(defender, 'armored') ? referenzZahl(defender, 'Armored', 1) : 0));
+  defender.currentHealth -= damage;
+  if (damage > 0 && hasKeyword(attacker, 'deadly')) defender.currentHealth = 0;
   defender.letzterSchaden = { art: 'kampf', quelle: attacker.cardId, owner: attackerIdx };
   attacker.attackedThisRound = true;
-  zaehleKarte(state, attackerIdx, attacker.cardId, 'schadenKreatur', atk);
+  zaehleKarte(state, attackerIdx, attacker.cardId, 'schadenKreatur', damage);
   const aktionsBuff = Object.values(attacker.tempAttackSources ?? {}).reduce((sum, amount) => sum + Math.max(0, amount), 0);
   const angriffOhneAktionsBuff = Math.max(0, atk - aktionsBuff);
-  const echterKreaturenschaden = Math.min(atk, defenderHealthBefore);
+  const echterKreaturenschaden = Math.min(damage, defenderHealthBefore);
   const buffKreaturenschaden = Math.max(0, echterKreaturenschaden - Math.min(angriffOhneAktionsBuff, defenderHealthBefore));
   rechneBuffSchadenZu(state, attackerIdx, attacker, buffKreaturenschaden, 'Kreatur');
   if (attacker.spawnRound === state.round) {
     zaehleSpieler(state, attackerIdx, 'flinkAngriffe');
     zaehleKarte(state, attackerIdx, attacker.cardId, 'flinkAngriffe');
   }
-  log(state, `Lane ${lane + 1}: ${attacker.name} trifft ${defender.name} für ${atk}.`, {
+  log(state, `Lane ${lane + 1}: ${attacker.name} trifft ${defender.name} für ${damage}.`, {
     kind: 'attack',
     lane,
     attacker: attackerIdx,
-    damage: atk,
+    damage,
     toBase: false
   });
+  if (hasKeyword(attacker, 'strikethrough')) {
+    const basis = basisSchaden(state, defenderIdx, atk, { bullseye: hasKeyword(attacker, 'bullseye') });
+    if (basis > 0) log(state, `Durchschlag: ${attacker.name} trifft zusätzlich die Basis für ${basis}.`, {
+      kind: 'attack', lane, attacker: attackerIdx, damage: basis, toBase: true
+    });
+  }
   // Gift-Marken (Zermürbung, siehe resolvePoison). Mehrere gift-Einträge stapeln.
   const giftStaerke = getAbilities(attacker, 'gift').reduce((sum, g) => sum + g.staerke, 0);
   if (giftStaerke > 0) defender.poison += giftStaerke;
@@ -463,6 +571,7 @@ function creatureStrike(
     zaehleSpieler(state, defenderIdx, 'dornenSchaden', dornenX);
     log(state, `Lane ${lane + 1}: Dornen! ${defender.name} verletzt ${attacker.name} um ${dornenX}.`);
   }
+  return defender.currentHealth <= 0;
 }
 
 /** Zusätzlicher Kampf-Angriffsbonus, der nur für DIESEN Schlagabtausch gilt (`hunter` gegen vergiftete Ziele). */
@@ -481,6 +590,45 @@ function kampfAngriffsBonus(state: GameState, attackerOwner: PlayerIndex, lane: 
 function kampfLane(state: GameState, lane: number): void {
   const a = state.board[0][lane];
   const b = state.board[1][lane];
+  const teamA = state.teamBoard?.[0]?.[lane] ?? null;
+  const teamB = state.teamBoard?.[1]?.[lane] ?? null;
+
+  if (teamA || teamB) {
+    const rows: [Creature[], Creature[]] = [
+      [a, teamA].filter((creature): creature is Creature => Boolean(creature)),
+      [b, teamB].filter((creature): creature is Creature => Boolean(creature))
+    ];
+    for (const attackerIdx of [0, 1] as PlayerIndex[]) {
+      for (const attacker of rows[attackerIdx]) {
+        if (attacker.exhausted || attacker.currentHealth <= 0) continue;
+        const defenderIdx = otherPlayer(attackerIdx);
+        const defender = rows[defenderIdx].find((creature) => creature.currentHealth > 0);
+        let attack = Math.max(0, attacker.baseAttack + attacker.permAttackBonus + attacker.tempAttackBonus);
+        if (state.board[attackerIdx][lane]?.uid === attacker.uid) attack = getEffectiveAttack(state, attackerIdx, lane);
+        if (!defender && hasKeyword(attacker, 'antiHero')) attack += referenzZahl(attacker, 'Anti-Hero', 3);
+        let strikes = hasKeyword(attacker, 'doubleStrike') ? 2 : 1;
+        let frenzyAdded = false;
+        for (let strike = 0; strike < strikes; strike++) {
+          const currentDefender = rows[defenderIdx].find((creature) => creature.currentHealth > 0);
+          if (currentDefender) {
+            const killed = creatureStrike(state, attacker, currentDefender, attack, attackerIdx, lane);
+            if (killed && hasKeyword(attacker, 'frenzy') && !frenzyAdded) {
+              strikes += 1;
+              frenzyAdded = true;
+            }
+          }
+          else {
+            const damage = basisSchaden(state, defenderIdx, attack, { bullseye: hasKeyword(attacker, 'bullseye') });
+            log(state, `Lane ${lane + 1}: ${attacker.name} trifft die gegnerische Basis für ${damage}.`, {
+              kind: 'attack', lane, attacker: attackerIdx, damage, toBase: true, ...(damage === 0 ? { blockiert: true } : {})
+            });
+          }
+        }
+      }
+    }
+    applyShedding(state);
+    return;
+  }
 
   if (a && b) {
     // Beide Lanes besetzt: kampfbereite Kreaturen schlagen GLEICHZEITIG zu.
@@ -499,8 +647,22 @@ function kampfLane(state: GameState, lane: number): void {
       for (const h of getAbilities(b, 'hinrichten')) applyHinrichten(state, 1, lane, h.maxHp);
     }
 
-    if (atkA > 0) creatureStrike(state, a, b, atkA, 0, lane);
-    if (atkB > 0) creatureStrike(state, b, a, atkB, 1, lane);
+    const killedB = atkA > 0 ? creatureStrike(state, a, b, atkA, 0, lane) : false;
+    const killedA = atkB > 0 ? creatureStrike(state, b, a, atkB, 1, lane) : false;
+    if (a.currentHealth > 0 && (hasKeyword(a, 'doubleStrike') || (killedB && hasKeyword(a, 'frenzy')))) {
+      if (b.currentHealth > 0) creatureStrike(state, a, b, atkA, 0, lane);
+      else {
+        const damage = basisSchaden(state, 1, atkA, { bullseye: hasKeyword(a, 'bullseye') });
+        log(state, `${a.name} setzt nach und trifft die Basis für ${damage}.`, { kind: 'attack', lane, attacker: 0, damage, toBase: true });
+      }
+    }
+    if (b.currentHealth > 0 && (hasKeyword(b, 'doubleStrike') || (killedA && hasKeyword(b, 'frenzy')))) {
+      if (a.currentHealth > 0) creatureStrike(state, b, a, atkB, 1, lane);
+      else {
+        const damage = basisSchaden(state, 0, atkB, { bullseye: hasKeyword(b, 'bullseye') });
+        log(state, `${b.name} setzt nach und trifft die Basis für ${damage}.`, { kind: 'attack', lane, attacker: 1, damage, toBase: true });
+      }
+    }
     // Häutung (`shedding`) VOR der Todesauflösung: proaktive Heilung bei
     // niedrigem Leben, bevor recalcBoard über Tod/Rettung entscheidet. Läuft
     // bewusst außerhalb der recalcBoard-Fixpunktschleife (siehe Kommentar an
@@ -514,7 +676,9 @@ function kampfLane(state: GameState, lane: number): void {
     a.attackedThisRound = true;
     // Der Schild entscheidet, wie viel wirklich ankommt. Das AttackEvent trägt
     // den effektiven Schaden, weil der Client damit direkt weiterrechnet.
-    const echt = basisSchaden(state, 1, dmg);
+    const echt = basisSchaden(state, 1, dmg + (hasKeyword(a, 'antiHero') ? referenzZahl(a, 'Anti-Hero', 3) : 0), {
+      bullseye: hasKeyword(a, 'bullseye')
+    });
     zaehleKarte(state, 0, a.cardId, 'schadenBasis', echt);
     rechneBuffSchadenZu(state, 0, a, Math.min(echt, Object.values(a.tempAttackSources ?? {}).reduce((sum, amount) => sum + Math.max(0, amount), 0)), 'Basis');
     if (a.spawnRound === state.round) {
@@ -534,7 +698,9 @@ function kampfLane(state: GameState, lane: number): void {
   if (b && !a && !b.exhausted) {
     const dmg = getEffectiveAttack(state, 1, lane) + soloBasisschaden(b);
     b.attackedThisRound = true;
-    const echt = basisSchaden(state, 0, dmg);
+    const echt = basisSchaden(state, 0, dmg + (hasKeyword(b, 'antiHero') ? referenzZahl(b, 'Anti-Hero', 3) : 0), {
+      bullseye: hasKeyword(b, 'bullseye')
+    });
     zaehleKarte(state, 1, b.cardId, 'schadenBasis', echt);
     rechneBuffSchadenZu(state, 1, b, Math.min(echt, Object.values(b.tempAttackSources ?? {}).reduce((sum, amount) => sum + Math.max(0, amount), 0)), 'Basis');
     if (b.spawnRound === state.round) {
@@ -652,25 +818,74 @@ function fahreAufloesungFort(state: GameState): void {
 
 // ---------------------------------------------------------------- Aktionen
 
+function jagdAusloesen(state: GameState, gespieltVon: PlayerIndex, zielLane: number): void {
+  const jaeger = otherPlayer(gespieltVon);
+  if (state.board[jaeger][zielLane]) return;
+  for (let lane = 0; lane < state.config.lanes; lane++) {
+    const creature = state.board[jaeger][lane];
+    if (!creature || !hasKeyword(creature, 'hunt') || lane === zielLane) continue;
+    state.board[jaeger][zielLane] = creature;
+    state.board[jaeger][lane] = null;
+    log(state, `${creature.name} jagt den neu ausgespielten Gegner in Lane ${zielLane + 1}.`, {
+      kind: 'spell', lane: zielLane, effect: 'move', faction: creature.faction
+    });
+    return;
+  }
+}
+
 function playPhaseAction(state: GameState, player: PlayerIndex, action: PlayerAction, data: GameData): void {
   if (state.active !== player) {
     throw new GameRuleError('Du bist gerade nicht am Zug.');
   }
 
   if (action.type === 'pass') {
+    // Wer die beim Superblock gerade kostenlose Kraft nicht sofort nutzt,
+    // behält sie regulär für 1 Energie auf der Hand.
+    state.players[player].freeSuperpowerId = undefined;
     state.consecutivePasses += 1;
     log(state, `Spieler ${player + 1} passt.`);
     if (state.consecutivePasses >= 2) {
-      log(state, '— Kampfphase —');
-      state.aufloesung.push(...kampfSchritte(state));
+      if (state.phase === 'play' && state.players.some((entry) => entry.championId)) {
+        state.phase = 'precombat';
+        state.consecutivePasses = 0;
+        state.active = state.startingPlayer;
+        for (const row of state.board) {
+          for (const creature of row) {
+            if (creature?.faceDown) creature.faceDown = false;
+          }
+        }
+        // Overshoot wirkt beim Aufdecken unmittelbar vor dem letzten
+        // Aktionsfenster; der Wert wird aus dem Referenztext gelesen.
+        for (const owner of [0, 1] as PlayerIndex[]) {
+          for (let lane = 0; lane < state.config.lanes; lane++) {
+            for (const creature of [state.board[owner][lane], state.teamBoard?.[owner]?.[lane]]) {
+              if (!creature || !hasKeyword(creature, 'overshoot')) continue;
+              const amount = referenzZahl(creature, 'Overshoot', 2);
+              const damage = basisSchaden(state, otherPlayer(owner), amount, {
+                bullseye: hasKeyword(creature, 'bullseye')
+              });
+              log(state, `${creature.name}: Overshoot trifft die Basis für ${damage}.`, {
+                kind: 'attack', lane, attacker: owner, damage, toBase: true
+              });
+            }
+          }
+        }
+        log(state, '— Grabsteine werden aufgedeckt; letzte Aktionsphase vor dem Kampf —');
+      } else {
+        log(state, '— Kampfphase —');
+        state.aufloesung.push(...kampfSchritte(state));
+      }
     } else {
       state.active = otherPlayer(player);
     }
     return;
   }
 
-  if (action.type !== 'playCreature' && action.type !== 'playAction') {
+  if (action.type !== 'playCreature' && action.type !== 'playAction' && action.type !== 'playEnvironment') {
     throw new GameRuleError('Diese Aktion ist in der Ausspielphase nicht möglich.');
+  }
+  if (state.phase === 'precombat' && action.type === 'playCreature') {
+    throw new GameRuleError('Im Vor-Kampf-Fenster können nur Aktionen, Umgebungen und Superkräfte gespielt werden.');
   }
 
   const p = state.players[player];
@@ -678,8 +893,10 @@ function playPhaseAction(state: GameState, player: PlayerIndex, action: PlayerAc
   if (!cardId) throw new GameRuleError('Diese Handkarte gibt es nicht (mehr).');
   const card = data.cardsById[cardId];
   if (!card) throw new GameRuleError(`Unbekannte Karte "${cardId}".`);
-  if (card.cost > p.energy) {
-    throw new GameRuleError(`Nicht genug Energie: ${card.name} kostet ${card.cost}, du hast ${p.energy}.`);
+  const freeSuperpower = card.type === 'superpower' && p.freeSuperpowerId === card.id;
+  const cost = freeSuperpower ? 0 : card.cost;
+  if (cost > p.energy) {
+    throw new GameRuleError(`Nicht genug Energie: ${card.name} kostet ${cost}, du hast ${p.energy}.`);
   }
 
   if (action.type === 'playCreature') {
@@ -689,11 +906,28 @@ function playPhaseAction(state: GameState, player: PlayerIndex, action: PlayerAc
     if (action.lane < 0 || action.lane >= state.config.lanes) {
       throw new GameRuleError('Diese Lane gibt es nicht.');
     }
-    if (state.board[player][action.lane]) {
-      throw new GameRuleError('In dieser Lane steht schon eine eigene Kreatur.');
+    if (action.lane === state.config.lanes - 1 && !card.keywords.includes('amphibious')) {
+      throw new GameRuleError('In der Wasser-Lane dürfen nur amphibische Kämpfer stehen.');
     }
     const creature = makeCreature(state, { cardId: card.id, ...card }, { isToken: false });
-    state.board[player][action.lane] = creature;
+    const existing = state.board[player][action.lane];
+    let teamSlot = false;
+    if (existing) {
+      state.teamBoard ??= [
+        Array.from({ length: state.config.lanes }, () => null),
+        Array.from({ length: state.config.lanes }, () => null)
+      ];
+      if (state.teamBoard[player][action.lane]) {
+        throw new GameRuleError('In dieser Lane stehen bereits zwei eigene Kämpfer.');
+      }
+      if (!hasKeyword(existing, 'teamUp') && !hasKeyword(creature, 'teamUp')) {
+        throw new GameRuleError('Nur mit Team-Up dürfen zwei eigene Kämpfer dieselbe Lane teilen.');
+      }
+      state.teamBoard[player][action.lane] = creature;
+      teamSlot = true;
+    } else {
+      state.board[player][action.lane] = creature;
+    }
     log(
       state,
       `Spieler ${player + 1} spielt ${card.name} in Lane ${action.lane + 1}` +
@@ -701,15 +935,28 @@ function playPhaseAction(state: GameState, player: PlayerIndex, action: PlayerAc
     );
     // Beim-Ausspielen-Effekte (sturzflug, lernen, wissen, Puls, umverteilung,
     // beschwoeren, entwaffnen, experiment).
-    onPlayAbilities(state, player, action.lane);
+    if (!teamSlot) onPlayAbilities(state, player, action.lane);
+    jagdAusloesen(state, player, action.lane);
+  } else if (action.type === 'playEnvironment') {
+    if (card.type !== 'environment') {
+      throw new GameRuleError(`${card.name} ist keine Umgebung.`);
+    }
+    if (action.lane < 0 || action.lane >= state.config.lanes) throw new GameRuleError('Diese Lane gibt es nicht.');
+    state.environments ??= Array.from({ length: state.config.lanes }, () => null);
+    state.environments[action.lane] = { cardId: card.id, owner: player };
+    resolveEffect({ state, player, card, action });
+    log(state, `${card.name} prägt jetzt Lane ${action.lane + 1}.`, {
+      kind: 'spell', lane: action.lane, effect: 'environment', faction: card.faction
+    });
   } else {
-    if (card.type !== 'action') {
-      throw new GameRuleError(`${card.name} ist eine Kreatur – bitte eine Lane wählen.`);
+    if (card.type !== 'action' && card.type !== 'superpower') {
+      throw new GameRuleError(`${card.name} muss in eine Lane gespielt werden.`);
     }
     resolveEffect({ state, player, card, action });
   }
 
-  p.energy -= card.cost;
+  p.energy -= cost;
+  p.freeSuperpowerId = undefined;
   registriereAusspielen(state, player, action.handIndex);
   p.hand.splice(action.handIndex, 1);
   state.consecutivePasses = 0;
@@ -756,6 +1003,42 @@ function reaktionsAktion(
   if (!reaktion.slots.includes(action.slot)) {
     throw new GameRuleError('Dieser Bankplatz passt nicht zu diesem Auslöser.');
   }
+  const p = state.players[player];
+  const championPowerId = p.cheerleaderPowers?.[action.slot] ?? null;
+  if (p.cheerleaderPowers && championPowerId) {
+    const carrierId = p.cheerleaders[action.slot];
+    if (!carrierId) throw new GameRuleError('Auf diesem Bankplatz sitzt kein Cheerleader.');
+    const power = data.cardsById[championPowerId];
+    if (!power || power.type !== 'superpower') {
+      throw new GameRuleError('Die zugewiesene Champ-Superkraft ist ungültig.');
+    }
+
+    state.reaktion = null;
+    state.active = fortsetzenMit;
+    p.cheerleaders[action.slot] = null;
+    p.cheerleaderPowers[action.slot] = null;
+    const remainingIndex = p.superpowersRemaining?.indexOf(championPowerId) ?? -1;
+    if (remainingIndex >= 0) p.superpowersRemaining!.splice(remainingIndex, 1);
+    if (p.hand.length >= (state.config.handLimit ?? 10)) {
+      p.hand.shift();
+      log(state, `Die Hand von Spieler ${player + 1} war voll; die älteste Karte weicht der Superkraft.`);
+    }
+    p.hand.push(championPowerId);
+    p.freeSuperpowerId = championPowerId;
+
+    const carrierName = data.cardsById[carrierId]?.name ?? carrierId;
+    log(state, `Spieler ${player + 1} wählt ${power.name} bei ${carrierName}.`, {
+      kind: 'cheerleaderSacrifice',
+      owner: player,
+      slot: action.slot,
+      cardId: carrierId
+    });
+    log(state, `${power.name} ist jetzt sofort kostenlos spielbar.`);
+    zaehleCheerleader(state, player, carrierId, 'geopfert');
+    state.aufloesung.unshift({ art: 'todeStabilisieren' });
+    return;
+  }
+
   const eintrag = kraftVonSlot(state, player, action.slot);
   if (!eintrag) throw new GameRuleError('Auf diesem Bankplatz sitzt kein Cheerleader.');
   const { cardId, kraft } = eintrag;
@@ -873,7 +1156,7 @@ export function applyAction(
   } else if (next.phase === 'mulligan') {
     if (action.type !== 'mulligan') throw new GameRuleError('Bitte zuerst den Mulligan bestätigen.');
     mulliganAction(next, player, action, random);
-  } else if (next.phase === 'play') {
+  } else if (next.phase === 'play' || next.phase === 'precombat') {
     playPhaseAction(next, player, action, data);
   } else {
     flyPhaseAction(next, player, action);
@@ -898,9 +1181,30 @@ export function applyAction(
  * als Anzahl. Der komplette Serverzustand verlässt den Server NIE ungefiltert.
  */
 export function buildClientView(state: GameState, player: PlayerIndex, data: GameData): ClientView {
+  const hiddenGravestone = (creature: Creature): CreatureView => ({
+    uid: creature.uid,
+    cardId: 'hidden:gravestone',
+    name: 'Grabstein',
+    keywords: ['gravestone'],
+    abilities: [],
+    poison: 0,
+    attack: 0,
+    baseAttack: 0,
+    health: 1,
+    maxHealth: 1,
+    baseMaxHealth: 1,
+    exhausted: true,
+    canFly: false,
+    text: 'Wird vor dem Kampf aufgedeckt.',
+    faceDown: true
+  });
+
   const creatureView = (owner: PlayerIndex, lane: number): CreatureView | null => {
     const c = state.board[owner][lane];
     if (!c) return null;
+    if (c.faceDown && owner !== player) {
+      return hiddenGravestone(c);
+    }
     const cardDef = data.cardsById[c.cardId];
     return {
       uid: c.uid,
@@ -921,12 +1225,40 @@ export function buildClientView(state: GameState, player: PlayerIndex, data: Gam
         hasKeyword(c, 'flying') &&
         !c.movedThisFlyPhase,
       projectile: cardDef?.type === 'creature' ? cardDef.projectile : undefined,
-      text: cardDef?.text ?? (c.isToken ? 'Token' : undefined)
+      text: cardDef?.text ?? (c.isToken ? 'Token' : undefined),
+      faceDown: c.faceDown
+    };
+  };
+
+  const teamCreatureView = (owner: PlayerIndex, lane: number): CreatureView | null => {
+    const creature = state.teamBoard?.[owner]?.[lane];
+    if (!creature) return null;
+    if (creature.faceDown && owner !== player) return hiddenGravestone(creature);
+    const card = data.cardsById[creature.cardId];
+    return {
+      uid: creature.uid,
+      cardId: creature.cardId,
+      name: creature.name,
+      keywords: creature.keywords,
+      abilities: creature.abilities,
+      poison: creature.poison,
+      attack: Math.max(0, creature.baseAttack + creature.permAttackBonus + creature.tempAttackBonus),
+      baseAttack: creature.baseAttack,
+      health: creature.currentHealth,
+      maxHealth: Math.max(1, creature.baseMaxHealth + creature.permHealthBonus + creature.tempHealthBonus),
+      baseMaxHealth: creature.baseMaxHealth,
+      exhausted: creature.exhausted,
+      canFly: false,
+      projectile: card?.type === 'creature' ? card.projectile : undefined,
+      text: card?.text,
+      faceDown: creature.faceDown
     };
   };
 
   const publicView = (idx: PlayerIndex) => ({
     faction: state.players[idx].faction,
+    championId: state.players[idx].championId,
+    classes: state.players[idx].classes,
     deckName: state.players[idx].deckName,
     cheerleaders: [...state.players[idx].cheerleaders] as CheerleaderSlots,
     base: state.players[idx].base,
@@ -937,8 +1269,31 @@ export function buildClientView(state: GameState, player: PlayerIndex, data: Gam
     mulliganDone: state.players[idx].mulliganDone,
     // Schildstand ist öffentlich – wie das Basis-Leben auch.
     schild: state.players[idx].schild,
-    basisImmun: state.players[idx].basisImmun
+    basisImmun: state.players[idx].basisImmun,
+    blocksRemaining: state.players[idx].blocksRemaining
   });
+
+  const reactionOffers = (): ReaktionsAngebot[] => {
+    if (!state.reaktion) return [];
+    const owner = state.reaktion.spieler;
+    const powers = state.players[owner].cheerleaderPowers;
+    if (!powers) return angebote(state, state.reaktion);
+    const offers: ReaktionsAngebot[] = [];
+    for (const slot of state.reaktion.slots) {
+      const carrierId = state.players[owner].cheerleaders[slot];
+      const powerId = powers[slot];
+      const power = powerId ? data.cardsById[powerId] : undefined;
+      if (!carrierId || !power || power.type !== 'superpower') continue;
+      offers.push({
+        slot,
+        cardId: carrierId,
+        traeger: data.cardsById[carrierId]?.name ?? carrierId,
+        kraft: power.name,
+        text: power.text ?? 'Champ-Superkraft'
+      });
+    }
+    return offers;
+  };
 
   return {
     you: player,
@@ -956,11 +1311,27 @@ export function buildClientView(state: GameState, player: PlayerIndex, data: Gam
     active: state.active,
     winner: state.winner,
     players: [publicView(0), publicView(1)],
-    hand: state.players[player].hand.map((id) => data.cardsById[id]),
+    hand: state.players[player].hand.map((id) => {
+      const card = data.cardsById[id];
+      if (card.type === 'superpower' && state.players[player].freeSuperpowerId === id) {
+        return { ...card, cost: 0 };
+      }
+      return card;
+    }),
     board: [
       state.board[0].map((_, lane) => creatureView(0, lane)),
       state.board[1].map((_, lane) => creatureView(1, lane))
     ],
+    teamBoard: [
+      (state.teamBoard?.[0] ?? []).map((_, lane) => teamCreatureView(0, lane)),
+      (state.teamBoard?.[1] ?? []).map((_, lane) => teamCreatureView(1, lane))
+    ],
+    environments: (state.environments ?? []).map((environment) => {
+      if (!environment) return null;
+      const card = data.cardsById[environment.cardId];
+      return { cardId: environment.cardId, owner: environment.owner, name: card?.name ?? environment.cardId, text: card?.text };
+    }),
+    laneKinds: ['height', 'ground', 'ground', 'ground', 'water'],
     log: state.log.slice(-60),
     ...(state.winner !== null ? { matchSummary: matchSummary(state) } : {}),
     // Der Gegner erfährt DASS gewartet wird, aber nicht, welche Optionen der
@@ -971,7 +1342,7 @@ export function buildClientView(state: GameState, player: PlayerIndex, data: Gam
             id: state.reaktion.id,
             spieler: state.reaktion.spieler,
             ausloeser: state.reaktion.ausloeser,
-            angebote: state.reaktion.spieler === player ? angebote(state, state.reaktion) : []
+            angebote: state.reaktion.spieler === player ? reactionOffers() : []
           }
         }
       : {})

@@ -26,7 +26,7 @@ import type {
 } from './types.js';
 import { zieheKarten } from './draw.js';
 
-/** Bankplätze sind fest dreistellig (config.cheerleaders.selectionSize === 3). */
+/** Historische Bankplätze sind fest dreistellig. */
 export type SlotIndex = 0 | 1 | 2;
 const SLOTS: SlotIndex[] = [0, 1, 2];
 
@@ -38,7 +38,7 @@ export function kraftVonSlot(
 ): { cardId: string; kraft: CheerleaderKraft } | undefined {
   const cardId = state.players[spieler].cheerleaders[slot];
   if (!cardId) return undefined;
-  const kraft = state.config.cheerleaders.kraefte?.[cardId];
+  const kraft = state.config.cheerleaders?.kraefte?.[cardId];
   return kraft ? { cardId, kraft } : undefined;
 }
 
@@ -48,6 +48,12 @@ export function passendeSlots(
   spieler: PlayerIndex,
   ausloeser: CheerleaderAusloeser
 ): SlotIndex[] {
+  const powers = state.players[spieler].cheerleaderPowers;
+  if (powers) {
+    return SLOTS.filter(
+      (slot) => state.players[spieler].cheerleaders[slot] !== null && powers[slot] !== null
+    );
+  }
   return SLOTS.filter((slot) => kraftVonSlot(state, spieler, slot)?.kraft.ausloeser === ausloeser);
 }
 
