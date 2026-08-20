@@ -21,7 +21,12 @@ function creature(extra: Record<string, unknown> = {}) {
 /** Validiert eine Figur-Datei gegen die echten Daten + eine Referenzkarte. */
 function checkFig(
   figure: unknown,
-  opts: { file?: string; cards?: unknown[] } = {}
+  opts: {
+    file?: string;
+    cards?: unknown[];
+    figureBases?: { file: string; content: unknown }[];
+    animationProfiles?: { file: string; content: unknown }[];
+  } = {}
 ) {
   const superblockCards = (data.config.schild?.cheerleaders ?? []).map((id) => data.cardsById[id]);
   return validateGameData({
@@ -32,6 +37,8 @@ function checkFig(
       file: 'cards/test.json',
       content: [...superblockCards, ...(opts.cards ?? [creature()])]
     }],
+    figureBaseFiles: opts.figureBases,
+    animationProfileFiles: opts.animationProfiles,
     figureFiles: [{ file: opts.file ?? 'figures/testfigur.json', content: figure }]
   });
 }
@@ -50,6 +57,53 @@ const fig = (visual: unknown, animations?: unknown) => ({
   ...(animations ? { animations } : {})
 });
 
+const testAttachments = {
+  head: 'head',
+  leftHand: 'hand',
+  rightHand: 'hand',
+  back: 'body',
+  weapon: 'hand',
+  mount: 'root'
+};
+
+function variantSetup(baseExtra: Record<string, unknown> = {}) {
+  return {
+    figureBases: [{
+      file: 'figure-bases/test-base.json',
+      content: {
+        baseId: 'test-base',
+        rigId: 'test-rig',
+        attachments: testAttachments,
+        animationProfileId: 'test-rig',
+        visual: {
+          palette: { main: '#112233', accent: '#445566' },
+          parts: [
+            { id: 'body', shape: 'ico', size: 1, color: 'main' },
+            { id: 'head', shape: 'ico', size: 0.4, parent: 'body', color: 'main' },
+            { id: 'hand', shape: 'ico', size: 0.2, parent: 'body', color: 'main' },
+            { id: 'remove-me', shape: 'group', parent: 'body' },
+            { id: 'remove-child', shape: 'ico', size: 0.1, parent: 'remove-me', color: 'accent' }
+          ]
+        },
+        animations: {
+          attack: { duration: 0.7, tracks: [{ part: 'body', prop: 'rot.x', keys: [[0, 0], [0.7, 0.2]] }] }
+        },
+        ...baseExtra
+      }
+    }],
+    animationProfiles: [{
+      file: 'animation-profiles/test-rig.json',
+      content: {
+        profileId: 'test-rig',
+        animations: {
+          idle: { duration: 2, loop: true, tracks: [{ part: 'root', prop: 'pos.y', keys: [[0, 0], [2, 0]] }] },
+          attack: { duration: 1, tracks: [{ part: 'root', prop: 'pos.z', keys: [[0, 0], [1, 0.5]] }] }
+        }
+      }
+    }]
+  };
+}
+
 describe('Figuren – Schema-Validierung', () => {
   it('akzeptiert eine gültige Figur mit visual + animations', () => {
     const res = checkFig(
@@ -62,6 +116,57 @@ describe('Figuren – Schema-Validierung', () => {
 
   it('bestehende Daten (inkl. echter Figuren) laden ohne Fehler', () => {
     expect(() => loadGameData()).not.toThrow();
+    expect(data.figures.rekrut.visual.parts.length).toBeGreaterThan(20);
+    expect(data.figures.rekrut.animations?.idle).toBeTruthy();
+  });
+
+  it('löst eine kleine Variante samt Palette, Größe, Anschlüssen und Teilbaum-Entfernung auf', () => {
+    const setup = variantSetup();
+    const res = checkFig(
+      {
+        cardId: 'testfigur',
+        baseId: 'test-base',
+        palette: { main: '#abcdef' },
+        height: 1.2,
+        patchParts: [{ id: '@head', scale: 1.1 }],
+        removeParts: ['remove-me'],
+        addParts: [{ id: 'tool', shape: 'box', size: [0.1, 0.4, 0.1], parent: '@weapon', color: 'accent' }],
+        animations: {
+          death: { duration: 0.4, tracks: [{ part: 'head', prop: 'rot.z', keys: [[0, 0], [0.4, 0.1]] }] }
+        }
+      },
+      setup
+    );
+    const resolved = res.figures.testfigur;
+    expect(resolved.visual.height).toBe(1.2);
+    expect(resolved.visual.palette?.main).toBe('#abcdef');
+    expect(resolved.visual.parts.find((part) => part.id === 'head')?.scale).toBe(1.1);
+    expect(resolved.visual.parts.find((part) => part.id === 'tool')?.parent).toBe('hand');
+    expect(resolved.visual.parts.some((part) => part.id === 'remove-me' || part.id === 'remove-child')).toBe(false);
+    expect(resolved.animations?.idle.duration).toBe(2);
+    expect(resolved.animations?.attack.duration).toBe(0.7);
+    expect(resolved.animations?.death.duration).toBe(0.4);
+  });
+
+  it('lehnt unbekannte Basen, Patch-Teile, Anschlüsse und Eltern verständlich ab', () => {
+    expect(() => checkFig({ cardId: 'testfigur', baseId: 'fehlt' })).toThrow(/Unbekanntes Grundgerüst/);
+    const setup = variantSetup();
+    expect(() => checkFig({ cardId: 'testfigur', baseId: 'test-base', patchParts: [{ id: 'fehlt', scale: 2 }] }, setup))
+      .toThrow(/patchParts verweist auf unbekannten/);
+    expect(() => checkFig({ cardId: 'testfigur', baseId: 'test-base', addParts: [{ id: 'x', shape: 'ico', size: 1, parent: '@tentakel' }] }, setup))
+      .toThrow(/Unbekannter Anschluss/);
+    expect(() => checkFig({ cardId: 'testfigur', baseId: 'test-base', addParts: [{ id: 'x', shape: 'ico', size: 1, parent: 'fehlt' }] }, setup))
+      .toThrow(/unbekannten Baustein "fehlt"/);
+  });
+
+  it('meldet Animationen, die nach einer Teilbaum-Entfernung ins Leere zeigen', () => {
+    const setup = variantSetup({
+      animations: {
+        idle: { duration: 1, tracks: [{ part: 'remove-child', prop: 'rot.x', keys: [[0, 0]] }] }
+      }
+    });
+    expect(() => checkFig({ cardId: 'testfigur', baseId: 'test-base', removeParts: ['remove-me'] }, setup))
+      .toThrow(/Animation "idle".*unbekannten Baustein "remove-child"/);
   });
 
   it('lehnt doppelte Baustein-Namen ab', () => {
@@ -149,5 +254,7 @@ describe('Standard-Klips & Katalog', () => {
     expect(cat.cards.pfandsammler?.visual).toBeTruthy();
     expect(cat.defaultClips.attack).toBeTruthy();
     expect(cat.palettes.humans).toBeTruthy();
+    expect(cat.cards.rekrut?.visual?.parts.length).toBeGreaterThan(20);
+    expect((cat.cards.rekrut as unknown as { baseId?: string }).baseId).toBeUndefined();
   });
 });

@@ -174,7 +174,7 @@ oder `{ "kind": "aura", "scope": "any", "buff": { "atk": 1, "hp": 1 },
 `packages/engine/src/abilities.ts` (`ABILITIES`-Registry), die Parameter je
 Primitiv im `Ability`-Union-Typ in `packages/engine/src/types.ts`.
 
-**Bild für eine Karte:** Lege einfach ein PNG mit dem Namen der Karten-id in den Ordner `packages/client/public/assets/cards/` – z. B. `veteranin.png`. Fertig, kein Code nötig. Ohne Bild zeigt die Karte ein Symbol.
+**Bild für eine Karte:** Lege das PNG unter `packages/client/public/assets/cards/<karten-id>.png` ab und trage seine Herkunft in `art-manifest.json` als `manual`, `figure-render` oder `template` ein. Manuelles Artwork wird vom Renderer niemals überschrieben. Ohne Bild zeigt die Karte ein Symbol.
 
 ### Identitätskatalog
 
@@ -182,7 +182,13 @@ Primitiv im `Ability`-Union-Typ in `packages/engine/src/types.ts`.
 
 Die Kartendateien bleiben die Quelle für sichtbaren Namen und Regeln. `referenceName` sowie `referenz.text` bewahren nur intern die importierte Regelherkunft und werden von Umbenennungen nicht verändert. Karten-IDs sollten nicht geändert werden, weil Decks, Bilder und Figuren sie als stabilen Schlüssel benutzen.
 
-`npm run list-missing-art` zeigt alle Karten ohne Bild, gruppiert nach Fraktion, inkl. Name/Typ/Text – praktisch als Grundlage für Prompts (z. B. bei ChatGPT). Kommt das Bild von Hand (gemalt oder KI-generiert) statt aus `scripts/render-card-art.mjs`, die Karten-id zusätzlich in die `MANUAL_ART`-Liste am Kopf dieses Skripts eintragen, sonst überschreibt ein erneuter Render-Lauf das Bild wieder.
+### Figuren-Grundgerüste und Varianten
+
+Vollständige Einzelfiguren bleiben unter `data/figures/<karten-id>.json` gültig. Kleine Varianten enthalten stattdessen nur `cardId`, `baseId` sowie gezielte Paletten-, Größen-, Teil- und Animationsänderungen. Die wiederverwendbaren Grundgerüste liegen unter `data/figure-bases/`, Rig-Animationsprofile unter `data/animation-profiles/`. Beim Serverstart werden Varianten zu vollständigen Figuren aufgelöst; Client und Netzwerkformat bleiben dadurch unverändert.
+
+Anschlüsse heißen einheitlich `@head`, `@leftHand`, `@rightHand`, `@back`, `@weapon` und `@mount`. Unbekannte Basen, Teile, Eltern, Anschlüsse oder Animationstracks werden als Datenfehler gemeldet. Die repo-lokale `varianten-werkstatt` erstellt einzeln oder in Batches von höchstens acht Karten ausschließlich kleine Varianten und liest ihren Brief automatisch aus dem Identitätskatalog.
+
+`npm run list-missing-art` zeigt alle Karten ohne Bild, gruppiert nach Fraktion, inkl. Name/Typ/Text und geplanter Bildquelle. `node scripts/render-card-art.mjs --check` prüft Manifest und Überschreibschutz. Nicht-Kreaturen werden ausschließlich als Templates gerendert; Kreaturen ohne freigegebene Figur werden nicht als Golem-Bild ausgegeben.
 
 ---
 

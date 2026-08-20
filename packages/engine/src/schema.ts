@@ -14,7 +14,12 @@ import type {
   DeckList,
   Faction,
   FactionTree,
+  AnimationProfileDef,
+  FigureAttachments,
+  FigureBaseDef,
   FigureDef,
+  FigureFileDef,
+  FigureVariantDef,
   GameConfig,
   GameData,
   IdentityCatalog,
@@ -382,12 +387,57 @@ const animClipSchema = z.object({
 
 export const animationsSchema = z.record(animClipSchema);
 
-/** Eine Figur-Datei aus data/figures/ (Dateiname = cardId). */
-export const figureFileSchema = z.object({
+/** Vollständige Alt-/Einzelfigur aus data/figures/ (Dateiname = cardId). */
+const fullFigureFileSchema = z.object({
   cardId: z.string().min(1),
   visual: visualSchema,
   animations: animationsSchema.optional()
 });
+
+const visualPartPatchSchema = visualPartSchema
+  .omit({ id: true })
+  .partial()
+  .extend({ id: z.string().min(1) })
+  .strict();
+
+/** Kleine Variante: genau eine Base plus gezielte Änderungen. */
+const figureVariantFileSchema = z.object({
+  cardId: z.string().min(1),
+  baseId: z.string().min(1),
+  palette: z.record(z.string().min(1)).optional(),
+  height: z.number().positive('height muss größer als 0 sein').optional(),
+  detailLevel: z.enum(['low', 'mid', 'high']).optional(),
+  addParts: z.array(visualPartSchema).optional(),
+  patchParts: z.array(visualPartPatchSchema).optional(),
+  removeParts: z.array(z.string().min(1)).optional(),
+  animations: animationsSchema.optional()
+}).strict();
+
+/** Eine Figur-Datei ist entweder vollständig oder eine einstufige Base-Variante. */
+export const figureFileSchema = z.union([fullFigureFileSchema, figureVariantFileSchema]);
+
+const ATTACHMENT_NAMES = ['head', 'leftHand', 'rightHand', 'back', 'weapon', 'mount'] as const;
+const figureAttachmentsSchema = z.object(
+  Object.fromEntries(ATTACHMENT_NAMES.map((name) => [name, z.string().min(1)])) as Record<
+    (typeof ATTACHMENT_NAMES)[number],
+    z.ZodString
+  >
+).strict();
+
+/** Grundgerüste dürfen selbst keine andere Base referenzieren. */
+export const figureBaseFileSchema = z.object({
+  baseId: z.string().min(1),
+  rigId: z.string().min(1),
+  attachments: figureAttachmentsSchema,
+  visual: visualSchema,
+  animationProfileId: z.string().min(1).optional(),
+  animations: animationsSchema.optional()
+}).strict();
+
+export const animationProfileFileSchema = z.object({
+  profileId: z.string().min(1),
+  animations: animationsSchema
+}).strict();
 
 const cardBase = {
   id: z.string().min(1),
@@ -534,6 +584,126 @@ function translateType(t: string): string {
   return map[t] ?? t;
 }
 
+function fileStem(file: string): string {
+  return file.replace(/^.*[/\\]/, '').replace(/\.json$/i, '');
+}
+
+function animationTrackProblems(animations: Animations | undefined, partIds: Set<string>): string[] {
+  const problems: string[] = [];
+  for (const [clip, def] of Object.entries(animations ?? {})) {
+    def.tracks.forEach((track, index) => {
+      if (!partIds.has(track.part)) {
+        problems.push(
+          `Animation "${clip}", Track ${index + 1} verweist auf unbekannten Baustein "${track.part}"`
+        );
+      }
+    });
+  }
+  return problems;
+}
+
+function attachmentTarget(
+  rawId: string,
+  attachments: FigureAttachments,
+  problems: string[]
+): string | null {
+  if (!rawId.startsWith('@')) return rawId;
+  const name = rawId.slice(1);
+  if (!ATTACHMENT_NAMES.includes(name as (typeof ATTACHMENT_NAMES)[number])) {
+    problems.push(`Unbekannter Anschluss "${rawId}"; erlaubt sind ${ATTACHMENT_NAMES.map((n) => `@${n}`).join(', ')}`);
+    return null;
+  }
+  return attachments[name as keyof FigureAttachments];
+}
+
+/** Löst eine kleine Varianten-Datei deterministisch zu einer vollständigen Client-Figur auf. */
+function resolveFigureVariant(
+  file: string,
+  variant: FigureVariantDef,
+  base: FigureBaseDef,
+  profile?: AnimationProfileDef
+): FigureDef {
+  const problems: string[] = [];
+  const visual = structuredClone(base.visual);
+  visual.palette = { ...(visual.palette ?? {}), ...(variant.palette ?? {}) };
+  if (variant.height !== undefined) visual.height = variant.height;
+  if (variant.detailLevel !== undefined) visual.detailLevel = variant.detailLevel;
+
+  const initialIds = new Set(visual.parts.map((part) => part.id));
+  const removeIds = new Set<string>();
+  for (const rawId of variant.removeParts ?? []) {
+    const id = attachmentTarget(rawId, base.attachments, problems);
+    if (!id) continue;
+    if (id === 'root') {
+      problems.push('Die Figurenwurzel "root" darf nicht entfernt werden.');
+    } else if (!initialIds.has(id)) {
+      problems.push(`removeParts verweist auf unbekannten Baustein "${rawId}"`);
+    } else {
+      removeIds.add(id);
+    }
+  }
+  let foundChild = true;
+  while (foundChild) {
+    foundChild = false;
+    for (const part of visual.parts) {
+      if (part.parent && removeIds.has(part.parent) && !removeIds.has(part.id)) {
+        removeIds.add(part.id);
+        foundChild = true;
+      }
+    }
+  }
+  visual.parts = visual.parts.filter((part) => !removeIds.has(part.id));
+
+  const partById = new Map(visual.parts.map((part) => [part.id, part]));
+  for (const patch of variant.patchParts ?? []) {
+    const id = attachmentTarget(patch.id, base.attachments, problems);
+    if (!id) continue;
+    const target = partById.get(id);
+    if (!target) {
+      problems.push(`patchParts verweist auf unbekannten oder entfernten Baustein "${patch.id}"`);
+      continue;
+    }
+    const { id: _patchedId, ...changes } = patch;
+    if (changes.parent) {
+      const parent = attachmentTarget(changes.parent, base.attachments, problems);
+      if (parent) changes.parent = parent;
+    }
+    Object.assign(target, changes);
+  }
+
+  const additions = structuredClone(variant.addParts ?? []);
+  for (const part of additions) {
+    if (partById.has(part.id)) {
+      problems.push(`addParts-Baustein "${part.id}" existiert bereits`);
+      continue;
+    }
+    if (part.parent) {
+      const parent = attachmentTarget(part.parent, base.attachments, problems);
+      if (parent) part.parent = parent;
+    }
+    visual.parts.push(part);
+    partById.set(part.id, part);
+  }
+
+  const parsedVisual = visualSchema.safeParse(visual);
+  if (!parsedVisual.success) problems.push(...describeZodError(parsedVisual.error));
+
+  const animations: Animations = {
+    ...(profile?.animations ?? {}),
+    ...(base.animations ?? {}),
+    ...(variant.animations ?? {})
+  };
+  const finalPartIds = new Set(['root', ...visual.parts.map((part) => part.id)]);
+  problems.push(...animationTrackProblems(animations, finalPartIds));
+
+  if (problems.length > 0) throw new DataError(file, problems);
+  return {
+    cardId: variant.cardId,
+    visual: parsedVisual.success ? parsedVisual.data : visual,
+    ...(Object.keys(animations).length > 0 ? { animations } : {})
+  } as FigureDef;
+}
+
 /**
  * Validiert alle geladenen Daten zusammen (Querbezüge inklusive:
  * Karten-Fraktion muss in factions.json existieren, IDs müssen eindeutig sein).
@@ -546,6 +716,10 @@ export function validateGameData(raw: {
   cardFiles: { file: string; content: unknown }[];
   /** data/animations.json – geteilte Standard-Klips (optional; Default: {}). */
   animations?: unknown;
+  /** data/animation-profiles/*.json – rig-spezifische Klips. */
+  animationProfileFiles?: { file: string; content: unknown }[];
+  /** data/figure-bases/*.json – wiederverwendbare einstufige Grundgerüste. */
+  figureBaseFiles?: { file: string; content: unknown }[];
   /** data/figures/*.json – 3D-Figuren (optional; Default: keine). */
   figureFiles?: { file: string; content: unknown }[];
   /** data/identity-catalog.json – vollständige Autorenbriefe (in kleinen Tests optional). */
@@ -558,6 +732,8 @@ export function validateGameData(raw: {
   cards: CardDef[];
   defaultClips: Animations;
   figures: Record<string, FigureDef>;
+  figureBases: Record<string, FigureBaseDef>;
+  animationProfiles: Record<string, AnimationProfileDef>;
   identityCatalog: IdentityCatalog;
 } {
   const configResult = configSchema.safeParse(raw.config);
@@ -800,43 +976,103 @@ export function validateGameData(raw: {
     }
   }
 
-  // ---- 3D-Figuren (data/figures/*.json) ----
+  // ---- Rig-Animationsprofile (data/animation-profiles/*.json) ----
+  const animationProfiles: Record<string, AnimationProfileDef> = {};
+  for (const { file, content } of raw.animationProfileFiles ?? []) {
+    const parsed = animationProfileFileSchema.safeParse(content);
+    if (!parsed.success) throw new DataError(file, describeZodError(parsed.error));
+    const profile = parsed.data as AnimationProfileDef;
+    const problems: string[] = [];
+    if (profile.profileId !== fileStem(file)) {
+      problems.push(`"profileId" ist "${profile.profileId}", muss aber zum Dateinamen passen ("${fileStem(file)}")`);
+    }
+    if (animationProfiles[profile.profileId]) {
+      problems.push(`Animationsprofil "${profile.profileId}" kommt mehrfach vor`);
+    }
+    if (problems.length > 0) throw new DataError(file, problems);
+    animationProfiles[profile.profileId] = profile;
+  }
+
+  // ---- Wiederverwendbare Grundgerüste (data/figure-bases/*.json) ----
+  const figureBases: Record<string, FigureBaseDef> = {};
+  for (const { file, content } of raw.figureBaseFiles ?? []) {
+    const parsed = figureBaseFileSchema.safeParse(content);
+    if (!parsed.success) throw new DataError(file, describeZodError(parsed.error));
+    const base = parsed.data as FigureBaseDef;
+    const problems: string[] = [];
+    if (base.baseId !== fileStem(file)) {
+      problems.push(`"baseId" ist "${base.baseId}", muss aber zum Dateinamen passen ("${fileStem(file)}")`);
+    }
+    if (figureBases[base.baseId]) problems.push(`Grundgerüst "${base.baseId}" kommt mehrfach vor`);
+    const profile = base.animationProfileId ? animationProfiles[base.animationProfileId] : undefined;
+    if (base.animationProfileId && !profile) {
+      problems.push(`Unbekanntes Animationsprofil "${base.animationProfileId}"`);
+    }
+    const partIds = new Set(['root', ...base.visual.parts.map((part) => part.id)]);
+    for (const name of ATTACHMENT_NAMES) {
+      const target = base.attachments[name];
+      if (!partIds.has(target)) problems.push(`Anschluss "${name}" verweist auf unbekannten Baustein "${target}"`);
+    }
+    problems.push(
+      ...animationTrackProblems(
+        { ...(profile?.animations ?? {}), ...(base.animations ?? {}) },
+        partIds
+      )
+    );
+    if (problems.length > 0) throw new DataError(file, problems);
+    figureBases[base.baseId] = base;
+  }
+
+  // ---- 3D-Figuren und kleine Varianten (data/figures/*.json) ----
   const cardById = new Map(cards.map((c) => [c.id, c]));
+  const identityByCardId = new Map(identityCatalog.cards.map((entry) => [entry.cardId, entry]));
   const figures: Record<string, FigureDef> = {};
   for (const { file, content } of raw.figureFiles ?? []) {
     const parsed = figureFileSchema.safeParse(content);
     if (!parsed.success) {
       throw new DataError(file, describeZodError(parsed.error));
     }
-    const fig = parsed.data as FigureDef;
-    const expectedId = file.replace(/^.*[/\\]/, '').replace(/\.json$/i, '');
+    const source = parsed.data as FigureFileDef;
+    const expectedId = fileStem(file);
     const problems: string[] = [];
-    if (fig.cardId !== expectedId) {
+    if (source.cardId !== expectedId) {
       problems.push(
-        `"cardId" ist "${fig.cardId}", muss aber zum Dateinamen passen ("${expectedId}")`
+        `"cardId" ist "${source.cardId}", muss aber zum Dateinamen passen ("${expectedId}")`
       );
     }
-    const card = cardById.get(fig.cardId);
+    const card = cardById.get(source.cardId);
     if (!card) {
-      problems.push(`Es gibt keine Karte mit der id "${fig.cardId}"`);
+      problems.push(`Es gibt keine Karte mit der id "${source.cardId}"`);
     } else if (card.type !== 'creature') {
-      problems.push(`Karte "${fig.cardId}" ist keine Kreatur – nur Kreaturen haben Figuren`);
+      problems.push(`Karte "${source.cardId}" ist keine Kreatur – nur Kreaturen haben Figuren`);
     }
-    if (figures[fig.cardId]) {
-      problems.push(`Für "${fig.cardId}" gibt es schon eine Figur-Datei`);
-    }
-    // Animations-Tracks dürfen nur existierende Bausteine (oder "root") adressieren.
-    const partIds = new Set<string>(['root', ...fig.visual.parts.map((p) => p.id)]);
-    for (const [clip, def] of Object.entries(fig.animations ?? {})) {
-      def.tracks.forEach((tr, i) => {
-        if (!partIds.has(tr.part)) {
-          problems.push(
-            `Animation "${clip}", Track ${i + 1} verweist auf unbekannten Baustein "${tr.part}"`
-          );
-        }
-      });
+    if (figures[source.cardId]) {
+      problems.push(`Für "${source.cardId}" gibt es schon eine Figur-Datei`);
     }
     if (problems.length > 0) throw new DataError(file, problems);
+
+    let fig: FigureDef;
+    if ('baseId' in source) {
+      const base = figureBases[source.baseId];
+      if (!base) throw new DataError(file, [`Unbekanntes Grundgerüst "${source.baseId}"`]);
+      const plannedRig = identityByCardId.get(source.cardId)?.rigId;
+      if (plannedRig && plannedRig !== base.rigId) {
+        throw new DataError(file, [
+          `Grundgerüst "${base.baseId}" hat Rig "${base.rigId}", der Identitätskatalog plant aber "${plannedRig}"`
+        ]);
+      }
+      fig = resolveFigureVariant(
+        file,
+        source,
+        base,
+        base.animationProfileId ? animationProfiles[base.animationProfileId] : undefined
+      );
+    } else {
+      fig = source;
+      const partIds = new Set<string>(['root', ...fig.visual.parts.map((part) => part.id)]);
+      const trackProblems = animationTrackProblems(fig.animations, partIds);
+      if (trackProblems.length > 0) throw new DataError(file, trackProblems);
+    }
     figures[fig.cardId] = fig;
   }
 
@@ -848,7 +1084,9 @@ export function validateGameData(raw: {
     cards,
     identityCatalog,
     defaultClips,
-    figures
+    figures,
+    figureBases,
+    animationProfiles
   };
 }
 

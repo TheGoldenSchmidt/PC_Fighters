@@ -1,0 +1,32 @@
+{
+  "profileId": "humanoid-standard",
+  "animations": {
+    "entrance": {
+      "duration": 0.65,
+      "tracks": [
+        { "part": "root", "prop": "scale", "keys": [[0, 0.01], [0.42, 1.12], [0.65, 1]] },
+        { "part": "root", "prop": "pos.y", "keys": [[0, 1.4], [0.42, -0.05], [0.65, 0]] },
+        { "part": "root", "prop": "emissive", "keys": [[0, 0.6], [0.3, 0.2], [0.65, 0]] }
+      ]
+    },
+    "attack": {
+      "duration": 0.55,
+      "tracks": [
+        { "part": "root", "prop": "pos.z", "keys": [[0, 0], [0.16, 0.8], [0.32, 0.8], [0.55, 0]] }
+      ]
+    },
+    "hit": {
+      "duration": 0.5,
+      "tracks": [
+        { "part": "root", "prop": "rot.z", "keys": [[0, 0], [0.08, 0.18], [0.2, -0.1], [0.5, 0]] }
+      ]
+    },
+    "death": {
+      "duration": 1,
+      "tracks": [
+        { "part": "root", "prop": "rot.z", "keys": [[0, 0], [1, 1.5]] },
+        { "part": "root", "prop": "opacity", "keys": [[0, 1], [0.55, 1], [1, 0.15]] }
+      ]
+    }
+  }
+}

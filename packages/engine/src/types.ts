@@ -483,6 +483,45 @@ export interface FigureDef {
   animations?: Animations;
 }
 
+/** Einheitliche logische Anschlüsse, unabhängig von den internen Baustein-Namen eines Rigs. */
+export type FigureAttachmentName = 'head' | 'leftHand' | 'rightHand' | 'back' | 'weapon' | 'mount';
+
+export type FigureAttachments = Record<FigureAttachmentName, string>;
+
+/** Geteiltes, einstufiges Grundgerüst aus data/figure-bases/*.json. */
+export interface FigureBaseDef {
+  baseId: string;
+  rigId: string;
+  attachments: FigureAttachments;
+  visual: Visual;
+  animationProfileId?: string;
+  /** Basisspezifische Klips überschreiben das Rig-Profil. */
+  animations?: Animations;
+}
+
+export interface AnimationProfileDef {
+  profileId: string;
+  animations: Animations;
+}
+
+export type VisualPartPatch = Omit<Partial<VisualPart>, 'id'> & { id: string };
+
+/** Kleine Ableitung einer FigureBaseDef; wird beim Laden zu einer vollständigen FigureDef aufgelöst. */
+export interface FigureVariantDef {
+  cardId: string;
+  baseId: string;
+  palette?: Record<string, string>;
+  height?: number;
+  detailLevel?: DetailLevel;
+  addParts?: VisualPart[];
+  patchParts?: VisualPartPatch[];
+  removeParts?: string[];
+  /** Varianten-Klips haben Vorrang vor Basis und Rig-Profil. */
+  animations?: Animations;
+}
+
+export type FigureFileDef = FigureDef | FigureVariantDef;
+
 export interface ActionCard {
   id: string;
   name: string;
@@ -592,6 +631,9 @@ export interface GameData {
   defaultClips: Animations;
   /** 3D-Figuren aus data/figures/ (cardId → Figur). */
   figures: Record<string, FigureDef>;
+  /** Autorenquellen für Varianten; nicht Teil des Client-Katalogs. */
+  figureBases: Record<string, FigureBaseDef>;
+  animationProfiles: Record<string, AnimationProfileDef>;
 }
 
 // Eine Kreatur auf dem Spielfeld.
