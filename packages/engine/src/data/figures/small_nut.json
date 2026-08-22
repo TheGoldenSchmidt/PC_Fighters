@@ -1,0 +1,190 @@
+{
+  "cardId": "small_nut",
+  "baseId": "nut",
+  "palette": {
+    "shell": "#8a5526",
+    "shellLight": "#b97935",
+    "shellHighlight": "#d59c4e",
+    "shellDark": "#42240f",
+    "groove": "#29150a",
+    "limb": "#5a3216",
+    "sole": "#24140c",
+    "eyeWhite": "#eee4ce",
+    "iris": "#46707a",
+    "pupil": "#101516",
+    "glint": "#e9fbf7",
+    "mouth": "#1c0e09",
+    "cheek": "#8d4b22",
+    "cap": "#5c3517"
+  },
+  "height": 0.5,
+  "removeParts": [
+    "lobeL",
+    "lobeR",
+    "bottomLobeL",
+    "bottomLobeR",
+    "crownL",
+    "crownR",
+    "seamMain",
+    "seamTop",
+    "seamBottom",
+    "grooveL1",
+    "grooveL2",
+    "grooveL3",
+    "grooveL4",
+    "grooveL5",
+    "grooveR1",
+    "grooveR2",
+    "grooveR3",
+    "grooveR4",
+    "grooveR5",
+    "curlLTop",
+    "curlRTop",
+    "curlLBottom",
+    "curlRBottom",
+    "backKnobL",
+    "backKnobR",
+    "backGrooveL",
+    "backGrooveR",
+    "foreheadPlate",
+    "foreheadRidge"
+  ],
+  "patchParts": [
+    {
+      "id": "shellRig",
+      "scale": [
+        0.76,
+        0.76,
+        0.76
+      ]
+    },
+    {
+      "id": "armRigL",
+      "pos": [
+        -0.49,
+        0.03,
+        0.02
+      ],
+      "scale": [
+        0.82,
+        0.82,
+        0.82
+      ]
+    },
+    {
+      "id": "armRigR",
+      "pos": [
+        0.49,
+        0.03,
+        0.02
+      ],
+      "scale": [
+        0.82,
+        0.82,
+        0.82
+      ]
+    },
+    {
+      "id": "legRigL",
+      "pos": [
+        -0.23,
+        0.31,
+        0
+      ],
+      "scale": [
+        0.82,
+        0.82,
+        0.82
+      ]
+    },
+    {
+      "id": "legRigR",
+      "pos": [
+        0.23,
+        0.31,
+        0
+      ],
+      "scale": [
+        0.82,
+        0.82,
+        0.82
+      ]
+    }
+  ],
+  "addParts": [
+    {
+      "id": "hazelnutBody",
+      "shape": "ico",
+      "size": 0.57,
+      "pos": [
+        0,
+        0.03,
+        -0.02
+      ],
+      "scale": [
+        0.84,
+        1.03,
+        0.74
+      ],
+      "parent": "shellRig",
+      "color": "shell",
+      "roughness": 1
+    },
+    {
+      "id": "hazelnutCap",
+      "shape": "cone",
+      "size": [
+        0.42,
+        0.26
+      ],
+      "pos": [
+        0,
+        0.58,
+        -0.04
+      ],
+      "parent": "shellRig",
+      "color": "cap",
+      "roughness": 1
+    },
+    {
+      "id": "hazelnutRidgeL",
+      "shape": "capsule",
+      "size": [
+        0.026,
+        0.5
+      ],
+      "pos": [
+        -0.26,
+        0.02,
+        0.38
+      ],
+      "rot": [
+        0,
+        0,
+        -0.18
+      ],
+      "parent": "shellRig",
+      "color": "shellDark"
+    },
+    {
+      "id": "hazelnutRidgeR",
+      "shape": "capsule",
+      "size": [
+        0.026,
+        0.5
+      ],
+      "pos": [
+        0.26,
+        0.02,
+        0.38
+      ],
+      "rot": [
+        0,
+        0,
+        0.18
+      ],
+      "parent": "shellRig",
+      "color": "shellDark"
+    }
+  ]
+}

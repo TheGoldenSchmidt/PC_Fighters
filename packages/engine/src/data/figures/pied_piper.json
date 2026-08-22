@@ -1,0 +1,52 @@
+{
+  "cardId": "pied_piper",
+  "baseId": "humanoid-standard",
+  "palette": {
+    "uniform": "#7b4329",
+    "uniformDark": "#4b2f22",
+    "uniformLight": "#b76831",
+    "cloth": "#292521",
+    "accent": "#f3c65c",
+    "metal": "#c37d42"
+  },
+  "addParts": [
+    {
+      "id": "kesselRing",
+      "shape": "torus",
+      "size": [
+        0.22,
+        0.045
+      ],
+      "pos": [
+        0,
+        0.08,
+        -0.3
+      ],
+      "rot": [
+        1.5708,
+        0,
+        0
+      ],
+      "parent": "@back",
+      "color": "metal",
+      "metalness": 0.65
+    },
+    {
+      "id": "dampfVentil",
+      "shape": "cyl",
+      "size": [
+        0.055,
+        0.055,
+        0.2
+      ],
+      "pos": [
+        0.18,
+        0.2,
+        -0.27
+      ],
+      "parent": "@back",
+      "color": "metalDark",
+      "metalness": 0.7
+    }
+  ]
+}

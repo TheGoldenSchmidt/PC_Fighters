@@ -1,0 +1,196 @@
+{
+  "cardId": "spineapple",
+  "baseId": "mammal-quadruped",
+  "palette": {
+    "fell": "#6a553e",
+    "fellHell": "#a78b63",
+    "fellDunkel": "#30271f",
+    "bauch": "#b9a27f",
+    "haut": "#7d6858",
+    "hautHell": "#aa8f78",
+    "nase": "#2e2624"
+  },
+  "height": 0.58,
+  "addParts": [
+    {
+      "id": "stachel1",
+      "shape": "cone",
+      "size": [
+        0.045,
+        0.36
+      ],
+      "pos": [
+        -0.17,
+        0.18,
+        0.22
+      ],
+      "rot": [
+        -0.15,
+        0,
+        0.16
+      ],
+      "parent": "@back",
+      "color": "fellHell"
+    },
+    {
+      "id": "stachel2",
+      "shape": "cone",
+      "size": [
+        0.053,
+        0.45999999999999996
+      ],
+      "pos": [
+        0,
+        0.18,
+        0.22
+      ],
+      "rot": [
+        -0.15,
+        0,
+        0
+      ],
+      "parent": "@back",
+      "color": "fellHell"
+    },
+    {
+      "id": "stachel3",
+      "shape": "cone",
+      "size": [
+        0.061,
+        0.36
+      ],
+      "pos": [
+        0.17,
+        0.18,
+        0.22
+      ],
+      "rot": [
+        -0.15,
+        0,
+        -0.16
+      ],
+      "parent": "@back",
+      "color": "fellHell"
+    },
+    {
+      "id": "stachel4",
+      "shape": "cone",
+      "size": [
+        0.045,
+        0.45999999999999996
+      ],
+      "pos": [
+        -0.17,
+        0.19999999999999998,
+        -0.01999999999999999
+      ],
+      "rot": [
+        0,
+        0,
+        0.16
+      ],
+      "parent": "@back",
+      "color": "fellHell"
+    },
+    {
+      "id": "stachel5",
+      "shape": "cone",
+      "size": [
+        0.053,
+        0.36
+      ],
+      "pos": [
+        0,
+        0.19999999999999998,
+        -0.01999999999999999
+      ],
+      "rot": [
+        0,
+        0,
+        0
+      ],
+      "parent": "@back",
+      "color": "fellHell"
+    },
+    {
+      "id": "stachel6",
+      "shape": "cone",
+      "size": [
+        0.061,
+        0.45999999999999996
+      ],
+      "pos": [
+        0.17,
+        0.19999999999999998,
+        -0.01999999999999999
+      ],
+      "rot": [
+        0,
+        0,
+        -0.16
+      ],
+      "parent": "@back",
+      "color": "fellHell"
+    },
+    {
+      "id": "stachel7",
+      "shape": "cone",
+      "size": [
+        0.045,
+        0.36
+      ],
+      "pos": [
+        -0.17,
+        0.22,
+        -0.26
+      ],
+      "rot": [
+        0.15,
+        0,
+        0.16
+      ],
+      "parent": "@back",
+      "color": "fellHell"
+    },
+    {
+      "id": "stachel8",
+      "shape": "cone",
+      "size": [
+        0.053,
+        0.45999999999999996
+      ],
+      "pos": [
+        0,
+        0.22,
+        -0.26
+      ],
+      "rot": [
+        0.15,
+        0,
+        0
+      ],
+      "parent": "@back",
+      "color": "fellHell"
+    },
+    {
+      "id": "stachel9",
+      "shape": "cone",
+      "size": [
+        0.061,
+        0.36
+      ],
+      "pos": [
+        0.17,
+        0.22,
+        -0.26
+      ],
+      "rot": [
+        0.15,
+        0,
+        -0.16
+      ],
+      "parent": "@back",
+      "color": "fellHell"
+    }
+  ]
+}

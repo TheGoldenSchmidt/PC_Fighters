@@ -1,0 +1,601 @@
+{
+  "cardId": "wall_nut",
+  "baseId": "nut",
+  "patchParts": [
+    {
+      "id": "backKnobL",
+      "scale": [
+        1.15,
+        1.5,
+        0.3
+      ],
+      "color": "shell"
+    },
+    {
+      "id": "backKnobR",
+      "scale": [
+        1.15,
+        1.5,
+        0.3
+      ],
+      "color": "shell"
+    },
+    {
+      "id": "foreheadPlate",
+      "scale": [
+        0.34,
+        1.08,
+        0.3
+      ],
+      "color": "shellLight"
+    }
+  ],
+  "removeParts": [
+    "curlLTop",
+    "curlRTop",
+    "curlLBottom",
+    "curlRBottom"
+  ],
+  "addParts": [
+    {
+      "id": "wallFurrowLUpper",
+      "shape": "capsule",
+      "size": [
+        0.026,
+        0.32
+      ],
+      "pos": [
+        -0.23,
+        0.53,
+        0.09
+      ],
+      "parent": "head",
+      "rot": [
+        0.04,
+        0,
+        -0.62
+      ],
+      "color": "groove",
+      "roughness": 1
+    },
+    {
+      "id": "wallFurrowRUpper",
+      "shape": "capsule",
+      "size": [
+        0.024,
+        0.29
+      ],
+      "pos": [
+        0.27,
+        0.5,
+        0.085
+      ],
+      "parent": "head",
+      "rot": [
+        0.03,
+        0,
+        0.48
+      ],
+      "color": "shellDark",
+      "roughness": 1
+    },
+    {
+      "id": "wallFurrowLMid",
+      "shape": "capsule",
+      "size": [
+        0.024,
+        0.25
+      ],
+      "pos": [
+        -0.46,
+        0.16,
+        0.065
+      ],
+      "parent": "head",
+      "rot": [
+        0.02,
+        0,
+        0.2
+      ],
+      "color": "groove",
+      "roughness": 1
+    },
+    {
+      "id": "wallFurrowRMid",
+      "shape": "capsule",
+      "size": [
+        0.027,
+        0.34
+      ],
+      "pos": [
+        0.43,
+        0.1,
+        0.055
+      ],
+      "parent": "head",
+      "rot": [
+        0.03,
+        0,
+        -0.27
+      ],
+      "color": "groove",
+      "roughness": 1
+    },
+    {
+      "id": "wallFurrowLLower",
+      "shape": "capsule",
+      "size": [
+        0.026,
+        0.31
+      ],
+      "pos": [
+        -0.27,
+        -0.45,
+        0.08
+      ],
+      "parent": "head",
+      "rot": [
+        0.02,
+        0,
+        0.5
+      ],
+      "color": "shellDark",
+      "roughness": 1
+    },
+    {
+      "id": "wallFurrowRLower",
+      "shape": "capsule",
+      "size": [
+        0.025,
+        0.28
+      ],
+      "pos": [
+        0.3,
+        -0.46,
+        0.075
+      ],
+      "parent": "head",
+      "rot": [
+        0.02,
+        0,
+        -0.42
+      ],
+      "color": "groove",
+      "roughness": 1
+    },
+    {
+      "id": "wallBackRidgeCenter",
+      "shape": "capsule",
+      "size": [
+        0.034,
+        0.92
+      ],
+      "pos": [
+        0.015,
+        -0.04,
+        -0.055
+      ],
+      "parent": "back",
+      "rot": [
+        0.02,
+        0,
+        -0.04
+      ],
+      "color": "groove",
+      "roughness": 1
+    },
+    {
+      "id": "wallBackFurrowLUpper",
+      "shape": "capsule",
+      "size": [
+        0.026,
+        0.36
+      ],
+      "pos": [
+        -0.31,
+        0.38,
+        -0.065
+      ],
+      "parent": "back",
+      "rot": [
+        0.02,
+        0,
+        -0.52
+      ],
+      "color": "shellDark",
+      "roughness": 1
+    },
+    {
+      "id": "wallBackFurrowRUpper",
+      "shape": "capsule",
+      "size": [
+        0.023,
+        0.31
+      ],
+      "pos": [
+        0.34,
+        0.35,
+        -0.065
+      ],
+      "parent": "back",
+      "rot": [
+        0.02,
+        0,
+        0.6
+      ],
+      "color": "groove",
+      "roughness": 1
+    },
+    {
+      "id": "wallBackFurrowLMid",
+      "shape": "capsule",
+      "size": [
+        0.027,
+        0.42
+      ],
+      "pos": [
+        -0.39,
+        0.02,
+        -0.06
+      ],
+      "parent": "back",
+      "rot": [
+        0,
+        0,
+        -0.18
+      ],
+      "color": "groove",
+      "roughness": 1
+    },
+    {
+      "id": "wallBackFurrowRMid",
+      "shape": "capsule",
+      "size": [
+        0.025,
+        0.39
+      ],
+      "pos": [
+        0.41,
+        -0.03,
+        -0.06
+      ],
+      "parent": "back",
+      "rot": [
+        0,
+        0,
+        0.23
+      ],
+      "color": "shellDark",
+      "roughness": 1
+    },
+    {
+      "id": "wallBackFurrowLLower",
+      "shape": "capsule",
+      "size": [
+        0.024,
+        0.3
+      ],
+      "pos": [
+        -0.28,
+        -0.43,
+        -0.06
+      ],
+      "parent": "back",
+      "rot": [
+        0.02,
+        0,
+        0.45
+      ],
+      "color": "shellDark",
+      "roughness": 1
+    },
+    {
+      "id": "wallBackFurrowRLower",
+      "shape": "capsule",
+      "size": [
+        0.027,
+        0.35
+      ],
+      "pos": [
+        0.27,
+        -0.42,
+        -0.06
+      ],
+      "parent": "back",
+      "rot": [
+        0.02,
+        0,
+        -0.37
+      ],
+      "color": "groove",
+      "roughness": 1
+    },
+    {
+      "id": "wallBackPatchL",
+      "shape": "ico",
+      "size": 0.13,
+      "pos": [
+        -0.2,
+        0.12,
+        -0.05
+      ],
+      "parent": "back",
+      "scale": [
+        1.7,
+        0.62,
+        0.22
+      ],
+      "rot": [
+        0,
+        0,
+        0.3
+      ],
+      "color": "shellLight",
+      "roughness": 1
+    },
+    {
+      "id": "wallBackPatchR",
+      "shape": "ico",
+      "size": 0.11,
+      "pos": [
+        0.22,
+        -0.25,
+        -0.055
+      ],
+      "parent": "back",
+      "scale": [
+        1.55,
+        0.55,
+        0.2
+      ],
+      "rot": [
+        0,
+        0,
+        -0.35
+      ],
+      "color": "shellLight",
+      "roughness": 1
+    }
+  ],
+  "animations": {
+    "attack": {
+      "duration": 0.96,
+      "tracks": [
+        {
+          "part": "mount",
+          "prop": "pos.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.28,
+              -0.26
+            ],
+            [
+              0.48,
+              0.68
+            ],
+            [
+              0.68,
+              -0.08
+            ],
+            [
+              0.96,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "mount",
+          "prop": "pos.y",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.28,
+              0.08
+            ],
+            [
+              0.48,
+              0.13
+            ],
+            [
+              0.68,
+              0.03
+            ],
+            [
+              0.96,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "mount",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.28,
+              0.2
+            ],
+            [
+              0.48,
+              -0.26
+            ],
+            [
+              0.68,
+              0.08
+            ],
+            [
+              0.96,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "shellRig",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.28,
+              0.24
+            ],
+            [
+              0.48,
+              -0.42
+            ],
+            [
+              0.68,
+              0.11
+            ],
+            [
+              0.96,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "weapon",
+          "prop": "pos.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.28,
+              -0.07
+            ],
+            [
+              0.48,
+              0.2
+            ],
+            [
+              0.68,
+              -0.02
+            ],
+            [
+              0.96,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "legRigL",
+          "prop": "pos.x",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.28,
+              -0.06
+            ],
+            [
+              0.48,
+              -0.1
+            ],
+            [
+              0.68,
+              -0.16
+            ],
+            [
+              0.96,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "legRigR",
+          "prop": "pos.x",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.28,
+              0.06
+            ],
+            [
+              0.48,
+              0.1
+            ],
+            [
+              0.68,
+              0.16
+            ],
+            [
+              0.96,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "armRigL",
+          "prop": "rot.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.28,
+              0.36
+            ],
+            [
+              0.48,
+              -0.2
+            ],
+            [
+              0.68,
+              0.08
+            ],
+            [
+              0.96,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "armRigR",
+          "prop": "rot.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.28,
+              -0.36
+            ],
+            [
+              0.48,
+              0.2
+            ],
+            [
+              0.68,
+              -0.08
+            ],
+            [
+              0.96,
+              0
+            ]
+          ]
+        }
+      ]
+    }
+  }
+}

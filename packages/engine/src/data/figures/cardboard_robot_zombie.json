@@ -1,0 +1,71 @@
+{
+  "cardId": "cardboard_robot_zombie",
+  "baseId": "humanoid-standard",
+  "palette": {
+    "uniform": "#8a7352",
+    "uniformDark": "#4d402f",
+    "uniformLight": "#bca06f",
+    "cloth": "#262238",
+    "accent": "#65d3d1",
+    "skin": "#777d81",
+    "skinShade": "#50575c"
+  },
+  "patchParts": [
+    {
+      "id": "@head",
+      "scale": [
+        1.1,
+        1.02,
+        1.05
+      ]
+    }
+  ],
+  "addParts": [
+    {
+      "id": "kartonHelm",
+      "shape": "box",
+      "size": [
+        0.52,
+        0.5,
+        0.46
+      ],
+      "pos": [
+        0,
+        0.02,
+        0.01
+      ],
+      "parent": "@head",
+      "color": "uniformLight"
+    },
+    {
+      "id": "roboterAntenne",
+      "shape": "cyl",
+      "size": [
+        0.025,
+        0.025,
+        0.28
+      ],
+      "pos": [
+        0,
+        0.38,
+        0
+      ],
+      "parent": "@head",
+      "color": "metalDark",
+      "metalness": 0.6
+    },
+    {
+      "id": "antennenKugel",
+      "shape": "ico",
+      "size": 0.07,
+      "pos": [
+        0,
+        0.55,
+        0
+      ],
+      "parent": "@head",
+      "color": "accent",
+      "emissive": "#17494b"
+    }
+  ]
+}

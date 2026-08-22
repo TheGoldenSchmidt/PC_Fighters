@@ -287,6 +287,15 @@ sich weniger in der Teilezahl als in diesen Punkten:
 
 ### Werkstatt-Schleife / Kosten
 
+- **Vor der Rig-Zuordnung die semantische Dreierkette prüfen:** sichtbarer
+  Kartenname, Figurensilhouette und tatsächliche Fähigkeit/Synergiefamilie
+  müssen dieselbe Identität erzählen. Ein technisch migrierter Kartenplatz darf
+  eine neue Figur erhalten, aber eine konkrete Familie wie `Nut` nicht nur im
+  Regeltext behalten, während Name und Modell ein unbeteiligtes Tier zeigen.
+  Wörtliche Umdeutungen konkreter Quellnamen nur nach ausdrücklicher Freigabe;
+  sonst entweder die Quellidentität sichtbar machen oder die Synergiebegriffe
+  konsistent auf die neue Identität umstellen.
+
 - **Eine Angriffsmontage prüft keine vollständige Animation.** Individuelle
   Einzüge und Todesanimationen können strukturell vorhanden, aber visuell
   fehlerhaft sein. → Die Standardabnahme zeigt zusätzlich mindestens zwei

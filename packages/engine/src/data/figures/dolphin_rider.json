@@ -1,0 +1,92 @@
+{
+  "cardId": "dolphin_rider",
+  "baseId": "humanoid-standard",
+  "palette": {
+    "uniform": "#315d6b",
+    "uniformDark": "#18353d",
+    "uniformLight": "#5e91a0",
+    "cloth": "#292521",
+    "accent": "#f2b84b"
+  },
+  "height": 0.9,
+  "addParts": [
+    {
+      "id": "schwimmPontonL",
+      "shape": "capsule",
+      "size": [
+        0.18,
+        1.15
+      ],
+      "pos": [
+        -0.42,
+        0.25,
+        0
+      ],
+      "rot": [
+        1.5708,
+        0,
+        0
+      ],
+      "parent": "@mount",
+      "color": "uniformLight"
+    },
+    {
+      "id": "schwimmPontonR",
+      "shape": "capsule",
+      "size": [
+        0.18,
+        1.15
+      ],
+      "pos": [
+        0.42,
+        0.25,
+        0
+      ],
+      "rot": [
+        1.5708,
+        0,
+        0
+      ],
+      "parent": "@mount",
+      "color": "uniformLight"
+    },
+    {
+      "id": "schwimmDeck",
+      "shape": "box",
+      "size": [
+        1.05,
+        0.1,
+        0.72
+      ],
+      "pos": [
+        0,
+        0.3,
+        0
+      ],
+      "parent": "@mount",
+      "color": "metalDark",
+      "metalness": 0.55
+    },
+    {
+      "id": "heckPropeller",
+      "shape": "torus",
+      "size": [
+        0.2,
+        0.045
+      ],
+      "pos": [
+        0,
+        0.35,
+        -0.62
+      ],
+      "rot": [
+        1.5708,
+        0,
+        0
+      ],
+      "parent": "@mount",
+      "color": "accent",
+      "metalness": 0.5
+    }
+  ]
+}

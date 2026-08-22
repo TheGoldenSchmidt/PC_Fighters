@@ -1,0 +1,404 @@
+{
+  "cardId": "smashing_pumpkin",
+  "baseId": "snake",
+  "palette": {
+    "scale": "#6f874d",
+    "scaleDark": "#3e6032",
+    "scaleLight": "#a6ba68",
+    "belly": "#d8c77b",
+    "pattern": "#f0c83f",
+    "patternDark": "#a67d22",
+    "eye": "#e4b94e",
+    "pupil": "#15170e",
+    "mouth": "#6a2931"
+  },
+  "patchParts": [
+    {
+      "id": "eyeWhiteL",
+      "pos": [
+        -0.18,
+        0.075,
+        0.225
+      ],
+      "scale": [
+        1.2,
+        1.34,
+        0.62
+      ],
+      "color": "scaleLight"
+    },
+    {
+      "id": "eyeWhiteR",
+      "pos": [
+        0.18,
+        0.075,
+        0.225
+      ],
+      "scale": [
+        1.2,
+        1.34,
+        0.62
+      ],
+      "color": "scaleLight"
+    },
+    {
+      "id": "pupilL",
+      "pos": [
+        -0.18,
+        0.075,
+        0.315
+      ],
+      "scale": [
+        1.2,
+        1.2,
+        1.2
+      ]
+    },
+    {
+      "id": "pupilR",
+      "pos": [
+        0.18,
+        0.075,
+        0.315
+      ],
+      "scale": [
+        1.2,
+        1.2,
+        1.2
+      ]
+    }
+  ],
+  "addParts": [
+    {
+      "id": "kobraHaubeMitte",
+      "shape": "ico",
+      "size": 0.42,
+      "pos": [
+        0,
+        -0.02,
+        -0.11
+      ],
+      "scale": [
+        1.15,
+        1.18,
+        0.24
+      ],
+      "parent": "@head",
+      "color": "scaleDark"
+    },
+    {
+      "id": "kobraHaubeL",
+      "shape": "ico",
+      "size": 0.42,
+      "pos": [
+        -0.28,
+        -0.02,
+        -0.1
+      ],
+      "scale": [
+        0.62,
+        1.12,
+        0.26
+      ],
+      "parent": "@head",
+      "color": "scaleDark"
+    },
+    {
+      "id": "kobraHaubeR",
+      "shape": "ico",
+      "size": 0.42,
+      "pos": [
+        0.28,
+        -0.02,
+        -0.1
+      ],
+      "scale": [
+        0.62,
+        1.12,
+        0.26
+      ],
+      "parent": "@head",
+      "color": "scaleDark"
+    },
+    {
+      "id": "kobraSonneMitte",
+      "shape": "ico",
+      "size": 0.11,
+      "pos": [
+        0,
+        -0.01,
+        0.13
+      ],
+      "scale": [
+        1.2,
+        1.4,
+        0.24
+      ],
+      "parent": "kobraHaubeMitte",
+      "color": "pattern"
+    },
+    {
+      "id": "kobraSonneL",
+      "shape": "ico",
+      "size": 0.085,
+      "pos": [
+        -0.04,
+        0.05,
+        0.14
+      ],
+      "scale": [
+        0.9,
+        1.45,
+        0.22
+      ],
+      "parent": "kobraHaubeL",
+      "color": "pattern"
+    },
+    {
+      "id": "kobraSonneR",
+      "shape": "ico",
+      "size": 0.085,
+      "pos": [
+        0.04,
+        0.05,
+        0.14
+      ],
+      "scale": [
+        0.9,
+        1.45,
+        0.22
+      ],
+      "parent": "kobraHaubeR",
+      "color": "pattern"
+    }
+  ],
+  "animations": {
+    "attack": {
+      "duration": 0.78,
+      "tracks": [
+        {
+          "part": "root",
+          "prop": "pos.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.22,
+              -0.28
+            ],
+            [
+              0.46,
+              0.84
+            ],
+            [
+              0.6,
+              0.82
+            ],
+            [
+              0.78,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "rumpfHinten",
+          "prop": "rot.y",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.22,
+              0.24
+            ],
+            [
+              0.46,
+              -0.18
+            ],
+            [
+              0.78,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "rumpfMitte",
+          "prop": "rot.y",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.22,
+              -0.32
+            ],
+            [
+              0.46,
+              0.22
+            ],
+            [
+              0.78,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "rumpfVorn",
+          "prop": "rot.y",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.22,
+              0.38
+            ],
+            [
+              0.46,
+              -0.18
+            ],
+            [
+              0.78,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "halsBasis",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.22,
+              0.28
+            ],
+            [
+              0.46,
+              -0.34
+            ],
+            [
+              0.6,
+              -0.22
+            ],
+            [
+              0.78,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "halsMitte",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.22,
+              0.36
+            ],
+            [
+              0.46,
+              -0.42
+            ],
+            [
+              0.6,
+              -0.28
+            ],
+            [
+              0.78,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "halsOben",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.22,
+              0.42
+            ],
+            [
+              0.46,
+              -0.52
+            ],
+            [
+              0.6,
+              -0.3
+            ],
+            [
+              0.78,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "kopf",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.22,
+              0.28
+            ],
+            [
+              0.46,
+              -0.34
+            ],
+            [
+              0.6,
+              -0.2
+            ],
+            [
+              0.78,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "kiefer",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.22,
+              0.06
+            ],
+            [
+              0.46,
+              0.58
+            ],
+            [
+              0.6,
+              0.24
+            ],
+            [
+              0.78,
+              0
+            ]
+          ]
+        }
+      ]
+    }
+  }
+}

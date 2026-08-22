@@ -1,0 +1,80 @@
+{
+  "cardId": "zapricot",
+  "baseId": "mammal-quadruped",
+  "palette": {
+    "fell": "#66706f",
+    "fellHell": "#aeb5ae",
+    "fellDunkel": "#2a3030",
+    "bauch": "#c8c1aa",
+    "haut": "#64605c",
+    "hautHell": "#9d958b",
+    "nase": "#242729"
+  },
+  "height": 0.54,
+  "addParts": [
+    {
+      "id": "waschbaerMaskeL",
+      "shape": "ico",
+      "size": 0.09,
+      "pos": [
+        -0.105,
+        0.04,
+        0.22
+      ],
+      "scale": [
+        1.3,
+        0.75,
+        0.35
+      ],
+      "parent": "@head",
+      "color": "fellDunkel"
+    },
+    {
+      "id": "waschbaerMaskeR",
+      "shape": "ico",
+      "size": 0.09,
+      "pos": [
+        0.105,
+        0.04,
+        0.22
+      ],
+      "scale": [
+        1.3,
+        0.75,
+        0.35
+      ],
+      "parent": "@head",
+      "color": "fellDunkel"
+    },
+    {
+      "id": "rutenRing1",
+      "shape": "torus",
+      "size": [
+        0.07,
+        0.022
+      ],
+      "pos": [
+        0,
+        0.14,
+        0
+      ],
+      "parent": "ruteBasis",
+      "color": "fellDunkel"
+    },
+    {
+      "id": "rutenRing2",
+      "shape": "torus",
+      "size": [
+        0.06,
+        0.02
+      ],
+      "pos": [
+        0,
+        0.32,
+        0
+      ],
+      "parent": "ruteBasis",
+      "color": "fellDunkel"
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "cardId": "skunk_punk",
+  "baseId": "humanoid-standard",
+  "palette": {
+    "uniform": "#3a2f42",
+    "uniformDark": "#17131c",
+    "uniformLight": "#6a4968",
+    "cloth": "#292521",
+    "accent": "#f0cb3e",
+    "skin": "#91a77c",
+    "skinShade": "#647354",
+    "hair": "#d44a87"
+  },
+  "addParts": [
+    {
+      "id": "punkIro1",
+      "shape": "cone",
+      "size": [
+        0.07,
+        0.3
+      ],
+      "pos": [
+        0,
+        0.27,
+        -0.06
+      ],
+      "rot": [
+        0,
+        0,
+        0.08
+      ],
+      "parent": "@head",
+      "color": "hair"
+    },
+    {
+      "id": "punkIro2",
+      "shape": "cone",
+      "size": [
+        0.07,
+        0.28
+      ],
+      "pos": [
+        0,
+        0.25,
+        0.03
+      ],
+      "parent": "@head",
+      "color": "hair"
+    },
+    {
+      "id": "punkIro3",
+      "shape": "cone",
+      "size": [
+        0.065,
+        0.24
+      ],
+      "pos": [
+        0,
+        0.22,
+        0.12
+      ],
+      "rot": [
+        0,
+        0,
+        -0.08
+      ],
+      "parent": "@head",
+      "color": "hair"
+    }
+  ]
+}

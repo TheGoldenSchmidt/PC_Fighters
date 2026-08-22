@@ -1,0 +1,479 @@
+{
+  "cardId": "baseball_zombie",
+  "baseId": "humanoid-standard",
+  "palette": {
+    "uniform": "#596b78",
+    "uniformDark": "#303a43",
+    "uniformLight": "#8ca0ac",
+    "cloth": "#26323b",
+    "accent": "#e05a47",
+    "skin": "#96aa83",
+    "skinShade": "#6f805f",
+    "hair": "#343a2e"
+  },
+  "removeParts": [
+    "hueftpanzer",
+    "rockschossL",
+    "rockschossR",
+    "brustschutz",
+    "brustKante",
+    "brustNieteL",
+    "brustNieteR",
+    "schulterpolsterL",
+    "schulterpolsterR",
+    "tabard",
+    "tabardSaum",
+    "schwertKnauf",
+    "parierstange",
+    "schwertKlinge",
+    "klingenRille",
+    "schwertSpitze",
+    "buckler"
+  ],
+  "patchParts": [
+    {
+      "id": "uniformTorso",
+      "scale": [
+        1.08,
+        1.04,
+        1.12
+      ],
+      "color": "uniform"
+    },
+    {
+      "id": "knieL",
+      "scale": [
+        0.68,
+        0.68,
+        0.68
+      ],
+      "color": "uniformDark"
+    },
+    {
+      "id": "knieR",
+      "scale": [
+        0.68,
+        0.68,
+        0.68
+      ],
+      "color": "uniformDark"
+    },
+    {
+      "id": "armreifL",
+      "scale": [
+        0.42,
+        0.42,
+        0.42
+      ],
+      "color": "uniformDark"
+    },
+    {
+      "id": "armreifR",
+      "scale": [
+        0.42,
+        0.42,
+        0.42
+      ],
+      "color": "uniformDark"
+    },
+    {
+      "id": "schwertHeft",
+      "scale": [
+        1.2,
+        1.8,
+        1.2
+      ],
+      "color": "leatherDark"
+    }
+  ],
+  "addParts": [
+    {
+      "id": "bunkerLampe",
+      "shape": "cyl",
+      "size": [
+        0.055,
+        0.055,
+        0.08
+      ],
+      "pos": [
+        0,
+        0.18,
+        0.24
+      ],
+      "rot": [
+        1.5708,
+        0,
+        0
+      ],
+      "parent": "@head",
+      "color": "accent",
+      "emissive": "#5a271f"
+    },
+    {
+      "id": "jackenFront",
+      "shape": "box",
+      "size": [
+        0.43,
+        0.47,
+        0.07
+      ],
+      "pos": [
+        0,
+        0.3,
+        0.23
+      ],
+      "parent": "@back",
+      "color": "uniform",
+      "roughness": 0.9
+    },
+    {
+      "id": "jackenSaum",
+      "shape": "box",
+      "size": [
+        0.45,
+        0.07,
+        0.12
+      ],
+      "pos": [
+        0,
+        0.05,
+        0.08
+      ],
+      "parent": "@back",
+      "color": "uniformDark",
+      "roughness": 0.92
+    },
+    {
+      "id": "bunkerGuertel",
+      "shape": "box",
+      "size": [
+        0.47,
+        0.07,
+        0.1
+      ],
+      "pos": [
+        0,
+        0.12,
+        0.12
+      ],
+      "parent": "@back",
+      "color": "cloth"
+    },
+    {
+      "id": "bunkerTascheL",
+      "shape": "box",
+      "size": [
+        0.13,
+        0.15,
+        0.08
+      ],
+      "pos": [
+        -0.14,
+        0.17,
+        0.29
+      ],
+      "parent": "@back",
+      "color": "uniformDark",
+      "roughness": 0.92
+    },
+    {
+      "id": "bunkerTascheR",
+      "shape": "box",
+      "size": [
+        0.13,
+        0.15,
+        0.08
+      ],
+      "pos": [
+        0.14,
+        0.17,
+        0.29
+      ],
+      "parent": "@back",
+      "color": "uniformDark",
+      "roughness": 0.92
+    },
+    {
+      "id": "bunkerSchlagstock",
+      "shape": "cyl",
+      "size": [
+        0.05,
+        0.05,
+        0.52
+      ],
+      "pos": [
+        0,
+        0.27,
+        0
+      ],
+      "parent": "@weapon",
+      "color": "metalDark",
+      "metalness": 0.35
+    },
+    {
+      "id": "bunkerFunkgeraet",
+      "shape": "box",
+      "size": [
+        0.18,
+        0.27,
+        0.1
+      ],
+      "pos": [
+        0,
+        0.08,
+        0.02
+      ],
+      "rot": [
+        0,
+        0,
+        0.08
+      ],
+      "parent": "@leftHand",
+      "color": "uniformDark"
+    },
+    {
+      "id": "bunkerFunkDisplay",
+      "shape": "box",
+      "size": [
+        0.1,
+        0.07,
+        0.02
+      ],
+      "pos": [
+        0,
+        0.07,
+        0.065
+      ],
+      "parent": "bunkerFunkgeraet",
+      "color": "accent",
+      "emissive": "#421c18"
+    },
+    {
+      "id": "bunkerFunkAntenne",
+      "shape": "cyl",
+      "size": [
+        0.012,
+        0.012,
+        0.18
+      ],
+      "pos": [
+        0.065,
+        0.18,
+        0
+      ],
+      "parent": "bunkerFunkgeraet",
+      "color": "metalDark"
+    }
+  ],
+  "animations": {
+    "attack": {
+      "duration": 0.72,
+      "tracks": [
+        {
+          "part": "root",
+          "prop": "pos.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.12,
+              -0.18
+            ],
+            [
+              0.36,
+              -0.18
+            ],
+            [
+              0.44,
+              0.78
+            ],
+            [
+              0.5,
+              0.78
+            ],
+            [
+              0.6,
+              0
+            ],
+            [
+              0.72,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "oberkoerper",
+          "prop": "rot.y",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.12,
+              -0.52
+            ],
+            [
+              0.36,
+              -0.52
+            ],
+            [
+              0.44,
+              0.66
+            ],
+            [
+              0.5,
+              0.66
+            ],
+            [
+              0.6,
+              0
+            ],
+            [
+              0.72,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "schwertArm",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.12,
+              -1.2
+            ],
+            [
+              0.36,
+              -1.2
+            ],
+            [
+              0.44,
+              0.92
+            ],
+            [
+              0.5,
+              0.92
+            ],
+            [
+              0.6,
+              0
+            ],
+            [
+              0.72,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "schwertArm",
+          "prop": "rot.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.12,
+              -1.25
+            ],
+            [
+              0.36,
+              -1.25
+            ],
+            [
+              0.44,
+              1.26
+            ],
+            [
+              0.5,
+              1.26
+            ],
+            [
+              0.6,
+              0
+            ],
+            [
+              0.72,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "schwertGriff",
+          "prop": "rot.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.12,
+              -0.5
+            ],
+            [
+              0.36,
+              -0.5
+            ],
+            [
+              0.44,
+              0.64
+            ],
+            [
+              0.5,
+              0.64
+            ],
+            [
+              0.6,
+              0
+            ],
+            [
+              0.72,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "schildArm",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.12,
+              0.28
+            ],
+            [
+              0.36,
+              0.28
+            ],
+            [
+              0.44,
+              -0.24
+            ],
+            [
+              0.5,
+              -0.24
+            ],
+            [
+              0.6,
+              0
+            ],
+            [
+              0.72,
+              0
+            ]
+          ]
+        }
+      ]
+    }
+  }
+}

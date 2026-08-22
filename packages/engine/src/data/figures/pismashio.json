@@ -1,0 +1,184 @@
+{
+  "cardId": "pismashio",
+  "baseId": "nut",
+  "palette": {
+    "shell": "#d0b27b",
+    "shellLight": "#ead6a6",
+    "shellHighlight": "#f3e2bb",
+    "shellDark": "#79613b",
+    "groove": "#594729",
+    "limb": "#6f5430",
+    "sole": "#2b2115",
+    "eyeWhite": "#f2ecd8",
+    "iris": "#4f7345",
+    "pupil": "#121712",
+    "glint": "#efffe8",
+    "mouth": "#26170e",
+    "cheek": "#b2874f",
+    "kernel": "#76983d"
+  },
+  "height": 0.58,
+  "removeParts": [
+    "lobeL",
+    "lobeR",
+    "bottomLobeL",
+    "bottomLobeR",
+    "crownL",
+    "crownR",
+    "seamMain",
+    "seamTop",
+    "seamBottom",
+    "grooveL1",
+    "grooveL2",
+    "grooveL3",
+    "grooveL4",
+    "grooveL5",
+    "grooveR1",
+    "grooveR2",
+    "grooveR3",
+    "grooveR4",
+    "grooveR5",
+    "curlLTop",
+    "curlRTop",
+    "curlLBottom",
+    "curlRBottom",
+    "backKnobL",
+    "backKnobR",
+    "backGrooveL",
+    "backGrooveR",
+    "foreheadPlate",
+    "foreheadRidge"
+  ],
+  "patchParts": [
+    {
+      "id": "shellRig",
+      "scale": [
+        0.86,
+        0.88,
+        0.86
+      ]
+    },
+    {
+      "id": "armRigL",
+      "pos": [
+        -0.62,
+        0.08,
+        0.01
+      ]
+    },
+    {
+      "id": "armRigR",
+      "pos": [
+        0.62,
+        0.08,
+        0.01
+      ]
+    }
+  ],
+  "addParts": [
+    {
+      "id": "pistachioShellL",
+      "shape": "ico",
+      "size": 0.57,
+      "pos": [
+        -0.25,
+        0.02,
+        -0.03
+      ],
+      "rot": [
+        0,
+        -0.42,
+        0.15
+      ],
+      "scale": [
+        0.52,
+        1.1,
+        0.74
+      ],
+      "parent": "shellRig",
+      "color": "shell",
+      "roughness": 1
+    },
+    {
+      "id": "pistachioShellR",
+      "shape": "ico",
+      "size": 0.57,
+      "pos": [
+        0.25,
+        0.02,
+        -0.03
+      ],
+      "rot": [
+        0,
+        0.42,
+        -0.15
+      ],
+      "scale": [
+        0.52,
+        1.1,
+        0.74
+      ],
+      "parent": "shellRig",
+      "color": "shellLight",
+      "roughness": 1
+    },
+    {
+      "id": "pistachioKernel",
+      "shape": "ico",
+      "size": 0.47,
+      "pos": [
+        0,
+        -0.02,
+        0.04
+      ],
+      "scale": [
+        0.65,
+        0.98,
+        0.56
+      ],
+      "parent": "shellRig",
+      "color": "kernel",
+      "roughness": 0.94
+    },
+    {
+      "id": "pistachioSplitL",
+      "shape": "capsule",
+      "size": [
+        0.025,
+        0.62
+      ],
+      "pos": [
+        -0.08,
+        0.05,
+        0.38
+      ],
+      "rot": [
+        0,
+        0,
+        -0.18
+      ],
+      "parent": "shellRig",
+      "color": "groove"
+    },
+    {
+      "id": "pistachioSplitR",
+      "shape": "capsule",
+      "size": [
+        0.025,
+        0.62
+      ],
+      "pos": [
+        0.08,
+        0.05,
+        0.38
+      ],
+      "rot": [
+        0,
+        0,
+        0.18
+      ],
+      "parent": "shellRig",
+      "color": "groove"
+    }
+  ]
+}

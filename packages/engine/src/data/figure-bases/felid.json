@@ -1,0 +1,1450 @@
+{
+  "baseId": "felid",
+  "rigId": "felid",
+  "attachments": {
+    "head": "kopf",
+    "leftHand": "vorderbeinL",
+    "rightHand": "vorderbeinR",
+    "back": "torso",
+    "weapon": "kiefer",
+    "mount": "root"
+  },
+  "visual": {
+    "detailLevel": "mid",
+    "height": 0.7,
+    "palette": {
+      "fellRost": "#d98a2b",
+      "fellSand": "#c89458",
+      "fellHell": "#e2bb82",
+      "fellWeiss": "#f1e8d2",
+      "fleck": "#553521",
+      "schwarz": "#171513",
+      "schnauze": "#ddc29a",
+      "ohrInnen": "#ba7568",
+      "augeWeiss": "#f7f1df",
+      "iris": "#d7bd43",
+      "pupille": "#14110f",
+      "nase": "#251b18",
+      "maul": "#582b31",
+      "zahn": "#fff1cb",
+      "kralle": "#e7d7b8",
+      "schnurrhaar": "#eee4cf"
+    },
+    "parts": [
+      {
+        "id": "torso",
+        "shape": "group",
+        "pos": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "id": "rumpfKern",
+        "shape": "ico",
+        "size": 0.43,
+        "pos": [
+          0,
+          0.88,
+          -0.09
+        ],
+        "scale": [
+          0.84,
+          0.72,
+          1.38
+        ],
+        "parent": "torso",
+        "color": "fellRost",
+        "roughness": 0.82
+      },
+      {
+        "id": "brust",
+        "shape": "ico",
+        "size": 0.35,
+        "pos": [
+          0,
+          0.91,
+          0.32
+        ],
+        "scale": [
+          0.94,
+          0.98,
+          1.03
+        ],
+        "parent": "torso",
+        "color": "fellSand"
+      },
+      {
+        "id": "bauchHell",
+        "shape": "ico",
+        "size": 0.31,
+        "pos": [
+          0,
+          0.74,
+          0.1
+        ],
+        "scale": [
+          0.75,
+          0.62,
+          1.12
+        ],
+        "parent": "torso",
+        "color": "fellHell"
+      },
+      {
+        "id": "schulterBuckel",
+        "shape": "ico",
+        "size": 0.27,
+        "pos": [
+          0,
+          1.07,
+          0.22
+        ],
+        "scale": [
+          1.24,
+          0.64,
+          1.12
+        ],
+        "parent": "torso",
+        "color": "fellRost"
+      },
+      {
+        "id": "rueckenLinie",
+        "shape": "ico",
+        "size": 0.2,
+        "pos": [
+          0,
+          1.13,
+          -0.12
+        ],
+        "scale": [
+          0.85,
+          0.24,
+          2
+        ],
+        "parent": "torso",
+        "color": "fellSand"
+      },
+      {
+        "id": "hals",
+        "shape": "cyl",
+        "size": [
+          0.2,
+          0.24,
+          0.38
+        ],
+        "pos": [
+          0,
+          1.12,
+          0.42
+        ],
+        "rot": [
+          0.28,
+          0,
+          0
+        ],
+        "parent": "torso",
+        "color": "fellRost"
+      },
+      {
+        "id": "nackenFell",
+        "shape": "ico",
+        "size": 0.19,
+        "pos": [
+          0,
+          1.22,
+          0.29
+        ],
+        "scale": [
+          1.3,
+          0.7,
+          1.1
+        ],
+        "parent": "torso",
+        "color": "fellSand"
+      },
+      {
+        "id": "schulterFellL",
+        "shape": "ico",
+        "size": 0.12,
+        "pos": [
+          -0.29,
+          1.03,
+          0.25
+        ],
+        "scale": [
+          0.8,
+          1.05,
+          0.9
+        ],
+        "parent": "torso",
+        "color": "fellHell"
+      },
+      {
+        "id": "schulterFellR",
+        "shape": "ico",
+        "size": 0.12,
+        "pos": [
+          0.29,
+          1.03,
+          0.25
+        ],
+        "scale": [
+          0.8,
+          1.05,
+          0.9
+        ],
+        "parent": "torso",
+        "color": "fellHell"
+      },
+      {
+        "id": "vorderbeinL",
+        "shape": "group",
+        "pos": [
+          -0.26,
+          0.88,
+          0.34
+        ],
+        "rot": [
+          0.04,
+          0,
+          0.04
+        ]
+      },
+      {
+        "id": "oberbeinVL",
+        "shape": "capsule",
+        "size": [
+          0.105,
+          0.39
+        ],
+        "pos": [
+          0,
+          -0.195,
+          0
+        ],
+        "parent": "vorderbeinL",
+        "color": "fellRost"
+      },
+      {
+        "id": "ellbogenVL",
+        "shape": "group",
+        "pos": [
+          0,
+          -0.38,
+          0.01
+        ],
+        "rot": [
+          -0.05,
+          0,
+          0
+        ],
+        "parent": "vorderbeinL"
+      },
+      {
+        "id": "unterbeinVL",
+        "shape": "capsule",
+        "size": [
+          0.075,
+          0.36
+        ],
+        "pos": [
+          0,
+          -0.18,
+          0.025
+        ],
+        "parent": "ellbogenVL",
+        "color": "fellSand"
+      },
+      {
+        "id": "pfoteVL",
+        "shape": "ico",
+        "size": 0.128,
+        "pos": [
+          0,
+          -0.405,
+          0.095
+        ],
+        "scale": [
+          1.18,
+          0.45,
+          1.5
+        ],
+        "parent": "ellbogenVL",
+        "color": "fellHell"
+      },
+      {
+        "id": "vorderbeinR",
+        "shape": "group",
+        "pos": [
+          0.26,
+          0.88,
+          0.34
+        ],
+        "rot": [
+          0.04,
+          0,
+          -0.04
+        ]
+      },
+      {
+        "id": "oberbeinVR",
+        "shape": "capsule",
+        "size": [
+          0.105,
+          0.39
+        ],
+        "pos": [
+          0,
+          -0.195,
+          0
+        ],
+        "parent": "vorderbeinR",
+        "color": "fellRost"
+      },
+      {
+        "id": "ellbogenVR",
+        "shape": "group",
+        "pos": [
+          0,
+          -0.38,
+          0.01
+        ],
+        "rot": [
+          -0.05,
+          0,
+          0
+        ],
+        "parent": "vorderbeinR"
+      },
+      {
+        "id": "unterbeinVR",
+        "shape": "capsule",
+        "size": [
+          0.075,
+          0.36
+        ],
+        "pos": [
+          0,
+          -0.18,
+          0.025
+        ],
+        "parent": "ellbogenVR",
+        "color": "fellSand"
+      },
+      {
+        "id": "pfoteVR",
+        "shape": "ico",
+        "size": 0.128,
+        "pos": [
+          0,
+          -0.405,
+          0.095
+        ],
+        "scale": [
+          1.18,
+          0.45,
+          1.5
+        ],
+        "parent": "ellbogenVR",
+        "color": "fellHell"
+      },
+      {
+        "id": "kralleVL1",
+        "shape": "cone",
+        "size": [
+          0.017,
+          0.1
+        ],
+        "pos": [
+          -0.045,
+          -0.43,
+          0.195
+        ],
+        "rot": [
+          1.5708,
+          0,
+          0
+        ],
+        "parent": "ellbogenVL",
+        "color": "kralle",
+        "detail": "high"
+      },
+      {
+        "id": "kralleVL2",
+        "shape": "cone",
+        "size": [
+          0.017,
+          0.105
+        ],
+        "pos": [
+          0.045,
+          -0.43,
+          0.2
+        ],
+        "rot": [
+          1.5708,
+          0,
+          0
+        ],
+        "parent": "ellbogenVL",
+        "color": "kralle",
+        "detail": "high"
+      },
+      {
+        "id": "kralleVR1",
+        "shape": "cone",
+        "size": [
+          0.018,
+          0.11
+        ],
+        "pos": [
+          -0.06,
+          -0.43,
+          0.2
+        ],
+        "rot": [
+          1.5708,
+          0,
+          0
+        ],
+        "parent": "ellbogenVR",
+        "color": "kralle",
+        "detail": "high"
+      },
+      {
+        "id": "kralleVR2",
+        "shape": "cone",
+        "size": [
+          0.018,
+          0.12
+        ],
+        "pos": [
+          0,
+          -0.435,
+          0.21
+        ],
+        "rot": [
+          1.5708,
+          0,
+          0
+        ],
+        "parent": "ellbogenVR",
+        "color": "kralle",
+        "detail": "high"
+      },
+      {
+        "id": "kralleVR3",
+        "shape": "cone",
+        "size": [
+          0.018,
+          0.11
+        ],
+        "pos": [
+          0.06,
+          -0.43,
+          0.2
+        ],
+        "rot": [
+          1.5708,
+          0,
+          0
+        ],
+        "parent": "ellbogenVR",
+        "color": "kralle",
+        "detail": "high"
+      },
+      {
+        "id": "hinterbeinL",
+        "shape": "group",
+        "pos": [
+          -0.29,
+          0.78,
+          -0.4
+        ],
+        "rot": [
+          -0.04,
+          0,
+          0.06
+        ]
+      },
+      {
+        "id": "schenkelHL",
+        "shape": "ico",
+        "size": 0.205,
+        "pos": [
+          0,
+          -0.08,
+          0.02
+        ],
+        "scale": [
+          0.96,
+          1.22,
+          1.18
+        ],
+        "parent": "hinterbeinL",
+        "color": "fellRost"
+      },
+      {
+        "id": "sprunggelenkHL",
+        "shape": "group",
+        "pos": [
+          0,
+          -0.29,
+          0.02
+        ],
+        "rot": [
+          0.06,
+          0,
+          0
+        ],
+        "parent": "hinterbeinL"
+      },
+      {
+        "id": "unterbeinHL",
+        "shape": "capsule",
+        "size": [
+          0.078,
+          0.34
+        ],
+        "pos": [
+          0,
+          -0.17,
+          0.02
+        ],
+        "parent": "sprunggelenkHL",
+        "color": "fellSand"
+      },
+      {
+        "id": "pfoteHL",
+        "shape": "ico",
+        "size": 0.138,
+        "pos": [
+          0,
+          -0.36,
+          0.1
+        ],
+        "scale": [
+          1.2,
+          0.45,
+          1.5
+        ],
+        "parent": "sprunggelenkHL",
+        "color": "fellHell"
+      },
+      {
+        "id": "hinterbeinR",
+        "shape": "group",
+        "pos": [
+          0.29,
+          0.78,
+          -0.4
+        ],
+        "rot": [
+          -0.04,
+          0,
+          -0.06
+        ]
+      },
+      {
+        "id": "schenkelHR",
+        "shape": "ico",
+        "size": 0.205,
+        "pos": [
+          0,
+          -0.08,
+          0.02
+        ],
+        "scale": [
+          0.96,
+          1.22,
+          1.18
+        ],
+        "parent": "hinterbeinR",
+        "color": "fellRost"
+      },
+      {
+        "id": "sprunggelenkHR",
+        "shape": "group",
+        "pos": [
+          0,
+          -0.29,
+          0.02
+        ],
+        "rot": [
+          0.06,
+          0,
+          0
+        ],
+        "parent": "hinterbeinR"
+      },
+      {
+        "id": "unterbeinHR",
+        "shape": "capsule",
+        "size": [
+          0.078,
+          0.34
+        ],
+        "pos": [
+          0,
+          -0.17,
+          0.02
+        ],
+        "parent": "sprunggelenkHR",
+        "color": "fellSand"
+      },
+      {
+        "id": "pfoteHR",
+        "shape": "ico",
+        "size": 0.138,
+        "pos": [
+          0,
+          -0.36,
+          0.1
+        ],
+        "scale": [
+          1.2,
+          0.45,
+          1.5
+        ],
+        "parent": "sprunggelenkHR",
+        "color": "fellHell"
+      },
+      {
+        "id": "kralleHL",
+        "shape": "cone",
+        "size": [
+          0.018,
+          0.105
+        ],
+        "pos": [
+          0,
+          -0.39,
+          0.2
+        ],
+        "rot": [
+          1.5708,
+          0,
+          0
+        ],
+        "parent": "sprunggelenkHL",
+        "color": "kralle",
+        "detail": "high"
+      },
+      {
+        "id": "kralleHR",
+        "shape": "cone",
+        "size": [
+          0.018,
+          0.105
+        ],
+        "pos": [
+          0,
+          -0.39,
+          0.2
+        ],
+        "rot": [
+          1.5708,
+          0,
+          0
+        ],
+        "parent": "sprunggelenkHR",
+        "color": "kralle",
+        "detail": "high"
+      },
+      {
+        "id": "fleckFlankeL1",
+        "shape": "ico",
+        "size": 0.12,
+        "pos": [
+          -0.34,
+          0.94,
+          0.08
+        ],
+        "scale": [
+          0.25,
+          0.62,
+          1
+        ],
+        "rot": [
+          0.12,
+          0,
+          0.24
+        ],
+        "parent": "torso",
+        "color": "fleck"
+      },
+      {
+        "id": "fleckFlankeL2",
+        "shape": "ico",
+        "size": 0.105,
+        "pos": [
+          -0.32,
+          0.83,
+          -0.25
+        ],
+        "scale": [
+          0.25,
+          0.72,
+          0.9
+        ],
+        "rot": [
+          -0.15,
+          0,
+          -0.18
+        ],
+        "parent": "torso",
+        "color": "fleck"
+      },
+      {
+        "id": "fleckFlankeR1",
+        "shape": "ico",
+        "size": 0.12,
+        "pos": [
+          0.34,
+          0.94,
+          0.08
+        ],
+        "scale": [
+          0.25,
+          0.62,
+          1
+        ],
+        "rot": [
+          -0.12,
+          0,
+          -0.24
+        ],
+        "parent": "torso",
+        "color": "fleck"
+      },
+      {
+        "id": "fleckFlankeR2",
+        "shape": "ico",
+        "size": 0.105,
+        "pos": [
+          0.32,
+          0.83,
+          -0.25
+        ],
+        "scale": [
+          0.25,
+          0.72,
+          0.9
+        ],
+        "rot": [
+          0.15,
+          0,
+          0.18
+        ],
+        "parent": "torso",
+        "color": "fleck"
+      },
+      {
+        "id": "rueckenFleck",
+        "shape": "ico",
+        "size": 0.12,
+        "pos": [
+          0.1,
+          1.16,
+          -0.25
+        ],
+        "scale": [
+          1.1,
+          0.23,
+          0.72
+        ],
+        "rot": [
+          -0.12,
+          0,
+          0.08
+        ],
+        "parent": "torso",
+        "color": "fleck"
+      },
+      {
+        "id": "kehlBartMitte",
+        "shape": "ico",
+        "size": 0.15,
+        "pos": [
+          0,
+          1.04,
+          0.52
+        ],
+        "scale": [
+          1.1,
+          1.12,
+          0.65
+        ],
+        "parent": "torso",
+        "color": "fellWeiss"
+      },
+      {
+        "id": "kehlBartL",
+        "shape": "ico",
+        "size": 0.13,
+        "pos": [
+          -0.14,
+          1.05,
+          0.48
+        ],
+        "scale": [
+          0.9,
+          1.08,
+          0.7
+        ],
+        "rot": [
+          0,
+          0,
+          0.18
+        ],
+        "parent": "torso",
+        "color": "fellWeiss"
+      },
+      {
+        "id": "kehlBartR",
+        "shape": "ico",
+        "size": 0.13,
+        "pos": [
+          0.14,
+          1.05,
+          0.48
+        ],
+        "scale": [
+          0.9,
+          1.08,
+          0.7
+        ],
+        "rot": [
+          0,
+          0,
+          -0.18
+        ],
+        "parent": "torso",
+        "color": "fellWeiss"
+      },
+      {
+        "id": "kopf",
+        "shape": "group",
+        "pos": [
+          0,
+          1.31,
+          0.62
+        ],
+        "rot": [
+          -0.08,
+          0,
+          0
+        ],
+        "scale": 0.93
+      },
+      {
+        "id": "kopfForm",
+        "shape": "ico",
+        "size": 0.32,
+        "scale": [
+          1.08,
+          0.87,
+          0.93
+        ],
+        "parent": "kopf",
+        "color": "fellRost",
+        "roughness": 0.78
+      },
+      {
+        "id": "wangeL",
+        "shape": "ico",
+        "size": 0.13,
+        "pos": [
+          -0.18,
+          -0.07,
+          0.16
+        ],
+        "scale": [
+          1,
+          0.85,
+          0.75
+        ],
+        "parent": "kopf",
+        "color": "fellSand"
+      },
+      {
+        "id": "wangeR",
+        "shape": "ico",
+        "size": 0.13,
+        "pos": [
+          0.18,
+          -0.07,
+          0.16
+        ],
+        "scale": [
+          1,
+          0.85,
+          0.75
+        ],
+        "parent": "kopf",
+        "color": "fellSand"
+      },
+      {
+        "id": "backenBartL",
+        "shape": "ico",
+        "size": 0.12,
+        "pos": [
+          -0.255,
+          -0.1,
+          0.17
+        ],
+        "scale": [
+          1.3,
+          1.2,
+          0.62
+        ],
+        "rot": [
+          0,
+          0,
+          0.18
+        ],
+        "parent": "kopf",
+        "color": "fellWeiss"
+      },
+      {
+        "id": "backenBartR",
+        "shape": "ico",
+        "size": 0.12,
+        "pos": [
+          0.255,
+          -0.1,
+          0.17
+        ],
+        "scale": [
+          1.3,
+          1.2,
+          0.62
+        ],
+        "rot": [
+          0,
+          0,
+          -0.18
+        ],
+        "parent": "kopf",
+        "color": "fellWeiss"
+      },
+      {
+        "id": "schnauzenPolsterL",
+        "shape": "ico",
+        "size": 0.09,
+        "pos": [
+          -0.075,
+          -0.14,
+          0.29
+        ],
+        "scale": [
+          1.15,
+          0.72,
+          0.75
+        ],
+        "parent": "kopf",
+        "color": "schnauze"
+      },
+      {
+        "id": "schnauzenPolsterR",
+        "shape": "ico",
+        "size": 0.09,
+        "pos": [
+          0.075,
+          -0.14,
+          0.29
+        ],
+        "scale": [
+          1.15,
+          0.72,
+          0.75
+        ],
+        "parent": "kopf",
+        "color": "schnauze"
+      },
+      {
+        "id": "kiefer",
+        "shape": "ico",
+        "size": 0.1,
+        "pos": [
+          0,
+          -0.23,
+          0.23
+        ],
+        "scale": [
+          1.1,
+          0.54,
+          1.1
+        ],
+        "parent": "kopf",
+        "color": "fellHell"
+      },
+      {
+        "id": "maul",
+        "shape": "box",
+        "size": [
+          0.15,
+          0.025,
+          0.035
+        ],
+        "pos": [
+          0,
+          -0.205,
+          0.335
+        ],
+        "parent": "kopf",
+        "color": "maul"
+      },
+      {
+        "id": "nase",
+        "shape": "ico",
+        "size": 0.06,
+        "pos": [
+          0,
+          -0.11,
+          0.42
+        ],
+        "scale": [
+          1.25,
+          0.75,
+          0.75
+        ],
+        "parent": "kopf",
+        "color": "nase"
+      },
+      {
+        "id": "augeSkleraL",
+        "shape": "ico",
+        "size": 0.073,
+        "pos": [
+          -0.125,
+          0.045,
+          0.285
+        ],
+        "scale": [
+          1.15,
+          0.52,
+          0.32
+        ],
+        "parent": "kopf",
+        "color": "augeWeiss",
+        "detail": "high"
+      },
+      {
+        "id": "irisL",
+        "shape": "ico",
+        "size": 0.052,
+        "pos": [
+          -0.125,
+          0.045,
+          0.309
+        ],
+        "scale": [
+          0.72,
+          0.7,
+          0.28
+        ],
+        "parent": "kopf",
+        "color": "iris",
+        "detail": "high"
+      },
+      {
+        "id": "pupilleL",
+        "shape": "ico",
+        "size": 0.029,
+        "pos": [
+          -0.125,
+          0.045,
+          0.326
+        ],
+        "scale": [
+          0.45,
+          1.35,
+          0.32
+        ],
+        "parent": "kopf",
+        "color": "pupille",
+        "detail": "high"
+      },
+      {
+        "id": "augeSkleraR",
+        "shape": "ico",
+        "size": 0.073,
+        "pos": [
+          0.125,
+          0.045,
+          0.285
+        ],
+        "scale": [
+          1.15,
+          0.52,
+          0.32
+        ],
+        "parent": "kopf",
+        "color": "augeWeiss",
+        "detail": "high"
+      },
+      {
+        "id": "irisR",
+        "shape": "ico",
+        "size": 0.052,
+        "pos": [
+          0.125,
+          0.045,
+          0.309
+        ],
+        "scale": [
+          0.72,
+          0.7,
+          0.28
+        ],
+        "parent": "kopf",
+        "color": "iris",
+        "detail": "high"
+      },
+      {
+        "id": "pupilleR",
+        "shape": "ico",
+        "size": 0.029,
+        "pos": [
+          0.125,
+          0.045,
+          0.326
+        ],
+        "scale": [
+          0.45,
+          1.35,
+          0.32
+        ],
+        "parent": "kopf",
+        "color": "pupille",
+        "detail": "high"
+      },
+      {
+        "id": "braueL",
+        "shape": "box",
+        "size": [
+          0.1,
+          0.03,
+          0.036
+        ],
+        "pos": [
+          -0.13,
+          0.125,
+          0.27
+        ],
+        "rot": [
+          0,
+          0,
+          0.2
+        ],
+        "parent": "kopf",
+        "color": "fleck"
+      },
+      {
+        "id": "braueR",
+        "shape": "box",
+        "size": [
+          0.1,
+          0.03,
+          0.036
+        ],
+        "pos": [
+          0.13,
+          0.125,
+          0.27
+        ],
+        "rot": [
+          0,
+          0,
+          -0.2
+        ],
+        "parent": "kopf",
+        "color": "fleck"
+      },
+      {
+        "id": "ohrL",
+        "shape": "group",
+        "pos": [
+          -0.2,
+          0.17,
+          -0.02
+        ],
+        "rot": [
+          -0.06,
+          0,
+          0.08
+        ],
+        "parent": "kopf"
+      },
+      {
+        "id": "ohrAussenL",
+        "shape": "cone",
+        "size": [
+          0.105,
+          0.36
+        ],
+        "pos": [
+          0,
+          0.18,
+          0
+        ],
+        "parent": "ohrL",
+        "color": "fellRost"
+      },
+      {
+        "id": "ohrInnenL",
+        "shape": "cone",
+        "size": [
+          0.062,
+          0.25
+        ],
+        "pos": [
+          0,
+          0.185,
+          0.055
+        ],
+        "parent": "ohrL",
+        "color": "ohrInnen"
+      },
+      {
+        "id": "pinselL",
+        "shape": "capsule",
+        "size": [
+          0.021,
+          0.19
+        ],
+        "pos": [
+          0,
+          0.425,
+          0.005
+        ],
+        "rot": [
+          0,
+          0,
+          0.1
+        ],
+        "parent": "ohrL",
+        "color": "schwarz",
+        "detail": "high"
+      },
+      {
+        "id": "ohrR",
+        "shape": "group",
+        "pos": [
+          0.2,
+          0.17,
+          -0.02
+        ],
+        "rot": [
+          -0.06,
+          0,
+          -0.08
+        ],
+        "parent": "kopf"
+      },
+      {
+        "id": "ohrAussenR",
+        "shape": "cone",
+        "size": [
+          0.105,
+          0.36
+        ],
+        "pos": [
+          0,
+          0.18,
+          0
+        ],
+        "parent": "ohrR",
+        "color": "fellRost"
+      },
+      {
+        "id": "ohrInnenR",
+        "shape": "cone",
+        "size": [
+          0.062,
+          0.25
+        ],
+        "pos": [
+          0,
+          0.185,
+          0.055
+        ],
+        "parent": "ohrR",
+        "color": "ohrInnen"
+      },
+      {
+        "id": "pinselR",
+        "shape": "capsule",
+        "size": [
+          0.021,
+          0.19
+        ],
+        "pos": [
+          0,
+          0.425,
+          0.005
+        ],
+        "rot": [
+          0,
+          0,
+          -0.1
+        ],
+        "parent": "ohrR",
+        "color": "schwarz",
+        "detail": "high"
+      },
+      {
+        "id": "fangL",
+        "shape": "cone",
+        "size": [
+          0.018,
+          0.082
+        ],
+        "pos": [
+          -0.065,
+          -0.285,
+          0.338
+        ],
+        "rot": [
+          3.1416,
+          0,
+          0
+        ],
+        "parent": "kopf",
+        "color": "zahn",
+        "detail": "high"
+      },
+      {
+        "id": "fangR",
+        "shape": "cone",
+        "size": [
+          0.018,
+          0.082
+        ],
+        "pos": [
+          0.065,
+          -0.285,
+          0.338
+        ],
+        "rot": [
+          3.1416,
+          0,
+          0
+        ],
+        "parent": "kopf",
+        "color": "zahn",
+        "detail": "high"
+      },
+      {
+        "id": "schnurrL",
+        "shape": "cyl",
+        "size": [
+          0.007,
+          0.007,
+          0.3
+        ],
+        "pos": [
+          -0.16,
+          -0.14,
+          0.31
+        ],
+        "rot": [
+          0,
+          0.12,
+          1.38
+        ],
+        "parent": "kopf",
+        "color": "schnurrhaar",
+        "detail": "high"
+      },
+      {
+        "id": "schnurrR",
+        "shape": "cyl",
+        "size": [
+          0.007,
+          0.007,
+          0.3
+        ],
+        "pos": [
+          0.16,
+          -0.14,
+          0.31
+        ],
+        "rot": [
+          0,
+          -0.12,
+          -1.38
+        ],
+        "parent": "kopf",
+        "color": "schnurrhaar",
+        "detail": "high"
+      },
+      {
+        "id": "stummelrute",
+        "shape": "group",
+        "pos": [
+          0.16,
+          0.84,
+          -0.59
+        ],
+        "rot": [
+          -1.28,
+          0,
+          -0.42
+        ]
+      },
+      {
+        "id": "rutenBasis",
+        "shape": "cyl",
+        "size": [
+          0.11,
+          0.13,
+          0.26
+        ],
+        "pos": [
+          0,
+          0.1,
+          0
+        ],
+        "parent": "stummelrute",
+        "color": "fellRost"
+      },
+      {
+        "id": "rutenMitte",
+        "shape": "cyl",
+        "size": [
+          0.1,
+          0.115,
+          0.2
+        ],
+        "pos": [
+          0,
+          0.19,
+          0
+        ],
+        "parent": "stummelrute",
+        "color": "fellSand"
+      },
+      {
+        "id": "rutenSpitze",
+        "shape": "cyl",
+        "size": [
+          0.09,
+          0.105,
+          0.17
+        ],
+        "pos": [
+          0,
+          0.285,
+          0
+        ],
+        "parent": "stummelrute",
+        "color": "schwarz"
+      }
+    ]
+  },
+  "animationProfileId": "felid"
+}

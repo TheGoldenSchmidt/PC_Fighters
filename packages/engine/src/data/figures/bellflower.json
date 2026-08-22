@@ -1,0 +1,49 @@
+{
+  "cardId": "bellflower",
+  "baseId": "bird",
+  "palette": {
+    "goldbraun": "#b98c45",
+    "federDunkel": "#654726",
+    "federHell": "#f0d28d",
+    "nackenGold": "#e4c479",
+    "brustGold": "#c7974d",
+    "schnabel": "#d98b35",
+    "schnabelDunkel": "#8a5426",
+    "iris": "#30486a",
+    "fussGold": "#c98c42"
+  },
+  "height": 0.48,
+  "patchParts": [
+    {
+      "id": "@head",
+      "scale": [
+        0.88,
+        0.88,
+        0.92
+      ]
+    }
+  ],
+  "addParts": [
+    {
+      "id": "lichtGloeckchen",
+      "shape": "cone",
+      "size": [
+        0.09,
+        0.18
+      ],
+      "pos": [
+        0,
+        -0.18,
+        -0.12
+      ],
+      "rot": [
+        3.14159,
+        0,
+        0
+      ],
+      "parent": "@head",
+      "color": "federHell",
+      "emissive": "#5b431d"
+    }
+  ]
+}
