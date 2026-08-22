@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { DeckList } from '@pcf/engine';
 
 export interface UserStats {
@@ -88,7 +89,10 @@ function validConfiguredUsername(value: unknown): value is string {
 }
 
 function loadConfiguredUsers(configPath: string): string[] {
-  if (!existsSync(configPath)) return [];
+  if (!existsSync(configPath)) {
+    console.error(`Benutzerliste fehlt: ${configPath}`);
+    return [];
+  }
   try {
     const parsed = JSON.parse(readFileSync(configPath, 'utf-8')) as UserConfigFile | string[];
     const values = Array.isArray(parsed) ? parsed : parsed.users;
@@ -170,8 +174,13 @@ function cloneSnapshot(username: string, user: PersistedUser): UserAccountSnapsh
 }
 
 export function createUserStore(options: CreateUserStoreOptions = {}): UserStore {
-  const configPath = options.configPath ?? join(process.cwd(), 'users.json');
-  const persistPath = options.persistPath ?? join(process.cwd(), 'users_persist.json');
+  // npm führt Workspace-Skripte mit packages/server als Arbeitsordner aus.
+  // Die Konfiguration liegt aber bewusst im Repository-Hauptordner. Der Pfad
+  // relativ zu diesem Modul bleibt bei `npm start`, Tests und direktem tsx-
+  // Aufruf identisch; process.cwd() tat das nicht.
+  const repositoryRoot = fileURLToPath(new URL('../../../', import.meta.url));
+  const configPath = options.configPath ?? join(repositoryRoot, 'users.json');
+  const persistPath = options.persistPath ?? join(repositoryRoot, 'users_persist.json');
   const tempPath = persistPath + '.tmp';
   const configured = options.allowedUsernames ?? loadConfiguredUsers(configPath);
   const canonicalByLower = new Map<string, string>();

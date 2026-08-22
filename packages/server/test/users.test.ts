@@ -30,6 +30,13 @@ afterEach(() => {
 });
 
 describe('Benutzerspeicher', () => {
+  it('findet die Produktions-Freigabeliste unabhängig vom Workspace-Arbeitsordner', () => {
+    const store = createUserStore({ persistPath: persistPath('produktionspfad') });
+
+    expect(store.login('TheGoldenSchmidt').username).toBe('TheGoldenSchmidt');
+    expect(store.login('Güztin').username).toBe('Güztin');
+  });
+
   it('erlaubt nur konfigurierte Namen und behandelt die Schreibweise tolerant', () => {
     const store = createUserStore({
       allowedUsernames: ['Ada Lovelace'],
