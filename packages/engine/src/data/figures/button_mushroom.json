@@ -1,0 +1,243 @@
+{
+  "cardId": "button_mushroom",
+  "baseId": "bird",
+  "palette": {
+    "goldbraun": "#25232e",
+    "federDunkel": "#0d0c12",
+    "federHell": "#6f4c82",
+    "schokolade": "#08070b",
+    "nackenGold": "#51405b",
+    "brustGold": "#372d42",
+    "schnabel": "#b9a45d",
+    "schnabelDunkel": "#746334",
+    "iris": "#e7518c",
+    "fussGold": "#6f4c82"
+  },
+  "height": 0.62,
+  "addParts": [
+    {
+      "id": "kraehenKamm1",
+      "shape": "cone",
+      "size": [
+        0.07,
+        0.3
+      ],
+      "pos": [
+        0,
+        0.3,
+        -0.12
+      ],
+      "rot": [
+        0,
+        0,
+        0.2
+      ],
+      "parent": "@head",
+      "color": "federHell"
+    },
+    {
+      "id": "kraehenKamm2",
+      "shape": "cone",
+      "size": [
+        0.065,
+        0.25
+      ],
+      "pos": [
+        0,
+        0.28,
+        -0.02
+      ],
+      "parent": "@head",
+      "color": "federHell"
+    }
+  ],
+  "animations": {
+    "attack": {
+      "duration": 0.72,
+      "tracks": [
+        {
+          "part": "root",
+          "prop": "pos.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.18,
+              -0.18
+            ],
+            [
+              0.4,
+              0.7
+            ],
+            [
+              0.56,
+              0.72
+            ],
+            [
+              0.72,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "root",
+          "prop": "pos.y",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.18,
+              0.1
+            ],
+            [
+              0.4,
+              -0.08
+            ],
+            [
+              0.56,
+              -0.05
+            ],
+            [
+              0.72,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "rumpf",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.18,
+              0.18
+            ],
+            [
+              0.4,
+              -0.28
+            ],
+            [
+              0.56,
+              -0.2
+            ],
+            [
+              0.72,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "kopf",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.18,
+              0.12
+            ],
+            [
+              0.4,
+              -0.24
+            ],
+            [
+              0.56,
+              -0.18
+            ],
+            [
+              0.72,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "fluegelL",
+          "prop": "rot.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.18,
+              0.95
+            ],
+            [
+              0.4,
+              -0.72
+            ],
+            [
+              0.56,
+              -0.45
+            ],
+            [
+              0.72,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "fluegelR",
+          "prop": "rot.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.18,
+              -0.95
+            ],
+            [
+              0.4,
+              0.72
+            ],
+            [
+              0.56,
+              0.45
+            ],
+            [
+              0.72,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "schnabelUnten",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.18,
+              0.08
+            ],
+            [
+              0.4,
+              0.46
+            ],
+            [
+              0.56,
+              0.28
+            ],
+            [
+              0.72,
+              0
+            ]
+          ]
+        }
+      ]
+    }
+  }
+}

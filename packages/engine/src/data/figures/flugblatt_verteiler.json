@@ -1,0 +1,55 @@
+{
+  "cardId": "flugblatt_verteiler",
+  "baseId": "humanoid-standard",
+  "palette": {
+    "uniform": "#466f82",
+    "uniformDark": "#332a48",
+    "uniformLight": "#79a9b7",
+    "cloth": "#262238",
+    "accent": "#f2e7bf"
+  },
+  "addParts": [
+    {
+      "id": "flugblattStapel",
+      "shape": "box",
+      "size": [
+        0.34,
+        0.24,
+        0.1
+      ],
+      "pos": [
+        -0.36,
+        -0.34,
+        0.25
+      ],
+      "rot": [
+        0.1,
+        0.2,
+        -0.18
+      ],
+      "parent": "@leftHand",
+      "color": "eyeWhite"
+    },
+    {
+      "id": "umhaengetasche",
+      "shape": "box",
+      "size": [
+        0.42,
+        0.32,
+        0.16
+      ],
+      "pos": [
+        0.28,
+        0.08,
+        -0.2
+      ],
+      "rot": [
+        0.08,
+        0,
+        -0.08
+      ],
+      "parent": "@back",
+      "color": "leather"
+    }
+  ]
+}

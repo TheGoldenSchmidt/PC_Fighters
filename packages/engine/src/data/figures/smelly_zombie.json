@@ -1,0 +1,77 @@
+{
+  "cardId": "smelly_zombie",
+  "baseId": "humanoid-standard",
+  "palette": {
+    "uniform": "#31433a",
+    "uniformDark": "#15231e",
+    "uniformLight": "#617d65",
+    "cloth": "#151d22",
+    "accent": "#c6e64d"
+  },
+  "addParts": [
+    {
+      "id": "tunnelLampe",
+      "shape": "cyl",
+      "size": [
+        0.06,
+        0.06,
+        0.09
+      ],
+      "pos": [
+        0,
+        0.17,
+        0.25
+      ],
+      "rot": [
+        1.5708,
+        0,
+        0
+      ],
+      "parent": "@head",
+      "color": "accent",
+      "emissive": "#526a18"
+    },
+    {
+      "id": "atemFilterL",
+      "shape": "cyl",
+      "size": [
+        0.05,
+        0.07,
+        0.11
+      ],
+      "pos": [
+        -0.1,
+        -0.09,
+        0.24
+      ],
+      "rot": [
+        1.5708,
+        0,
+        0
+      ],
+      "parent": "@head",
+      "color": "metalDark"
+    },
+    {
+      "id": "atemFilterR",
+      "shape": "cyl",
+      "size": [
+        0.05,
+        0.07,
+        0.11
+      ],
+      "pos": [
+        0.1,
+        -0.09,
+        0.24
+      ],
+      "rot": [
+        1.5708,
+        0,
+        0
+      ],
+      "parent": "@head",
+      "color": "metalDark"
+    }
+  ]
+}

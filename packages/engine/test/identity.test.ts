@@ -72,7 +72,7 @@ describe('Humans-vs.-Animals-Identitätskatalog', () => {
   });
 
   it('verschiebt die Hundefigur ohne Karten-IDs oder Regeln zu vertauschen', () => {
-    expect(data.cardsById.sea_shroom.name).toBe('Der alte Hund');
+    expect(data.cardsById.sea_shroom.name).toBe('Der alte Wasserhund');
     expect(data.cardsById.sea_shroom.faction).toBe('guardian');
     expect(data.cardsById.der_alte_hund.name).toBe('Betriebsschwimmer');
     expect(data.cardsById.der_alte_hund.faction).toBe('beastly');

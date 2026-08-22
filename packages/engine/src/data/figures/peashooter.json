@@ -1,0 +1,426 @@
+{
+  "cardId": "peashooter",
+  "baseId": "canid",
+  "palette": {
+    "main": "#596a45",
+    "dark": "#29351f",
+    "cream": "#b6b78d",
+    "nose": "#171b13",
+    "tooth": "#efe8d7"
+  },
+  "removeParts": [
+    "tailFluffL",
+    "tailFluffR",
+    "tailFluffC"
+  ],
+  "patchParts": [
+    {
+      "id": "tailBase",
+      "rot": [
+        -1.08,
+        0,
+        0.38
+      ],
+      "scale": [
+        1.12,
+        1.18,
+        1.12
+      ]
+    },
+    {
+      "id": "tail",
+      "rot": [
+        -0.18,
+        0,
+        -0.12
+      ],
+      "scale": [
+        1.22,
+        1.48,
+        1.22
+      ]
+    },
+    {
+      "id": "tailTip",
+      "rot": [
+        -0.08,
+        0,
+        -0.15
+      ],
+      "scale": [
+        1.1,
+        1.55,
+        1.1
+      ]
+    },
+    {
+      "id": "eyeWhiteL",
+      "pos": [
+        -0.22,
+        1.16,
+        1.51
+      ],
+      "scale": [
+        1.32,
+        1.2,
+        1.15
+      ]
+    },
+    {
+      "id": "eyeWhiteR",
+      "pos": [
+        0.22,
+        1.16,
+        1.51
+      ],
+      "scale": [
+        1.32,
+        1.2,
+        1.15
+      ]
+    },
+    {
+      "id": "pupilL",
+      "pos": [
+        -0.22,
+        1.15,
+        1.585
+      ],
+      "scale": [
+        1.18,
+        1.25,
+        1.05
+      ]
+    },
+    {
+      "id": "pupilR",
+      "pos": [
+        0.22,
+        1.15,
+        1.585
+      ],
+      "scale": [
+        1.18,
+        1.25,
+        1.05
+      ]
+    },
+    {
+      "id": "earInnerL",
+      "color": "cream",
+      "scale": [
+        1.18,
+        1.05,
+        1.18
+      ]
+    },
+    {
+      "id": "earInnerR",
+      "color": "cream",
+      "scale": [
+        1.18,
+        1.05,
+        1.18
+      ]
+    }
+  ],
+  "addParts": [
+    {
+      "id": "rudelHalstuch",
+      "shape": "torus",
+      "size": [
+        0.24,
+        0.045
+      ],
+      "pos": [
+        0,
+        0.02,
+        0.1
+      ],
+      "rot": [
+        1.5708,
+        0,
+        0
+      ],
+      "parent": "@head",
+      "color": "cream"
+    },
+    {
+      "id": "rudelMarke",
+      "shape": "ico",
+      "size": 0.095,
+      "pos": [
+        0,
+        -0.12,
+        0.29
+      ],
+      "scale": [
+        1.15,
+        1.05,
+        0.45
+      ],
+      "parent": "@head",
+      "color": "#f0cf46",
+      "metalness": 0.45
+    },
+    {
+      "id": "rudelMarkeKralleL",
+      "shape": "cone",
+      "size": [
+        0.026,
+        0.11
+      ],
+      "pos": [
+        -0.035,
+        0.015,
+        0.07
+      ],
+      "rot": [
+        0,
+        0,
+        -0.24
+      ],
+      "parent": "rudelMarke",
+      "color": "dark"
+    },
+    {
+      "id": "rudelMarkeKralleR",
+      "shape": "cone",
+      "size": [
+        0.026,
+        0.11
+      ],
+      "pos": [
+        0.035,
+        0.015,
+        0.07
+      ],
+      "rot": [
+        0,
+        0,
+        0.24
+      ],
+      "parent": "rudelMarke",
+      "color": "dark"
+    },
+    {
+      "id": "rudelFlankenMarke",
+      "shape": "ico",
+      "size": 0.16,
+      "pos": [
+        0.5,
+        0.08,
+        0.03
+      ],
+      "scale": [
+        0.24,
+        1.25,
+        0.95
+      ],
+      "parent": "@back",
+      "color": "#f0cf46",
+      "metalness": 0.35
+    },
+    {
+      "id": "rudelFlankenKralle",
+      "shape": "cone",
+      "size": [
+        0.035,
+        0.16
+      ],
+      "pos": [
+        0.08,
+        0.02,
+        0
+      ],
+      "rot": [
+        0,
+        0,
+        0.35
+      ],
+      "parent": "rudelFlankenMarke",
+      "color": "cream"
+    }
+  ],
+  "animations": {
+    "attack": {
+      "duration": 0.7,
+      "tracks": [
+        {
+          "part": "root",
+          "prop": "pos.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.18,
+              -0.2
+            ],
+            [
+              0.4,
+              0.74
+            ],
+            [
+              0.54,
+              0.76
+            ],
+            [
+              0.7,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "root",
+          "prop": "pos.y",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.18,
+              -0.08
+            ],
+            [
+              0.4,
+              0.03
+            ],
+            [
+              0.54,
+              0.01
+            ],
+            [
+              0.7,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "head",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.18,
+              0.22
+            ],
+            [
+              0.4,
+              -0.3
+            ],
+            [
+              0.54,
+              -0.2
+            ],
+            [
+              0.7,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "jawLower",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.18,
+              0.1
+            ],
+            [
+              0.4,
+              0.62
+            ],
+            [
+              0.54,
+              0.16
+            ],
+            [
+              0.7,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "earL",
+          "prop": "rot.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.18,
+              -0.22
+            ],
+            [
+              0.4,
+              0.14
+            ],
+            [
+              0.7,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "earR",
+          "prop": "rot.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.18,
+              0.22
+            ],
+            [
+              0.4,
+              -0.14
+            ],
+            [
+              0.7,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "tailBase",
+          "prop": "rot.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.18,
+              0.36
+            ],
+            [
+              0.4,
+              -0.42
+            ],
+            [
+              0.54,
+              -0.24
+            ],
+            [
+              0.7,
+              0
+            ]
+          ]
+        }
+      ]
+    }
+  }
+}

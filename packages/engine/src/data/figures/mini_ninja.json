@@ -1,0 +1,46 @@
+{
+  "cardId": "mini_ninja",
+  "baseId": "humanoid-standard",
+  "palette": {
+    "uniform": "#20252e",
+    "uniformDark": "#090d13",
+    "uniformLight": "#3c4653",
+    "cloth": "#151d22",
+    "accent": "#52d6c5",
+    "skin": "#c39172"
+  },
+  "addParts": [
+    {
+      "id": "botenMaske",
+      "shape": "box",
+      "size": [
+        0.3,
+        0.13,
+        0.08
+      ],
+      "pos": [
+        0,
+        -0.08,
+        0.22
+      ],
+      "parent": "@head",
+      "color": "cloth"
+    },
+    {
+      "id": "nachtPaket",
+      "shape": "box",
+      "size": [
+        0.38,
+        0.44,
+        0.2
+      ],
+      "pos": [
+        0,
+        0.12,
+        -0.25
+      ],
+      "parent": "@back",
+      "color": "uniformDark"
+    }
+  ]
+}

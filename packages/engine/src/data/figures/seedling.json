@@ -1,0 +1,66 @@
+{
+  "cardId": "seedling",
+  "baseId": "mammal-quadruped",
+  "palette": {
+    "fell": "#171918",
+    "fellHell": "#ece8d8",
+    "fellDunkel": "#080909",
+    "bauch": "#bdb7a5",
+    "haut": "#4b4745",
+    "hautHell": "#8b817a",
+    "nase": "#181717"
+  },
+  "height": 0.52,
+  "addParts": [
+    {
+      "id": "stinktierStreifen",
+      "shape": "box",
+      "size": [
+        0.12,
+        0.05,
+        0.72
+      ],
+      "pos": [
+        0,
+        0.15,
+        -0.08
+      ],
+      "parent": "@back",
+      "color": "fellHell"
+    },
+    {
+      "id": "buschSchwanz1",
+      "shape": "ico",
+      "size": 0.24,
+      "pos": [
+        0,
+        0.12,
+        0
+      ],
+      "scale": [
+        0.75,
+        1.4,
+        0.8
+      ],
+      "parent": "ruteBasis",
+      "color": "fellDunkel"
+    },
+    {
+      "id": "buschSchwanz2",
+      "shape": "ico",
+      "size": 0.2,
+      "pos": [
+        0,
+        0.39,
+        0
+      ],
+      "scale": [
+        0.75,
+        1.35,
+        0.8
+      ],
+      "parent": "ruteBasis",
+      "color": "fellHell"
+    }
+  ]
+}

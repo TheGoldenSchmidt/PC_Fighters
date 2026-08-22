@@ -69,9 +69,139 @@ const meshOf = (g: THREE.BufferGeometry, m: THREE.Material, x = 0, y = 0, z = 0)
   return me;
 };
 
-/** Emblem einer Aktionskarte (kein Kreatur-Rig). */
-function buildEmblem(id: string): THREE.Object3D {
+const CLASS_PALETTES: Record<string, [number, number, number]> = {
+  guardian: [0x3d7ea6, 0x9dd7e8, 0x173a57],
+  kabloom: [0xd94a36, 0xffb33b, 0x681f2c],
+  mega_grow: [0x4c9a50, 0xb8d85c, 0x1f4d34],
+  solar: [0xe2a934, 0xffe17a, 0x875b22],
+  beastly: [0x9a4d3f, 0xe38c45, 0x432339],
+  brainy: [0x6957a8, 0x65d3d1, 0x2c244c],
+  hearty: [0x596b78, 0xe05a47, 0x27343d],
+  sneaky: [0x35766f, 0x71d8bd, 0x182d38],
+  neutral: [0x7a5d9d, 0xf0c65a, 0x30243d]
+};
+
+function stableHash(input: string) {
+  let value = 2166136261;
+  for (const char of input) {
+    value ^= char.charCodeAt(0);
+    value = Math.imul(value, 16777619);
+  }
+  return value >>> 0;
+}
+
+type EmblemKind = 'damage' | 'heal' | 'draw' | 'buff' | 'summon' | 'move' | 'freeze' | 'shield' | 'poison' | 'energy' | 'wild';
+
+function emblemKind(def: CardDef): EmblemKind {
+  const words = `${def.id} ${def.name} ${def.text ?? ''}`.toLocaleLowerCase('de');
+  if (/heil|leben|regeneration|gesundheit wieder|lebenskreis/.test(words)) return 'heal';
+  if (/zieh|karte auf die hand|nachschub|entdeck/.test(words)) return 'draw';
+  if (/beschw|erzeug|verstärkung|kopie|lege .* animal|lege .* human/.test(words)) return 'summon';
+  if (/frier|eis|betäub|stopp/.test(words)) return 'freeze';
+  if (/schild|schutz|block|panzer|rüstung/.test(words)) return 'shield';
+  if (/gift|krank|schwäch|minus|-\d/.test(words)) return 'poison';
+  if (/verschieb|beweg|flieg|spur|lane|flucht/.test(words)) return 'move';
+  if (/energie|energy|sun\b|aufladen/.test(words)) return 'energy';
+  if (/schaden|zerstör|hieb|schlag|biss|sturz|beben|spreng|explod|angriff/.test(words)) return 'damage';
+  if (/\+\d|stärk|mut|instinkt|bonus|doppelt/.test(words)) return 'buff';
+  return 'wild';
+}
+
+function addSemanticMotif(group: THREE.Group, kind: EmblemKind, primary: THREE.Material, light: THREE.Material, dark: THREE.Material) {
+  if (kind === 'damage') {
+    group.add(meshOf(new THREE.IcosahedronGeometry(0.42, 1), primary));
+    for (let i = 0; i < 8; i++) {
+      const angle = (i / 8) * Math.PI * 2;
+      const spike = meshOf(new THREE.ConeGeometry(0.11, 0.62, 5), light, Math.cos(angle) * 0.7, Math.sin(angle) * 0.7, 0);
+      spike.rotation.z = angle - Math.PI / 2;
+      group.add(spike);
+    }
+  } else if (kind === 'heal') {
+    group.add(meshOf(new THREE.SphereGeometry(0.34, 10, 8), primary, -0.25, 0.18));
+    group.add(meshOf(new THREE.SphereGeometry(0.34, 10, 8), primary, 0.25, 0.18));
+    const tip = meshOf(new THREE.ConeGeometry(0.5, 0.78, 4), primary, 0, -0.2);
+    tip.rotation.z = Math.PI;
+    group.add(tip);
+    group.add(meshOf(new THREE.BoxGeometry(0.12, 0.55, 0.15), light, 0, 0.05, 0.32));
+    group.add(meshOf(new THREE.BoxGeometry(0.5, 0.12, 0.15), light, 0, 0.05, 0.32));
+  } else if (kind === 'draw') {
+    for (let i = -1; i <= 1; i++) {
+      const cardMesh = meshOf(new THREE.BoxGeometry(0.58, 0.82, 0.08), i === 0 ? light : primary, i * 0.28, i === 0 ? 0.08 : -0.02, -Math.abs(i) * 0.1);
+      cardMesh.rotation.z = i * -0.24;
+      group.add(cardMesh);
+    }
+    group.add(meshOf(new THREE.TorusGeometry(0.16, 0.035, 6, 12), dark, 0, 0.12, 0.1));
+  } else if (kind === 'buff') {
+    group.add(meshOf(new THREE.BoxGeometry(0.22, 0.9, 0.22), primary, 0, -0.12));
+    group.add(meshOf(new THREE.ConeGeometry(0.5, 0.65, 4), light, 0, 0.62));
+    for (const x of [-0.52, 0.52]) group.add(meshOf(new THREE.OctahedronGeometry(0.19), light, x, -0.28));
+  } else if (kind === 'summon') {
+    for (const [x, y, size] of [[0, 0.2, 0.38], [-0.5, -0.25, 0.27], [0.5, -0.25, 0.27]] as const) {
+      group.add(meshOf(new THREE.IcosahedronGeometry(size, 1), x === 0 ? light : primary, x, y));
+      group.add(meshOf(new THREE.ConeGeometry(size * 0.65, size * 0.8, 5), dark, x, y - size * 0.92));
+    }
+  } else if (kind === 'move') {
+    for (let i = -1; i <= 1; i++) {
+      group.add(meshOf(new THREE.BoxGeometry(0.82 - Math.abs(i) * 0.14, 0.1, 0.12), primary, -0.18, i * 0.32));
+      const tip = meshOf(new THREE.ConeGeometry(0.24, 0.42, 4), light, 0.48, i * 0.32);
+      tip.rotation.z = -Math.PI / 2;
+      group.add(tip);
+    }
+  } else if (kind === 'freeze') {
+    for (let i = 0; i < 6; i++) {
+      const arm = meshOf(new THREE.BoxGeometry(0.1, 1.35, 0.12), light);
+      arm.rotation.z = (i / 6) * Math.PI;
+      group.add(arm);
+    }
+    group.add(meshOf(new THREE.OctahedronGeometry(0.28), primary));
+  } else if (kind === 'shield') {
+    const shield = meshOf(new THREE.CylinderGeometry(0.72, 0.72, 0.14, 6), primary, 0, 0.12);
+    shield.rotation.x = Math.PI / 2;
+    shield.rotation.z = Math.PI / 6;
+    group.add(shield);
+    const point = meshOf(new THREE.ConeGeometry(0.72, 0.6, 6), primary, 0, -0.48);
+    point.rotation.x = Math.PI / 2;
+    point.rotation.z = Math.PI / 6;
+    group.add(point);
+    group.add(meshOf(new THREE.SphereGeometry(0.18, 8, 6), light, 0, 0.1, 0.24));
+  } else if (kind === 'poison') {
+    group.add(meshOf(new THREE.IcosahedronGeometry(0.58, 1), primary, 0, 0.12));
+    group.add(meshOf(new THREE.SphereGeometry(0.12, 7, 5), dark, -0.22, 0.22, 0.5));
+    group.add(meshOf(new THREE.SphereGeometry(0.12, 7, 5), dark, 0.22, 0.22, 0.5));
+    for (const x of [-0.23, 0, 0.23]) group.add(meshOf(new THREE.BoxGeometry(0.12, 0.3, 0.12), light, x, -0.5));
+  } else if (kind === 'energy') {
+    group.add(meshOf(new THREE.OctahedronGeometry(0.62), light));
+    const orbit = meshOf(new THREE.TorusGeometry(0.85, 0.055, 7, 24), primary);
+    orbit.rotation.x = 1.05;
+    orbit.rotation.y = 0.35;
+    group.add(orbit);
+  } else {
+    group.add(meshOf(new THREE.DodecahedronGeometry(0.6), primary));
+    group.add(meshOf(new THREE.TorusKnotGeometry(0.34, 0.075, 48, 6, 2, 3), light, 0, 0, 0.32));
+  }
+}
+
+function addIdentityRunes(group: THREE.Group, seed: number, material: THREE.Material) {
+  const count = 3 + (seed % 5);
+  for (let index = 0; index < count; index++) {
+    const angle = (index / count) * Math.PI * 2 + ((seed >>> 8) % 31) / 30;
+    const radius = 1.05 + ((seed >>> (index % 16)) & 3) * 0.06;
+    const shape = (seed + index) % 3;
+    const geometry = shape === 0
+      ? new THREE.TetrahedronGeometry(0.11 + (index % 2) * 0.035)
+      : shape === 1
+        ? new THREE.BoxGeometry(0.15, 0.15, 0.15)
+        : new THREE.TorusGeometry(0.1, 0.025, 5, 10);
+    const rune = meshOf(geometry, material, Math.cos(angle) * radius, Math.sin(angle) * radius, -0.12);
+    rune.rotation.set(angle * 0.3, angle * 0.5, angle);
+    group.add(rune);
+  }
+}
+
+/** Individuelles, klassenkodiertes Emblem fuer Karten ohne Kreatur-Rig. */
+function buildEmblem(def: CardDef): THREE.Object3D {
   const g = new THREE.Group();
+  const id = def.id;
   if (id === 'schildwall') {
     // Leuchtender Wappenschild
     const steel = mat(0x9aa7b8, { metal: 0.7, rough: 0.35 });
@@ -118,8 +248,44 @@ function buildEmblem(id: string): THREE.Object3D {
       g.add(slash);
     }
   } else {
-    // Fallback: einfacher leuchtender Kristall
-    g.add(meshOf(new THREE.OctahedronGeometry(0.7), mat(0x8888ff, { emissive: 0x2a2a66 })));
+    const seed = stableHash(`${def.id}:${def.name}:${def.text ?? ''}`);
+    const [baseColor, lightColor, darkColor] = CLASS_PALETTES[def.faction] ?? CLASS_PALETTES.neutral;
+    const primary = mat(baseColor, { emissive: darkColor, metal: 0.28, rough: 0.48 });
+    const light = mat(lightColor, { emissive: (lightColor & 0xfefefe) >>> 2, metal: 0.2, rough: 0.42 });
+    const dark = mat(darkColor, { metal: 0.4, rough: 0.58 });
+
+    if (def.type === 'environment') {
+      const platform = meshOf(new THREE.CylinderGeometry(1.1, 1.24, 0.2, 8), dark, 0, -0.72, -0.18);
+      g.add(platform);
+      const ring = meshOf(new THREE.TorusGeometry(0.92, 0.07, 7, 24), primary, 0, -0.59, -0.02);
+      ring.rotation.x = Math.PI / 2;
+      g.add(ring);
+      for (let index = 0; index < 4; index++) {
+        const angle = index * Math.PI / 2 + Math.PI / 4;
+        g.add(meshOf(new THREE.ConeGeometry(0.11, 0.5, 5), light, Math.cos(angle) * 0.78, -0.3, Math.sin(angle) * 0.35));
+      }
+    } else if (def.type === 'superpower') {
+      const crown = meshOf(new THREE.TorusGeometry(0.92, 0.1, 6, 24), primary);
+      crown.rotation.x = 0.25;
+      g.add(crown);
+      for (let index = 0; index < 8; index++) {
+        const angle = (index / 8) * Math.PI * 2;
+        const ray = meshOf(new THREE.ConeGeometry(0.08, 0.4 + (index % 2) * 0.12, 4), light, Math.cos(angle) * 1.12, Math.sin(angle) * 1.12, -0.18);
+        ray.rotation.z = angle - Math.PI / 2;
+        g.add(ray);
+      }
+    } else {
+      const actionRing = meshOf(new THREE.TorusGeometry(0.96, 0.075, 7, 24), dark, 0, 0, -0.2);
+      actionRing.rotation.z = ((seed >>> 5) % 13) * 0.07;
+      g.add(actionRing);
+    }
+
+    const motif = new THREE.Group();
+    motif.rotation.z = (((seed >>> 12) % 15) - 7) * 0.035;
+    motif.position.y = def.type === 'environment' ? 0.2 : 0;
+    addSemanticMotif(motif, emblemKind(def), primary, light, dark);
+    g.add(motif);
+    addIdentityRunes(g, seed, def.type === 'superpower' ? light : primary);
   }
   return g;
 }
@@ -150,7 +316,7 @@ if (cardDef?.type === 'creature' && dataFig?.visual) {
 } else if (cardDef && cardDef.type !== 'creature') {
   // Aktionen, Umgebungen und Superkraefte erhalten nur ein Template-Emblem.
   // Sie laufen niemals durch createFigure und koennen daher kein Golem-Fallback werden.
-  root = buildEmblem(card);
+  root = buildEmblem(cardDef);
   const withFigs = root as THREE.Group & { figs?: Figure[] };
   if (withFigs.figs) figs = withFigs.figs;
 } else {

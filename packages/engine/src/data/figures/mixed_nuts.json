@@ -1,0 +1,169 @@
+{
+  "cardId": "mixed_nuts",
+  "baseId": "nut",
+  "palette": {
+    "shell": "#765022",
+    "shellLight": "#ad7d3a",
+    "shellHighlight": "#e0b45d",
+    "shellDark": "#36210e",
+    "groove": "#241309",
+    "limb": "#4b2d15",
+    "sole": "#21130c",
+    "eyeWhite": "#f2e6c8",
+    "iris": "#c48623",
+    "pupil": "#15110b",
+    "glint": "#fff2c5",
+    "mouth": "#1c0e09",
+    "cheek": "#9b5425",
+    "pistachio": "#84a83e",
+    "cream": "#d7b979"
+  },
+  "height": 0.74,
+  "patchParts": [
+    {
+      "id": "shellRig",
+      "scale": [
+        0.83,
+        0.86,
+        0.83
+      ]
+    },
+    {
+      "id": "armRigL",
+      "pos": [
+        -0.66,
+        0.1,
+        0.01
+      ]
+    },
+    {
+      "id": "armRigR",
+      "pos": [
+        0.66,
+        0.1,
+        0.01
+      ]
+    }
+  ],
+  "addParts": [
+    {
+      "id": "mixHaselnuss",
+      "shape": "ico",
+      "size": 0.25,
+      "pos": [
+        0.68,
+        -0.08,
+        0.04
+      ],
+      "scale": [
+        0.92,
+        1.18,
+        0.84
+      ],
+      "parent": "shellRig",
+      "color": "shellLight",
+      "roughness": 1
+    },
+    {
+      "id": "mixHaselnussKappe",
+      "shape": "cone",
+      "size": [
+        0.22,
+        0.18
+      ],
+      "pos": [
+        0.68,
+        0.2,
+        0.02
+      ],
+      "parent": "shellRig",
+      "color": "shellDark",
+      "roughness": 1
+    },
+    {
+      "id": "mixPistazieL",
+      "shape": "ico",
+      "size": 0.25,
+      "pos": [
+        -0.72,
+        -0.04,
+        0.03
+      ],
+      "rot": [
+        0,
+        -0.38,
+        0.18
+      ],
+      "scale": [
+        0.48,
+        1.15,
+        0.72
+      ],
+      "parent": "shellRig",
+      "color": "cream",
+      "roughness": 1
+    },
+    {
+      "id": "mixPistazieR",
+      "shape": "ico",
+      "size": 0.25,
+      "pos": [
+        -0.48,
+        -0.04,
+        0.03
+      ],
+      "rot": [
+        0,
+        0.38,
+        -0.18
+      ],
+      "scale": [
+        0.48,
+        1.15,
+        0.72
+      ],
+      "parent": "shellRig",
+      "color": "cream",
+      "roughness": 1
+    },
+    {
+      "id": "mixPistazienKern",
+      "shape": "ico",
+      "size": 0.2,
+      "pos": [
+        -0.6,
+        -0.06,
+        0.13
+      ],
+      "scale": [
+        0.62,
+        1.05,
+        0.52
+      ],
+      "parent": "shellRig",
+      "color": "pistachio",
+      "roughness": 0.92
+    },
+    {
+      "id": "solarNussMarke",
+      "shape": "torus",
+      "size": [
+        0.115,
+        0.024
+      ],
+      "pos": [
+        0,
+        -0.08,
+        0.38
+      ],
+      "rot": [
+        1.5708,
+        0,
+        0
+      ],
+      "parent": "@head",
+      "color": "shellHighlight",
+      "metalness": 0.25
+    }
+  ]
+}

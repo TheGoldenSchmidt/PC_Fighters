@@ -1,0 +1,60 @@
+{
+  "cardId": "imp",
+  "baseId": "humanoid-standard",
+  "palette": {
+    "uniform": "#5b3a61",
+    "uniformDark": "#182828",
+    "uniformLight": "#8a5c8e",
+    "cloth": "#151d22",
+    "accent": "#5de0bd"
+  },
+  "height": 0.68,
+  "patchParts": [
+    {
+      "id": "@head",
+      "scale": [
+        1.25,
+        1.2,
+        1.18
+      ]
+    }
+  ],
+  "addParts": [
+    {
+      "id": "gassenPaket",
+      "shape": "box",
+      "size": [
+        0.38,
+        0.38,
+        0.22
+      ],
+      "pos": [
+        0,
+        0.1,
+        -0.26
+      ],
+      "parent": "@back",
+      "color": "uniformDark"
+    },
+    {
+      "id": "botenFeder",
+      "shape": "cone",
+      "size": [
+        0.045,
+        0.28
+      ],
+      "pos": [
+        0.18,
+        0.28,
+        0
+      ],
+      "rot": [
+        0,
+        0,
+        -0.35
+      ],
+      "parent": "@head",
+      "color": "accent"
+    }
+  ]
+}

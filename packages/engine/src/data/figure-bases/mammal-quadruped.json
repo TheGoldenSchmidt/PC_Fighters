@@ -1,0 +1,1083 @@
+{
+  "baseId": "mammal-quadruped",
+  "rigId": "mammal-quadruped",
+  "attachments": {
+    "head": "kopf",
+    "leftHand": "beinVL",
+    "rightHand": "beinVR",
+    "back": "rumpf",
+    "weapon": "kiefer",
+    "mount": "root"
+  },
+  "visual": {
+    "detailLevel": "mid",
+    "height": 0.44,
+    "palette": {
+      "fell": "#6f8f70",
+      "fellHell": "#91aa86",
+      "fellDunkel": "#405b48",
+      "bauch": "#c2c9a7",
+      "haut": "#d79291",
+      "hautHell": "#efb0aa",
+      "nase": "#633d45",
+      "augeWeiss": "#fff7df",
+      "pupille": "#1d211c",
+      "zahn": "#fff1c9",
+      "kralle": "#d9c6a1"
+    },
+    "parts": [
+      {
+        "id": "rumpf",
+        "shape": "ico",
+        "size": 0.37,
+        "pos": [
+          0,
+          0.53,
+          -0.08
+        ],
+        "scale": [
+          0.72,
+          0.62,
+          1.42
+        ],
+        "color": "fell",
+        "roughness": 0.9
+      },
+      {
+        "id": "bauchFleck",
+        "shape": "ico",
+        "size": 0.25,
+        "pos": [
+          0,
+          0.39,
+          0.08
+        ],
+        "scale": [
+          0.65,
+          0.42,
+          1.15
+        ],
+        "color": "bauch"
+      },
+      {
+        "id": "brust",
+        "shape": "ico",
+        "size": 0.2,
+        "pos": [
+          0,
+          0.53,
+          0.38
+        ],
+        "scale": [
+          0.72,
+          0.92,
+          0.7
+        ],
+        "color": "fellHell"
+      },
+      {
+        "id": "rueckenStreifen",
+        "shape": "box",
+        "size": [
+          0.055,
+          0.045,
+          0.62
+        ],
+        "pos": [
+          0,
+          0.76,
+          -0.1
+        ],
+        "color": "fellDunkel"
+      },
+      {
+        "id": "schulterL",
+        "shape": "ico",
+        "size": 0.12,
+        "pos": [
+          -0.2,
+          0.6,
+          0.27
+        ],
+        "scale": [
+          0.72,
+          1.08,
+          0.84
+        ],
+        "color": "fellHell"
+      },
+      {
+        "id": "schulterR",
+        "shape": "ico",
+        "size": 0.12,
+        "pos": [
+          0.2,
+          0.6,
+          0.27
+        ],
+        "scale": [
+          0.72,
+          1.08,
+          0.84
+        ],
+        "color": "fellHell"
+      },
+      {
+        "id": "hals",
+        "shape": "cyl",
+        "size": [
+          0.16,
+          0.19,
+          0.28
+        ],
+        "pos": [
+          0,
+          0.69,
+          0.38
+        ],
+        "rot": [
+          0.45,
+          0,
+          0
+        ],
+        "color": "fell"
+      },
+      {
+        "id": "beinVL",
+        "shape": "group",
+        "pos": [
+          -0.18,
+          0.48,
+          0.28
+        ],
+        "rot": [
+          0.12,
+          0,
+          0.08
+        ]
+      },
+      {
+        "id": "laufVL",
+        "shape": "capsule",
+        "size": [
+          0.055,
+          0.34
+        ],
+        "pos": [
+          0,
+          -0.18,
+          0
+        ],
+        "parent": "beinVL",
+        "color": "fellDunkel"
+      },
+      {
+        "id": "pfoteVL",
+        "shape": "ico",
+        "size": 0.075,
+        "pos": [
+          0,
+          -0.36,
+          0.055
+        ],
+        "scale": [
+          0.88,
+          0.45,
+          1.4
+        ],
+        "parent": "beinVL",
+        "color": "haut"
+      },
+      {
+        "id": "kralleVL",
+        "shape": "cone",
+        "size": [
+          0.018,
+          0.08
+        ],
+        "pos": [
+          0,
+          -0.39,
+          0.13
+        ],
+        "rot": [
+          1.5708,
+          0,
+          0
+        ],
+        "parent": "beinVL",
+        "color": "kralle"
+      },
+      {
+        "id": "beinVR",
+        "shape": "group",
+        "pos": [
+          0.18,
+          0.48,
+          0.28
+        ],
+        "rot": [
+          0.12,
+          0,
+          -0.08
+        ]
+      },
+      {
+        "id": "laufVR",
+        "shape": "capsule",
+        "size": [
+          0.055,
+          0.34
+        ],
+        "pos": [
+          0,
+          -0.18,
+          0
+        ],
+        "parent": "beinVR",
+        "color": "fellDunkel"
+      },
+      {
+        "id": "pfoteVR",
+        "shape": "ico",
+        "size": 0.075,
+        "pos": [
+          0,
+          -0.36,
+          0.055
+        ],
+        "scale": [
+          0.88,
+          0.45,
+          1.4
+        ],
+        "parent": "beinVR",
+        "color": "haut"
+      },
+      {
+        "id": "kralleVR",
+        "shape": "cone",
+        "size": [
+          0.018,
+          0.08
+        ],
+        "pos": [
+          0,
+          -0.39,
+          0.13
+        ],
+        "rot": [
+          1.5708,
+          0,
+          0
+        ],
+        "parent": "beinVR",
+        "color": "kralle"
+      },
+      {
+        "id": "beinHL",
+        "shape": "group",
+        "pos": [
+          -0.21,
+          0.48,
+          -0.35
+        ],
+        "rot": [
+          -0.08,
+          0,
+          0.1
+        ]
+      },
+      {
+        "id": "laufHL",
+        "shape": "capsule",
+        "size": [
+          0.065,
+          0.32
+        ],
+        "pos": [
+          0,
+          -0.17,
+          0
+        ],
+        "parent": "beinHL",
+        "color": "fell"
+      },
+      {
+        "id": "pfoteHL",
+        "shape": "ico",
+        "size": 0.085,
+        "pos": [
+          0,
+          -0.34,
+          0.06
+        ],
+        "scale": [
+          0.92,
+          0.45,
+          1.55
+        ],
+        "parent": "beinHL",
+        "color": "haut"
+      },
+      {
+        "id": "kralleHL",
+        "shape": "cone",
+        "size": [
+          0.019,
+          0.085
+        ],
+        "pos": [
+          0,
+          -0.37,
+          0.14
+        ],
+        "rot": [
+          1.5708,
+          0,
+          0
+        ],
+        "parent": "beinHL",
+        "color": "kralle"
+      },
+      {
+        "id": "beinHR",
+        "shape": "group",
+        "pos": [
+          0.21,
+          0.48,
+          -0.35
+        ],
+        "rot": [
+          -0.08,
+          0,
+          -0.1
+        ]
+      },
+      {
+        "id": "laufHR",
+        "shape": "capsule",
+        "size": [
+          0.065,
+          0.32
+        ],
+        "pos": [
+          0,
+          -0.17,
+          0
+        ],
+        "parent": "beinHR",
+        "color": "fell"
+      },
+      {
+        "id": "pfoteHR",
+        "shape": "ico",
+        "size": 0.085,
+        "pos": [
+          0,
+          -0.34,
+          0.06
+        ],
+        "scale": [
+          0.92,
+          0.45,
+          1.55
+        ],
+        "parent": "beinHR",
+        "color": "haut"
+      },
+      {
+        "id": "kralleHR",
+        "shape": "cone",
+        "size": [
+          0.019,
+          0.085
+        ],
+        "pos": [
+          0,
+          -0.37,
+          0.14
+        ],
+        "rot": [
+          1.5708,
+          0,
+          0
+        ],
+        "parent": "beinHR",
+        "color": "kralle"
+      },
+      {
+        "id": "kopf",
+        "shape": "group",
+        "pos": [
+          0,
+          0.78,
+          0.55
+        ],
+        "rot": [
+          -0.1,
+          0,
+          0
+        ]
+      },
+      {
+        "id": "kopfForm",
+        "shape": "ico",
+        "size": 0.26,
+        "scale": [
+          0.9,
+          0.85,
+          1.02
+        ],
+        "parent": "kopf",
+        "color": "fell"
+      },
+      {
+        "id": "wangeL",
+        "shape": "ico",
+        "size": 0.105,
+        "pos": [
+          -0.13,
+          -0.055,
+          0.18
+        ],
+        "scale": [
+          1,
+          0.85,
+          0.82
+        ],
+        "parent": "kopf",
+        "color": "fellHell"
+      },
+      {
+        "id": "wangeR",
+        "shape": "ico",
+        "size": 0.105,
+        "pos": [
+          0.13,
+          -0.055,
+          0.18
+        ],
+        "scale": [
+          1,
+          0.85,
+          0.82
+        ],
+        "parent": "kopf",
+        "color": "fellHell"
+      },
+      {
+        "id": "schnauze",
+        "shape": "cone",
+        "size": [
+          0.12,
+          0.34
+        ],
+        "pos": [
+          0,
+          -0.08,
+          0.31
+        ],
+        "rot": [
+          1.5708,
+          0,
+          0
+        ],
+        "parent": "kopf",
+        "color": "fellHell"
+      },
+      {
+        "id": "nase",
+        "shape": "ico",
+        "size": 0.055,
+        "pos": [
+          0,
+          -0.08,
+          0.49
+        ],
+        "scale": [
+          1.15,
+          0.72,
+          0.82
+        ],
+        "parent": "kopf",
+        "color": "nase"
+      },
+      {
+        "id": "nasenlochL",
+        "shape": "ico",
+        "size": 0.013,
+        "pos": [
+          -0.027,
+          -0.09,
+          0.528
+        ],
+        "parent": "kopf",
+        "color": "pupille"
+      },
+      {
+        "id": "nasenlochR",
+        "shape": "ico",
+        "size": 0.013,
+        "pos": [
+          0.027,
+          -0.09,
+          0.528
+        ],
+        "parent": "kopf",
+        "color": "pupille"
+      },
+      {
+        "id": "augeWeissL",
+        "shape": "ico",
+        "size": 0.066,
+        "pos": [
+          -0.105,
+          0.045,
+          0.235
+        ],
+        "scale": [
+          1,
+          0.92,
+          0.5
+        ],
+        "parent": "kopf",
+        "color": "augeWeiss"
+      },
+      {
+        "id": "pupilleL",
+        "shape": "ico",
+        "size": 0.032,
+        "pos": [
+          -0.105,
+          0.047,
+          0.275
+        ],
+        "scale": [
+          0.72,
+          1.12,
+          0.48
+        ],
+        "parent": "kopf",
+        "color": "pupille"
+      },
+      {
+        "id": "augeWeissR",
+        "shape": "ico",
+        "size": 0.066,
+        "pos": [
+          0.105,
+          0.045,
+          0.235
+        ],
+        "scale": [
+          1,
+          0.92,
+          0.5
+        ],
+        "parent": "kopf",
+        "color": "augeWeiss"
+      },
+      {
+        "id": "pupilleR",
+        "shape": "ico",
+        "size": 0.032,
+        "pos": [
+          0.105,
+          0.047,
+          0.275
+        ],
+        "scale": [
+          0.72,
+          1.12,
+          0.48
+        ],
+        "parent": "kopf",
+        "color": "pupille"
+      },
+      {
+        "id": "braueL",
+        "shape": "box",
+        "size": [
+          0.09,
+          0.022,
+          0.028
+        ],
+        "pos": [
+          -0.105,
+          0.105,
+          0.245
+        ],
+        "rot": [
+          0,
+          0,
+          0.18
+        ],
+        "parent": "kopf",
+        "color": "fellDunkel"
+      },
+      {
+        "id": "braueR",
+        "shape": "box",
+        "size": [
+          0.09,
+          0.022,
+          0.028
+        ],
+        "pos": [
+          0.105,
+          0.105,
+          0.245
+        ],
+        "rot": [
+          0,
+          0,
+          -0.18
+        ],
+        "parent": "kopf",
+        "color": "fellDunkel"
+      },
+      {
+        "id": "schneidezahnL",
+        "shape": "box",
+        "size": [
+          0.052,
+          0.105,
+          0.04
+        ],
+        "pos": [
+          -0.033,
+          -0.17,
+          0.39
+        ],
+        "rot": [
+          -0.18,
+          0,
+          0
+        ],
+        "parent": "kopf",
+        "color": "zahn"
+      },
+      {
+        "id": "schneidezahnR",
+        "shape": "box",
+        "size": [
+          0.052,
+          0.105,
+          0.04
+        ],
+        "pos": [
+          0.033,
+          -0.17,
+          0.39
+        ],
+        "rot": [
+          -0.18,
+          0,
+          0
+        ],
+        "parent": "kopf",
+        "color": "zahn"
+      },
+      {
+        "id": "kiefer",
+        "shape": "group",
+        "pos": [
+          0,
+          -0.15,
+          0.25
+        ],
+        "parent": "kopf"
+      },
+      {
+        "id": "unterkiefer",
+        "shape": "ico",
+        "size": 0.105,
+        "pos": [
+          0,
+          -0.035,
+          0.08
+        ],
+        "scale": [
+          0.95,
+          0.42,
+          1.28
+        ],
+        "parent": "kiefer",
+        "color": "fellDunkel"
+      },
+      {
+        "id": "mundSpalt",
+        "shape": "box",
+        "size": [
+          0.13,
+          0.018,
+          0.1
+        ],
+        "pos": [
+          0,
+          0.01,
+          0.13
+        ],
+        "parent": "kiefer",
+        "color": "nase"
+      },
+      {
+        "id": "ohrL",
+        "shape": "group",
+        "pos": [
+          -0.18,
+          0.16,
+          -0.02
+        ],
+        "rot": [
+          -0.15,
+          0,
+          0.1
+        ],
+        "parent": "kopf"
+      },
+      {
+        "id": "ohrAussenL",
+        "shape": "sph",
+        "size": 0.18,
+        "pos": [
+          0,
+          0.08,
+          0
+        ],
+        "scale": [
+          0.82,
+          1.2,
+          0.32
+        ],
+        "parent": "ohrL",
+        "color": "haut"
+      },
+      {
+        "id": "ohrInnenL",
+        "shape": "sph",
+        "size": 0.125,
+        "pos": [
+          0,
+          0.085,
+          0.045
+        ],
+        "scale": [
+          0.78,
+          1.16,
+          0.24
+        ],
+        "parent": "ohrL",
+        "color": "hautHell"
+      },
+      {
+        "id": "ohrR",
+        "shape": "group",
+        "pos": [
+          0.18,
+          0.16,
+          -0.02
+        ],
+        "rot": [
+          -0.15,
+          0,
+          -0.1
+        ],
+        "parent": "kopf"
+      },
+      {
+        "id": "ohrAussenR",
+        "shape": "sph",
+        "size": 0.18,
+        "pos": [
+          0,
+          0.08,
+          0
+        ],
+        "scale": [
+          0.82,
+          1.2,
+          0.32
+        ],
+        "parent": "ohrR",
+        "color": "haut"
+      },
+      {
+        "id": "ohrInnenR",
+        "shape": "sph",
+        "size": 0.125,
+        "pos": [
+          0,
+          0.085,
+          0.045
+        ],
+        "scale": [
+          0.78,
+          1.16,
+          0.24
+        ],
+        "parent": "ohrR",
+        "color": "hautHell"
+      },
+      {
+        "id": "schnurrL1",
+        "shape": "cyl",
+        "size": [
+          0.006,
+          0.006,
+          0.28
+        ],
+        "pos": [
+          -0.18,
+          -0.07,
+          0.36
+        ],
+        "rot": [
+          0,
+          0,
+          1.18
+        ],
+        "parent": "kopf",
+        "color": "bauch"
+      },
+      {
+        "id": "schnurrL2",
+        "shape": "cyl",
+        "size": [
+          0.006,
+          0.006,
+          0.31
+        ],
+        "pos": [
+          -0.19,
+          -0.12,
+          0.35
+        ],
+        "rot": [
+          0,
+          0,
+          1.48
+        ],
+        "parent": "kopf",
+        "color": "bauch"
+      },
+      {
+        "id": "schnurrL3",
+        "shape": "cyl",
+        "size": [
+          0.005,
+          0.005,
+          0.25
+        ],
+        "pos": [
+          -0.17,
+          -0.17,
+          0.33
+        ],
+        "rot": [
+          0,
+          0,
+          1.78
+        ],
+        "parent": "kopf",
+        "color": "bauch"
+      },
+      {
+        "id": "schnurrR1",
+        "shape": "cyl",
+        "size": [
+          0.006,
+          0.006,
+          0.28
+        ],
+        "pos": [
+          0.18,
+          -0.07,
+          0.36
+        ],
+        "rot": [
+          0,
+          0,
+          -1.18
+        ],
+        "parent": "kopf",
+        "color": "bauch"
+      },
+      {
+        "id": "schnurrR2",
+        "shape": "cyl",
+        "size": [
+          0.006,
+          0.006,
+          0.31
+        ],
+        "pos": [
+          0.19,
+          -0.12,
+          0.35
+        ],
+        "rot": [
+          0,
+          0,
+          -1.48
+        ],
+        "parent": "kopf",
+        "color": "bauch"
+      },
+      {
+        "id": "schnurrR3",
+        "shape": "cyl",
+        "size": [
+          0.005,
+          0.005,
+          0.25
+        ],
+        "pos": [
+          0.17,
+          -0.17,
+          0.33
+        ],
+        "rot": [
+          0,
+          0,
+          -1.78
+        ],
+        "parent": "kopf",
+        "color": "bauch"
+      },
+      {
+        "id": "ruteBasis",
+        "shape": "group",
+        "pos": [
+          0,
+          0.51,
+          -0.52
+        ],
+        "rot": [
+          -1.32,
+          0,
+          0.62
+        ]
+      },
+      {
+        "id": "ruteSegment1",
+        "shape": "capsule",
+        "size": [
+          0.055,
+          0.36
+        ],
+        "pos": [
+          0,
+          0.18,
+          0
+        ],
+        "parent": "ruteBasis",
+        "color": "haut"
+      },
+      {
+        "id": "ruteGelenk1",
+        "shape": "group",
+        "pos": [
+          0,
+          0.34,
+          0
+        ],
+        "rot": [
+          0,
+          0,
+          -0.4
+        ],
+        "parent": "ruteBasis"
+      },
+      {
+        "id": "ruteSegment2",
+        "shape": "capsule",
+        "size": [
+          0.046,
+          0.34
+        ],
+        "pos": [
+          0,
+          0.17,
+          0
+        ],
+        "parent": "ruteGelenk1",
+        "color": "haut"
+      },
+      {
+        "id": "ruteGelenk2",
+        "shape": "group",
+        "pos": [
+          0,
+          0.32,
+          0
+        ],
+        "rot": [
+          0,
+          0,
+          -0.48
+        ],
+        "parent": "ruteGelenk1"
+      },
+      {
+        "id": "ruteSegment3",
+        "shape": "capsule",
+        "size": [
+          0.038,
+          0.3
+        ],
+        "pos": [
+          0,
+          0.15,
+          0
+        ],
+        "parent": "ruteGelenk2",
+        "color": "hautHell"
+      },
+      {
+        "id": "ruteGelenk3",
+        "shape": "group",
+        "pos": [
+          0,
+          0.28,
+          0
+        ],
+        "rot": [
+          0,
+          0,
+          -0.38
+        ],
+        "parent": "ruteGelenk2"
+      },
+      {
+        "id": "ruteSegment4",
+        "shape": "capsule",
+        "size": [
+          0.028,
+          0.25
+        ],
+        "pos": [
+          0,
+          0.125,
+          0
+        ],
+        "parent": "ruteGelenk3",
+        "color": "hautHell"
+      },
+      {
+        "id": "ruteSpitze",
+        "shape": "ico",
+        "size": 0.03,
+        "pos": [
+          0,
+          0.245,
+          0
+        ],
+        "parent": "ruteGelenk3",
+        "color": "hautHell"
+      }
+    ]
+  },
+  "animationProfileId": "mammal-quadruped"
+}

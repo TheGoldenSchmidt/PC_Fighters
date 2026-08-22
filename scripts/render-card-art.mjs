@@ -16,9 +16,16 @@ const CARDS_DIR = join(ROOT, 'packages', 'engine', 'src', 'data', 'cards');
 const FIGURES_DIR = join(ROOT, 'packages', 'engine', 'src', 'data', 'figures');
 const CLIENT_PORT = 5174;
 const SERVER_PORT = 3001;
-const CHROMIUM = process.env.CHROMIUM_PATH || '/opt/pw-browsers/chromium';
 const SOURCES = new Set(['manual', 'figure-render', 'template']);
 const LEGACY_CODE_FIGURES = new Set(['bannertraeger']);
+const STANDARD_DECK_VARIANTS = new Set([
+  'baseball_zombie', 'drum_major', 'fliessbandarbeiter', 'flugblatt_verteiler',
+  'medic', 'mini_ninja', 'pied_piper', 'skunk_punk', 'smelly_zombie',
+  'cardboard_robot_zombie', 'dolphin_rider', 'fishy_imp', 'imp',
+  'button_mushroom', 'bellflower', 'mixed_nuts', 'sunflower', 'peashooter',
+  'torchwood', 'smashing_pumpkin', 'buff_shroom', 'small_nut', 'pismashio',
+  'seedling', 'zapricot', 'spineapple', 'sting_bean', 'wall_nut'
+]);
 
 function readJson(path) {
   return JSON.parse(readFileSync(path, 'utf8'));
@@ -105,16 +112,35 @@ async function loadChromium() {
   throw new Error('Playwright nicht auffindbar (lokal oder global installieren).');
 }
 
-function localBin(name) {
-  return join(ROOT, 'node_modules', '.bin', `${name}${process.platform === 'win32' ? '.cmd' : ''}`);
+function chromiumPath() {
+  const candidates = [
+    process.env.CHROMIUM_PATH,
+    process.platform === 'win32' ? 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe' : undefined,
+    process.platform === 'win32' ? 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe' : undefined,
+    process.platform === 'win32' ? 'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe' : undefined,
+    process.platform === 'win32' && process.env.LOCALAPPDATA
+      ? join(process.env.LOCALAPPDATA, 'Google', 'Chrome', 'Application', 'chrome.exe')
+      : undefined,
+    '/opt/pw-browsers/chromium'
+  ].filter(Boolean);
+  const found = candidates.find((candidate) => existsSync(candidate));
+  if (!found) {
+    throw new Error('Kein Chromium/Chrome/Edge gefunden. Optional CHROMIUM_PATH setzen.');
+  }
+  return found;
 }
 
 async function main() {
   const args = process.argv.slice(2);
   const checkOnly = args.includes('--check');
+  const force = args.includes('--force');
+  const standardSet = args.includes('--standard-set');
   const onlyIds = args.filter((arg) => !arg.startsWith('--'));
-  const unknownFlags = args.filter((arg) => arg.startsWith('--') && arg !== '--check');
+  const unknownFlags = args.filter((arg) => arg.startsWith('--') && !['--check', '--force', '--standard-set'].includes(arg));
   if (unknownFlags.length > 0) throw new Error(`Unbekannte Option: ${unknownFlags.join(', ')}`);
+  if (standardSet && onlyIds.length > 0) {
+    throw new Error('--standard-set kann nicht mit einzelnen Karten-IDs kombiniert werden.');
+  }
 
   const cards = allCards();
   const cardsById = new Map(cards.map((card) => [card.id, card]));
@@ -129,7 +155,10 @@ async function main() {
     if (!cardsById.has(cardId)) throw new Error(`Unbekannte Karte: ${cardId}`);
   }
   const availableFigures = figureIds();
-  const selected = cards.filter((card) => onlyIds.length === 0 || onlyIds.includes(card.id));
+  const selected = cards.filter((card) => {
+    if (standardSet) return card.type !== 'creature' || STANDARD_DECK_VARIANTS.has(card.id);
+    return onlyIds.length === 0 || onlyIds.includes(card.id);
+  });
   const renderCards = [];
   for (const card of selected) {
     const desiredSource = expectedSource(card);
@@ -145,6 +174,11 @@ async function main() {
       if (onlyIds.includes(card.id)) throw new Error(`${card.id}: keine freigegebene Figur; kein Golem-Rendering erlaubt.`);
       continue;
     }
+    const outputFile = join(OUT, `${card.id}.png`);
+    if (!force && existsSync(outputFile)) {
+      console.log(`  - ${card.id}: vorhandenes PNG bleibt unangetastet`);
+      continue;
+    }
     renderCards.push({ card, source: desiredSource });
   }
   if (renderCards.length === 0) {
@@ -153,25 +187,31 @@ async function main() {
   }
 
   const chromium = await loadChromium();
-  const spawnOptions = { cwd: ROOT, stdio: 'inherit', shell: process.platform === 'win32' };
-  const server = spawn(localBin('tsx'), ['packages/server/src/index.ts'], {
+  const spawnOptions = { cwd: ROOT, stdio: 'inherit', shell: false };
+  const serverBootstrap = [
+    "const os=require('node:os');",
+    "if(process.platform==='win32')os.userInfo=()=>({username:process.env.USERNAME||'pcf-art',homedir:process.env.USERPROFILE||process.cwd(),uid:-1,gid:-1,shell:null});",
+    "(async()=>{const{tsImport}=await import('tsx/esm/api');await tsImport('./packages/server/src/index.ts',require('node:url').pathToFileURL(process.cwd()+'/__pcf_art_bootstrap__.mjs').href)})().catch(error=>{console.error(error);process.exit(1)})"
+  ].join('');
+  const server = spawn(process.execPath, ['-e', serverBootstrap], {
     ...spawnOptions,
     env: { ...process.env, PORT: String(SERVER_PORT) }
   });
-  const vite = spawn(localBin('vite'), ['--port', String(CLIENT_PORT), '--strictPort'], {
+  const vite = spawn(process.execPath, [join(ROOT, 'node_modules', 'vite', 'bin', 'vite.js'), '--port', String(CLIENT_PORT), '--strictPort'], {
     ...spawnOptions,
     cwd: CLIENT
   });
   const serverBase = `http://localhost:${SERVER_PORT}`;
   const clientBase = `http://localhost:${CLIENT_PORT}`;
 
+  let browser;
   try {
     await Promise.all([
       waitForServer(`${serverBase}/info`),
       waitForServer(`${clientBase}/tools/render-figures.html`)
     ]);
-    const browser = await chromium.launch({
-      executablePath: CHROMIUM,
+    browser = await chromium.launch({
+      executablePath: chromiumPath(),
       args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader']
     });
     const context = await browser.newContext({ deviceScaleFactor: 2 });
@@ -193,8 +233,10 @@ async function main() {
       console.log(`  ✓ ${card.id}.png (${source})`);
     }
     await browser.close();
+    browser = undefined;
     writeFileSync(MANIFEST_FILE, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
   } finally {
+    if (browser) await browser.close();
     vite.kill('SIGTERM');
     server.kill('SIGTERM');
   }

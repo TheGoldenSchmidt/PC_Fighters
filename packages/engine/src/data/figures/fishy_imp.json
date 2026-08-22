@@ -1,0 +1,166 @@
+{
+  "cardId": "fishy_imp",
+  "baseId": "humanoid-standard",
+  "palette": {
+    "uniform": "#2b6170",
+    "uniformDark": "#182828",
+    "uniformLight": "#5b99a5",
+    "cloth": "#151d22",
+    "accent": "#efcc55",
+    "rescue": "#a83e16",
+    "rescueDark": "#5c2415",
+    "water": "#4aa7b8"
+  },
+  "height": 0.7,
+  "patchParts": [
+    {
+      "id": "@head",
+      "scale": [
+        1.24,
+        1.18,
+        1.16
+      ]
+    }
+  ],
+  "addParts": [
+    {
+      "id": "hinterhofTasche",
+      "shape": "box",
+      "size": [
+        0.42,
+        0.34,
+        0.2
+      ],
+      "pos": [
+        0,
+        0.12,
+        -0.25
+      ],
+      "parent": "@back",
+      "color": "uniformDark"
+    },
+    {
+      "id": "fischAbzeichen",
+      "shape": "ico",
+      "size": 0.09,
+      "pos": [
+        0.16,
+        0.3,
+        0.3
+      ],
+      "scale": [
+        1.5,
+        0.7,
+        0.35
+      ],
+      "parent": "@back",
+      "color": "accent"
+    },
+    {
+      "id": "schwimmwesteL",
+      "shape": "box",
+      "size": [
+        0.19,
+        0.45,
+        0.11
+      ],
+      "pos": [
+        -0.12,
+        0.3,
+        0.29
+      ],
+      "rot": [
+        -0.03,
+        0,
+        -0.04
+      ],
+      "parent": "@back",
+      "color": "rescue"
+    },
+    {
+      "id": "schwimmwesteR",
+      "shape": "box",
+      "size": [
+        0.19,
+        0.45,
+        0.11
+      ],
+      "pos": [
+        0.12,
+        0.3,
+        0.29
+      ],
+      "rot": [
+        -0.03,
+        0,
+        0.04
+      ],
+      "parent": "@back",
+      "color": "rescue"
+    },
+    {
+      "id": "schwimmwesteGurt",
+      "shape": "box",
+      "size": [
+        0.48,
+        0.07,
+        0.13
+      ],
+      "pos": [
+        0,
+        0.15,
+        0.31
+      ],
+      "parent": "@back",
+      "color": "rescueDark"
+    },
+    {
+      "id": "schwimmwesteReflektorL",
+      "shape": "box",
+      "size": [
+        0.13,
+        0.04,
+        0.02
+      ],
+      "pos": [
+        -0.12,
+        0.34,
+        0.36
+      ],
+      "parent": "@back",
+      "color": "accent"
+    },
+    {
+      "id": "schwimmwesteReflektorR",
+      "shape": "box",
+      "size": [
+        0.13,
+        0.04,
+        0.02
+      ],
+      "pos": [
+        0.12,
+        0.34,
+        0.36
+      ],
+      "parent": "@back",
+      "color": "accent"
+    },
+    {
+      "id": "wasserFlasche",
+      "shape": "cyl",
+      "size": [
+        0.045,
+        0.045,
+        0.25
+      ],
+      "pos": [
+        0.25,
+        0.12,
+        -0.18
+      ],
+      "parent": "@back",
+      "color": "water"
+    }
+  ]
+}

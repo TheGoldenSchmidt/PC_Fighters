@@ -1,23 +1,443 @@
 {
   "version": 1,
   "cards": {
-    "adler": { "source": "figure-render" },
-    "alphawolf": { "source": "figure-render" },
-    "baer": { "source": "figure-render" },
-    "bannertraeger": { "source": "figure-render" },
-    "eisbaer": { "source": "figure-render" },
-    "feldscherin": { "source": "manual" },
-    "hetzjagd": { "source": "template" },
-    "kommandantin": { "source": "figure-render" },
-    "mobilmachung": { "source": "template" },
-    "pferd": { "source": "figure-render" },
-    "ratte": { "source": "figure-render" },
-    "rekrut": { "source": "manual" },
-    "ritter": { "source": "figure-render" },
-    "schildwache": { "source": "manual" },
-    "schildwall": { "source": "template" },
-    "schlange": { "source": "figure-render" },
-    "wilder_instinkt": { "source": "template" },
-    "wolf": { "source": "figure-render" }
+    "adler": {
+      "source": "figure-render"
+    },
+    "alphawolf": {
+      "source": "figure-render"
+    },
+    "baer": {
+      "source": "figure-render"
+    },
+    "bannertraeger": {
+      "source": "figure-render"
+    },
+    "eisbaer": {
+      "source": "figure-render"
+    },
+    "feldscherin": {
+      "source": "manual"
+    },
+    "hetzjagd": {
+      "source": "template"
+    },
+    "kommandantin": {
+      "source": "figure-render"
+    },
+    "mobilmachung": {
+      "source": "template"
+    },
+    "pferd": {
+      "source": "figure-render"
+    },
+    "ratte": {
+      "source": "figure-render"
+    },
+    "rekrut": {
+      "source": "manual"
+    },
+    "ritter": {
+      "source": "figure-render"
+    },
+    "schildwache": {
+      "source": "manual"
+    },
+    "schildwall": {
+      "source": "template"
+    },
+    "schlange": {
+      "source": "figure-render"
+    },
+    "wilder_instinkt": {
+      "source": "template"
+    },
+    "wolf": {
+      "source": "figure-render"
+    },
+    "skunk_punk": {
+      "source": "figure-render"
+    },
+    "pied_piper": {
+      "source": "figure-render"
+    },
+    "fliessbandarbeiter": {
+      "source": "figure-render"
+    },
+    "dolphin_rider": {
+      "source": "figure-render"
+    },
+    "locust_swarm": {
+      "source": "template"
+    },
+    "nibble": {
+      "source": "template"
+    },
+    "yeti_lunchbox": {
+      "source": "template"
+    },
+    "b_flat": {
+      "source": "template"
+    },
+    "total_eclipse": {
+      "source": "template"
+    },
+    "alien_ooze": {
+      "source": "template"
+    },
+    "vitamin_z": {
+      "source": "template"
+    },
+    "maniacal_laugh": {
+      "source": "template"
+    },
+    "area_22": {
+      "source": "template"
+    },
+    "extinction_event": {
+      "source": "template"
+    },
+    "hunting_grounds": {
+      "source": "template"
+    },
+    "secret_agent": {
+      "source": "template"
+    },
+    "cardboard_robot_zombie": {
+      "source": "figure-render"
+    },
+    "flugblatt_verteiler": {
+      "source": "figure-render"
+    },
+    "lurch_for_lunch": {
+      "source": "template"
+    },
+    "fun_dead_raiser": {
+      "source": "template"
+    },
+    "drum_major": {
+      "source": "figure-render"
+    },
+    "beam_me_up": {
+      "source": "template"
+    },
+    "cryo_brain": {
+      "source": "template"
+    },
+    "medulla_nebula": {
+      "source": "template"
+    },
+    "quarterly_bonus": {
+      "source": "template"
+    },
+    "hail_a_copter": {
+      "source": "template"
+    },
+    "triplication": {
+      "source": "template"
+    },
+    "rocket_science": {
+      "source": "template"
+    },
+    "transformation_station": {
+      "source": "template"
+    },
+    "experimentelle_formel": {
+      "source": "template"
+    },
+    "teleport": {
+      "source": "template"
+    },
+    "thinking_cap": {
+      "source": "template"
+    },
+    "bad_moon_rising": {
+      "source": "template"
+    },
+    "small_nut": {
+      "source": "figure-render"
+    },
+    "sting_bean": {
+      "source": "figure-render"
+    },
+    "wall_nut": {
+      "source": "figure-render"
+    },
+    "pismashio": {
+      "source": "figure-render"
+    },
+    "spineapple": {
+      "source": "figure-render"
+    },
+    "gardening_gloves": {
+      "source": "template"
+    },
+    "photosynthesizer": {
+      "source": "template"
+    },
+    "spikeweed_sector": {
+      "source": "template"
+    },
+    "grape_responsibility": {
+      "source": "template"
+    },
+    "grave_buster": {
+      "source": "template"
+    },
+    "doom_shroom": {
+      "source": "template"
+    },
+    "force_field": {
+      "source": "template"
+    },
+    "wall_nut_bowling": {
+      "source": "template"
+    },
+    "shamrocket": {
+      "source": "template"
+    },
+    "baseball_zombie": {
+      "source": "figure-render"
+    },
+    "rolling_stone": {
+      "source": "template"
+    },
+    "medic": {
+      "source": "figure-render"
+    },
+    "terrify": {
+      "source": "template"
+    },
+    "cone_zone": {
+      "source": "template"
+    },
+    "healthy_treat": {
+      "source": "template"
+    },
+    "leftovers": {
+      "source": "template"
+    },
+    "monster_mash": {
+      "source": "template"
+    },
+    "escape_through_time": {
+      "source": "template"
+    },
+    "weed_spray": {
+      "source": "template"
+    },
+    "black_hole": {
+      "source": "template"
+    },
+    "generalstreik": {
+      "source": "template"
+    },
+    "button_mushroom": {
+      "source": "figure-render"
+    },
+    "berry_blast": {
+      "source": "template"
+    },
+    "buff_shroom": {
+      "source": "figure-render"
+    },
+    "seedling": {
+      "source": "figure-render"
+    },
+    "zapricot": {
+      "source": "figure-render"
+    },
+    "sizzle": {
+      "source": "template"
+    },
+    "banana_bomb": {
+      "source": "template"
+    },
+    "mushroom_grotto": {
+      "source": "template"
+    },
+    "hot_lava": {
+      "source": "template"
+    },
+    "petal_morphosis": {
+      "source": "template"
+    },
+    "lava_guava": {
+      "source": "template"
+    },
+    "cherry_bomb": {
+      "source": "template"
+    },
+    "pair_pearadise": {
+      "source": "template"
+    },
+    "peashooter": {
+      "source": "figure-render"
+    },
+    "torchwood": {
+      "source": "figure-render"
+    },
+    "fertilize": {
+      "source": "template"
+    },
+    "flourish": {
+      "source": "template"
+    },
+    "coffee_grounds": {
+      "source": "template"
+    },
+    "vegetation_mutation": {
+      "source": "template"
+    },
+    "plant_food": {
+      "source": "template"
+    },
+    "banana_peel": {
+      "source": "template"
+    },
+    "espresso_fiesta": {
+      "source": "template"
+    },
+    "the_red_plant_it": {
+      "source": "template"
+    },
+    "grape_power": {
+      "source": "template"
+    },
+    "imp": {
+      "source": "figure-render"
+    },
+    "mini_ninja": {
+      "source": "figure-render"
+    },
+    "smoke_bomb": {
+      "source": "template"
+    },
+    "fishy_imp": {
+      "source": "figure-render"
+    },
+    "smelly_zombie": {
+      "source": "figure-render"
+    },
+    "backyard_bounce": {
+      "source": "template"
+    },
+    "graveyard": {
+      "source": "template"
+    },
+    "frosty_mustache": {
+      "source": "template"
+    },
+    "barrel_of_barrels": {
+      "source": "template"
+    },
+    "zombot_stomp": {
+      "source": "template"
+    },
+    "laser_base_alpha": {
+      "source": "template"
+    },
+    "bellflower": {
+      "source": "figure-render"
+    },
+    "sunflower": {
+      "source": "figure-render"
+    },
+    "mixed_nuts": {
+      "source": "figure-render"
+    },
+    "squash": {
+      "source": "template"
+    },
+    "smashing_pumpkin": {
+      "source": "figure-render"
+    },
+    "venus_flytraplanet": {
+      "source": "template"
+    },
+    "whack_a_zombie": {
+      "source": "template"
+    },
+    "lawnmower": {
+      "source": "template"
+    },
+    "2nd_best_taco_of_all_time": {
+      "source": "template"
+    },
+    "solar_winds": {
+      "source": "template"
+    },
+    "tactical_cuke": {
+      "source": "template"
+    },
+    "cross_pollination": {
+      "source": "template"
+    },
+    "super_sunburn": {
+      "source": "template"
+    },
+    "super_weed_whack": {
+      "source": "template"
+    },
+    "super_more_spore": {
+      "source": "template"
+    },
+    "super_scorched_earth": {
+      "source": "template"
+    },
+    "super_blazing_bark": {
+      "source": "template"
+    },
+    "super_meteor_strike": {
+      "source": "template"
+    },
+    "super_embiggen": {
+      "source": "template"
+    },
+    "super_time_to_shine": {
+      "source": "template"
+    },
+    "super_uncrackable": {
+      "source": "template"
+    },
+    "super_geyser": {
+      "source": "template"
+    },
+    "super_nut_signal": {
+      "source": "template"
+    },
+    "super_bubble_up": {
+      "source": "template"
+    },
+    "super_carried_away": {
+      "source": "template"
+    },
+    "super_telepathy": {
+      "source": "template"
+    },
+    "super_cut_down_to_size": {
+      "source": "template"
+    },
+    "super_super_stench": {
+      "source": "template"
+    },
+    "super_shrink_ray": {
+      "source": "template"
+    },
+    "super_heroic_health": {
+      "source": "template"
+    },
+    "super_rock_wall": {
+      "source": "template"
+    },
+    "super_slammin_smackdown": {
+      "source": "template"
+    },
+    "super_possessed": {
+      "source": "template"
+    },
+    "super_galvanize": {
+      "source": "template"
+    }
   }
 }

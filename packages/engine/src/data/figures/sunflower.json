@@ -1,0 +1,108 @@
+{
+  "cardId": "sunflower",
+  "baseId": "bird",
+  "palette": {
+    "goldbraun": "#7a5b35",
+    "federDunkel": "#37291f",
+    "federHell": "#e3c789",
+    "nackenGold": "#b48e51",
+    "brustGold": "#98703c",
+    "schnabel": "#c68b38",
+    "schnabelDunkel": "#765027",
+    "iris": "#dfb640",
+    "fussGold": "#aa7a3a"
+  },
+  "height": 0.64,
+  "patchParts": [
+    {
+      "id": "@head",
+      "scale": [
+        1.13,
+        1.08,
+        1.06
+      ]
+    }
+  ],
+  "addParts": [
+    {
+      "id": "eulenScheibeL",
+      "shape": "torus",
+      "size": [
+        0.2,
+        0.045
+      ],
+      "pos": [
+        -0.16,
+        0.02,
+        0.23
+      ],
+      "rot": [
+        1.5708,
+        0,
+        0
+      ],
+      "parent": "@head",
+      "color": "federHell"
+    },
+    {
+      "id": "eulenScheibeR",
+      "shape": "torus",
+      "size": [
+        0.2,
+        0.045
+      ],
+      "pos": [
+        0.16,
+        0.02,
+        0.23
+      ],
+      "rot": [
+        1.5708,
+        0,
+        0
+      ],
+      "parent": "@head",
+      "color": "federHell"
+    },
+    {
+      "id": "eulenHornL",
+      "shape": "cone",
+      "size": [
+        0.08,
+        0.3
+      ],
+      "pos": [
+        -0.18,
+        0.28,
+        -0.02
+      ],
+      "rot": [
+        0,
+        0,
+        0.28
+      ],
+      "parent": "@head",
+      "color": "federDunkel"
+    },
+    {
+      "id": "eulenHornR",
+      "shape": "cone",
+      "size": [
+        0.08,
+        0.3
+      ],
+      "pos": [
+        0.18,
+        0.28,
+        -0.02
+      ],
+      "rot": [
+        0,
+        0,
+        -0.28
+      ],
+      "parent": "@head",
+      "color": "federDunkel"
+    }
+  ]
+}
