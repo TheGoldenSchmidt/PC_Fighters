@@ -159,6 +159,10 @@ zweiten anzulegen.
   Mensch ≈ 1, mittelgroßes Tier ~0.6.
 - **Beine sichtbar lassen:** Rumpf hoch genug über den Beinen, sonst wirkt das
   Tier klobig/bärenhaft statt schlank.
+- **Gemeinsames Rig ≠ gemeinsame sichtbare Figur.** Humanoide Ableitungen, die
+  nur Palette und wenige Accessoires wechseln, lesen als umgefärbte Klone. →
+  Das Skelett darf Technik teilen; Körpermasse, Haltung, Kopf, Schlüsselrequisit
+  und Charaktermoment müssen pro Kartenidentität eigenständig gestaltet werden.
 
 ### Formen-Kniffe
 
