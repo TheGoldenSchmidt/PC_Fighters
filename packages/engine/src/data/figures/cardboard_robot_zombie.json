@@ -1,71 +1,207 @@
 {
   "cardId": "cardboard_robot_zombie",
-  "baseId": "humanoid-standard",
-  "palette": {
-    "uniform": "#8a7352",
-    "uniformDark": "#4d402f",
-    "uniformLight": "#bca06f",
-    "cloth": "#262238",
-    "accent": "#65d3d1",
-    "skin": "#777d81",
-    "skinShade": "#50575c"
+  "visual": {
+    "detailLevel": "mid",
+    "height": 0.88,
+    "palette": {
+      "cardboard": "#725331",
+      "cardboardLight": "#a47b45",
+      "cardboardDark": "#3c2b1d",
+      "edge": "#241c18",
+      "tapeBlue": "#224f91",
+      "tapeLight": "#477ec7",
+      "screen": "#112a38",
+      "screenGlow": "#55c7d8",
+      "eyeWhite": "#d9f2ee",
+      "ink": "#161312",
+      "warning": "#b56b16",
+      "warningDark": "#552b0b",
+      "metal": "#69747b",
+      "metalDark": "#303a40",
+      "cable": "#152b4d",
+      "liquid": "#197f8d",
+      "spark": "#84ddd8",
+      "paper": "#d5c39c"
+    },
+    "parts": [
+      { "id": "fussL", "shape": "group", "pos": [-0.25, 0.24, 0.02], "rot": [0.04, -0.08, 0.04] },
+      { "id": "stiefelL", "shape": "box", "size": [0.34, 0.26, 0.46], "pos": [0, -0.11, 0.11], "parent": "fussL", "color": "cardboardDark" },
+      { "id": "sohleL", "shape": "box", "size": [0.37, 0.07, 0.5], "pos": [0, -0.24, 0.12], "parent": "fussL", "color": "edge" },
+      { "id": "zehenTapeL", "shape": "box", "size": [0.35, 0.075, 0.48], "pos": [0, -0.04, 0.12], "parent": "fussL", "color": "tapeBlue" },
+      { "id": "knochelL", "shape": "cyl", "size": [0.13, 0.11, 0.15], "pos": [0, 0.09, -0.02], "parent": "fussL", "color": "metalDark", "metalness": 0.35 },
+      { "id": "schienbeinL", "shape": "box", "size": [0.22, 0.46, 0.22], "pos": [0.01, 0.34, -0.01], "rot": [0, 0, -0.05], "parent": "fussL", "color": "cardboard" },
+      { "id": "knieL", "shape": "box", "size": [0.27, 0.2, 0.27], "pos": [0, 0.59, 0.01], "rot": [0.04, 0, 0.08], "parent": "fussL", "color": "tapeLight" },
+
+      { "id": "fussR", "shape": "group", "pos": [0.34, 0.2, -0.08], "rot": [-0.06, 0.16, -0.17] },
+      { "id": "stiefelR", "shape": "box", "size": [0.16, 0.22, 0.24], "pos": [0, 0.02, 0.08], "parent": "fussR", "color": "metalDark", "metalness": 0.35 },
+      { "id": "sohleR", "shape": "box", "size": [0.28, 0.06, 0.16], "pos": [0, -0.07, 0.09], "rot": [0, 0, 0.08], "parent": "fussR", "color": "tapeBlue" },
+      { "id": "rollRadR", "shape": "cyl", "size": [0.18, 0.18, 0.38], "pos": [0, -0.02, 0.18], "rot": [0, 0, 1.5708], "parent": "fussR", "color": "metalDark", "metalness": 0.45 },
+      { "id": "radAchseR", "shape": "cyl", "size": [0.05, 0.05, 0.43], "pos": [0, -0.02, 0.18], "rot": [0, 0, 1.5708], "parent": "fussR", "color": "warning", "metalness": 0.35 },
+      { "id": "schienbeinR", "shape": "cyl", "size": [0.065, 0.105, 0.65], "pos": [-0.03, 0.39, -0.02], "rot": [0.04, 0, 0.19], "parent": "fussR", "color": "metal", "metalness": 0.35 },
+      { "id": "knieR", "shape": "box", "size": [0.19, 0.16, 0.2], "pos": [-0.09, 0.7, 0], "rot": [0.02, 0, 0.22], "parent": "fussR", "color": "warning" },
+
+      { "id": "becken", "shape": "group", "pos": [0, 0.83, 0], "rot": [0.02, 0.02, -0.035] },
+      { "id": "beckenKiste", "shape": "box", "size": [0.57, 0.32, 0.42], "parent": "becken", "color": "cardboardDark" },
+      { "id": "beckenTape", "shape": "box", "size": [0.59, 0.075, 0.44], "pos": [0, 0.03, 0], "rot": [0, 0, -0.08], "parent": "becken", "color": "tapeBlue" },
+
+      { "id": "torso", "shape": "group", "pos": [-0.035, 0.21, 0], "rot": [0.04, -0.13, 0.13], "parent": "becken" },
+      { "id": "kiste", "shape": "box", "size": [0.86, 0.69, 0.53], "pos": [-0.015, 0.3, 0], "rot": [0.015, 0, -0.035], "parent": "torso", "color": "cardboard" },
+      { "id": "kisteSeiteL", "shape": "box", "size": [0.075, 0.68, 0.55], "pos": [-0.44, 0.3, 0], "rot": [0, 0, -0.045], "parent": "torso", "color": "cardboardDark" },
+      { "id": "kisteSeiteR", "shape": "box", "size": [0.07, 0.65, 0.54], "pos": [0.43, 0.28, -0.01], "rot": [0, 0, 0.025], "parent": "torso", "color": "cardboardLight" },
+      { "id": "tapeV", "shape": "box", "size": [0.115, 0.73, 0.035], "pos": [-0.09, 0.31, 0.283], "rot": [0, 0, 0.08], "parent": "torso", "color": "tapeBlue" },
+      { "id": "tapeH", "shape": "box", "size": [0.78, 0.1, 0.035], "pos": [0, 0.11, 0.285], "rot": [0, 0, -0.055], "parent": "torso", "color": "tapeLight" },
+      { "id": "warnEtikett", "shape": "box", "size": [0.27, 0.2, 0.035], "pos": [0.2, 0.37, 0.292], "rot": [0, 0, -0.08], "parent": "torso", "color": "paper" },
+      { "id": "warnStreifen1", "shape": "box", "size": [0.035, 0.18, 0.02], "pos": [0.15, 0.37, 0.315], "rot": [0, 0, -0.45], "parent": "torso", "color": "warningDark" },
+      { "id": "warnStreifen2", "shape": "box", "size": [0.035, 0.18, 0.02], "pos": [0.23, 0.37, 0.315], "rot": [0, 0, -0.45], "parent": "torso", "color": "warning" },
+      { "id": "eckeKaputt", "shape": "box", "size": [0.2, 0.16, 0.07], "pos": [-0.37, 0.57, 0.28], "rot": [0.08, -0.12, 0.55], "parent": "torso", "color": "edge" },
+      { "id": "rueckenKabel", "shape": "torus", "size": [0.3, 0.04], "pos": [0.27, 0.28, -0.34], "rot": [0.3, 0.35, 0], "scale": [0.75, 1.35, 1], "parent": "torso", "color": "cable" },
+      { "id": "rueckenKlappe", "shape": "box", "size": [0.38, 0.31, 0.055], "pos": [-0.2, 0.48, -0.38], "rot": [0.62, -0.08, 0.24], "parent": "torso", "color": "cardboardLight" },
+      { "id": "rueckenTapeX1", "shape": "box", "size": [0.09, 0.62, 0.035], "pos": [0.02, 0.28, -0.3], "rot": [0.02, 0, 0.65], "parent": "torso", "color": "tapeBlue" },
+      { "id": "rueckenTapeX2", "shape": "box", "size": [0.09, 0.62, 0.035], "pos": [0.02, 0.28, -0.315], "rot": [-0.02, 0, -0.65], "parent": "torso", "color": "tapeLight" },
+
+      { "id": "flapL", "shape": "group", "pos": [-0.34, 0.67, 0], "rot": [0.08, 0, 0.24], "parent": "torso" },
+      { "id": "flapPanelL", "shape": "box", "size": [0.37, 0.25, 0.48], "pos": [-0.13, 0.1, -0.01], "parent": "flapL", "color": "cardboardLight" },
+      { "id": "flapTapeL", "shape": "box", "size": [0.075, 0.26, 0.5], "pos": [-0.14, 0.1, 0], "rot": [0, 0, 0.12], "parent": "flapL", "color": "tapeBlue" },
+      { "id": "flapR", "shape": "group", "pos": [0.34, 0.66, 0], "rot": [-0.04, 0, -0.17], "parent": "torso" },
+      { "id": "flapPanelR", "shape": "box", "size": [0.35, 0.23, 0.47], "pos": [0.13, 0.1, 0], "parent": "flapR", "color": "cardboard" },
+      { "id": "flapTapeR", "shape": "box", "size": [0.07, 0.24, 0.49], "pos": [0.14, 0.1, 0], "rot": [0, 0, -0.1], "parent": "flapR", "color": "tapeLight" },
+      { "id": "halsSockel", "shape": "cyl", "size": [0.12, 0.16, 0.18], "pos": [-0.09, 0.82, 0], "rot": [0, 0, 0.08], "parent": "torso", "color": "metalDark", "metalness": 0.35 },
+
+      { "id": "kopf", "shape": "group", "pos": [-0.11, 1.0, 0.04], "rot": [-0.03, 0.17, -0.055], "parent": "torso" },
+      { "id": "monitor", "shape": "box", "size": [0.55, 0.43, 0.43], "parent": "kopf", "color": "cardboardDark" },
+      { "id": "rahmenOben", "shape": "box", "size": [0.55, 0.08, 0.07], "pos": [0, 0.19, 0.23], "rot": [0, 0, 0.025], "parent": "kopf", "color": "tapeLight" },
+      { "id": "rahmenUnten", "shape": "box", "size": [0.52, 0.07, 0.07], "pos": [0, -0.19, 0.23], "rot": [0, 0, -0.04], "parent": "kopf", "color": "tapeBlue" },
+      { "id": "rahmenL", "shape": "box", "size": [0.07, 0.36, 0.07], "pos": [-0.25, 0, 0.23], "parent": "kopf", "color": "cardboardLight" },
+      { "id": "rahmenR", "shape": "box", "size": [0.07, 0.35, 0.07], "pos": [0.25, -0.01, 0.23], "rot": [0, 0, 0.06], "parent": "kopf", "color": "cardboard" },
+      { "id": "display", "shape": "box", "size": [0.43, 0.29, 0.045], "pos": [0, 0, 0.245], "parent": "kopf", "color": "screen", "roughness": 0.25 },
+      { "id": "augeWeissL", "shape": "box", "size": [0.13, 0.085, 0.025], "pos": [-0.105, 0.045, 0.278], "rot": [0, 0, -0.07], "parent": "kopf", "color": "eyeWhite" },
+      { "id": "pupilleL", "shape": "box", "size": [0.045, 0.065, 0.025], "pos": [-0.085, 0.04, 0.296], "parent": "kopf", "color": "screenGlow" },
+      { "id": "augeWeissR", "shape": "box", "size": [0.13, 0.085, 0.025], "pos": [0.105, 0.045, 0.278], "rot": [0, 0, 0.1], "parent": "kopf", "color": "eyeWhite" },
+      { "id": "pupilleR", "shape": "box", "size": [0.045, 0.065, 0.025], "pos": [0.12, 0.04, 0.296], "parent": "kopf", "color": "screenGlow" },
+      { "id": "displayBraue", "shape": "box", "size": [0.28, 0.025, 0.025], "pos": [-0.015, 0.115, 0.3], "rot": [0, 0, -0.1], "parent": "kopf", "color": "ink" },
+      { "id": "mundSchlitz", "shape": "box", "size": [0.17, 0.025, 0.025], "pos": [0.04, -0.085, 0.298], "rot": [0, 0, 0.04], "parent": "kopf", "color": "screenGlow" },
+      { "id": "antenne", "shape": "group", "pos": [0.12, 0.22, -0.02], "rot": [0, 0, -0.23], "parent": "kopf" },
+      { "id": "antennenMast", "shape": "cyl", "size": [0.026, 0.032, 0.25], "pos": [0, 0.12, 0], "parent": "antenne", "color": "metal", "metalness": 0.4 },
+      { "id": "antennenKugel", "shape": "ico", "size": 0.065, "pos": [0, 0.27, 0], "parent": "antenne", "color": "warning" },
+
+      { "id": "armL", "shape": "group", "pos": [-0.52, 0.72, 0.02], "rot": [0.06, -0.16, 0.36], "parent": "torso" },
+      { "id": "schulterL", "shape": "box", "size": [0.27, 0.3, 0.32], "pos": [-0.03, -0.04, 0], "rot": [0.02, 0, 0.08], "parent": "armL", "color": "tapeBlue" },
+      { "id": "oberarmL", "shape": "box", "size": [0.22, 0.4, 0.23], "pos": [-0.09, -0.27, 0.01], "rot": [0.03, 0, -0.13], "parent": "armL", "color": "cardboardLight" },
+      { "id": "ellbogenL", "shape": "cyl", "size": [0.1, 0.1, 0.22], "pos": [-0.12, -0.46, 0.02], "rot": [1.5708, 0, 0], "parent": "armL", "color": "metalDark", "metalness": 0.35 },
+      { "id": "unterarmL", "shape": "box", "size": [0.18, 0.36, 0.19], "pos": [-0.11, -0.65, 0.08], "rot": [-0.08, 0, 0.08], "parent": "armL", "color": "cardboard" },
+      { "id": "greiferL", "shape": "group", "pos": [-0.1, -0.86, 0.11], "rot": [0.1, 0, -0.08], "parent": "armL" },
+      { "id": "greiferPalm", "shape": "box", "size": [0.27, 0.19, 0.22], "parent": "greiferL", "color": "cardboardDark" },
+      { "id": "greiferOben", "shape": "cone", "size": [0.095, 0.34], "pos": [-0.1, 0.01, 0.17], "rot": [1.5708, 0, 0.55], "parent": "greiferL", "color": "metalDark" },
+      { "id": "greiferUnten", "shape": "cone", "size": [0.095, 0.34], "pos": [0.1, -0.03, 0.17], "rot": [1.5708, 0, -0.55], "parent": "greiferL", "color": "tapeLight" },
+
+      { "id": "armR", "shape": "group", "pos": [0.52, 0.45, 0.01], "rot": [-0.12, 0.12, -0.24], "parent": "torso" },
+      { "id": "schulterR", "shape": "ico", "size": 0.145, "pos": [0.02, -0.02, 0], "scale": [1.2, 0.9, 1], "parent": "armR", "color": "warning" },
+      { "id": "oberarmR", "shape": "cyl", "size": [0.09, 0.12, 0.33], "pos": [0.07, -0.22, 0.02], "rot": [0.05, 0, -0.12], "parent": "armR", "color": "metal", "metalness": 0.3 },
+      { "id": "ellbogenR", "shape": "ico", "size": 0.105, "pos": [0.1, -0.4, 0.04], "parent": "armR", "color": "tapeLight" },
+      { "id": "unterarmR", "shape": "capsule", "size": [0.075, 0.34], "pos": [0.08, -0.56, 0.15], "rot": [0.72, 0, 0.04], "parent": "armR", "color": "cable" },
+      { "id": "handR", "shape": "box", "size": [0.17, 0.14, 0.18], "pos": [0.07, -0.66, 0.31], "rot": [0.2, 0, -0.05], "parent": "armR", "color": "cardboardLight" },
+      { "id": "laborGeraet", "shape": "group", "pos": [0.07, -0.61, 0.47], "rot": [0.06, -0.12, -0.08], "parent": "armR" },
+      { "id": "geraetGriff", "shape": "cyl", "size": [0.05, 0.06, 0.31], "pos": [0, -0.11, -0.01], "parent": "laborGeraet", "color": "metalDark" },
+      { "id": "messKasten", "shape": "box", "size": [0.39, 0.34, 0.27], "pos": [-0.01, 0.19, 0], "rot": [0.04, 0, 0.1], "parent": "laborGeraet", "color": "tapeBlue" },
+      { "id": "messRing", "shape": "torus", "size": [0.12, 0.022], "pos": [-0.04, 0.21, 0.15], "rot": [0, 0, 0], "parent": "laborGeraet", "color": "paper" },
+      { "id": "messNadel", "shape": "box", "size": [0.02, 0.12, 0.02], "pos": [-0.04, 0.23, 0.174], "rot": [0, 0, -0.5], "parent": "laborGeraet", "color": "warningDark" },
+      { "id": "reagenzGlas", "shape": "cyl", "size": [0.08, 0.058, 0.4], "pos": [0.2, 0.28, 0.02], "rot": [0, 0, -0.18], "parent": "laborGeraet", "color": "paper", "transparent": true, "opacity": 0.65 },
+      { "id": "reagenzFluessig", "shape": "cyl", "size": [0.064, 0.055, 0.19], "pos": [0.19, 0.19, 0.02], "rot": [0, 0, -0.18], "parent": "laborGeraet", "color": "liquid", "roughness": 0.75 },
+      { "id": "funkenSpule", "shape": "torus", "size": [0.145, 0.035], "pos": [-0.2, 0.33, 0.02], "rot": [1.5708, 0, 0], "parent": "laborGeraet", "color": "metal", "metalness": 0.45 },
+      { "id": "funkeA", "shape": "ico", "size": 0.055, "pos": [-0.2, 0.5, 0.04], "scale": [0.55, 1.7, 0.55], "parent": "laborGeraet", "color": "spark" },
+      { "id": "funkeB", "shape": "ico", "size": 0.04, "pos": [-0.09, 0.46, 0.08], "scale": [1.5, 0.5, 0.5], "parent": "laborGeraet", "color": "warning" },
+      { "id": "armKabel", "shape": "torus", "size": [0.23, 0.03], "pos": [0.18, -0.22, -0.05], "rot": [0.15, 0.7, 0.15], "scale": [0.65, 1.2, 1], "parent": "armR", "color": "cable" }
+    ]
   },
-  "patchParts": [
-    {
-      "id": "@head",
-      "scale": [
-        1.1,
-        1.02,
-        1.05
+  "animations": {
+    "idle": {
+      "duration": 2.6,
+      "loop": true,
+      "tracks": [
+        { "part": "torso", "prop": "pos.y", "keys": [[0, 0], [1.3, 0.025], [2.6, 0]] },
+        { "part": "kopf", "prop": "rot.z", "keys": [[0, -0.025], [0.65, 0.035], [1.3, -0.01], [1.95, 0.045], [2.6, -0.025]] },
+        { "part": "antenne", "prop": "rot.z", "keys": [[0, 0], [0.65, 0.12], [1.3, -0.09], [1.95, 0.07], [2.6, 0]] },
+        { "part": "messNadel", "prop": "rot.z", "keys": [[0, -0.08], [0.45, 0.42], [0.7, 0.1], [1.4, 0.3], [2.1, -0.18], [2.6, -0.08]] },
+        { "part": "greiferL", "prop": "rot.y", "keys": [[0, -0.04], [0.65, 0.06], [1.3, -0.02], [1.95, 0.08], [2.6, -0.04]] },
+        { "part": "flapR", "prop": "rot.z", "keys": [[0, 0], [1.3, -0.035], [2.6, 0]] }
+      ]
+    },
+    "entrance": {
+      "duration": 1.05,
+      "tracks": [
+        { "part": "root", "prop": "pos.y", "keys": [[0, -0.48], [0.42, -0.2], [0.72, 0.06], [1.05, 0]] },
+        { "part": "root", "prop": "scale", "keys": [[0, 0.48], [0.42, 0.68], [0.72, 1.06], [1.05, 1]] },
+        { "part": "torso", "prop": "rot.z", "keys": [[0, -0.28], [0.42, 0.13], [0.72, -0.06], [1.05, 0]] },
+        { "part": "flapL", "prop": "rot.z", "keys": [[0, 1.15], [0.55, 0.32], [0.82, -0.1], [1.05, 0]] },
+        { "part": "flapR", "prop": "rot.z", "keys": [[0, -1.12], [0.55, -0.28], [0.82, 0.09], [1.05, 0]] },
+        { "part": "armL", "prop": "rot.z", "keys": [[0, -1.15], [0.52, -0.42], [0.8, 0.12], [1.05, 0]] },
+        { "part": "armR", "prop": "rot.z", "keys": [[0, 1.1], [0.52, 0.38], [0.8, -0.1], [1.05, 0]] },
+        { "part": "kopf", "prop": "pos.y", "keys": [[0, -0.42], [0.52, -0.18], [0.76, 0.08], [1.05, 0]] },
+        { "part": "antenne", "prop": "scale", "keys": [[0, 0.25], [0.56, 0.3], [0.82, 1.18], [1.05, 1]] }
+      ]
+    },
+    "attack": {
+      "duration": 0.86,
+      "tracks": [
+        { "part": "root", "prop": "pos.z", "keys": [[0, 0], [0.17, -0.12], [0.3, 0.44], [0.52, 0.44], [0.64, 0.16], [0.86, 0]] },
+        { "part": "root", "prop": "pos.y", "keys": [[0, 0], [0.17, 0.03], [0.3, 0.1], [0.52, 0.1], [0.64, -0.14], [0.86, 0]] },
+        { "part": "torso", "prop": "rot.y", "keys": [[0, 0], [0.17, -0.3], [0.3, 0.48], [0.52, 0.48], [0.64, -0.18], [0.86, 0]] },
+        { "part": "torso", "prop": "rot.x", "keys": [[0, 0], [0.17, -0.12], [0.3, 0.24], [0.52, 0.24], [0.64, 0.33], [0.86, 0]] },
+        { "part": "torso", "prop": "rot.z", "keys": [[0, 0], [0.17, -0.14], [0.3, 0.18], [0.52, 0.18], [0.64, 0.32], [0.86, 0]] },
+        { "part": "torso", "prop": "scale", "keys": [[0, 1], [0.17, 1.03], [0.3, 1.06], [0.52, 1.06], [0.64, 0.82], [0.86, 1]] },
+        { "part": "flapL", "prop": "rot.z", "keys": [[0, 0], [0.17, 0.72], [0.3, 1.05], [0.52, 1.05], [0.64, 0.24], [0.86, 0]] },
+        { "part": "flapR", "prop": "rot.z", "keys": [[0, 0], [0.17, -0.68], [0.3, -1], [0.52, -1], [0.64, -0.22], [0.86, 0]] },
+        { "part": "armR", "prop": "rot.x", "keys": [[0, 0], [0.17, -0.8], [0.3, 1.16], [0.52, 1.16], [0.64, 0.18], [0.86, 0]] },
+        { "part": "armR", "prop": "rot.y", "keys": [[0, 0], [0.17, -0.46], [0.3, 0.62], [0.52, 0.62], [0.64, -0.2], [0.86, 0]] },
+        { "part": "armR", "prop": "rot.z", "keys": [[0, 0], [0.17, 0.3], [0.3, -0.34], [0.52, -0.34], [0.64, -0.62], [0.86, 0]] },
+        { "part": "armR", "prop": "pos.z", "keys": [[0, 0], [0.17, -0.1], [0.3, 0.36], [0.52, 0.36], [0.64, 0.06], [0.86, 0]] },
+        { "part": "laborGeraet", "prop": "pos.z", "keys": [[0, 0], [0.17, -0.14], [0.3, 0.88], [0.52, 0.88], [0.64, 0.15], [0.86, 0]] },
+        { "part": "laborGeraet", "prop": "rot.x", "keys": [[0, 0], [0.17, -0.52], [0.3, 0.7], [0.52, 0.7], [0.64, 0.14], [0.86, 0]] },
+        { "part": "armKabel", "prop": "scale", "keys": [[0, 1], [0.17, 0.86], [0.3, 1.55], [0.52, 1.55], [0.64, 1.08], [0.86, 1]] },
+        { "part": "messNadel", "prop": "rot.z", "keys": [[0, 0], [0.17, -0.62], [0.3, 1.25], [0.52, 1.25], [0.64, -0.28], [0.86, 0]] },
+        { "part": "reagenzFluessig", "prop": "scale", "keys": [[0, 1], [0.17, 0.76], [0.3, 1.38], [0.52, 1.38], [0.64, 0.68], [0.86, 1]] },
+        { "part": "funkeA", "prop": "pos.z", "keys": [[0, 0], [0.17, -0.05], [0.3, 0.65], [0.52, 0.65], [0.64, 0.06], [0.86, 0]] },
+        { "part": "funkeA", "prop": "scale", "keys": [[0, 0.12], [0.17, 0.18], [0.27, 0.8], [0.3, 4.2], [0.52, 4.2], [0.58, 0.45], [0.86, 0.12]] },
+        { "part": "funkeB", "prop": "pos.z", "keys": [[0, 0], [0.17, -0.04], [0.3, 0.58], [0.52, 0.58], [0.64, 0.05], [0.86, 0]] },
+        { "part": "funkeB", "prop": "scale", "keys": [[0, 0.14], [0.17, 0.2], [0.27, 0.75], [0.3, 3.6], [0.52, 3.6], [0.58, 0.4], [0.86, 0.14]] },
+        { "part": "kopf", "prop": "pos.y", "keys": [[0, 0], [0.17, 0.04], [0.3, 0.1], [0.52, 0.1], [0.64, -0.22], [0.86, 0]] },
+        { "part": "kopf", "prop": "rot.z", "keys": [[0, 0], [0.17, -0.18], [0.3, 0.24], [0.52, 0.24], [0.64, 0.5], [0.86, 0]] },
+        { "part": "antenne", "prop": "rot.z", "keys": [[0, 0], [0.17, 0.3], [0.3, -0.48], [0.52, -0.48], [0.64, 0.72], [0.75, -0.24], [0.86, 0]] },
+        { "part": "fussR", "prop": "rot.x", "keys": [[0, 0], [0.3, -0.1], [0.52, -0.1], [0.64, 0.42], [0.86, 0]] },
+        { "part": "greiferL", "prop": "rot.y", "keys": [[0, 0], [0.17, -0.2], [0.3, 0.26], [0.52, 0.26], [0.64, -0.4], [0.86, 0]] }
+      ]
+    },
+    "hit": {
+      "duration": 0.52,
+      "tracks": [
+        { "part": "root", "prop": "pos.z", "keys": [[0, 0], [0.12, -0.2], [0.28, -0.08], [0.52, 0]] },
+        { "part": "torso", "prop": "scale", "keys": [[0, 1], [0.12, 0.86], [0.28, 0.94], [0.52, 1]] },
+        { "part": "torso", "prop": "rot.z", "keys": [[0, 0], [0.12, 0.22], [0.28, -0.1], [0.52, 0]] },
+        { "part": "flapL", "prop": "rot.z", "keys": [[0, 0], [0.12, 0.55], [0.28, -0.12], [0.52, 0]] },
+        { "part": "flapR", "prop": "rot.z", "keys": [[0, 0], [0.12, -0.48], [0.28, 0.1], [0.52, 0]] },
+        { "part": "kopf", "prop": "pos.y", "keys": [[0, 0], [0.12, -0.15], [0.28, -0.04], [0.52, 0]] },
+        { "part": "armL", "prop": "rot.z", "keys": [[0, 0], [0.12, -0.3], [0.28, 0.08], [0.52, 0]] }
+      ]
+    },
+    "death": {
+      "duration": 1.65,
+      "tracks": [
+        { "part": "root", "prop": "pos.y", "keys": [[0, 0], [0.45, -0.08], [0.92, -0.3], [1.65, -0.55]] },
+        { "part": "root", "prop": "rot.z", "keys": [[0, 0], [0.45, 0.08], [0.92, -0.18], [1.65, -0.34]] },
+        { "part": "torso", "prop": "scale", "keys": [[0, 1], [0.45, 0.9], [0.92, 0.7], [1.65, 0.48]] },
+        { "part": "torso", "prop": "rot.x", "keys": [[0, 0], [0.45, 0.15], [0.92, 0.35], [1.65, 0.52]] },
+        { "part": "fussL", "prop": "rot.x", "keys": [[0, 0], [0.48, 0.28], [0.95, 0.7], [1.65, 1.02]] },
+        { "part": "fussR", "prop": "rot.x", "keys": [[0, 0], [0.42, -0.22], [0.92, -0.58], [1.65, -0.85]] },
+        { "part": "armL", "prop": "rot.z", "keys": [[0, 0], [0.38, 0.3], [0.86, 0.85], [1.65, 1.25]] },
+        { "part": "armR", "prop": "rot.z", "keys": [[0, 0], [0.38, -0.25], [0.86, -0.78], [1.65, -1.16]] },
+        { "part": "flapL", "prop": "rot.z", "keys": [[0, 0], [0.32, 0.52], [0.82, 1.05], [1.65, 1.3]] },
+        { "part": "flapR", "prop": "rot.z", "keys": [[0, 0], [0.32, -0.46], [0.82, -0.98], [1.65, -1.25]] },
+        { "part": "kopf", "prop": "pos.y", "keys": [[0, 0], [0.38, -0.12], [0.82, -0.38], [1.65, -0.66]] },
+        { "part": "kopf", "prop": "rot.z", "keys": [[0, 0], [0.38, 0.2], [0.82, 0.55], [1.65, 0.9]] },
+        { "part": "laborGeraet", "prop": "rot.x", "keys": [[0, 0], [0.42, 0.34], [0.9, 0.9], [1.65, 1.35]] },
+        { "part": "antenne", "prop": "rot.z", "keys": [[0, 0], [0.3, -0.4], [0.62, 0.55], [1.0, -0.65], [1.65, -0.8]] },
+        { "part": "root", "prop": "opacity", "keys": [[0, 1], [1.2, 1], [1.65, 0.45]] }
       ]
     }
-  ],
-  "addParts": [
-    {
-      "id": "kartonHelm",
-      "shape": "box",
-      "size": [
-        0.52,
-        0.5,
-        0.46
-      ],
-      "pos": [
-        0,
-        0.02,
-        0.01
-      ],
-      "parent": "@head",
-      "color": "uniformLight"
-    },
-    {
-      "id": "roboterAntenne",
-      "shape": "cyl",
-      "size": [
-        0.025,
-        0.025,
-        0.28
-      ],
-      "pos": [
-        0,
-        0.38,
-        0
-      ],
-      "parent": "@head",
-      "color": "metalDark",
-      "metalness": 0.6
-    },
-    {
-      "id": "antennenKugel",
-      "shape": "ico",
-      "size": 0.07,
-      "pos": [
-        0,
-        0.55,
-        0
-      ],
-      "parent": "@head",
-      "color": "accent",
-      "emissive": "#17494b"
-    }
-  ]
+  }
 }
