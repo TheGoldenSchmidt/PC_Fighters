@@ -1,196 +1,121 @@
 {
   "cardId": "spineapple",
-  "baseId": "mammal-quadruped",
-  "palette": {
-    "fell": "#6a553e",
-    "fellHell": "#a78b63",
-    "fellDunkel": "#30271f",
-    "bauch": "#b9a27f",
-    "haut": "#7d6858",
-    "hautHell": "#aa8f78",
-    "nase": "#2e2624"
+  "visual": {
+    "detailLevel": "mid",
+    "height": 0.55,
+    "palette": {
+      "fell": "#5b452e",
+      "fellHell": "#9a7950",
+      "bauch": "#bda270",
+      "stachelDunkel": "#241d17",
+      "stachelMittel": "#604a2d",
+      "stachelHell": "#c39a55",
+      "schild": "#315f39",
+      "schildHell": "#4f8f50",
+      "augeWeiss": "#eee6cf",
+      "pupille": "#17130f",
+      "ohrInnen": "#9b6558",
+      "nase": "#211b18",
+      "zahn": "#ead9af",
+      "kralle": "#d1bc8e"
+    },
+    "parts": [
+      { "id": "koerper", "shape": "group", "pos": [0, 0.43, -0.08], "rot": [0.02, 0, 0] },
+      { "id": "rumpf", "shape": "ico", "size": 0.43, "scale": [0.92, 0.64, 1.34], "parent": "koerper", "color": "fell", "roughness": 0.92 },
+      { "id": "bauch", "shape": "ico", "size": 0.3, "pos": [0, -0.18, 0.17], "scale": [0.9, 0.43, 1.08], "parent": "koerper", "color": "bauch" },
+      { "id": "schulterL", "shape": "ico", "size": 0.2, "pos": [-0.29, 0.01, 0.28], "scale": [0.72, 0.9, 0.8], "parent": "koerper", "color": "fellHell" },
+      { "id": "schulterR", "shape": "ico", "size": 0.2, "pos": [0.29, 0.01, 0.28], "scale": [0.72, 0.9, 0.8], "parent": "koerper", "color": "fellHell" },
+      { "id": "schildPlatte", "shape": "ico", "size": 0.22, "pos": [0, 0.01, 0.5], "scale": [1.22, 0.86, 0.28], "parent": "koerper", "color": "schild" },
+      { "id": "schildRing", "shape": "torus", "size": [0.13, 0.025], "pos": [0, 0.01, 0.565], "parent": "koerper", "color": "schildHell" },
+      { "id": "schildKern", "shape": "ico", "size": 0.07, "pos": [0, 0.01, 0.585], "scale": [1, 1, 0.3], "parent": "koerper", "color": "stachelHell" },
+      { "id": "beinVL", "shape": "group", "pos": [-0.26, 0.36, 0.27], "rot": [0.1, 0, 0.12] },
+      { "id": "laufVL", "shape": "capsule", "size": [0.065, 0.27], "pos": [0, -0.13, 0], "parent": "beinVL", "color": "fellHell" },
+      { "id": "pfoteVL", "shape": "ico", "size": 0.095, "pos": [0, -0.28, 0.07], "scale": [1.05, 0.45, 1.28], "parent": "beinVL", "color": "fellHell" },
+      { "id": "kralleVL", "shape": "cone", "size": [0.018, 0.095], "pos": [0, -0.3, 0.16], "rot": [1.5708, 0, 0], "parent": "beinVL", "color": "kralle" },
+      { "id": "beinVR", "shape": "group", "pos": [0.26, 0.36, 0.27], "rot": [0.1, 0, -0.12] },
+      { "id": "laufVR", "shape": "capsule", "size": [0.065, 0.27], "pos": [0, -0.13, 0], "parent": "beinVR", "color": "fellHell" },
+      { "id": "pfoteVR", "shape": "ico", "size": 0.095, "pos": [0, -0.28, 0.07], "scale": [1.05, 0.45, 1.28], "parent": "beinVR", "color": "fellHell" },
+      { "id": "kralleVR", "shape": "cone", "size": [0.018, 0.095], "pos": [0, -0.3, 0.16], "rot": [1.5708, 0, 0], "parent": "beinVR", "color": "kralle" },
+      { "id": "beinHL", "shape": "group", "pos": [-0.27, 0.35, -0.35], "rot": [-0.08, 0, 0.16] },
+      { "id": "laufHL", "shape": "capsule", "size": [0.07, 0.25], "pos": [0, -0.12, 0], "parent": "beinHL", "color": "fell" },
+      { "id": "pfoteHL", "shape": "ico", "size": 0.1, "pos": [0, -0.27, 0.06], "scale": [1.1, 0.45, 1.22], "parent": "beinHL", "color": "fellHell" },
+      { "id": "beinHR", "shape": "group", "pos": [0.27, 0.35, -0.35], "rot": [-0.08, 0, -0.16] },
+      { "id": "laufHR", "shape": "capsule", "size": [0.07, 0.25], "pos": [0, -0.12, 0], "parent": "beinHR", "color": "fell" },
+      { "id": "pfoteHR", "shape": "ico", "size": 0.1, "pos": [0, -0.27, 0.06], "scale": [1.1, 0.45, 1.22], "parent": "beinHR", "color": "fellHell" },
+      { "id": "kopf", "shape": "group", "pos": [0, 0.49, 0.58], "rot": [0.08, 0, 0] },
+      { "id": "kopfForm", "shape": "ico", "size": 0.225, "scale": [1.02, 0.82, 1.02], "parent": "kopf", "color": "fellHell" },
+      { "id": "wangeL", "shape": "ico", "size": 0.095, "pos": [-0.14, -0.045, 0.16], "scale": [1, 0.8, 0.75], "parent": "kopf", "color": "bauch" },
+      { "id": "wangeR", "shape": "ico", "size": 0.095, "pos": [0.14, -0.045, 0.16], "scale": [1, 0.8, 0.75], "parent": "kopf", "color": "bauch" },
+      { "id": "schnauze", "shape": "ico", "size": 0.105, "pos": [0, -0.08, 0.23], "scale": [1.05, 0.62, 0.92], "parent": "kopf", "color": "bauch" },
+      { "id": "kiefer", "shape": "ico", "size": 0.075, "pos": [0, -0.155, 0.19], "scale": [1, 0.48, 1], "parent": "kopf", "color": "fell" },
+      { "id": "nase", "shape": "ico", "size": 0.046, "pos": [0, -0.065, 0.315], "scale": [1.18, 0.72, 0.78], "parent": "kopf", "color": "nase" },
+      { "id": "zahnL", "shape": "box", "size": [0.032, 0.065, 0.025], "pos": [-0.035, -0.17, 0.26], "rot": [0, 0, 0.08], "parent": "kopf", "color": "zahn" },
+      { "id": "zahnR", "shape": "box", "size": [0.032, 0.065, 0.025], "pos": [0.035, -0.17, 0.26], "rot": [0, 0, -0.08], "parent": "kopf", "color": "zahn" },
+      { "id": "augeWeissL", "shape": "ico", "size": 0.06, "pos": [-0.088, 0.035, 0.2], "scale": [1.1, 0.76, 0.43], "parent": "kopf", "color": "augeWeiss" },
+      { "id": "pupilleL", "shape": "ico", "size": 0.027, "pos": [-0.084, 0.034, 0.235], "scale": [0.55, 1.05, 0.5], "parent": "kopf", "color": "pupille" },
+      { "id": "augeWeissR", "shape": "ico", "size": 0.06, "pos": [0.088, 0.035, 0.2], "scale": [1.1, 0.76, 0.43], "parent": "kopf", "color": "augeWeiss" },
+      { "id": "pupilleR", "shape": "ico", "size": 0.027, "pos": [0.084, 0.034, 0.235], "scale": [0.55, 1.05, 0.5], "parent": "kopf", "color": "pupille" },
+      { "id": "braueL", "shape": "box", "size": [0.078, 0.022, 0.028], "pos": [-0.09, 0.09, 0.2], "rot": [0, 0, -0.16], "parent": "kopf", "color": "stachelDunkel" },
+      { "id": "braueR", "shape": "box", "size": [0.078, 0.022, 0.028], "pos": [0.09, 0.09, 0.2], "rot": [0, 0, 0.16], "parent": "kopf", "color": "stachelDunkel" },
+      { "id": "ohrL", "shape": "group", "pos": [-0.16, 0.1, -0.02], "rot": [0, 0, 0.18], "parent": "kopf" },
+      { "id": "ohrAussenL", "shape": "sph", "size": 0.09, "scale": [0.9, 1, 0.5], "parent": "ohrL", "color": "fell" },
+      { "id": "ohrInnenL", "shape": "sph", "size": 0.055, "pos": [0, 0, 0.04], "scale": [0.9, 1, 0.4], "parent": "ohrL", "color": "ohrInnen" },
+      { "id": "ohrR", "shape": "group", "pos": [0.16, 0.1, -0.02], "rot": [0, 0, -0.18], "parent": "kopf" },
+      { "id": "ohrAussenR", "shape": "sph", "size": 0.09, "scale": [0.9, 1, 0.5], "parent": "ohrR", "color": "fell" },
+      { "id": "ohrInnenR", "shape": "sph", "size": 0.055, "pos": [0, 0, 0.04], "scale": [0.9, 1, 0.4], "parent": "ohrR", "color": "ohrInnen" },
+      { "id": "stachelPanzer", "shape": "group", "pos": [0, 0.66, -0.11], "rot": [0.08, 0, 0] },
+      { "id": "panzerKern", "shape": "ico", "size": 0.39, "scale": [1.02, 0.54, 1.24], "parent": "stachelPanzer", "color": "stachelDunkel", "roughness": 0.96 },
+      { "id": "stachelV1", "shape": "cone", "size": [0.052, 0.5], "pos": [-0.25, 0.09, 0.31], "rot": [-0.48, 0, 0.46], "parent": "stachelPanzer", "color": "stachelHell" },
+      { "id": "stachelV2", "shape": "cone", "size": [0.058, 0.58], "pos": [0, 0.14, 0.35], "rot": [-0.58, 0, 0], "parent": "stachelPanzer", "color": "stachelHell" },
+      { "id": "stachelV3", "shape": "cone", "size": [0.052, 0.5], "pos": [0.25, 0.09, 0.31], "rot": [-0.48, 0, -0.46], "parent": "stachelPanzer", "color": "stachelHell" },
+      { "id": "stachelM1", "shape": "cone", "size": [0.06, 0.62], "pos": [-0.31, 0.12, 0.02], "rot": [-0.05, 0, 0.58], "parent": "stachelPanzer", "color": "stachelMittel" },
+      { "id": "stachelM2", "shape": "cone", "size": [0.064, 0.7], "pos": [-0.11, 0.2, 0.04], "rot": [-0.08, 0, 0.18], "parent": "stachelPanzer", "color": "stachelHell" },
+      { "id": "stachelM3", "shape": "cone", "size": [0.064, 0.72], "pos": [0.11, 0.2, 0.04], "rot": [-0.08, 0, -0.18], "parent": "stachelPanzer", "color": "stachelHell" },
+      { "id": "stachelM4", "shape": "cone", "size": [0.06, 0.62], "pos": [0.31, 0.12, 0.02], "rot": [-0.05, 0, -0.58], "parent": "stachelPanzer", "color": "stachelMittel" },
+      { "id": "stachelH1", "shape": "cone", "size": [0.055, 0.55], "pos": [-0.28, 0.11, -0.27], "rot": [0.42, 0, 0.48], "parent": "stachelPanzer", "color": "stachelHell" },
+      { "id": "stachelH2", "shape": "cone", "size": [0.062, 0.65], "pos": [-0.08, 0.18, -0.31], "rot": [0.5, 0, 0.12], "parent": "stachelPanzer", "color": "stachelMittel" },
+      { "id": "stachelH3", "shape": "cone", "size": [0.062, 0.65], "pos": [0.08, 0.18, -0.31], "rot": [0.5, 0, -0.12], "parent": "stachelPanzer", "color": "stachelMittel" },
+      { "id": "stachelH4", "shape": "cone", "size": [0.055, 0.55], "pos": [0.28, 0.11, -0.27], "rot": [0.42, 0, -0.48], "parent": "stachelPanzer", "color": "stachelHell" },
+      { "id": "stachelSeiteL1", "shape": "cone", "size": [0.045, 0.43], "pos": [-0.38, 0.02, 0.18], "rot": [-0.3, 0, 1.05], "parent": "stachelPanzer", "color": "stachelHell" },
+      { "id": "stachelSeiteL2", "shape": "cone", "size": [0.048, 0.48], "pos": [-0.4, 0.02, -0.12], "rot": [0.2, 0, 1.12], "parent": "stachelPanzer", "color": "stachelMittel" },
+      { "id": "stachelSeiteR1", "shape": "cone", "size": [0.045, 0.43], "pos": [0.38, 0.02, 0.18], "rot": [-0.3, 0, -1.05], "parent": "stachelPanzer", "color": "stachelHell" },
+      { "id": "stachelSeiteR2", "shape": "cone", "size": [0.048, 0.48], "pos": [0.4, 0.02, -0.12], "rot": [0.2, 0, -1.12], "parent": "stachelPanzer", "color": "stachelMittel" },
+      { "id": "kurzStachelL", "shape": "cone", "size": [0.04, 0.31], "pos": [-0.2, 0.1, 0.48], "rot": [-0.65, 0, 0.3], "parent": "stachelPanzer", "color": "stachelDunkel" },
+      { "id": "kurzStachelR", "shape": "cone", "size": [0.04, 0.31], "pos": [0.2, 0.1, 0.48], "rot": [-0.65, 0, -0.3], "parent": "stachelPanzer", "color": "stachelDunkel" }
+    ]
   },
-  "height": 0.58,
-  "addParts": [
-    {
-      "id": "stachel1",
-      "shape": "cone",
-      "size": [
-        0.045,
-        0.36
-      ],
-      "pos": [
-        -0.17,
-        0.18,
-        0.22
-      ],
-      "rot": [
-        -0.15,
-        0,
-        0.16
-      ],
-      "parent": "@back",
-      "color": "fellHell"
+  "animations": {
+    "idle": {
+      "duration": 3.4,
+      "loop": true,
+      "tracks": [
+        { "part": "koerper", "prop": "scale", "keys": [[0, 1], [1.7, 1.022], [3.4, 1]] },
+        { "part": "kopf", "prop": "rot.y", "keys": [[0, -0.025], [0.85, 0.025], [1.7, -0.015], [2.55, 0.02], [3.4, -0.025]] },
+        { "part": "stachelPanzer", "prop": "scale", "keys": [[0, 1], [1.7, 1.035], [3.4, 1]] },
+        { "part": "ohrL", "prop": "rot.z", "keys": [[0, 0], [0.8, 0.1], [1.0, 0], [3.4, 0]] },
+        { "part": "ohrR", "prop": "rot.z", "keys": [[0, 0], [2.1, -0.1], [2.3, 0], [3.4, 0]] }
+      ]
     },
-    {
-      "id": "stachel2",
-      "shape": "cone",
-      "size": [
-        0.053,
-        0.45999999999999996
-      ],
-      "pos": [
-        0,
-        0.18,
-        0.22
-      ],
-      "rot": [
-        -0.15,
-        0,
-        0
-      ],
-      "parent": "@back",
-      "color": "fellHell"
+    "attack": {
+      "duration": 0.72,
+      "tracks": [
+        { "part": "root", "prop": "pos.y", "keys": [[0, 0], [0.18, -0.08], [0.4, -0.03], [0.54, 0.04], [0.72, 0]] },
+        { "part": "root", "prop": "pos.z", "keys": [[0, 0], [0.18, -0.1], [0.4, 0.32], [0.54, 0.12], [0.72, 0]] },
+        { "part": "root", "prop": "rot.x", "keys": [[0, 0], [0.18, 0.13], [0.4, -0.09], [0.72, 0]] },
+        { "part": "stachelPanzer", "prop": "scale", "keys": [[0, 1], [0.18, 0.94], [0.4, 1.18], [0.54, 1.06], [0.72, 1]] },
+        { "part": "stachelPanzer", "prop": "rot.x", "keys": [[0, 0], [0.18, 0.16], [0.4, -0.22], [0.72, 0]] },
+        { "part": "schildPlatte", "prop": "scale", "keys": [[0, 1], [0.18, 0.92], [0.4, 1.22], [0.54, 1.08], [0.72, 1]] },
+        { "part": "kopf", "prop": "rot.x", "keys": [[0, 0], [0.18, 0.15], [0.4, -0.18], [0.72, 0]] }
+      ]
     },
-    {
-      "id": "stachel3",
-      "shape": "cone",
-      "size": [
-        0.061,
-        0.36
-      ],
-      "pos": [
-        0.17,
-        0.18,
-        0.22
-      ],
-      "rot": [
-        -0.15,
-        0,
-        -0.16
-      ],
-      "parent": "@back",
-      "color": "fellHell"
-    },
-    {
-      "id": "stachel4",
-      "shape": "cone",
-      "size": [
-        0.045,
-        0.45999999999999996
-      ],
-      "pos": [
-        -0.17,
-        0.19999999999999998,
-        -0.01999999999999999
-      ],
-      "rot": [
-        0,
-        0,
-        0.16
-      ],
-      "parent": "@back",
-      "color": "fellHell"
-    },
-    {
-      "id": "stachel5",
-      "shape": "cone",
-      "size": [
-        0.053,
-        0.36
-      ],
-      "pos": [
-        0,
-        0.19999999999999998,
-        -0.01999999999999999
-      ],
-      "rot": [
-        0,
-        0,
-        0
-      ],
-      "parent": "@back",
-      "color": "fellHell"
-    },
-    {
-      "id": "stachel6",
-      "shape": "cone",
-      "size": [
-        0.061,
-        0.45999999999999996
-      ],
-      "pos": [
-        0.17,
-        0.19999999999999998,
-        -0.01999999999999999
-      ],
-      "rot": [
-        0,
-        0,
-        -0.16
-      ],
-      "parent": "@back",
-      "color": "fellHell"
-    },
-    {
-      "id": "stachel7",
-      "shape": "cone",
-      "size": [
-        0.045,
-        0.36
-      ],
-      "pos": [
-        -0.17,
-        0.22,
-        -0.26
-      ],
-      "rot": [
-        0.15,
-        0,
-        0.16
-      ],
-      "parent": "@back",
-      "color": "fellHell"
-    },
-    {
-      "id": "stachel8",
-      "shape": "cone",
-      "size": [
-        0.053,
-        0.45999999999999996
-      ],
-      "pos": [
-        0,
-        0.22,
-        -0.26
-      ],
-      "rot": [
-        0.15,
-        0,
-        0
-      ],
-      "parent": "@back",
-      "color": "fellHell"
-    },
-    {
-      "id": "stachel9",
-      "shape": "cone",
-      "size": [
-        0.061,
-        0.36
-      ],
-      "pos": [
-        0.17,
-        0.22,
-        -0.26
-      ],
-      "rot": [
-        0.15,
-        0,
-        -0.16
-      ],
-      "parent": "@back",
-      "color": "fellHell"
+    "death": {
+      "duration": 1.1,
+      "tracks": [
+        { "part": "root", "prop": "rot.z", "keys": [[0, 0], [0.35, -0.16], [0.85, -1.18], [1.1, -1.32]] },
+        { "part": "root", "prop": "pos.y", "keys": [[0, 0], [0.35, -0.04], [0.85, -0.2], [1.1, -0.24]] },
+        { "part": "stachelPanzer", "prop": "rot.x", "keys": [[0, 0], [0.35, 0.12], [1.1, 0.38]] },
+        { "part": "kopf", "prop": "rot.x", "keys": [[0, 0], [0.35, -0.16], [1.1, 0.3]] }
+      ]
     }
-  ]
+  }
 }

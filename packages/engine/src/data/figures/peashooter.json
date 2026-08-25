@@ -1,425 +1,151 @@
 {
   "cardId": "peashooter",
-  "baseId": "canid",
-  "palette": {
-    "main": "#596a45",
-    "dark": "#29351f",
-    "cream": "#b6b78d",
-    "nose": "#171b13",
-    "tooth": "#efe8d7"
+  "visual": {
+    "detailLevel": "mid",
+    "height": 0.5,
+    "palette": {
+      "fell": "#566050",
+      "fellHell": "#8b9070",
+      "fellDunkel": "#283329",
+      "creme": "#c6b98a",
+      "blaze": "#d4cda9",
+      "pfote": "#3c4638",
+      "fleck": "#6e4930",
+      "ohrInnen": "#8e5d58",
+      "sklera": "#dedcc8",
+      "iris": "#a98d3b",
+      "pupille": "#10140f",
+      "nase": "#1d211b",
+      "maul": "#512d35",
+      "zahn": "#d9d1b8",
+      "halstuch": "#27693d",
+      "halstuchHell": "#4a9b5e",
+      "marke": "#ad8126"
+    },
+    "parts": [
+      { "id": "welpe", "shape": "group", "pos": [0, 0, 0], "rot": [-0.08, 0.1, 0.03] },
+      { "id": "rumpf", "shape": "ico", "size": 0.38, "pos": [0, 0.65, -0.13], "scale": [0.78, 0.7, 1.5], "parent": "welpe", "color": "fell", "roughness": 0.9 },
+      { "id": "brust", "shape": "ico", "size": 0.29, "pos": [0, 0.7, 0.26], "scale": [0.93, 0.96, 0.95], "parent": "welpe", "color": "fellHell" },
+      { "id": "brustLatz", "shape": "ico", "size": 0.2, "pos": [0, 0.64, 0.45], "scale": [0.82, 1.08, 0.42], "parent": "welpe", "color": "creme" },
+      { "id": "rueckenFleck", "shape": "ico", "size": 0.2, "pos": [-0.12, 0.89, -0.3], "scale": [0.75, 0.34, 1.45], "rot": [0.12, 0.18, -0.12], "parent": "welpe", "color": "fleck" },
+      { "id": "hals", "shape": "capsule", "size": [0.18, 0.31], "pos": [0, 0.88, 0.41], "rot": [0.28, 0, 0], "parent": "welpe", "color": "fellHell" },
+
+      { "id": "beinVL", "shape": "group", "pos": [-0.21, 0.66, 0.32], "rot": [0.36, 0, 0.08], "parent": "welpe" },
+      { "id": "oberbeinVL", "shape": "capsule", "size": [0.085, 0.3], "pos": [0, -0.14, 0], "parent": "beinVL", "color": "fell" },
+      { "id": "knieVL", "shape": "group", "pos": [0, -0.27, 0.01], "rot": [-0.2, 0, 0], "parent": "beinVL" },
+      { "id": "unterbeinVL", "shape": "capsule", "size": [0.066, 0.27], "pos": [0, -0.13, 0.03], "parent": "knieVL", "color": "creme" },
+      { "id": "pfoteVL", "shape": "ico", "size": 0.145, "pos": [0, -0.29, 0.13], "scale": [1.35, 0.42, 1.58], "parent": "knieVL", "color": "pfote" },
+      { "id": "zeheVL1", "shape": "ico", "size": 0.05, "pos": [-0.07, -0.305, 0.245], "scale": [1, 0.4, 1.25], "parent": "knieVL", "color": "creme" },
+      { "id": "zeheVL2", "shape": "ico", "size": 0.05, "pos": [0.04, -0.305, 0.255], "scale": [1, 0.4, 1.25], "parent": "knieVL", "color": "creme" },
+
+      { "id": "beinVR", "shape": "group", "pos": [0.22, 0.7, 0.37], "rot": [-0.82, 0, -0.12], "parent": "welpe" },
+      { "id": "oberbeinVR", "shape": "capsule", "size": [0.09, 0.29], "pos": [0, -0.13, 0], "parent": "beinVR", "color": "fellHell" },
+      { "id": "knieVR", "shape": "group", "pos": [0, -0.25, 0.01], "rot": [0.82, 0, 0.08], "parent": "beinVR" },
+      { "id": "unterbeinVR", "shape": "capsule", "size": [0.068, 0.24], "pos": [0, -0.11, 0.05], "parent": "knieVR", "color": "creme" },
+      { "id": "pfoteVR", "shape": "ico", "size": 0.15, "pos": [0, -0.24, 0.14], "scale": [1.38, 0.44, 1.62], "parent": "knieVR", "color": "pfote" },
+      { "id": "zeheVR1", "shape": "ico", "size": 0.052, "pos": [-0.07, -0.255, 0.26], "scale": [1, 0.4, 1.25], "parent": "knieVR", "color": "creme" },
+      { "id": "zeheVR2", "shape": "ico", "size": 0.052, "pos": [0.04, -0.255, 0.27], "scale": [1, 0.4, 1.25], "parent": "knieVR", "color": "creme" },
+
+      { "id": "beinHL", "shape": "group", "pos": [-0.23, 0.59, -0.43], "rot": [-0.18, 0, 0.07], "parent": "welpe" },
+      { "id": "schenkelHL", "shape": "ico", "size": 0.16, "pos": [0, -0.05, 0], "scale": [1, 1.35, 1.1], "parent": "beinHL", "color": "fellDunkel" },
+      { "id": "knieHL", "shape": "group", "pos": [0, -0.24, 0.02], "rot": [0.18, 0, 0], "parent": "beinHL" },
+      { "id": "unterbeinHL", "shape": "capsule", "size": [0.068, 0.25], "pos": [0, -0.12, 0.03], "parent": "knieHL", "color": "fellHell" },
+      { "id": "pfoteHL", "shape": "ico", "size": 0.135, "pos": [0, -0.27, 0.12], "scale": [1.32, 0.42, 1.5], "parent": "knieHL", "color": "pfote" },
+
+      { "id": "beinHR", "shape": "group", "pos": [0.23, 0.59, -0.42], "rot": [0.04, 0, -0.08], "parent": "welpe" },
+      { "id": "schenkelHR", "shape": "ico", "size": 0.16, "pos": [0, -0.05, 0], "scale": [1, 1.35, 1.1], "parent": "beinHR", "color": "fell" },
+      { "id": "knieHR", "shape": "group", "pos": [0, -0.24, 0.02], "rot": [0.04, 0, 0], "parent": "beinHR" },
+      { "id": "unterbeinHR", "shape": "capsule", "size": [0.068, 0.25], "pos": [0, -0.12, 0.03], "parent": "knieHR", "color": "creme" },
+      { "id": "pfoteHR", "shape": "ico", "size": 0.135, "pos": [0, -0.27, 0.12], "scale": [1.32, 0.42, 1.5], "parent": "knieHR", "color": "pfote" },
+
+      { "id": "kopf", "shape": "group", "pos": [0.08, 1.1, 0.66], "rot": [-0.12, -0.16, 0.09], "parent": "welpe" },
+      { "id": "kopfForm", "shape": "ico", "size": 0.36, "scale": [1.12, 0.95, 0.9], "parent": "kopf", "color": "fell" },
+      { "id": "stirnBlaze", "shape": "ico", "size": 0.16, "pos": [0.015, 0.19, 0.11], "scale": [0.46, 1.16, 0.55], "rot": [-0.08, 0, 0.14], "parent": "kopf", "color": "blaze" },
+      { "id": "wangeL", "shape": "ico", "size": 0.15, "pos": [-0.24, -0.06, 0.12], "scale": [1.05, 0.86, 0.72], "parent": "kopf", "color": "fellDunkel" },
+      { "id": "wangeR", "shape": "ico", "size": 0.15, "pos": [0.24, -0.06, 0.12], "scale": [1.05, 0.86, 0.72], "parent": "kopf", "color": "fellHell" },
+      { "id": "schnauze", "shape": "ico", "size": 0.17, "pos": [0, -0.12, 0.34], "scale": [1.05, 0.62, 1.35], "parent": "kopf", "color": "creme" },
+      { "id": "kiefer", "shape": "group", "pos": [0, -0.23, 0.3], "parent": "kopf" },
+      { "id": "kieferForm", "shape": "ico", "size": 0.12, "pos": [0, -0.02, 0.06], "scale": [1.18, 0.48, 1.25], "parent": "kiefer", "color": "maul" },
+      { "id": "milchzahnL", "shape": "cone", "size": [0.019, 0.075], "pos": [-0.07, -0.065, 0.16], "rot": [3.1416, 0, 0], "parent": "kiefer", "color": "zahn" },
+      { "id": "milchzahnR", "shape": "cone", "size": [0.019, 0.075], "pos": [0.07, -0.065, 0.16], "rot": [3.1416, 0, 0], "parent": "kiefer", "color": "zahn" },
+      { "id": "nase", "shape": "ico", "size": 0.07, "pos": [0, -0.1, 0.54], "scale": [1.25, 0.75, 0.78], "parent": "kopf", "color": "nase" },
+
+      { "id": "skleraL", "shape": "ico", "size": 0.1, "pos": [-0.15, 0.06, 0.3], "scale": [1.02, 1.1, 0.48], "parent": "kopf", "color": "sklera" },
+      { "id": "irisL", "shape": "ico", "size": 0.064, "pos": [-0.15, 0.045, 0.36], "scale": [0.9, 1.05, 0.44], "parent": "kopf", "color": "iris" },
+      { "id": "pupilleL", "shape": "ico", "size": 0.035, "pos": [-0.15, 0.035, 0.405], "scale": [0.72, 1.12, 0.42], "parent": "kopf", "color": "pupille" },
+      { "id": "skleraR", "shape": "ico", "size": 0.1, "pos": [0.15, 0.06, 0.3], "scale": [1.02, 1.1, 0.48], "parent": "kopf", "color": "sklera" },
+      { "id": "irisR", "shape": "ico", "size": 0.064, "pos": [0.15, 0.045, 0.36], "scale": [0.9, 1.05, 0.44], "parent": "kopf", "color": "iris" },
+      { "id": "pupilleR", "shape": "ico", "size": 0.035, "pos": [0.15, 0.035, 0.405], "scale": [0.72, 1.12, 0.42], "parent": "kopf", "color": "pupille" },
+      { "id": "braueL", "shape": "box", "size": [0.12, 0.03, 0.035], "pos": [-0.15, 0.19, 0.27], "rot": [0, 0, 0.12], "parent": "kopf", "color": "fellDunkel" },
+      { "id": "braueR", "shape": "box", "size": [0.12, 0.03, 0.035], "pos": [0.15, 0.2, 0.27], "rot": [0, 0, 0.25], "parent": "kopf", "color": "fellDunkel" },
+
+      { "id": "ohrL", "shape": "group", "pos": [-0.24, 0.22, -0.02], "rot": [-0.18, 0, 0.24], "parent": "kopf" },
+      { "id": "ohrAussenL", "shape": "cone", "size": [0.16, 0.46], "pos": [0, 0.23, 0], "parent": "ohrL", "color": "fellDunkel" },
+      { "id": "ohrInnenL", "shape": "cone", "size": [0.09, 0.32], "pos": [0, 0.235, 0.06], "parent": "ohrL", "color": "ohrInnen" },
+      { "id": "ohrR", "shape": "group", "pos": [0.24, 0.22, -0.02], "rot": [-0.34, 0.12, -0.42], "parent": "kopf" },
+      { "id": "ohrAussenR", "shape": "cone", "size": [0.16, 0.46], "pos": [0, 0.23, 0], "parent": "ohrR", "color": "fell" },
+      { "id": "ohrInnenR", "shape": "cone", "size": [0.09, 0.32], "pos": [0, 0.235, 0.06], "parent": "ohrR", "color": "ohrInnen" },
+
+      { "id": "schwanz", "shape": "group", "pos": [0.08, 0.72, -0.65], "rot": [-0.72, 0, 0.55], "parent": "welpe" },
+      { "id": "schwanzBasis", "shape": "cone", "size": [0.13, 0.38], "pos": [0, 0.18, 0], "parent": "schwanz", "color": "fellDunkel" },
+      { "id": "schwanzMitte", "shape": "group", "pos": [0, 0.35, 0], "rot": [-0.22, 0, 0.22], "parent": "schwanz" },
+      { "id": "schwanzGlied", "shape": "cone", "size": [0.105, 0.33], "pos": [0, 0.15, 0], "parent": "schwanzMitte", "color": "fell" },
+      { "id": "schwanzSpitze", "shape": "ico", "size": 0.12, "pos": [0, 0.32, 0], "scale": [0.85, 1.35, 0.85], "parent": "schwanzMitte", "color": "creme" },
+
+      { "id": "halstuch", "shape": "group", "pos": [0, 0.95, 0.42], "rot": [1.35, 0, 0], "parent": "welpe" },
+      { "id": "tuchRing", "shape": "torus", "size": [0.21, 0.038], "parent": "halstuch", "color": "halstuch" },
+      { "id": "tuchZipfelL", "shape": "cone", "size": [0.11, 0.35], "pos": [-0.09, -0.12, -0.08], "rot": [0.25, 0, 0.45], "scale": [0.22, 1, 1], "parent": "halstuch", "color": "halstuchHell" },
+      { "id": "tuchZipfelR", "shape": "cone", "size": [0.1, 0.31], "pos": [0.1, -0.13, -0.1], "rot": [0.18, 0, -0.36], "scale": [0.22, 1, 1], "parent": "halstuch", "color": "halstuch" },
+      { "id": "rudelMarke", "shape": "ico", "size": 0.07, "pos": [0, -0.18, 0.18], "scale": [1.1, 1.1, 0.4], "parent": "halstuch", "color": "marke", "metalness": 0.35 },
+      { "id": "markenKerbe", "shape": "cone", "size": [0.018, 0.09], "pos": [0, 0, 0.075], "rot": [0, 0, 0.2], "parent": "rudelMarke", "color": "fellDunkel" }
+    ]
   },
-  "removeParts": [
-    "tailFluffL",
-    "tailFluffR",
-    "tailFluffC"
-  ],
-  "patchParts": [
-    {
-      "id": "tailBase",
-      "rot": [
-        -1.08,
-        0,
-        0.38
-      ],
-      "scale": [
-        1.12,
-        1.18,
-        1.12
-      ]
-    },
-    {
-      "id": "tail",
-      "rot": [
-        -0.18,
-        0,
-        -0.12
-      ],
-      "scale": [
-        1.22,
-        1.48,
-        1.22
-      ]
-    },
-    {
-      "id": "tailTip",
-      "rot": [
-        -0.08,
-        0,
-        -0.15
-      ],
-      "scale": [
-        1.1,
-        1.55,
-        1.1
-      ]
-    },
-    {
-      "id": "eyeWhiteL",
-      "pos": [
-        -0.22,
-        1.16,
-        1.51
-      ],
-      "scale": [
-        1.32,
-        1.2,
-        1.15
-      ]
-    },
-    {
-      "id": "eyeWhiteR",
-      "pos": [
-        0.22,
-        1.16,
-        1.51
-      ],
-      "scale": [
-        1.32,
-        1.2,
-        1.15
-      ]
-    },
-    {
-      "id": "pupilL",
-      "pos": [
-        -0.22,
-        1.15,
-        1.585
-      ],
-      "scale": [
-        1.18,
-        1.25,
-        1.05
-      ]
-    },
-    {
-      "id": "pupilR",
-      "pos": [
-        0.22,
-        1.15,
-        1.585
-      ],
-      "scale": [
-        1.18,
-        1.25,
-        1.05
-      ]
-    },
-    {
-      "id": "earInnerL",
-      "color": "cream",
-      "scale": [
-        1.18,
-        1.05,
-        1.18
-      ]
-    },
-    {
-      "id": "earInnerR",
-      "color": "cream",
-      "scale": [
-        1.18,
-        1.05,
-        1.18
-      ]
-    }
-  ],
-  "addParts": [
-    {
-      "id": "rudelHalstuch",
-      "shape": "torus",
-      "size": [
-        0.24,
-        0.045
-      ],
-      "pos": [
-        0,
-        0.02,
-        0.1
-      ],
-      "rot": [
-        1.5708,
-        0,
-        0
-      ],
-      "parent": "@head",
-      "color": "cream"
-    },
-    {
-      "id": "rudelMarke",
-      "shape": "ico",
-      "size": 0.095,
-      "pos": [
-        0,
-        -0.12,
-        0.29
-      ],
-      "scale": [
-        1.15,
-        1.05,
-        0.45
-      ],
-      "parent": "@head",
-      "color": "#f0cf46",
-      "metalness": 0.45
-    },
-    {
-      "id": "rudelMarkeKralleL",
-      "shape": "cone",
-      "size": [
-        0.026,
-        0.11
-      ],
-      "pos": [
-        -0.035,
-        0.015,
-        0.07
-      ],
-      "rot": [
-        0,
-        0,
-        -0.24
-      ],
-      "parent": "rudelMarke",
-      "color": "dark"
-    },
-    {
-      "id": "rudelMarkeKralleR",
-      "shape": "cone",
-      "size": [
-        0.026,
-        0.11
-      ],
-      "pos": [
-        0.035,
-        0.015,
-        0.07
-      ],
-      "rot": [
-        0,
-        0,
-        0.24
-      ],
-      "parent": "rudelMarke",
-      "color": "dark"
-    },
-    {
-      "id": "rudelFlankenMarke",
-      "shape": "ico",
-      "size": 0.16,
-      "pos": [
-        0.5,
-        0.08,
-        0.03
-      ],
-      "scale": [
-        0.24,
-        1.25,
-        0.95
-      ],
-      "parent": "@back",
-      "color": "#f0cf46",
-      "metalness": 0.35
-    },
-    {
-      "id": "rudelFlankenKralle",
-      "shape": "cone",
-      "size": [
-        0.035,
-        0.16
-      ],
-      "pos": [
-        0.08,
-        0.02,
-        0
-      ],
-      "rot": [
-        0,
-        0,
-        0.35
-      ],
-      "parent": "rudelFlankenMarke",
-      "color": "cream"
-    }
-  ],
   "animations": {
-    "attack": {
-      "duration": 0.7,
+    "idle": {
+      "duration": 2.6,
+      "loop": true,
       "tracks": [
-        {
-          "part": "root",
-          "prop": "pos.z",
-          "keys": [
-            [
-              0,
-              0
-            ],
-            [
-              0.18,
-              -0.2
-            ],
-            [
-              0.4,
-              0.74
-            ],
-            [
-              0.54,
-              0.76
-            ],
-            [
-              0.7,
-              0
-            ]
-          ]
-        },
-        {
-          "part": "root",
-          "prop": "pos.y",
-          "keys": [
-            [
-              0,
-              0
-            ],
-            [
-              0.18,
-              -0.08
-            ],
-            [
-              0.4,
-              0.03
-            ],
-            [
-              0.54,
-              0.01
-            ],
-            [
-              0.7,
-              0
-            ]
-          ]
-        },
-        {
-          "part": "head",
-          "prop": "rot.x",
-          "keys": [
-            [
-              0,
-              0
-            ],
-            [
-              0.18,
-              0.22
-            ],
-            [
-              0.4,
-              -0.3
-            ],
-            [
-              0.54,
-              -0.2
-            ],
-            [
-              0.7,
-              0
-            ]
-          ]
-        },
-        {
-          "part": "jawLower",
-          "prop": "rot.x",
-          "keys": [
-            [
-              0,
-              0
-            ],
-            [
-              0.18,
-              0.1
-            ],
-            [
-              0.4,
-              0.62
-            ],
-            [
-              0.54,
-              0.16
-            ],
-            [
-              0.7,
-              0
-            ]
-          ]
-        },
-        {
-          "part": "earL",
-          "prop": "rot.z",
-          "keys": [
-            [
-              0,
-              0
-            ],
-            [
-              0.18,
-              -0.22
-            ],
-            [
-              0.4,
-              0.14
-            ],
-            [
-              0.7,
-              0
-            ]
-          ]
-        },
-        {
-          "part": "earR",
-          "prop": "rot.z",
-          "keys": [
-            [
-              0,
-              0
-            ],
-            [
-              0.18,
-              0.22
-            ],
-            [
-              0.4,
-              -0.14
-            ],
-            [
-              0.7,
-              0
-            ]
-          ]
-        },
-        {
-          "part": "tailBase",
-          "prop": "rot.z",
-          "keys": [
-            [
-              0,
-              0
-            ],
-            [
-              0.18,
-              0.36
-            ],
-            [
-              0.4,
-              -0.42
-            ],
-            [
-              0.54,
-              -0.24
-            ],
-            [
-              0.7,
-              0
-            ]
-          ]
-        }
+        { "part": "rumpf", "prop": "scale", "keys": [[0, 1], [1.3, 1.025], [2.6, 1]] },
+        { "part": "kopf", "prop": "rot.y", "keys": [[0, 0], [0.65, 0.09], [1.3, -0.05], [1.95, 0.07], [2.6, 0]] },
+        { "part": "kopf", "prop": "pos.y", "keys": [[0, 0], [1.3, 0.025], [2.6, 0]] },
+        { "part": "ohrL", "prop": "rot.z", "keys": [[0, 0], [0.42, 0.12], [0.7, 0], [2.6, 0]] },
+        { "part": "ohrR", "prop": "rot.z", "keys": [[0, 0], [1.35, -0.14], [1.62, 0], [2.6, 0]] },
+        { "part": "schwanz", "prop": "rot.z", "keys": [[0, -0.16], [0.32, 0.2], [0.64, -0.18], [0.96, 0.22], [1.28, -0.16], [1.6, 0.18], [1.92, -0.14], [2.28, 0.18], [2.6, -0.16]] },
+        { "part": "schwanzMitte", "prop": "rot.z", "keys": [[0, 0.08], [0.65, -0.14], [1.3, 0.1], [1.95, -0.12], [2.6, 0.08]] },
+        { "part": "beinVR", "prop": "rot.x", "keys": [[0, 0], [1.3, -0.05], [2.6, 0]] },
+        { "part": "halstuch", "prop": "rot.z", "keys": [[0, -0.025], [1.3, 0.04], [2.6, -0.025]] }
+      ]
+    },
+    "attack": {
+      "duration": 0.62,
+      "tracks": [
+        { "part": "root", "prop": "pos.z", "keys": [[0, 0], [0.16, -0.18], [0.34, 0.72], [0.47, 0.54], [0.62, 0]] },
+        { "part": "root", "prop": "pos.y", "keys": [[0, 0], [0.16, -0.05], [0.34, 0.13], [0.47, 0.04], [0.62, 0]] },
+        { "part": "root", "prop": "rot.y", "keys": [[0, 0], [0.16, -0.1], [0.34, 0.16], [0.62, 0]] },
+        { "part": "welpe", "prop": "rot.x", "keys": [[0, 0], [0.16, 0.18], [0.34, -0.2], [0.62, 0]] },
+        { "part": "kopf", "prop": "rot.x", "keys": [[0, 0], [0.16, 0.24], [0.34, -0.34], [0.47, -0.1], [0.62, 0]] },
+        { "part": "kiefer", "prop": "rot.x", "keys": [[0, 0], [0.16, 0.08], [0.34, 0.52], [0.47, 0.15], [0.62, 0]] },
+        { "part": "beinVL", "prop": "rot.x", "keys": [[0, 0], [0.16, 0.42], [0.34, -0.7], [0.62, 0]] },
+        { "part": "beinVR", "prop": "rot.x", "keys": [[0, 0], [0.16, -0.16], [0.34, -0.48], [0.62, 0]] },
+        { "part": "beinHL", "prop": "rot.x", "keys": [[0, 0], [0.16, -0.4], [0.34, 0.22], [0.62, 0]] },
+        { "part": "beinHR", "prop": "rot.x", "keys": [[0, 0], [0.16, -0.38], [0.34, 0.2], [0.62, 0]] },
+        { "part": "ohrL", "prop": "rot.x", "keys": [[0, 0], [0.16, -0.25], [0.34, -0.42], [0.62, 0]] },
+        { "part": "ohrR", "prop": "rot.x", "keys": [[0, 0], [0.16, -0.22], [0.34, -0.38], [0.62, 0]] },
+        { "part": "schwanz", "prop": "rot.z", "keys": [[0, 0], [0.16, 0.35], [0.34, -0.28], [0.62, 0]] }
+      ]
+    },
+    "death": {
+      "duration": 1.35,
+      "tracks": [
+        { "part": "root", "prop": "rot.z", "keys": [[0, 0], [0.45, -0.05], [0.9, -0.35], [1.35, -0.5]] },
+        { "part": "root", "prop": "pos.y", "keys": [[0, 0], [0.5, -0.04], [1.35, -0.18]] },
+        { "part": "welpe", "prop": "rot.x", "keys": [[0, 0], [0.5, 0.12], [1.35, 0.3]] },
+        { "part": "kopf", "prop": "rot.x", "keys": [[0, 0], [0.4, 0.12], [1.35, 0.44]] },
+        { "part": "ohrL", "prop": "rot.z", "keys": [[0, 0], [0.45, 0.14], [1.35, 0.4]] },
+        { "part": "ohrR", "prop": "rot.z", "keys": [[0, 0], [0.45, -0.18], [1.35, -0.44]] },
+        { "part": "schwanz", "prop": "rot.z", "keys": [[0, 0], [0.55, -0.24], [1.35, -0.58]] },
+        { "part": "beinVR", "prop": "rot.x", "keys": [[0, 0], [0.55, 0.18], [1.35, 0.48]] },
+        { "part": "root", "prop": "opacity", "keys": [[0, 1], [1.1, 1], [1.35, 0.72]] }
       ]
     }
   }
