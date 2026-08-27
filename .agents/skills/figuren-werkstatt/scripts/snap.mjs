@@ -1,6 +1,6 @@
 // Figuren-Werkstatt: deterministischer Montage-Screenshot einer Figur.
 //
-// Aufruf:  node .claude/skills/figuren-werkstatt/scripts/snap.mjs <cardId> [clientPort] [serverPort]
+// Aufruf:  node .agents/skills/figuren-werkstatt/scripts/snap.mjs <cardId> [clientPort] [serverPort]
 // Ergebnis: POST an den Dev-Server (/snap, nur aktiv bei gesetztem PCF_SNAP) →
 //           <PCF_SNAP-Ordner>/<cardId>.png
 //

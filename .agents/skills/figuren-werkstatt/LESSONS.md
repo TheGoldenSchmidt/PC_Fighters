@@ -1,340 +1,108 @@
-# Werkstatt-Wissen (Fallstricke & Best Practices)
+# Werkstatt-Wissen
 
-Wachsender Wissensspeicher der Figuren-Werkstatt. Die Werkstatt **liest diese
-Datei zu Laufbeginn** (SKILL.md, Schritt 0) und speist die relevanten Punkte in
-Designer-/Spezialisten-/Kritiker-Briefs ein. Am **Laufende** schlägt sie neue
-Einträge vor und schreibt sie erst **nach Freigabe durch den Nutzer** fest
-(SKILL.md, Schritt 8).
+Diese Datei wird **vor jeder anderen Werkstattaktion vollständig gelesen**. Sie
+enthält nur Regeln, die eine Entscheidung ändern oder einen wiederholt beobachteten
+Fehler verhindern. Details für seltene Bauformen stehen in
+[`references/technical-recipes.md`](references/technical-recipes.md) und werden nur
+bei passendem Brief geladen.
 
-Jeder Eintrag ist kurz: *Symptom → Ursache → Regel*. Keine Romane. Wenn ein
-späterer Lauf einem Eintrag widerspricht, den Eintrag korrigieren statt einen
-zweiten anzulegen.
+Jede Regel folgt dem Muster *Problem → Vermeidung*. Neue Erkenntnisse werden zuerst
+mit bestehenden Regeln zusammengeführt; eine neue Regel entsteht nur, wenn sie nicht
+bereits daraus folgt.
 
----
+## 1. Identität vor Konstruktion
 
-## Fallstricke (aus Fehlern gelernt)
+- **Name, Silhouette und Spielrolle müssen dieselbe Figur erzählen.** Technische
+  Karten-IDs oder alte Referenznamen dürfen die sichtbare Identität nicht bestimmen.
+  → Vor der Rig-Wahl die Dreierkette aus Kartenname, Anatomie und tatsächlicher
+  Fähigkeit/Synergie prüfen; konkrete Familienbegriffe müssen im Modell erkennbar
+  sein.
+- **Ähnliche Figuren brauchen einen Anker, nicht zehn Neuanfänge.** Ohne festes
+  Vergleichsmodell werden ganze Familien unnötig neu gebaut oder erneut zu Klonen.
+  → Pro Ähnlichkeitsgruppe eine bereits gute Figur behalten und nur die zu ähnlichen
+  Vertreter anhand ihrer Rolle überarbeiten.
+- **Arterkennung entsteht zuerst in der schwarzen Silhouette.** Palette und kleine
+  Accessoires trennen Wolf/Welpe, Spatz/Eule oder Schlange/Kobra nicht zuverlässig.
+  → Vor Details mindestens zwei artbestimmende Merkmale festlegen und in Front und
+  Seite sichtbar bauen, etwa Körpermasse plus Haltung, Kopfprofil plus Schweif oder
+  Haube plus aufgerichteter Hals.
+- **Gemeinsames Rig darf nicht wie eine gemeinsame Figur aussehen.** → Skelett und
+  Anschlüsse dürfen geteilt werden; Körpermasse, Haltung, Kopf, Schlüsselrequisit
+  und Charaktermoment müssen pro Kartenidentität eigenständig sein.
 
-### Umgebung / Ablauf
+## 2. Modell lesbar bauen
 
-- **Server-Datenstand ≠ Dateisystem-Stand.** `loadGameData` liest alle
-  `data/*.json` (inkl. `figures/`) per `readFileSync`/`readdirSync` nur beim
-  Prozessstart. Weder Vite-HMR noch `tsx watch` bemerken eine Änderung (kein
-  Modul-Import). → **Nach jeder Designer-/Spezialisten-Runde den Server neu
-  starten**, sonst bewertet der Kritiker ein veraltetes Bild und eine ganze Runde
-  ist verschwendet. Symptom: „leere" Montage (nur Hintergrund + Label,
-  `0 Bausteine` oder unveränderte Bausteinzahl).
+- **Auto-Fit reagiert auf die Bounding-Box, nicht auf gefühlte Größe.** Hohe
+  Aufbauten schrumpfen den Körper; lange flache Tiere werden über die Höhe zu breit
+  skaliert. → Erst die Bounding-Box prüfen, unnötige Höhenspitzen flach/neigend
+  bauen und danach `visual.height` gegen eine gute Figur derselben Bauart einstellen;
+  bei flachen Tieren zusätzlich die Bildschirm-Länge vergleichen.
+- **Starkes Bühnenlicht macht helle Materialien weiß und `emissive` wäscht Farben
+  aus.** → Identitätsfarben dunkler und satter als das Zielbild anlegen, benachbarte
+  Großflächen über Helligkeit trennen und `emissive` nicht auf farbtragenden Teilen
+  verwenden. Glut über dunkle Grundfarbe, Form und Bewegung statt Dauerleuchten
+  darstellen.
+- **Details zählen nur, wenn sie im Spielmaßstab lesbar sind.** → Gesicht zuerst als
+  klare Masse bauen; dann helle Augenfläche plus dunkle Pupille, abgesetzten Kiefer,
+  Ohrinnenteile und wenige kontrastierende Zähne/Strähnen ergänzen. Wichtige Details
+  an eine Silhouettenkante setzen statt Ton-in-Ton vor den Körper.
+- **Begleiter vor dem Hauptkörper wirken schnell wie Abzeichen.** → Begleitfigur
+  ausreichend groß bauen, räumlich und seitlich aus der Hauptkontur versetzen und
+  durch einen dunkleren/helleren Hintergrund trennen; mindestens Kopf und ein
+  Körperteil müssen eine eigene Silhouettenkante bilden.
+- **Flache Teilelisten ergeben starre Bausteinhaufen.** → Anatomie und bewegliche
+  Anhänge als sinnvolle Gruppenketten verschachteln; wenige asymmetrische,
+  erzählende Details und eine Gegenpose einsetzen. Teilezahl allein ist kein
+  Qualitätsmaß.
+- **Seltene Konstruktionen nicht neu erraten.** Bei Membranen, Werkzeugen,
+  Flüssigkeits-/Effektteilen oder buschigen Anhängen nach diesem Dokument gezielt
+  den passenden Abschnitt in `references/technical-recipes.md` lesen.
 
-- **Port 3000 kann von einer früheren Sitzung belegt sein** – meist ohne
-  `PCF_SNAP` gestartet, dann fehlt `/snap` und der eigene Start bricht mit
-  `EADDRINUSE` ab. → Vor dem ersten Serverstart Port prüfen und Rest-Prozess
-  beenden.
+## 3. Animation erzählt die Rolle
 
-- **Server-Start-Kommando im Vordergrund kann mit Exit-Code 143/144 „scheitern",
-  obwohl der Server läuft** (Signal-Zustellung an die Shell). → Den Start mit
-  `setsid … < /dev/null &` entkoppeln und den Erfolg per `curl :3000` statt am
-  Exit-Code prüfen.
+- **Jede Figur braucht einen lebendigen `idle`-Loop.** → Mindestens Körperatmung
+  und ein zweites benanntes Teil wie Ohren, Schweif, Flügel oder Kleidung bewegen.
+- **Eine vorhandene Bewegung ist noch keine verständliche Aktion.** Unterstützer
+  wirkten mit generischem Hieb bedeutungslos; Angreifer mit unbewegtem Requisit
+  wirkten wie Jubeln. → Aus der Kartenrolle einen klaren Dreischritt bauen:
+  Sammeln/Ausholen → Wirkung/Kontakt → vollständige Rückkehr. Das
+  Schlüsselrequisit (auch Banner, Medaillon oder Megafon) muss die Wirkungspose
+  sichtbar tragen.
+- **Globale Aufnahmeprozente treffen kurze oder asymmetrische Aktionen schlecht.**
+  → Für `windup`, `contact` und `return` semantische Zeiten festlegen und genau dort
+  rendern; mehrere Frames statt eines Standbilds beurteilen.
+- **Frontale Kontaktposen verdecken sich selbst.** → Kopf, Schnabel, Kiefer, Waffe
+  oder Requisit leicht aus der Kameraachse drehen und im Kontaktbild gegen freien
+  Hintergrund prüfen.
+- **Tod darf nicht zum unlesbaren Haufen werden.** → Rotationen auf wenige Ebenen
+  verteilen, Beugewinkel klein halten und ein Requisit oder einen Anhang sichtbar
+  seitlich fallen lassen.
 
-- **Überarbeitungen gehören zum selben Autor.** `SendMessage` an die bestehende
-  Agent-ID nutzen; ein frischer `Agent`-Aufruf verliert den Kontext. **Niemals
-  `isolation: "worktree"`** – ein Worktree-Agent bearbeitet eine isolierte
-  Repo-Kopie, die der laufende Dev-Server nie liest; die Änderung kommt in der
-  Vorschau nicht an.
+## 4. Prüfung spart Überarbeitungsrunden
 
-- **Browser-MCP ist nicht überall verfügbar.** Der Screenshot-Schritt läuft über
-  das committete `scripts/snap.mjs` (Playwright, `executablePath:
-  /opt/pw-browsers/chromium`, Import aus dem globalen `playwright`). Browser-MCP
-  (`mcp__Claude_Browser`) nur als Alternative, wenn vorhanden.
+1. **Vor dem Rendern strukturell prüfen:** Palette/Hexwerte, eindeutige Teilnamen,
+   Eltern-vor-Kind, Pflichtgrößen und alle Animationstrack-Ziele validieren.
+2. **Den gerenderten Datenstand beweisen:** Server nach jeder Datenrunde neu starten,
+   einen markanten Wert aus `/info` mit der Datei vergleichen und die Bausteinzahl im
+   Viewer strukturiert auslesen. Erst danach kritisieren.
+3. **Das Sichtbare prüfen:** Front, beide Seiten/3/4 und Rückseite sowie semantische
+   Angriffsphasen rendern; Einzug und Tod zusätzlich in mindestens zwei Phasen
+   ansehen. Gesicht, Griff und jede geänderte Problemzone als Ausschnitt prüfen.
+4. **Gezielt iterieren:** Bei roter Körperlinse zuerst denselben Basis-Designer
+   nacharbeiten lassen; erst verbleibende Gesichts-/Animationsfehler an Spezialisten
+   geben. Danach nur betroffene Ansichten neu aufnehmen, vor der finalen Abnahme aber
+   wieder eine vollständige Montage erzeugen.
 
-- **Einzelklips lassen sich nach dem Tod nicht erneut vergleichen.** Ein alter
-  `death`-Zustand hält Figur und Schatten unsichtbar oder blockiert den nächsten
-  Tod-Klip. → **Vor jedem Live-Viewer-Klip die Figur in einen neutralen Idle-
-  Zustand zurücksetzen**, damit Einzug, Angriff, Treffer und Tod beliebig oft
-  reproduzierbar bleiben.
+- **Eine auffällige Einzelkachel kann ein Aufnahmefehler sein.** → Mit einem zweiten
+  Standard-Snapshot gegenprüfen, bevor eine Überarbeitungsrunde gestartet wird.
+- **Der Viewer kann Zustand behalten.** → Vor jedem Einzug-, Angriffs-, Treffer- oder
+  Todesvergleich auf neutrales Idle zurücksetzen.
+- **`localhost` funktioniert nur auf dem selben Gerät.** → Für mobile Abnahme die
+  WLAN-IP verwenden und Client sowie Server über diese Adresse prüfen.
 
-- **Port 3000 kann einer *laufenden* Fremdsitzung gehören, nicht nur einem
-  Rest-Prozess.** Dann schreibt deren Server die Snapshots in deren
-  `PCF_SNAP`-Ordner, der eigene Neustart meldet „ok", weil in Wahrheit deren
-  Server antwortet, und der Branch kann mitten im Lauf wechseln. → Vor dem ersten
-  Snapshot **beweisen, dass der Server die eigenen Daten liefert**: einen
-  markanten Wert aus `/info` gegen die Datei auf der Platte vergleichen.
+## Pflege
 
-### Bauqualität
-
-- **„Zu groß" ist fast nie ein Höhen-, sondern ein Proportions-/`visual.height`-
-  Problem.** Der Auto-Fit (`CardFigure.ts`) skaliert die Figur auf
-  `1.8 * (visual.height ?? 1)` **anhand der Bounding-Box-Höhe**. Eine breite,
-  flache Figur ohne `visual.height` wird also per Höhe hochskaliert und wirkt in
-  der Breite riesig. → Größe steuert man über **`visual.height`** (Mensch ≈ 1,
-  Wolf 0.62) **und schlanke Proportionen** (sichtbare Beine statt klobigem
-  Rumpf), nicht über „alle Teile kleiner".
-
-- **`emissive` wäscht *jedes* Ziel weiß – auch winzige Werte.** Der
-  `AnimationPlayer` setzt `emissive` hart auf **Weiß** (`setRGB(1,1,1)`) und regelt
-  nur die Intensität; der Track addiert also Weiß auf die Materialfarbe. Auf `root`
-  = komplette Figur cremeweiß. Aber schon **0.15 auf einem einzelnen kleinen Teil**
-  hat beim Stahlgießer die glühende Schmelze zu blassrosa Suppe gemacht – der
-  Fehler sah wie ein Farbfehler aus, ich habe zweimal vergeblich die Palette
-  nachgedunkelt. → **Gar kein `emissive`, wenn das Teil eine Farbidentität hat.**
-  Glut/Feuer/Magie über eine **dunkle, satte Grundfarbe** lösen (siehe
-  Lichtbudget-Eintrag) und die Bewegung über Pose/Skalierung. `emissive` höchstens
-  als kurzer Blitz auf einem Teil, dessen Farbe egal ist.
-
-- **Das Licht ist ~3× – helle Farben clippen zu Weiß.** Bühne und Schlachtfeld
-  fahren Key 2.35 + Hemisphere 1.55; eine nach oben zeigende Fläche bekommt also
-  rund das Dreifache ihres Albedo, danach ACES-Tonemapping. Alles heller als etwa
-  50 % Helligkeit läuft in den Kanälen an und entsättigt Richtung Weiß/Pastell. →
-  Farben, die satt lesen sollen, **deutlich dunkler wählen als das gewünschte
-  Bildschirmergebnis**: flüssiger Stahl wurde erst als `#6b1602`/`#942603`
-  wirklich orangerot, `#ffc247` sah aus wie Vanillepudding.
-
-- **Kleine Kontrast-Teile verschwinden auf ihrem Nachbarn.** Fangzähne in `cream`
-  direkt vor `cream`-Wangen sind nicht lesbar. → Detail-Akzente (Zähne, Krallen,
-  Augen) brauchen eine **eigene Kontrastfarbe** und Platzierung an einer
-  Silhouetten-Kante, wo sie über den Nachbarn hinausragen.
-
-- **Große Materialflächen in derselben Farbfamilie verschmelzen zu einem Klumpen.**
-  Beim Stahlgießer waren Schürze, Stiefel und Stielholz alle braun – die untere
-  Figurhälfte las sich als eine einzige Masse. → Benachbarte Großflächen brauchen
-  **Helligkeitsabstand, nicht nur Farbtonabstand**. Die Hose auf ein kühles
-  Blaugrau (`#3b4550`) zu ziehen hat Beine, Schürze und Schuhe sofort getrennt.
-
-- **Was über den Kopf ragt, schrumpft die ganze Figur.** Der Auto-Fit skaliert
-  über die Bounding-Box-Höhe, ein hochstehendes Anbauteil (Visier, Antenne,
-  Federbusch) frisst also Maßstab vom eigentlichen Körper. → Aufbauten flach
-  anlegen oder nach hinten neigen; Höhenprobleme immer erst an der Bounding-Box
-  suchen, bevor man an `visual.height` dreht.
-
-- **Ein Arm auf der kameraabgewandten Seite hinter einem großen Requisit ist
-  unsichtbar.** Der linke Arm des Stahlgießers steckte komplett hinter der
-  Gießpfanne; im 3/4-Bild schwebte nur noch die Schulterplatte frei. → Nach jeder
-  Posenänderung **beide 3/4-Ansichten** prüfen (`yaw ≈ +0.5` und `≈ -0.8`) und
-  große Requisiten so weit vom Körper wegsetzen, dass die Gliedmaße dazwischen
-  frei gegen den Hintergrund steht.
-
-- **Vollbild-Kacheln verbergen genau die Fehler, die zählen.** Griffe, Finger und
-  Gesichter sind bei ganzer Figur nur wenige Pixel groß; drei Runden lang sahen
-  meine Hände „ungefähr richtig" aus und griffen tatsächlich ins Leere. → Neben
-  der Übersichtsmontage **Ausschnitte** rendern (Crop auf Kopf und auf die
-  Greifzone), sonst wird an der falschen Stelle optimiert.
-
-- **Regelmäßig gereihte Haarteile lesen als Krone, Borte oder Helm.** Selbst die
-  richtige Farbe hilft nicht, wenn runde Loben oder eine waagerechte Platte die
-  Silhouette bestimmen. → Haar zuerst als **zusammenhängende Masse mit breitem
-  Ansatz** bauen und danach wenige unregelmäßige, klar nach hinten gerichtete
-  Strähnen ergänzen.
-
-- **Ein überdimensionierter Kopf wird durch zusätzliche Höhe zum Ei.** Mehr
-  Schädelhöhe verstärkt nicht automatisch den Charakter, sondern verschmälert
-  die Frontsilhouette. → Zuerst Stirn- und Schläfenbreite sowie die Verjüngung
-  zum Kinn festlegen; Überzeichnung hauptsächlich über Breite und den
-  Gesamtmaßstab erzeugen.
-
-- **Viele gleichmäßige Zähne erzeugen eine Gitterleiste.** Zwei saubere Reihen
-  kleiner Zähne verdrängen die dunkle Mundöffnung und lesen nicht mehr als
-  Gesicht. → Wenige unterschiedlich große Zähne mit sichtbaren dunklen Lücken
-  und klarer Mundhöhle verwenden.
-
-- **Bei liegenden Tieren sprengt die Länge den Rahmen, nicht die Höhe.** Der
-  Auto-Fit skaliert über die Bounding-Box-Höhe; ein langes flaches Tier ohne
-  hohes Merkmal bekommt dadurch einen großen Faktor. T-Rex mit `height` 1.32 lag
-  weit über dem Rand, Spinosaurus mit 1.16 passte – dessen Rückensegel drückt den
-  Faktor. → `visual.height` über die **Bildschirm-Länge im Vergleich zu einer
-  bestehenden Figur derselben Bauart** wählen; beim T-Rex war 1.0 richtig.
-
----
-
-## Best Practices (aus Erfolgen gelernt)
-
-### Gesicht / Kopf (kritischer Bereich)
-
-- **Augen als 2–3 Teile statt Punkt:** helle Sklera + dunkle Pupille davor (ggf.
-  Augenbraue darüber) geben Ausdruck. Reine Punktaugen wirken tot.
-- **Kiefer absetzen:** separater `jawLower` + Fangzähne in Kontrastfarbe an der
-  Kieferkante machen Raubtiere lesbar und ermöglichen eine Biss-Animation.
-- **Ohren mit Innenteil:** andersfarbige innere Ohrmuschel gibt Tiefe.
-
-### Körper / Statur
-
-- **`visual.height` bewusst setzen** (siehe Fallstrick oben). Vergleichsanker:
-  Mensch ≈ 1, mittelgroßes Tier ~0.6.
-- **Beine sichtbar lassen:** Rumpf hoch genug über den Beinen, sonst wirkt das
-  Tier klobig/bärenhaft statt schlank.
-- **Gemeinsames Rig ≠ gemeinsame sichtbare Figur.** Humanoide Ableitungen, die
-  nur Palette und wenige Accessoires wechseln, lesen als umgefärbte Klone. →
-  Das Skelett darf Technik teilen; Körpermasse, Haltung, Kopf, Schlüsselrequisit
-  und Charaktermoment müssen pro Kartenidentität eigenständig gestaltet werden.
-
-### Formen-Kniffe
-
-- **Spitz zulaufende Flächen: flach gedrückter `cone`.** `box` kann nicht spitz
-  werden. Waagerechtes Dreieck: Kegelachse ist lokal +Y, `rot.z = -π/2` dreht die
-  Spitze nach +X, `scale.x ≈ 0.05` macht sie flach. Für Flughaut-Spitzen,
-  Flossen, Rückenplatten.
-- **Eine Membran über mehrere Gelenke entsteht nie aus Einzelpanelen.** Drei
-  geknickte Stücke lasen sich als Bretter mit Lücken, weil die Gelenkgruppen sie
-  auseinanderziehen. → **Eine** durchgehende Fläche in die äußerste gemeinsame
-  Elterngruppe, Knochen darunter fast gerade, Rückschwung nur aus der
-  Wurzelgruppe. (Stand: Der Pteranodon-Flügel liest sich so als Fläche, die
-  Hinterkante bleibt aber gerade.)
-
-### Was „Charakter" statt „Bausteinhaufen" erzeugt
-
-Der Sprung von den frühen zu den guten Figuren lag nicht am Detailgrad, sondern an
-drei Eigenschaften – ein 102-Zeilen-Wolf und eine 155-Zeilen-Figur unterscheiden
-sich weniger in der Teilezahl als in diesen Punkten:
-
-- **Tiefe Gruppenketten statt flacher Liste.** Die Uralte Schlange kurvt nur, weil
-  `halsBasis → halsMitte → halsOben → nacken → kopf` verschachtelt ist; jede Gruppe
-  trägt einen kleinen Winkel und die Summe ergibt die Kurve. Dasselbe gilt für
-  Gliedmaßen: `armL → handschuhL` mit je einer aimenden Gruppenrotation ist
-  leichter zu posieren *und* zu animieren als absolut gesetzte Einzelteile.
-- **Erzählende Details statt Symmetrie.** Was eine Figur zur Person macht, sind
-  Dinge mit Vorgeschichte: abgeworfene Haut, Brandflecken und ein Brandloch in der
-  Lederschürze, Rußschmierer auf der Wange, nur *ein* Schulterpanzer, Werkzeug im
-  Gürtel. Links/rechts bewusst ungleich bauen – auch Beinstellung und Kopfdrehung
-  gegen die Rumpfdrehung (Gegenpose).
-- **Ein Charaktermoment in der Animation.** Ein Zustandswechsel, der etwas über die
-  Figur erzählt, schlägt jede zusätzliche Bewegungsspur: Der Stahlgießer **klappt
-  beim Angriff das Schweißschild vors Gesicht und danach wieder hoch**. Solche
-  Momente zuerst planen, dann die Pose drumherum bauen.
-
-### Werkzeug in der Hand
-
-- **Das Werkzeug muss *Kind* der Werkzeugkette sein, nie Geschwister.** Als
-  Geschwister von Arm/Stiel animiert, driften Werkzeugteile auseinander: Die
-  Gießpfanne löste sich mitten im Angriff vom Stiel und flog frei durch die Luft,
-  weil Stiel und Schale eigene, nie perfekt synchrone Spuren hatten.
-- **Waagerecht bleibendes Werkzeug an schrägem Stiel: Gegenrotation einziehen.**
-  Eine Pfanne, Laterne oder ein Eimer an einem 60°-Stiel darf nicht mitkippen.
-  Dreistufig lösen: `stielGruppe` (geneigt) → `gegenrotation` (hebt die
-  Stielneigung exakt auf) → `kippGruppe` (Ruhewinkel 0, **hier** animieren). Die
-  Gegenrotation ist die Euler-Zerlegung von `Rᵀ` der Stielrotation – einmal
-  ausrechnen, als feste Zahlen eintragen (beim Stahlgießer `[-0.708, 0.767,
-  -0.681]` gegen den Stiel `[0.993, 0, 0.977]`). Die `kippGruppe` gibt danach eine
-  saubere Kippachse für Gieß-/Schütt-Animationen. **Rechnen, nicht schätzen:**
-  Beim Kaffeebecher war die geratene Gegenrotation nah genug, um plausibel
-  auszusehen, und trotzdem sichtbar schief. Den Restfehler von `R · C` gegen die
-  Einheitsmatrix mit ausgeben – über ~1e-3 stimmt die Kette nicht.
-- **Griffpunkt zuerst, Arm danach.** Den Punkt am Werkzeug festlegen, dann die
-  Armkette darauf rechnen: Richtung `d` normieren, `θz = asin(dₓ)`, `θx` aus
-  `cos θz · cos θx = d_y`. Kettenlänge ≈ Abstand wählen, sonst greift die Hand
-  daneben. „Ungefähr hinstellen und hoffen" kostet mehr Runden als das Rechnen.
-- **Eine korrekte Werkzeugkette beweist noch keinen sichtbaren Griff.** Ärmel,
-  Hand und Werkzeug können technisch verbunden sein und im Render trotzdem wie
-  ein am Arm montiertes Gerät wirken. → In einer Greifzonen-Nahaufnahme
-  mindestens Handfläche und zwei hautfarbene Finger auf einem kontrastierenden
-  Griff nachweisen.
-
-### Farbe / Material für Glühendes
-
-- **Glut ohne `emissive`:** dunkle satte Grundfarbe + `roughness` ~0.9 +
-  `metalness` 0. Aufbau in drei Ringen – dunkler Außenrand, heller Kern, schmaler
-  Saum dazwischen – liest sich als flüssiges Metall. Glänzende Werte
-  (`roughness` <0.3) blasen unter dem starken Key-Licht sofort aus.
-
-### Schwanz / Anhänge
-
-- **Verjüngende Kegelkette** (`base → mid → tip` via `parent`) + mehrere
-  Fluff-Icos an der Spitze ergeben einen buschigen Schwanz; ein einzelner Kegel
-  mit Kugel wirkt wie eine Fahnenstange.
-
-### Animation
-
-- **Immer ein lebendiger `idle`-Loop**, der **≥2 benannte Teile** bewegt
-  (Atmen/Wippen + Schwanz/Ohren/Kleidung).
-- **`attack` thematisch überschreiben** passend zum Projektil-Emoji (🐾 → Biss/
-  Sprung, 🪨 → Wurf, ⚔️ → Hieb). Bewegung, nicht Blitz.
-- **Animation aus mehreren Frames beurteilen**, nicht aus einem Standbild – der
-  Montage-Streifen (`snap.mjs`) zeigt den Angriff in 3 Phasen (Ausholen, Kontakt,
-  Rückkehr). Ein einzelner mittlerer Frame verbirgt Ruckler und Farb-Washes.
-- **Kontaktpose leicht aus der Kameraachse drehen.** Frontal in die Kamera
-  geführte Waffen, Schnäbel oder Kiefer verdecken sich im entscheidenden Frame
-  selbst. → Angriff und Zielteil seitlich versetzen oder leicht eindrehen, bis
-  die Silhouette in der Kontaktphase klar lesbar bleibt.
-- **Werkzeug selbst muss die Kontaktpose tragen.** Hochgerissene Arme oder starke
-  Root-Neigung lesen sich schnell als Jubeln beziehungsweise Verbeugen. → Den
-  nicht angreifenden Arm ruhig halten, das Werkzeug seitlich freistellen und
-  dessen Kopf oder Klinge sichtbar durch den Kontaktbogen führen.
-- **Montagezeitpunkte müssen semantischen Schlüsselbildern folgen.** Globale
-  Prozentwerte treffen bei kurzen oder asymmetrischen Angriffen häufig nicht
-  Windup, Kontakt und Rückkehr. Auch `Animation starten → warten → Screenshot`
-  ist wegen Render- und Screenshot-Latenz nicht deterministisch. → `windup`,
-  `contact` und `return` als semantische Aufnahmezeitpunkte markieren und den
-  Clip für die Montage exakt an diesen Zeiten auswerten und einfrieren.
-- **Kompakte Vögel zuerst über die Ruhe-Silhouette bauen.** Lange sichtbare Läufe
-  und ein schmaler Rumpf wirken trotz Eulengesicht humanoid. → Rumpf breit und
-  tief bauen, Beinansätze im Gefieder verbergen und fast nur Krallen zeigen.
-- **Schwünge kommen aus dem Rumpf, nicht aus dem Hebel.** `rot.z` auf einer langen
-  Werkzeuggruppe wirkt über den Hebelarm: 0.4 rad haben die Gießpfanne einen halben
-  Meter hoch vors Gesicht gerissen – es sah aus, als würde er daraus trinken. →
-  Waagerechte Schwünge über **`rot.y` der Werkzeuggruppe plus `rot.y` von
-  `oberkoerper`/`becken`**; `rot.x`/`rot.z` klein halten, die ändern vor allem die
-  Höhe des Werkzeugkopfes.
-- **Ströme und Tropfen nicht über `scale` erzeugen.** `scale` wirkt uniform – ein
-  auf 5× gezogener Tropfen wird zum Ballon, nicht zum Strahl. → Teil in seiner
-  **Zielform** bauen (schlanker Zylinder), im Ruhezustand **in undurchsichtiger
-  Geometrie parken** und per `pos` herausfahren lassen. Achtung: `opacity`-Spuren
-  *multiplizieren* die Grund-Deckkraft, aus Basis 0 lässt sich also nichts
-  einblenden – Verstecken geht nur über Geometrie.
-- **Herausgefahrene Teile beim Zurückfahren kleinschrumpfen.** Sonst reist der
-  Tropfen sichtbar zurück in die Pfanne. Am Klipende `scale` auf ~0.2 ziehen, den
-  Positionssprung in ein 20-ms-Fenster legen, danach auf 1 zurück.
-- **Kippt ein Behälter über 90°, drehen sich seine Kindteile mit.** In der
-  Todesanimation stand der Guss-Strahl plötzlich senkrecht *über* der Pfanne, weil
-  „unten" in deren Frame nach oben zeigte. → Bei starker Rotation des Elternteils
-  Positionsspuren der Kinder weglassen und stattdessen ausblenden/schrumpfen.
-- **Tod muss lesbar bleiben.** Root-Neigung plus Rumpfbeuge plus einsinkende Beine
-  summieren sich schnell zu einem formlosen Haufen, den die erhöhte Kamera von oben
-  zeigt. → Beugewinkel einzeln klein halten (Root ~0.18, Rumpf ~0.34) und das
-  Werkzeug **seitlich ins Leere fallen lassen**, statt es hinter den Körper zu
-  drehen – der umgekippte Gegenstand erzählt den Tod mit.
-
-### Werkstatt-Schleife / Kosten
-
-- **Vor der Rig-Zuordnung die semantische Dreierkette prüfen:** sichtbarer
-  Kartenname, Figurensilhouette und tatsächliche Fähigkeit/Synergiefamilie
-  müssen dieselbe Identität erzählen. Ein technisch migrierter Kartenplatz darf
-  eine neue Figur erhalten, aber eine konkrete Familie wie `Nut` nicht nur im
-  Regeltext behalten, während Name und Modell ein unbeteiligtes Tier zeigen.
-  Wörtliche Umdeutungen konkreter Quellnamen nur nach ausdrücklicher Freigabe;
-  sonst entweder die Quellidentität sichtbar machen oder die Synergiebegriffe
-  konsistent auf die neue Identität umstellen.
-
-- **Eine Angriffsmontage prüft keine vollständige Animation.** Individuelle
-  Einzüge und Todesanimationen können strukturell vorhanden, aber visuell
-  fehlerhaft sein. → Die Standardabnahme zeigt zusätzlich mindestens zwei
-  Einzugs- und zwei Todesphasen.
-- **Figuren über ein Generator-Skript mit Vorab-Validierung bauen.** Beim
-  Von-Hand-Schreiben langer JSON verfälschten sich zweimal Palettenwerte
-  (`"#cdb храmless"`) – syntaktisch gültig, sichtbar erst beim Rendern. → Vor dem
-  Schreiben Palette (Hex-Regex), doppelte Namen, Eltern-vor-Kind-Reihenfolge,
-  `size` bei Nicht-Gruppen und alle Track-Ziele prüfen. Nebeneffekt:
-  Wiederholtes (Zähne, Dornen, spiegelbildliche Gliedmaßen) kommt aus einer
-  Schleife statt aus Copy-Paste.
-- **Ein gezielter Fix kann die Sache verschlimmern.** Ein weiter nach vorn
-  gedrehter Unterarm sollte das Schwert der Kommandantin freistellen – es fuhr
-  stattdessen in den Rumpf und war ganz verschwunden. In der Übersichtskachel
-  sah die Figur unverändert aus. → Nach jeder Korrektur **genau den geänderten
-  Bereich** als Ausschnitt nachrendern, nicht nur die Gesamtansicht.
-- **Bei gleichzeitig roten A/B/C-Linsen zuerst integriert überarbeiten.** Drei
-  sofortige Spezialisten lesen dieselbe Figur mehrfach und können einander
-  unnötig nachlaufen. → Zuerst eine kompakte Gesamtrevision beim bestehenden
-  Designer; Spezialisten nur für danach verbleibende rote Linsen einsetzen.
-- **Unveränderte Ansichten nicht erneut rendern.** Eine reine Animationsänderung
-  verändert Körper, Gesicht und Rundumansichten nicht. → Vorhandene Kacheln
-  wiederverwenden und nur die betroffenen Clips neu aufnehmen.
-- **Eine leere Montagekachel ist nicht automatisch ein Figurenfehler.** Ein
-  Aufnahme-/Canvasfehler kann eine einzelne Ansicht unterschlagen und so eine
-  rote Kritikerlinse vortäuschen. → Auffällige Einzelansichten mit dem
-  Standard-Snapshot gegenprüfen, bevor dafür eine Überarbeitungsrunde verbraucht
-  wird.
-
-### Werkzeug / Viewer
-
-- **Viewer-Statistiken strukturiert auslesen.** Getrennte Label- und
-  Wertelemente erzeugen bei einer Fließtext-Suche fälschlich `0 Bausteine`. →
-  Zuerst `.figure-stats strong` lesen und den Text-Regex nur als Fallback nutzen.
-- **`localhost` ist gerätebezogen.** Ein Desktop-Link mit `localhost` verweist
-  auf einem Handy auf das Handy selbst. → Für die mobile Abnahme die WLAN-IP
-  des PCs verwenden, Client und Server auf allen Schnittstellen starten und
-  beide Endpunkte über die LAN-Adresse prüfen.
+Am Laufende nur nach Nutzerfreigabe ändern. Vor jeder Ergänzung in dieser Reihenfolge
+prüfen: bestehende Regel erweitern → widersprechende Regel korrigieren → nur sonst
+eine neue Regel anlegen. Einzelfallwerte und lange Rechenwege gehören in eine
+bedingte Referenz, nicht in diese Kern-Lessons.
