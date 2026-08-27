@@ -12,16 +12,24 @@ und endet mit **Freigabe durch den Nutzer** vor dem Commit.
 
 Aufruf: `/figuren-werkstatt <cardId> [freier Prompt]`
 
-Die Werkstatt lernt: Sie **liest zu Beginn** das gesammelte Wissen (`LESSONS.md`) und
-**schlägt am Ende** neue Lektionen zur Freigabe vor. So werden Fehler nicht wiederholt
-und Best Practices weitergegeben.
+Die Werkstatt lernt: Sie **muss vor jeder anderen Werkstattaktion** das gesammelte
+Wissen (`LESSONS.md`) vollständig lesen und schlägt am Ende nur wirklich neue
+Lektionen zur Freigabe vor.
 
 ## Ablauf (du orchestrierst, im Chat sichtbar)
 
-### 0. Werkstatt-Wissen laden
-Lies `.Codex/skills/figuren-werkstatt/LESSONS.md` (Fallstricke & Best Practices).
-Die relevanten Punkte fließen unten in die Designer-/Spezialisten-/Kritiker-Briefs ein,
-damit niemand einen bekannten Fehler wiederholt.
+### 0. Pflichtschranke: Werkstatt-Wissen zuerst laden
+
+**Bevor** Kartendaten/Figuren gelesen, Server gestartet, Dateien geändert oder
+Designer/Kritiker/Spezialisten beauftragt werden:
+
+1. `.agents/skills/figuren-werkstatt/LESSONS.md` **vollständig** lesen.
+2. Ist die Datei nicht lesbar, den Lauf anhalten und den Fehler melden.
+3. Für den konkreten Auftrag die relevanten Regeln als kurze Prüfliste notieren und
+   in alle späteren Agenten-Briefs übernehmen.
+
+Diese Schranke darf nicht übersprungen oder parallel zu anderen Werkstattaktionen
+ausgeführt werden.
 
 ### 1. Brief zusammenstellen
 - Kartendaten lesen: `packages/engine/src/data/cards/*.json` nach `<cardId>` durchsuchen
@@ -30,6 +38,10 @@ damit niemand einen bekannten Fehler wiederholt.
 - Vorhandene Figur (falls Überarbeitung): `data/figures/<cardId>.json`.
 - Daraus einen kurzen **Design-Brief** bauen (cardId, Name, Text, Fraktion+Farbe,
   Projektil-Emoji, Nutzer-Prompt) **plus die passenden LESSONS.md-Punkte**.
+- Enthält der Brief Membranen, Werkzeuge/Schlüsselrequisiten, Ströme/Effektteile
+  oder buschige Anhänge, **danach nur den passenden Abschnitt** aus
+  `.agents/skills/figuren-werkstatt/references/technical-recipes.md` lesen und in
+  die Prüfliste aufnehmen. Andere Abschnitte nicht laden.
 
 ### 1a. Grundgeruest-Modus fuer die Varianten-Werkstatt
 
@@ -62,12 +74,16 @@ auf Nutzerfreigabe. Weitere Karten dieses Rigs gehen zurueck an die Varianten-We
   sleep 3 && curl -s -o /dev/null -w "%{http_code}\n" http://localhost:3000/   # erwartet 200
   ```
   (bewusst `tsx` ohne `watch` – Datenänderungen brauchen ohnehin einen Neustart, siehe Schritt 4.)
+- **Eigenen Datenstand beweisen:** Nach dem Start einen markanten Wert der Figur
+  aus `/info` mit der Datei auf der Platte vergleichen. Ein HTTP 200 allein beweist
+  nicht, dass der richtige Prozess beziehungsweise Branch antwortet.
 - **Client** (Vite) starten, falls nicht schon offen, ebenfalls entkoppelt:
   `cd packages/client && setsid npx vite --port 5173 --strictPort > <scratchpad>/client.log 2>&1 < /dev/null &`
   Ist 5173 belegt, freien Port wählen. (Der Client holt den Katalog von `:3000`.)
 
 ### 3. Designer beauftragen
-Spawne **figuren-designer** mit dem Brief (inkl. LESSONS.md-Punkten; bei Runde >1 der
+Spawne **figuren-designer** mit dem Brief (inkl. relevanter LESSONS-Prüfliste und
+gegebenenfalls passendem Technik-Rezept; bei Runde >1 zusätzlich der
 Kritiker-Änderungsliste). Er schreibt `data/figures/<cardId>.json` und validiert mit
 `npm test`. Für die **Erstanlage** immer der Basis-Designer; Spezialisten kommen erst
 in Überarbeitungsrunden (Schritt 6).
@@ -83,7 +99,7 @@ ganze Runde ist verschwendet.
 Danach die Montage per committetem Helferskript erzeugen (rendert 6 Kacheln – vorne /
 seite / hinten + Angriff in 3 Phasen – und postet sie an `/snap`):
 ```bash
-node .Codex/skills/figuren-werkstatt/scripts/snap.mjs <cardId> [clientPort] [serverPort]
+node .agents/skills/figuren-werkstatt/scripts/snap.mjs <cardId> [clientPort] [serverPort]
 ```
 Ausgabe-PNG: `<snaps-ordner>/<cardId>.png`. Das Skript loggt die **Bausteinzahl** –
 ist sie `0` (oder unverändert zur Vorrunde), wurde der Server nicht neu gestartet:
@@ -96,17 +112,24 @@ dort; das Skript ist aber der robuste Standardweg (direkte WebGL-Canvas-Screensh
 timeouten).
 
 ### 5. Kritiker beauftragen (drei Linsen)
-Spawne **figuren-kritiker** mit dem PNG-Pfad + Brief. Er liest das Bild und liefert:
+Spawne **figuren-kritiker** mit dem PNG-Pfad + Brief und der relevanten
+LESSONS-Prüfliste. Er liest das Bild und liefert:
 - ein **Gesamturteil** (`GUT`/`ÜBERARBEITEN`),
 - **Teil-Urteile je Linse**: `A` Körper·Proportion·Größe, `B` Gesicht·Kopf,
   `C` Animation,
 - eine **nach Linse gelabelte** Änderungsliste (`[A]`/`[B]`/`[C]`).
 
 ### 6. Iterieren – Hybrid-Routing an Spezialisten
-Bei `ÜBERARBEITEN` und < 3 Runden die gelabelten Punkte an den jeweils passenden
-Handler geben. Läuft mehr als eine Linse, die Handler **nacheinander** ausführen
-(Scopes sind disjunkt: Gesicht = Kopf-Teilbaum in `visual.parts`, Animation =
-`animations`), **jeder liest die Datei zuerst**; danach **ein** Server-Neustart:
+Bei `ÜBERARBEITEN` und < 3 Runden:
+
+- Ist **A zusammen mit B und/oder C rot**, zuerst eine integrierte Revision beim
+  bestehenden Basis-Designer durchführen und neu rendern. Erst danach verbleibende
+  reine B-/C-Probleme an Spezialisten geben.
+- Ist **A gut**, rote B-/C-Linsen nacheinander an ihre Spezialisten geben. Die Scopes
+  bleiben disjunkt (Gesicht = Kopf-Teilbaum in `visual.parts`, Animation =
+  `animations`); jeder liest die aktuelle Datei und relevante LESSONS-Punkte zuerst.
+
+Danach jeweils nur **ein** Server-Neustart:
 
 - **`[A]` Körper/Proportion/Größe →** zurück an den **Basis-Designer** per `SendMessage`
   an dessen bestehende Agent-ID (Kontext bleibt; Statur ist das Skelett = ein Autor).
@@ -136,7 +159,11 @@ Nach dem OK des Nutzers:
 - **Reflektieren:** Was hat diesmal gut funktioniert (→ *Best Practice*)? Ging etwas
   schief oder brauchte mehrere Runden für dieselbe Ursache (→ *Fallstrick*)? Formuliere
   je Fund einen knappen Eintrag (*Symptom → Ursache → Regel*).
-- **Vorschlagen:** Zeige die vorgeschlagenen LESSONS.md-Ergänzungen dem Nutzer und
+- **Konsolidieren:** Vor einer Ergänzung die vollständigen Lessons prüfen: zuerst
+  bestehende Regel erweitern, dann Widerspruch korrigieren, nur sonst eine neue Regel
+  anlegen. Einzelfallwerte und seltene Rechenwege gehören in die bedingte Technik-
+  Referenz. Keine Regel aufnehmen, die bereits aus einer stärkeren Regel folgt.
+- **Vorschlagen:** Zeige die konsolidierten LESSONS.md-Änderungen dem Nutzer und
   **warte auf dessen Freigabe** (Lektionen werden nie automatisch festgeschrieben).
   Gibt es nichts Neues, sag das und überspring den Eintrag.
 - **Committen:** Nach Freigabe `packages/engine/src/data/figures/<cardId>.json`
@@ -152,10 +179,9 @@ Nach dem OK des Nutzers:
   oder sauber stoppen).
 
 ## Wissensspeicher & Selbst-Optimierung
-Das gesammelte Wissen steht in **`LESSONS.md`** (Fallstricke aus Fehlern, Best Practices
-aus Erfolgen). Schritt 0 liest es, Schritt 8 erweitert es nach Freigabe. So verbessert
-sich die Werkstatt mit jedem Lauf, statt dieselben Fehler zu wiederholen. Wächst der
-Figuren-Bestand, dient `LESSONS.md` auch als Kurator guter Referenz-Figuren.
+Das gesammelte Kernwissen steht in **`LESSONS.md`**; seltene technische Rezepte stehen
+unter `references/` und werden nur bei passendem Brief geladen. Schritt 0 liest die
+Kern-Lessons zwingend zuerst, Schritt 8 konsolidiert sie nach Freigabe.
 
 Widerspricht ein neuer Lauf einem bestehenden Eintrag, den Eintrag **korrigieren**
 (nicht einen zweiten anlegen). Ändert sich der Ablauf grundlegend, auch diese SKILL.md
