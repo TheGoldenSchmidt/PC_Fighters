@@ -12,3 +12,10 @@ services:
     plan: free
     buildCommand: npm install && npm run build
     startCommand: npm start
+    envVars:
+      # Werte ausschließlich im Render-Dashboard eintragen, nie in Git.
+      # Sind beide Variablen nicht gesetzt, bleibt die lokale Entwicklung offen.
+      - key: PCF_ACCESS_USER
+        sync: false
+      - key: PCF_ACCESS_PASSWORD
+        sync: false
