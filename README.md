@@ -326,6 +326,24 @@ Verbindungen.
    wählen Champ, Deck + Schauplatz, „Partie erstellen", Code oder QR-Code teilen,
    der andere tritt bei. Los geht's.
 
+### Render-Zugang mit Passwort schützen
+
+Der Render-Webdienst kann die komplette Spielseite einschließlich API und
+WebSocket-Verbindung mit einem gemeinsamen Browser-Passwort schützen:
+
+1. Öffne im Render-Dashboard den Dienst **pc-fighters**.
+2. Wähle links **Environment** und lege diese beiden Variablen an:
+   - `PCF_ACCESS_USER` – der gemeinsame Benutzername
+   - `PCF_ACCESS_PASSWORD` – ein langes, nur privat geteiltes Passwort
+3. Wähle **Save and deploy**. Beim nächsten Öffnen der Render-Adresse erscheint
+   der Passwortdialog des Browsers.
+
+Die Werte gehören **nur** ins Render-Dashboard – niemals in `render.yaml`, eine
+`.env`-Datei im Git-Repository oder den Client-Code. Werden beide Variablen
+weggelassen, bleibt der Zugang offen. Ist nur eine gesetzt, startet der Server
+absichtlich nicht, damit eine fehlerhafte Konfiguration ihn nicht unbemerkt
+öffentlich macht. Das lokale Spiel bleibt ohne diese Variablen unverändert.
+
 **Gut zu wissen:**
 
 - Beim kostenlosen Tarif „schläft" der Server nach ~15 Minuten ohne Nutzung ein.

@@ -693,3 +693,70 @@ describe.skip('Ersetzte Persistenzversionen und Cheerleader-Reaktionsfenster', (
     await srv.close();
   }, 20000);
 });
+
+describe('Server: gemeinsamer Render-Passwortschutz', () => {
+  const credentials = { username: 'privat', password: 'ein langes Testpasswort' };
+  const authorization = `Basic ${Buffer.from(
+    `${credentials.username}:${credentials.password}`,
+    'utf8'
+  ).toString('base64')}`;
+
+  it('fordert Zugangsdaten für HTTP an und akzeptiert gültige Basic Auth', async () => {
+    const secured = await startServer(0, { accessCredentials: credentials });
+    try {
+      const rejected = await fetch(`http://127.0.0.1:${secured.port}/info`);
+      expect(rejected.status).toBe(401);
+      expect(rejected.headers.get('www-authenticate')).toContain('Basic');
+      expect(rejected.headers.get('cache-control')).toBe('no-store');
+
+      const accepted = await fetch(`http://127.0.0.1:${secured.port}/info`, {
+        headers: { authorization }
+      });
+      expect(accepted.status).toBe(200);
+      expect((await accepted.json() as { name: string }).name).toBe('Political Correct Fighters');
+    } finally {
+      await secured.close();
+    }
+  });
+
+  it('weist WebSockets ohne Passwort ab und lässt authentifizierte Verbindungen zu', async () => {
+    const secured = await startServer(0, { accessCredentials: credentials });
+    try {
+      const rejectedStatus = await new Promise<number>((resolve, reject) => {
+        const socket = new WebSocket(`ws://127.0.0.1:${secured.port}`);
+        socket.once('unexpected-response', (_request, response) => {
+          const status = response.statusCode ?? 0;
+          response.resume();
+          resolve(status);
+        });
+        socket.once('open', () => {
+          socket.close();
+          reject(new Error('WebSocket ohne Passwort wurde unerwartet geöffnet.'));
+        });
+        // Nach unexpected-response folgt je nach ws-Version zusätzlich error.
+        socket.on('error', () => undefined);
+      });
+      expect(rejectedStatus).toBe(401);
+
+      const accepted = new WebSocket(`ws://127.0.0.1:${secured.port}`, {
+        headers: { authorization }
+      });
+      await new Promise<void>((resolve, reject) => {
+        accepted.once('open', resolve);
+        accepted.once('error', reject);
+      });
+      await new Promise<void>((resolve) => {
+        accepted.once('close', () => resolve());
+        accepted.close();
+      });
+    } finally {
+      await secured.close();
+    }
+  });
+
+  it('startet bei nur teilweise gesetzten Zugangsdaten nicht versehentlich offen', () => {
+    expect(() => startServer(0, {
+      accessCredentials: { username: credentials.username, password: '' }
+    })).toThrow(/unvollständig/);
+  });
+});

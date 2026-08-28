@@ -8,7 +8,7 @@ import {
   type Server,
   type ServerResponse
 } from 'node:http';
-import { randomBytes } from 'node:crypto';
+import { randomBytes, timingSafeEqual } from 'node:crypto';
 import { WebSocketServer, WebSocket } from 'ws';
 import { writeFileSync, readFileSync, existsSync, renameSync } from 'node:fs';
 import { join } from 'node:path';
@@ -115,6 +115,63 @@ export interface RunningServer {
 export interface StartServerOptions {
   /** Austauschbarer Speicher für Integrationstests. */
   userStore?: UserStore;
+  /** Optionaler gemeinsamer Zugangsschutz. undefined liest die Render-Umgebung,
+   * null deaktiviert ihn ausdrücklich (praktisch für gezielte Tests). */
+  accessCredentials?: AccessCredentials | null;
+}
+
+export interface AccessCredentials {
+  username: string;
+  password: string;
+}
+
+interface AccessGuard {
+  expectedAuthorization: Buffer;
+}
+
+/** Liest den optionalen gemeinsamen Zugang aus der Server-Umgebung.
+ * Sobald eine der beiden Variablen gesetzt ist, müssen beide vollständig sein:
+ * Eine halbe Konfiguration darf den Dienst nie versehentlich offen lassen. */
+function createAccessGuard(override: AccessCredentials | null | undefined): AccessGuard | null {
+  if (override === null) return null;
+
+  const usernameValue = override?.username ?? process.env.PCF_ACCESS_USER;
+  const passwordValue = override?.password ?? process.env.PCF_ACCESS_PASSWORD;
+  const configured = usernameValue !== undefined || passwordValue !== undefined;
+  if (!configured) return null;
+
+  const username = usernameValue?.trim();
+  const password = passwordValue;
+  if (!username || !password) {
+    throw new Error(
+      'Passwortschutz unvollständig: PCF_ACCESS_USER und PCF_ACCESS_PASSWORD müssen beide gesetzt sein.'
+    );
+  }
+  if (username.includes(':')) {
+    throw new Error('PCF_ACCESS_USER darf keinen Doppelpunkt enthalten.');
+  }
+
+  const encoded = Buffer.from(`${username}:${password}`, 'utf8').toString('base64');
+  return { expectedAuthorization: Buffer.from(`Basic ${encoded}`, 'utf8') };
+}
+
+function isAccessAllowed(request: IncomingMessage, guard: AccessGuard | null): boolean {
+  if (!guard) return true;
+  const header = request.headers.authorization;
+  if (typeof header !== 'string') return false;
+
+  const actual = Buffer.from(header, 'utf8');
+  const expected = guard.expectedAuthorization;
+  return actual.length === expected.length && timingSafeEqual(actual, expected);
+}
+
+function rejectUnauthorized(response: ServerResponse): void {
+  response.writeHead(401, {
+    'content-type': 'text/plain; charset=utf-8',
+    'cache-control': 'no-store',
+    'www-authenticate': 'Basic realm="PC Fighters", charset="UTF-8"'
+  });
+  response.end('Zugangsdaten erforderlich.');
 }
 
 function send(socket: WebSocket, message: unknown): void {
@@ -305,6 +362,7 @@ function loadRooms(data: GameData): Map<string, Room> {
 }
 
 export function startServer(port: number, options: StartServerOptions = {}): Promise<RunningServer> {
+  const accessGuard = createAccessGuard(options.accessCredentials);
   let data: GameData | null = null;
   let dataError: string | null = null;
   try {
@@ -430,6 +488,11 @@ export function startServer(port: number, options: StartServerOptions = {}): Pro
     : null;
 
   const httpServer: Server = createServer((req, res) => {
+    if (!isAccessAllowed(req, accessGuard)) {
+      rejectUnauthorized(res);
+      return;
+    }
+
     // /info: Fraktions- und Themenliste für den Startbildschirm des Clients.
     // CORS offen, weil der Client lokal von einem anderen Port (Vite) kommt.
     const cors = {
@@ -569,7 +632,13 @@ export function startServer(port: number, options: StartServerOptions = {}): Pro
     res.writeHead(200, { 'content-type': 'text/plain; charset=utf-8', ...cors });
     res.end('Political Correct Fighters – Spielserver läuft. Verbinde dich per WebSocket.');
   });
-  const wss = new WebSocketServer({ server: httpServer });
+  const wss = new WebSocketServer({
+    server: httpServer,
+    // Der Browser übernimmt nach dem HTTP-Passwortdialog die Basic-Auth-Daten
+    // auch für den WebSocket-Handshake derselben Origin. Direkte Verbindungen
+    // ohne Zugangsdaten werden damit ebenfalls abgewiesen.
+    verifyClient: ({ req }: { req: IncomingMessage }) => isAccessAllowed(req, accessGuard)
+  });
 
   wss.on('connection', (socket) => {
     const ctx: SocketContext = { room: null, playerIndex: null };
