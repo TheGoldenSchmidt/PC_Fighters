@@ -148,6 +148,15 @@ describe('Handkarten in der Arena', () => {
     expect(screen.getByRole('heading', { name: /Rekrut/i })).toBeTruthy();
   });
 
+  it('unterdrückt am Handy das native Bild-Kopiermenü', () => {
+    const view = sicht(spielbereit(), 0);
+    zeige(view);
+    const image = handkarte('Rekrut').querySelector('img');
+    expect(image).not.toBeNull();
+    expect(fireEvent.contextMenu(image!)).toBe(false);
+    expect(image!.getAttribute('draggable')).toBe('false');
+  });
+
   it('spielt über den Ausspielen-Knopf im Detail und einen Lane-Tap aus', () => {
     const view = sicht(spielbereit(), 0);
     const gesendet: PlayerAction[] = [];
@@ -180,18 +189,28 @@ describe('Arena-Aufbau', () => {
     expect(container.querySelector('.arena [data-zone="1"]')).not.toBeNull();
   });
 
-  it('warnt einmalig mit der Anzahl spielbarer Karten vor dem Rundenende', () => {
+  it('passt ohne Energie-Warnung oder Sicherheitsdialog sofort', () => {
     const view = sicht(spielbereit(), 0);
     const gesendet: PlayerAction[] = [];
     zeige(view, (action) => gesendet.push(action));
 
     fireEvent.click(screen.getByRole('button', { name: 'Runde abschließen' }));
-    expect(screen.getByRole('dialog', { name: 'Runde abschließen' })).toBeTruthy();
-    expect(screen.getByText(/noch 1 bezahlbare Karte/)).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Weiterspielen' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Runde abschließen' }));
-
     expect(gesendet).toEqual([{ type: 'pass' }]);
+    expect(screen.queryByRole('dialog', { name: 'Runde abschließen' })).toBeNull();
+  });
+
+  it('staffelt Team-Up-Werte vorne und hinten statt beide Figuren deckungsgleich zu rendern', () => {
+    let state = spielbereit();
+    state.players[0].hand = ['sting_bean'];
+    state = applyAction(state, 0, { type: 'playCreature', handIndex: 0, lane: 0 }, data);
+    state.active = 0;
+    state.players[0].hand = ['baer'];
+    state.players[0].energy = 20;
+    state = applyAction(state, 0, { type: 'playCreature', handIndex: 0, lane: 0 }, data);
+    const { container } = zeige(sicht(state, 0));
+    const slot = container.querySelector('[data-slot="0-0"]');
+    expect(slot?.querySelector('.team-up-primary')).not.toBeNull();
+    expect(slot?.querySelector('.team-up-secondary')).not.toBeNull();
   });
 
   it('zeigt am Spielende Bilanz und RÃ¼ckspiel als primÃ¤re Aktion', () => {

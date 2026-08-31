@@ -68,6 +68,18 @@ export const ABILITIES: Record<Ability['kind'], { label: string; description: st
     label: 'Peinigen',
     description: 'Beim Ausspielen: setzt Angriff und Verteidigung aller Gegner dauerhaft auf einen Deckel.'
   },
+  basisHeilung: { label: 'Basisheilung', description: 'Heilt beim Ausspielen die eigene Basis.' },
+  energie: { label: 'Energiequelle', description: 'Erzeugt am Rundenstart zusätzliche Energie.' },
+  nullAngriffBuff: { label: 'Mauerstärkung', description: 'Verstärkt beim Ausspielen Verbündete mit 0 Angriff.' },
+  ausspielAura: { label: 'Ausspiel-Aura', description: 'Verstärkt passende Verbündete, wenn eine passende Karte gespielt wird.' },
+  aufdeckenDebuff: { label: 'Aufdeck-Malus', description: 'Schwächt beim Aufdecken Gegner in derselben Lane.' },
+  teamBuff: { label: 'Team-Verstärker', description: 'Verstärkt einen passenden Team-Up-Partner hinter sich.' },
+  teamBonus: { label: 'Team-Bonus', description: 'Ist stärker, solange ein Team-Up-Partner dieselbe Lane teilt.' },
+  antiHero: { label: 'Anti-Held', description: 'Erhält beim Angriff auf eine freie Lane zusätzlichen Angriff.' },
+  verwandlung: {
+    label: 'Verwandlung',
+    description: 'Wird am Rundenstart zu einer zufälligen passenden Kreatur.'
+  },
   referenz: {
     label: 'Referenzregel',
     description: 'Regeltext aus dem neuen Kartenset; bekannte Schlüsselwörter werden zentral ausgewertet.'
@@ -509,6 +521,35 @@ const KLASSE_B_HOOKS: { [K in Ability['kind']]?: KlasseBHooks<K> } = {
   umgruppieren: { onPlay: applyUmgruppieren },
   rueckstoss: { onPlay: applyRueckstoss },
   peinigen: { onPlay: applyPeinigen },
+  basisHeilung: {
+    onPlay: (state, owner, lane, ab) => {
+      const vorher = state.players[owner].base;
+      state.players[owner].base = Math.min(state.config.baseHealth, vorher + ab.amount);
+      const geheilt = state.players[owner].base - vorher;
+      if (geheilt > 0) log(state, `${state.board[owner][lane]?.name}: Basis um ${geheilt} geheilt.`);
+    }
+  },
+  energie: {
+    onRoundStart: (state, owner, _lane, ab) => {
+      state.players[owner].energy = Math.min(
+        state.config.energy.cap ?? Infinity,
+        state.players[owner].energy + ab.amount
+      );
+    }
+  },
+  nullAngriffBuff: {
+    onPlay: (state, owner, lane, ab) => {
+      const source = state.board[owner][lane];
+      if (!source) return;
+      for (const row of [state.board[owner], ...(state.teamBoard?.[owner] ? [state.teamBoard[owner]] : [])]) {
+        for (const target of row) {
+          if (!target || !matchesScope(state.factionTree, ab.scope, source.faction, target.faction)) continue;
+          const attack = target.baseAttack + target.permAttackBonus + target.tempAttackBonus;
+          if (attack === 0) target.permAttackBonus += ab.atk;
+        }
+      }
+    }
+  },
   wachstum: { onRoundStart: applyWachstum },
   wahl: { onRoundStart: applyWahl },
   heilung: { onRoundEnd: applyHeilung },
@@ -529,10 +570,58 @@ function rufeKlasseBHook(
   }
 }
 
-export function onPlayAbilities(state: GameState, owner: PlayerIndex, lane: number): void {
-  const c = state.board[owner][lane];
-  if (!c) return;
-  rufeKlasseBHook('onPlay', state, owner, lane, c);
+export function onPlayAbilities(
+  state: GameState,
+  owner: PlayerIndex,
+  lane: number,
+  teamSlot = false
+): void {
+  if (!teamSlot) {
+    const c = state.board[owner][lane];
+    if (c) rufeKlasseBHook('onPlay', state, owner, lane, c);
+    return;
+  }
+
+  const front = state.board[owner][lane];
+  const rear = state.teamBoard?.[owner]?.[lane];
+  if (!front || !rear || !state.teamBoard) return;
+  // Die bestehenden Hooks lesen ihre Quelle bewusst aus `board`. Für die
+  // Dauer des Aufrufs tauschen wir deshalb Front/Hinten; reine Zustandsdaten,
+  // also sicher über structuredClone und Persistenz hinweg.
+  state.board[owner][lane] = rear;
+  state.teamBoard[owner][lane] = front;
+  try {
+    rufeKlasseBHook('onPlay', state, owner, lane, rear);
+  } finally {
+    const rearAfter = state.board[owner][lane];
+    const frontAfter = state.teamBoard[owner][lane];
+    state.board[owner][lane] = frontAfter;
+    state.teamBoard[owner][lane] = rearAfter;
+  }
+}
+
+/** Spielweite Ausspiel-Auslöser, nachdem eine Kreatur das Feld betreten hat. */
+export function onCardPlayedAbilities(
+  state: GameState,
+  owner: PlayerIndex,
+  playedFaction: string
+): void {
+  for (const row of [state.board[owner], ...(state.teamBoard?.[owner] ? [state.teamBoard[owner]] : [])]) {
+    for (const source of row) {
+      if (!source) continue;
+      for (const ability of source.abilities) {
+        if (ability.kind !== 'ausspielAura') continue;
+        if (!matchesScope(state.factionTree, ability.scope, source.faction, playedFaction)) continue;
+        for (const targetRow of [state.board[owner], ...(state.teamBoard?.[owner] ? [state.teamBoard[owner]] : [])]) {
+          for (const target of targetRow) {
+            if (target && matchesScope(state.factionTree, ability.scope, source.faction, target.faction)) {
+              target.permAttackBonus += ability.atk;
+            }
+          }
+        }
+      }
+    }
+  }
 }
 
 function pulseAura(
@@ -543,13 +632,15 @@ function pulseAura(
 ): void {
   const source = state.board[owner][lane];
   if (!source) return;
-  state.board[owner].forEach((t, i) => {
-    if (!t || i === lane) return;
-    if (matchesScope(state.factionTree, ab.scope, source.faction, t.faction)) {
-      t.permAttackBonus += ab.buff.atk;
-      t.permHealthBonus += ab.buff.hp;
-    }
-  });
+  for (const row of [state.board[owner], ...(state.teamBoard?.[owner] ? [state.teamBoard[owner]] : [])]) {
+    row.forEach((t, i) => {
+      if (!t || (row === state.board[owner] && i === lane)) return;
+      if (matchesScope(state.factionTree, ab.scope, source.faction, t.faction)) {
+        t.permAttackBonus += ab.buff.atk;
+        t.permHealthBonus += ab.buff.hp;
+      }
+    });
+  }
   log(state, `${source.name}: Puls +${ab.buff.atk}/+${ab.buff.hp} für Verbündete.`);
 }
 
@@ -698,6 +789,18 @@ export function onRoundStartAbilities(state: GameState): void {
       if (!c) return;
       rufeKlasseBHook('onRoundStart', state, owner, lane, c);
     });
+  }
+  for (const owner of [0, 1] as PlayerIndex[]) {
+    for (const creature of state.teamBoard?.[owner] ?? []) {
+      if (!creature) continue;
+      for (const ability of creature.abilities) {
+        if (ability.kind !== 'energie') continue;
+        state.players[owner].energy = Math.min(
+          state.config.energy.cap ?? Infinity,
+          state.players[owner].energy + ability.amount
+        );
+      }
+    }
   }
 }
 

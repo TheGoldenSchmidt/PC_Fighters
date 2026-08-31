@@ -202,6 +202,28 @@ export const effectSchema = z.discriminatedUnion('kind', [
     target: z.literal('friendlyCreature')
   }),
   z.object({
+    kind: z.literal('buff'),
+    atk: z.number().int(),
+    hp: z.number().int(),
+    target: z.literal('friendlyCreature')
+  }).strict(),
+  z.object({ kind: z.literal('draw'), amount: z.number().int().min(1) }).strict(),
+  z.object({
+    kind: z.literal('damage'),
+    amount: z.number().int().min(1),
+    target: z.literal('enemyCreatureOrBase')
+  }).strict(),
+  z.object({
+    kind: z.literal('destroy'),
+    target: z.literal('enemyCreature'),
+    maxAttack: z.number().int().min(0).optional()
+  }).strict(),
+  z.object({
+    kind: z.literal('bonusAttack'),
+    target: z.literal('friendlyCreature'),
+    count: z.number().int().min(1)
+  }).strict(),
+  z.object({
     kind: z.literal('summon'),
     count: z.number().int().min(1),
     token: tokenSchema
@@ -277,6 +299,15 @@ export const abilitySchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('umgruppieren'), tempAtkBonus: z.number().int().min(1).optional() }).strict(),
   z.object({ kind: z.literal('rueckstoss'), selbst: z.number().int().min(1), gegner: z.number().int().min(1).optional() }).strict(),
   z.object({ kind: z.literal('peinigen'), atkDeckel: z.number().int().min(0), hpDeckel: z.number().int().min(1) }).strict(),
+  z.object({ kind: z.literal('basisHeilung'), timing: z.literal('beim_ausspielen'), amount: z.number().int().min(1) }).strict(),
+  z.object({ kind: z.literal('energie'), timing: z.literal('rundenstart'), amount: z.number().int().min(1) }).strict(),
+  z.object({ kind: z.literal('nullAngriffBuff'), timing: z.literal('beim_ausspielen'), scope: scopeSchema, atk: z.number().int().min(1) }).strict(),
+  z.object({ kind: z.literal('ausspielAura'), scope: scopeSchema, atk: z.number().int().min(1) }).strict(),
+  z.object({ kind: z.literal('aufdeckenDebuff'), atk: z.number().int().min(0), hp: z.number().int().min(0), ziel: z.literal('gegnerLane') }).strict(),
+  z.object({ kind: z.literal('teamBuff'), scope: scopeSchema, atk: z.number().int().min(1) }).strict(),
+  z.object({ kind: z.literal('teamBonus'), bonus: statSchema }).strict(),
+  z.object({ kind: z.literal('antiHero'), bonusAtk: z.number().int().min(1) }).strict(),
+  z.object({ kind: z.literal('verwandlung'), timing: z.literal('rundenstart'), maxKosten: z.number().int().min(0), scope: scopeSchema }).strict(),
   z.object({ kind: z.literal('referenz'), text: z.string() }).strict()
 ]);
 

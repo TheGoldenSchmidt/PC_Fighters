@@ -1,0 +1,120 @@
+{
+  "cardId": "korvo_2",
+  "displayName": "Korvo_2",
+  "visual": {
+    "detailLevel": "high",
+    "height": 1.12,
+    "palette": {
+      "skin": "#70a9b8",
+      "skinLight": "#91c5cf",
+      "skinShadow": "#477f8e",
+      "eye": "#ead761",
+      "pupil": "#171b1d",
+      "robe": "#29262b",
+      "robeLight": "#3d3841",
+      "robeDark": "#17151a",
+      "collar": "#8d292b",
+      "gem": "#73d35c",
+      "gemDark": "#286f36",
+      "boot": "#15161a",
+      "metal": "#88999e",
+      "screen": "#58e7e0",
+      "mouth": "#392126",
+      "tooth": "#ece4c9"
+    },
+    "parts": [
+      { "id": "korvoRig", "shape": "group", "pos": [0, 0.42, 0] },
+      { "id": "legL", "shape": "group", "pos": [-0.16, -0.03, 0], "parent": "korvoRig" },
+      { "id": "shinL", "shape": "capsule", "size": [0.12, 0.48], "pos": [0, -0.06, 0], "parent": "legL", "color": "robeDark" },
+      { "id": "bootL", "shape": "box", "size": [0.28, 0.18, 0.46], "pos": [0, -0.43, 0.10], "parent": "legL", "color": "boot" },
+      { "id": "legR", "shape": "group", "pos": [0.16, -0.03, 0], "parent": "korvoRig" },
+      { "id": "shinR", "shape": "capsule", "size": [0.12, 0.48], "pos": [0, -0.06, 0], "parent": "legR", "color": "robeDark" },
+      { "id": "bootR", "shape": "box", "size": [0.28, 0.18, 0.46], "pos": [0, -0.43, 0.10], "parent": "legR", "color": "boot" },
+      { "id": "body", "shape": "group", "pos": [0, 0.61, 0], "parent": "korvoRig" },
+      { "id": "robeSkirt", "shape": "cone", "size": [0.43, 0.86], "pos": [0, -0.38, 0], "parent": "body", "color": "robe" },
+      { "id": "robeTorso", "shape": "ico", "size": 0.36, "scale": [0.90, 1.38, 0.62], "parent": "body", "color": "robe" },
+      { "id": "robeChest", "shape": "box", "size": [0.51, 0.58, 0.10], "pos": [0, 0.05, 0.28], "parent": "body", "color": "robeLight" },
+      { "id": "waist", "shape": "torus", "size": [0.30, 0.045], "pos": [0, -0.43, 0], "rot": [1.5708, 0, 0], "scale": [1, 0.66, 1], "parent": "body", "color": "robeDark" },
+      { "id": "collarL", "shape": "box", "size": [0.22, 0.44, 0.10], "pos": [-0.17, 0.31, 0.28], "rot": [0, 0, -0.53], "parent": "body", "color": "collar" },
+      { "id": "collarR", "shape": "box", "size": [0.22, 0.44, 0.10], "pos": [0.17, 0.31, 0.28], "rot": [0, 0, 0.53], "parent": "body", "color": "collar" },
+      { "id": "gemFrame", "shape": "box", "size": [0.25, 0.25, 0.08], "pos": [0, 0.12, 0.38], "rot": [0, 0, 0.7854], "parent": "body", "color": "gemDark", "metalness": 0.20 },
+      { "id": "gem", "shape": "ico", "size": 0.13, "pos": [0, 0.12, 0.45], "scale": [0.92, 1.18, 0.45], "parent": "body", "color": "gem", "roughness": 0.28 },
+      { "id": "armL", "shape": "group", "pos": [-0.43, 0.26, 0], "rot": [0, 0, 0.08], "parent": "body" },
+      { "id": "upperArmL", "shape": "capsule", "size": [0.13, 0.47], "pos": [-0.02, -0.26, 0], "parent": "armL", "color": "robe" },
+      { "id": "forearmL", "shape": "capsule", "size": [0.115, 0.34], "pos": [-0.03, -0.61, 0], "parent": "armL", "color": "robeLight" },
+      { "id": "cuffL", "shape": "cyl", "size": [0.14, 0.14, 0.13], "pos": [-0.03, -0.83, 0], "parent": "armL", "color": "collar" },
+      { "id": "handL", "shape": "ico", "size": 0.14, "pos": [-0.03, -0.96, 0], "scale": [0.70, 1.12, 0.66], "parent": "armL", "color": "skin" },
+      { "id": "armR", "shape": "group", "pos": [0.43, 0.26, 0], "rot": [0, 0, -0.08], "parent": "body" },
+      { "id": "upperArmR", "shape": "capsule", "size": [0.13, 0.47], "pos": [0.02, -0.26, 0], "parent": "armR", "color": "robe" },
+      { "id": "forearmR", "shape": "capsule", "size": [0.115, 0.34], "pos": [0.03, -0.61, 0], "parent": "armR", "color": "robeLight" },
+      { "id": "cuffR", "shape": "cyl", "size": [0.14, 0.14, 0.13], "pos": [0.03, -0.83, 0], "parent": "armR", "color": "collar" },
+      { "id": "handR", "shape": "ico", "size": 0.14, "pos": [0.03, -0.96, 0], "scale": [0.70, 1.12, 0.66], "parent": "armR", "color": "skin" },
+      { "id": "wristDevice", "shape": "group", "pos": [0.03, -0.78, 0.12], "rot": [0, 0, -0.08], "parent": "armR" },
+      { "id": "deviceBand", "shape": "torus", "size": [0.13, 0.035], "rot": [1.5708, 0, 0], "scale": [0.76, 1, 1], "parent": "wristDevice", "color": "metal" },
+      { "id": "deviceScreen", "shape": "box", "size": [0.16, 0.10, 0.05], "pos": [0, 0, 0.14], "parent": "wristDevice", "color": "screen", "roughness": 0.25 },
+      { "id": "head", "shape": "group", "pos": [0, 0.73, 0], "parent": "body" },
+      { "id": "cranium", "shape": "sph", "size": 0.37, "scale": [0.90, 1.42, 0.74], "parent": "head", "color": "skin" },
+      { "id": "facePlane", "shape": "ico", "size": 0.30, "pos": [0, -0.10, 0.16], "scale": [0.98, 1.17, 0.67], "parent": "head", "color": "skinLight" },
+      { "id": "templeL", "shape": "ico", "size": 0.11, "pos": [-0.31, 0.12, -0.01], "scale": [0.55, 1.5, 0.70], "parent": "head", "color": "skinShadow" },
+      { "id": "templeR", "shape": "ico", "size": 0.11, "pos": [0.31, 0.12, -0.01], "scale": [0.55, 1.5, 0.70], "parent": "head", "color": "skinShadow" },
+      { "id": "eyeL", "shape": "sph", "size": 0.17, "pos": [-0.15, 0.05, 0.30], "scale": [0.86, 1.27, 0.41], "parent": "head", "color": "eye" },
+      { "id": "eyeR", "shape": "sph", "size": 0.17, "pos": [0.15, 0.05, 0.30], "scale": [0.86, 1.27, 0.41], "parent": "head", "color": "eye" },
+      { "id": "pupilL", "shape": "sph", "size": 0.036, "pos": [-0.14, 0.04, 0.37], "scale": [0.72, 1.35, 0.48], "parent": "head", "color": "pupil" },
+      { "id": "pupilR", "shape": "sph", "size": 0.036, "pos": [0.14, 0.04, 0.37], "scale": [0.72, 1.35, 0.48], "parent": "head", "color": "pupil" },
+      { "id": "browL", "shape": "box", "size": [0.21, 0.04, 0.035], "pos": [-0.15, 0.27, 0.32], "rot": [0, 0, -0.08], "parent": "head", "color": "skinShadow" },
+      { "id": "browR", "shape": "box", "size": [0.21, 0.04, 0.035], "pos": [0.15, 0.27, 0.32], "rot": [0, 0, 0.08], "parent": "head", "color": "skinShadow" },
+      { "id": "noseBridge", "shape": "capsule", "size": [0.035, 0.13], "pos": [0, -0.10, 0.35], "parent": "head", "color": "skinShadow" },
+      { "id": "nostrilL", "shape": "sph", "size": 0.027, "pos": [-0.035, -0.19, 0.37], "scale": [1.2, 0.60, 0.50], "parent": "head", "color": "pupil" },
+      { "id": "nostrilR", "shape": "sph", "size": 0.027, "pos": [0.035, -0.19, 0.37], "scale": [1.2, 0.60, 0.50], "parent": "head", "color": "pupil" },
+      { "id": "mouth", "shape": "box", "size": [0.25, 0.065, 0.045], "pos": [0, -0.34, 0.31], "parent": "head", "color": "mouth" },
+      { "id": "toothL", "shape": "box", "size": [0.06, 0.035, 0.048], "pos": [-0.055, -0.32, 0.34], "parent": "head", "color": "tooth" },
+      { "id": "toothR", "shape": "box", "size": [0.06, 0.035, 0.048], "pos": [0.055, -0.32, 0.34], "parent": "head", "color": "tooth" },
+      { "id": "crownRidge", "shape": "torus", "size": [0.22, 0.035], "pos": [0, 0.36, 0.02], "rot": [1.5708, 0, 0], "scale": [1.1, 0.75, 1], "parent": "head", "color": "skinShadow" }
+    ]
+  },
+  "animations": {
+    "idle": {
+      "duration": 3.0,
+      "loop": true,
+      "tracks": [
+        { "part": "body", "prop": "scale", "keys": [[0, 1], [1.5, 1.017], [3, 1]] },
+        { "part": "head", "prop": "rot.z", "keys": [[0, 0.018], [1.5, -0.024], [3, 0.018]] },
+        { "part": "deviceScreen", "prop": "emissive", "keys": [[0, 0.12], [1.5, 0.60], [3, 0.12]] }
+      ]
+    },
+    "entrance": {
+      "duration": 1.0,
+      "tracks": [
+        { "part": "root", "prop": "pos.y", "keys": [[0, 1.6], [0.58, -0.08], [1, 0]] },
+        { "part": "root", "prop": "scale", "keys": [[0, 0.42], [0.58, 1.10], [1, 1]] },
+        { "part": "root", "prop": "opacity", "keys": [[0, 0], [0.15, 1], [1, 1]] }
+      ]
+    },
+    "attack": {
+      "duration": 0.82,
+      "tracks": [
+        { "part": "armL", "prop": "rot.z", "keys": [[0, 0], [0.24, 1.16], [0.47, 1.32], [0.82, 0]] },
+        { "part": "armR", "prop": "rot.z", "keys": [[0, 0], [0.24, -0.68], [0.47, -0.44], [0.82, 0]] },
+        { "part": "body", "prop": "rot.y", "keys": [[0, 0], [0.26, -0.25], [0.48, 0.18], [0.82, 0]] },
+        { "part": "gem", "prop": "emissive", "keys": [[0, 0], [0.34, 0.4], [0.48, 1.35], [0.82, 0]] }
+      ]
+    },
+    "hit": {
+      "duration": 0.50,
+      "tracks": [
+        { "part": "root", "prop": "pos.x", "keys": [[0, 0], [0.10, 0.16], [0.23, -0.11], [0.37, 0.05], [0.50, 0]] },
+        { "part": "head", "prop": "rot.z", "keys": [[0, 0], [0.12, -0.18], [0.30, 0.09], [0.50, 0]] },
+        { "part": "body", "prop": "emissive", "keys": [[0, 0], [0.08, 0.95], [0.24, 0], [0.50, 0]] }
+      ]
+    },
+    "death": {
+      "duration": 1.48,
+      "tracks": [
+        { "part": "root", "prop": "rot.z", "keys": [[0, 0], [0.38, 0.15], [1.16, 1.52], [1.48, 1.52]] },
+        { "part": "root", "prop": "pos.y", "keys": [[0, 0], [0.38, 0.10], [1.16, -0.32], [1.48, -0.32]] },
+        { "part": "gem", "prop": "emissive", "keys": [[0, 0.2], [0.55, 1.6], [1.00, 0.15], [1.48, 0]] },
+        { "part": "root", "prop": "opacity", "keys": [[0, 1], [1.12, 1], [1.48, 0.10]] }
+      ]
+    }
+  }
+}

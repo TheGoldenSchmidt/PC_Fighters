@@ -95,6 +95,12 @@ zweiten anzulegen.
   **verifizieren**, dass beide Änderungssets tatsächlich in der Datei stehen
   (Stichprobe je Linse), bevor die nächste Montage gebaut wird.
 
+- **Kinder nie direkt an ein nicht-uniform skaliertes Mesh parenten.** Mr. Hat war
+  zunächst praktisch unsichtbar, weil die Puppe unter `handL` hing und dessen
+  `scale [0.14, 0.17, 0.10]` vollständig erbte. → Zwischen Segment/Mesh und Zubehör
+  immer eine **unskalierte `group` als Anker** setzen (`handAnker → handMesh +
+  Requisit`). Dasselbe gilt für Manschetten, Waffen, Hüte und Gesichtsteile.
+
 - **Bibliotheks-Fragmente nicht blind übernehmen – Konnektivität rechnerisch
   prüfen.** Ein Zahlenfehler in `PARTS.md` (Kindgelenk-Versatz mit voller
   Segmenthöhe statt `h/2`) wurde beim Pferd wörtlich mitkopiert und erzeugte über
@@ -118,6 +124,44 @@ zweiten anzulegen.
 ---
 
 ## Best Practices (aus Erfolgen gelernt)
+
+### Serienvorlagen / 2,5D-Cutout-Stile
+
+- **Stiltreue beginnt mit vermessener Silhouette, nicht mit mehr Details.** Bei
+  Butters, Kenny und Mr. Garrison wurden offizielle freigestellte Referenzen zuerst
+  als Zahlenbrief ausgewertet (Alpha-Bounding-Box, Kopfanteil, Zeilen-Breitenprofil,
+  Kopf:Rumpf-, Hood:Körper- und Augenverhältnisse). → Vor dem ersten Part die
+  charakteristischen Außenkonturen und 5–8 Verhältnisse festschreiben; erst danach
+  Kleidungslinien und Accessoires bauen.
+
+- **Bei flachen Zeichentrickserien ist die Frontansicht die Identitäts-Linse.** Ein
+  generisch rundes 3D-Modell verliert trotz richtiger Farben den Seriencharakter. →
+  Zuerst eine nahezu deckungsgleiche Front-Silhouette aus flachen Layern bauen,
+  danach Seite und Rücken ergänzen. Ikonische Konturen als eigene Papierlagen:
+  Butters = asymmetrische Haarspitzen + Stirnfransen; Kenny = Hood-Rand + braunes
+  Innenfeld + Hautraute; Garrison = Brille + kahle Stirn + flache Seitenhaare.
+
+- **Tiefe als Budget behandeln: weder Rasierklinge noch Plastikfigur.** Große
+  Highlight-/Shadow-Meshes machten Kennys Hood zum glänzenden 3D-Donut; vollständiges
+  Abflachen macht die Seitenansicht dagegen zu planar. → Frontdetails sehr dünn
+  staffeln, aber Kopf/Rumpf mit einer kontrollierten Bas-Relief-Tiefe versehen.
+  Lichtflecken nicht als Geometrie modellieren. Nach bestandenem Frontvergleich die
+  Tiefe ausschließlich in Seiten-/Rückansicht erhöhen und erneut prüfen, dass die
+  Frontsilhouette unverändert bleibt.
+
+- **Serienspezifische Augen nicht durch generische Kugelaugen ersetzen.** South-Park-
+  Identität entstand erst durch fast berührende weiße Ovale, sehr kleine Pupillen,
+  dünne Lider/Brillenlinien und den korrekten Blick. → Augenbreite/-höhe, Abstand,
+  Pupillengröße und Lidüberdeckung separat aus der Referenz messen; Gesichtslinien
+  als dünne Frontlayer statt volumetrische Röhren bauen.
+
+- **Statische Identität vor Animation freigeben.** Die beste Runde entstand, als
+  Linse C bewusst eingefroren und der `animations`-Block per Hash bytegleich gehalten
+  wurde, bis Silhouette, Proportion, Standardpose und Gesicht überzeugten. → Bei
+  bekannten Serienfiguren zuerst nur A+B in Front/Seite/Hinten iterieren; Animation
+  erst nach Nutzerfreigabe der Ruhefigur beginnen. So überdecken Bewegungen keine
+  Formfehler und statische Korrekturen müssen nicht ständig in Tracks nachgezogen
+  werden.
 
 ### Gesicht / Kopf (kritischer Bereich)
 
@@ -238,8 +282,11 @@ Regel für jede animierbare Gliedmaße (Arm, Bein, Flügel, Kiefer):
 - **Referenz-Steckbrief gegen Proportions-Runden.** Proportion ist die häufigste
   Kritik-Ursache. Liegt eine Vorlage vor (Nutzer-Upload oder Web-Bild), liest der
   **bildfähige Orchestrator** sie und gibt dem text-only Designer **Zahlen** (Kopf:Rumpf,
-  Beinlänge, Schwanz, Palette-Hex) statt einer Bilddatei. Wer den Steckbrief trifft,
-  spart die „zu groß / falsche Proportion"-Runde. Format in `PARTS.md`.
+  Beinlänge, Schwanz, Palette-Hex) statt einer Bilddatei. Bei freigestellten
+  Serienreferenzen zusätzlich Alpha-Bounding-Box und mehrere horizontale
+  Breitenprofile messen: So wurden der zu breite Kenny-Hood und Garrisons zu großer
+  Kopf trotz widersprüchlicher Sichtkritik objektiv korrigiert. Wer den Steckbrief
+  trifft, spart die „zu groß / falsche Proportion"-Runde. Format in `PARTS.md`.
 - **Designer-Pre-Flight vor Abgabe.** Eine kurze Selbstcheck-Liste (visual.height?
   kein root-emissive? kein rot auf Segmenten? Gesicht mehrteilig? idle ≥2 Teile?) fängt
   genau die Trivialfehler ab, die sonst je eine volle Runde kosten. Steht im

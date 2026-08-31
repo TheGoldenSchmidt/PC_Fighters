@@ -20,8 +20,16 @@ Erzeugt:
 - `figuren-viewer.artifact.html` – Body-only-Variante zum Veröffentlichen als Artifact
   (nicht versioniert).
 
-Alle vorhandenen Figuren-Dateien werden automatisch eingelesen – neue Figuren
-erscheinen nach dem nächsten Build ohne Skript-Änderung im Dropdown.
+Alle vorhandenen Kartenfiguren und alle Dateien aus `standalone-figures/` werden
+automatisch eingelesen. Dadurch können neue Figuren schon vor ihrer Karte im
+Viewer geprüft werden. Nach dem nächsten Build erscheinen sie ohne weitere
+Skript-Änderung im Dropdown.
+
+Eine Standalone-Datei hat dieselbe vollständige Struktur wie eine normale
+Figur (`cardId`, `visual`, optional `animations`) und darf zusätzlich einen
+lesbaren `displayName` für das Dropdown enthalten. Sobald eine Karte existiert,
+wird die Datei in `packages/engine/src/data/figures/` verschoben; doppelte IDs
+bricht der Viewer-Build bewusst mit einer Fehlermeldung ab.
 
 ## Bedienung
 

@@ -32,8 +32,10 @@
     ],
     "abilities": [
       {
-        "kind": "referenz",
-        "text": "Gravestone; Plants hier beim Reveal -1/-1"
+        "kind": "aufdeckenDebuff",
+        "atk": 1,
+        "hp": 1,
+        "ziel": "gegnerLane"
       }
     ],
     "projectile": "✨"
@@ -53,8 +55,9 @@
     "keywords": [],
     "abilities": [
       {
-        "kind": "referenz",
-        "text": "Pet gespielt → alle Pets +1 Angriff"
+        "kind": "ausspielAura",
+        "scope": "same_sub",
+        "atk": 1
       }
     ],
     "projectile": "🔩"
@@ -74,17 +77,12 @@
     "keywords": [
       "amphibious"
     ],
-    "abilities": [
-      {
-        "kind": "referenz",
-        "text": "Amphibious"
-      }
-    ],
+    "abilities": [],
     "projectile": "✨"
   },
   {
     "id": "locust_swarm",
-    "name": "Harte Schicht",
+    "name": "Kahlschlag",
     "faction": "beastly",
     "cost": 5,
     "deckable": true,
@@ -93,8 +91,8 @@
     "text": "Animal zerstören",
     "type": "action",
     "effect": {
-      "kind": "referenz",
-      "text": "Pflanze zerstören"
+      "kind": "destroy",
+      "target": "enemyCreature"
     }
   },
   {

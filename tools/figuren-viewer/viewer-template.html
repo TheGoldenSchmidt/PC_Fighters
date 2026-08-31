@@ -373,8 +373,20 @@ loop();
 
 // ---- UI-Verdrahtung ----
 const sel = document.getElementById('pcf-figure');
-for (const id of Object.keys(FIGURES)) { const o = document.createElement('option'); o.value = id; o.textContent = (FIGURES[id].visual ? '' : '⚠ ') + id; sel.appendChild(o); }
-sel.value = FIGURES.wolf ? 'wolf' : Object.keys(FIGURES)[0];
+const standaloneGroup = document.createElement('optgroup');
+standaloneGroup.label = 'Neue Figuren · noch ohne Karte';
+const cardGroup = document.createElement('optgroup');
+cardGroup.label = 'Kartenfiguren';
+for (const id of Object.keys(FIGURES)) {
+  const o = document.createElement('option');
+  o.value = id;
+  o.textContent = (FIGURES[id].visual ? '' : '⚠ ') + (FIGURES[id].displayName || id);
+  (FIGURES[id].viewerOnly ? standaloneGroup : cardGroup).appendChild(o);
+}
+if (standaloneGroup.children.length) sel.appendChild(standaloneGroup);
+sel.appendChild(cardGroup);
+const firstStandalone = Object.keys(FIGURES).find((id) => FIGURES[id].viewerOnly);
+sel.value = firstStandalone || (FIGURES.wolf ? 'wolf' : Object.keys(FIGURES)[0]);
 const noteEl = document.getElementById('pcf-note');
 function saveNote() { if (currentId != null) notes[currentId] = noteEl.value; }
 function loadNote() { noteEl.value = notes[currentId] || ''; }

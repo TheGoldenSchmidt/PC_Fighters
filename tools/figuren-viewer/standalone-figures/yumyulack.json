@@ -1,0 +1,1127 @@
+{
+  "cardId": "yumyulack",
+  "displayName": "Yumyulack · Solar Opposites",
+  "visual": {
+    "detailLevel": "high",
+    "height": 0.9,
+    "palette": {
+      "haut": "#8dcfe1",
+      "hautHell": "#b7e8ef",
+      "hautSchatten": "#639bad",
+      "auge": "#e6dc73",
+      "pupille": "#15191d",
+      "mund": "#30414a",
+      "oberteil": "#665440",
+      "oberteilHell": "#806c54",
+      "oberteilDunkel": "#40372e",
+      "hose": "#262a2d",
+      "schuh": "#171a1d",
+      "sohle": "#101214"
+    },
+    "parts": [
+      {
+        "id": "becken",
+        "shape": "group",
+        "pos": [
+          0,
+          0.84,
+          0
+        ]
+      },
+      {
+        "id": "huefte",
+        "shape": "ico",
+        "size": 0.28,
+        "pos": [
+          0,
+          0,
+          0
+        ],
+        "parent": "becken",
+        "color": "hose",
+        "scale": [
+          1.15,
+          0.7,
+          0.9
+        ]
+      },
+      {
+        "id": "beinL",
+        "shape": "group",
+        "pos": [
+          -0.16,
+          -0.02,
+          0
+        ],
+        "parent": "becken"
+      },
+      {
+        "id": "beinMeshL",
+        "shape": "capsule",
+        "size": [
+          0.11,
+          0.44
+        ],
+        "pos": [
+          0,
+          -0.3,
+          0
+        ],
+        "parent": "beinL",
+        "color": "hose"
+      },
+      {
+        "id": "schuhL",
+        "shape": "box",
+        "size": [
+          0.24,
+          0.15,
+          0.35
+        ],
+        "pos": [
+          0,
+          -0.59,
+          0.08
+        ],
+        "parent": "beinL",
+        "color": "schuh"
+      },
+      {
+        "id": "sohleL",
+        "shape": "box",
+        "size": [
+          0.25,
+          0.04,
+          0.37
+        ],
+        "pos": [
+          0,
+          -0.6699999999999999,
+          0.08
+        ],
+        "parent": "beinL",
+        "color": "sohle"
+      },
+      {
+        "id": "beinR",
+        "shape": "group",
+        "pos": [
+          0.16,
+          -0.02,
+          -0.01
+        ],
+        "parent": "becken"
+      },
+      {
+        "id": "beinMeshR",
+        "shape": "capsule",
+        "size": [
+          0.11,
+          0.44
+        ],
+        "pos": [
+          0,
+          -0.3,
+          0
+        ],
+        "parent": "beinR",
+        "color": "hose"
+      },
+      {
+        "id": "schuhR",
+        "shape": "box",
+        "size": [
+          0.24,
+          0.15,
+          0.35
+        ],
+        "pos": [
+          0,
+          -0.59,
+          0.08
+        ],
+        "parent": "beinR",
+        "color": "schuh"
+      },
+      {
+        "id": "sohleR",
+        "shape": "box",
+        "size": [
+          0.25,
+          0.04,
+          0.37
+        ],
+        "pos": [
+          0,
+          -0.6699999999999999,
+          0.08
+        ],
+        "parent": "beinR",
+        "color": "sohle"
+      },
+      {
+        "id": "oberkoerper",
+        "shape": "group",
+        "pos": [
+          0,
+          0.2,
+          0
+        ],
+        "parent": "becken"
+      },
+      {
+        "id": "armL",
+        "shape": "group",
+        "pos": [
+          -0.38,
+          0.64,
+          0
+        ],
+        "parent": "oberkoerper",
+        "rot": [
+          0.02,
+          0,
+          0.08
+        ]
+      },
+      {
+        "id": "oberarmL",
+        "shape": "capsule",
+        "size": [
+          0.1,
+          0.4
+        ],
+        "pos": [
+          0,
+          -0.20800000000000002,
+          0
+        ],
+        "parent": "armL",
+        "color": "oberteil"
+      },
+      {
+        "id": "forearmL",
+        "shape": "group",
+        "pos": [
+          0,
+          -0.48000000000000004,
+          0
+        ],
+        "parent": "armL"
+      },
+      {
+        "id": "unterarmL",
+        "shape": "capsule",
+        "size": [
+          0.09,
+          0.336
+        ],
+        "pos": [
+          0,
+          -0.168,
+          0
+        ],
+        "parent": "forearmL",
+        "color": "haut"
+      },
+      {
+        "id": "handL",
+        "shape": "ico",
+        "size": 0.115,
+        "pos": [
+          0,
+          -0.36800000000000005,
+          0.02
+        ],
+        "parent": "forearmL",
+        "color": "haut",
+        "scale": [
+          0.75,
+          1.08,
+          0.6
+        ]
+      },
+      {
+        "id": "armR",
+        "shape": "group",
+        "pos": [
+          0.38,
+          0.64,
+          -0.01
+        ],
+        "parent": "oberkoerper",
+        "rot": [
+          -0.02,
+          0,
+          -0.08
+        ]
+      },
+      {
+        "id": "oberarmR",
+        "shape": "capsule",
+        "size": [
+          0.1,
+          0.4
+        ],
+        "pos": [
+          0,
+          -0.20800000000000002,
+          0
+        ],
+        "parent": "armR",
+        "color": "oberteil"
+      },
+      {
+        "id": "forearmR",
+        "shape": "group",
+        "pos": [
+          0,
+          -0.48000000000000004,
+          0
+        ],
+        "parent": "armR"
+      },
+      {
+        "id": "unterarmR",
+        "shape": "capsule",
+        "size": [
+          0.09,
+          0.336
+        ],
+        "pos": [
+          0,
+          -0.168,
+          0
+        ],
+        "parent": "forearmR",
+        "color": "haut"
+      },
+      {
+        "id": "handR",
+        "shape": "ico",
+        "size": 0.115,
+        "pos": [
+          0,
+          -0.36800000000000005,
+          0.02
+        ],
+        "parent": "forearmR",
+        "color": "haut",
+        "scale": [
+          0.75,
+          1.08,
+          0.6
+        ]
+      },
+      {
+        "id": "rumpf",
+        "shape": "ico",
+        "size": 0.34,
+        "pos": [
+          0,
+          0.38,
+          0
+        ],
+        "parent": "oberkoerper",
+        "color": "oberteil",
+        "scale": [
+          1.05,
+          1.1,
+          0.76
+        ]
+      },
+      {
+        "id": "kopf",
+        "shape": "group",
+        "pos": [
+          0,
+          1.25,
+          0
+        ],
+        "parent": "oberkoerper"
+      },
+      {
+        "id": "schaedel",
+        "shape": "sph",
+        "size": 0.4,
+        "pos": [
+          0,
+          0.12,
+          -0.02
+        ],
+        "parent": "kopf",
+        "color": "haut",
+        "scale": [
+          0.7,
+          1.45,
+          0.66
+        ]
+      },
+      {
+        "id": "gesicht",
+        "shape": "ico",
+        "size": 0.29,
+        "pos": [
+          0,
+          -0.17,
+          0.12
+        ],
+        "parent": "kopf",
+        "color": "haut",
+        "scale": [
+          0.88,
+          1.2,
+          0.66
+        ]
+      },
+      {
+        "id": "augeL",
+        "shape": "sph",
+        "size": 0.17,
+        "pos": [
+          -0.14,
+          -0.04,
+          0.33
+        ],
+        "parent": "kopf",
+        "color": "auge",
+        "scale": [
+          0.94,
+          1.02,
+          0.33
+        ]
+      },
+      {
+        "id": "augeR",
+        "shape": "sph",
+        "size": 0.17,
+        "pos": [
+          0.14,
+          -0.04,
+          0.33
+        ],
+        "parent": "kopf",
+        "color": "auge",
+        "scale": [
+          0.94,
+          1.02,
+          0.33
+        ]
+      },
+      {
+        "id": "pupilleL",
+        "shape": "sph",
+        "size": 0.028,
+        "pos": [
+          -0.125,
+          -0.04,
+          0.39
+        ],
+        "parent": "kopf",
+        "color": "pupille",
+        "scale": [
+          0.7,
+          1,
+          0.25
+        ]
+      },
+      {
+        "id": "pupilleR",
+        "shape": "sph",
+        "size": 0.028,
+        "pos": [
+          0.125,
+          -0.04,
+          0.39
+        ],
+        "parent": "kopf",
+        "color": "pupille",
+        "scale": [
+          0.7,
+          1,
+          0.25
+        ]
+      },
+      {
+        "id": "naseL",
+        "shape": "capsule",
+        "size": [
+          0.01,
+          0.04
+        ],
+        "pos": [
+          -0.025,
+          -0.22,
+          0.35
+        ],
+        "parent": "kopf",
+        "color": "hautSchatten"
+      },
+      {
+        "id": "naseR",
+        "shape": "capsule",
+        "size": [
+          0.01,
+          0.04
+        ],
+        "pos": [
+          0.025,
+          -0.22,
+          0.35
+        ],
+        "parent": "kopf",
+        "color": "hautSchatten"
+      },
+      {
+        "id": "mund",
+        "shape": "box",
+        "size": [
+          0.18,
+          0.025,
+          0.03
+        ],
+        "pos": [
+          0,
+          -0.34,
+          0.35
+        ],
+        "parent": "kopf",
+        "color": "mund"
+      },
+      {
+        "id": "mantelL",
+        "shape": "box",
+        "size": [
+          0.28,
+          1.05,
+          0.15
+        ],
+        "pos": [
+          -0.16,
+          0.19,
+          0.03
+        ],
+        "parent": "oberkoerper",
+        "color": "oberteil",
+        "rot": [
+          0,
+          0,
+          -0.025
+        ]
+      },
+      {
+        "id": "mantelR",
+        "shape": "box",
+        "size": [
+          0.28,
+          1.05,
+          0.15
+        ],
+        "pos": [
+          0.16,
+          0.19,
+          0.03
+        ],
+        "parent": "oberkoerper",
+        "color": "oberteilDunkel",
+        "rot": [
+          0,
+          0,
+          0.025
+        ]
+      },
+      {
+        "id": "kragenL",
+        "shape": "cone",
+        "size": [
+          0.16,
+          0.4
+        ],
+        "pos": [
+          -0.19,
+          0.77,
+          0.06
+        ],
+        "parent": "oberkoerper",
+        "color": "oberteilHell",
+        "rot": [
+          0,
+          0,
+          -0.66
+        ],
+        "scale": [
+          0.25,
+          1,
+          0.8
+        ]
+      },
+      {
+        "id": "kragenR",
+        "shape": "cone",
+        "size": [
+          0.16,
+          0.4
+        ],
+        "pos": [
+          0.19,
+          0.77,
+          0.06
+        ],
+        "parent": "oberkoerper",
+        "color": "oberteil",
+        "rot": [
+          0,
+          0,
+          0.66
+        ],
+        "scale": [
+          0.25,
+          1,
+          0.8
+        ]
+      }
+    ]
+  },
+  "animations": {
+    "idle": {
+      "duration": 3,
+      "loop": true,
+      "tracks": [
+        {
+          "part": "oberkoerper",
+          "prop": "scale",
+          "keys": [
+            [
+              0,
+              1
+            ],
+            [
+              1.5,
+              1.0112
+            ],
+            [
+              3,
+              1
+            ]
+          ]
+        },
+        {
+          "part": "kopf",
+          "prop": "rot.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              1.5,
+              -0.0176
+            ],
+            [
+              3,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "armL",
+          "prop": "rot.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              1.5,
+              0.016
+            ],
+            [
+              3,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "armR",
+          "prop": "rot.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              1.5,
+              -0.016
+            ],
+            [
+              3,
+              0
+            ]
+          ]
+        }
+      ]
+    },
+    "entrance": {
+      "duration": 1.35,
+      "tracks": [
+        {
+          "part": "root",
+          "prop": "pos.y",
+          "keys": [
+            [
+              0,
+              -0.72
+            ],
+            [
+              0.42,
+              -0.45
+            ],
+            [
+              0.86,
+              0.08
+            ],
+            [
+              1.08,
+              -0.035
+            ],
+            [
+              1.35,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "root",
+          "prop": "rot.y",
+          "keys": [
+            [
+              0,
+              -0.48
+            ],
+            [
+              0.55,
+              -0.2
+            ],
+            [
+              0.95,
+              0.06
+            ],
+            [
+              1.35,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "root",
+          "prop": "scale",
+          "keys": [
+            [
+              0,
+              0.42
+            ],
+            [
+              0.58,
+              0.82
+            ],
+            [
+              1.04,
+              1.06
+            ],
+            [
+              1.35,
+              1
+            ]
+          ]
+        },
+        {
+          "part": "beinL",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              -0.28
+            ],
+            [
+              0.65,
+              0.08
+            ],
+            [
+              1.35,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "beinR",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              0.24
+            ],
+            [
+              0.65,
+              -0.06
+            ],
+            [
+              1.35,
+              0
+            ]
+          ]
+        }
+      ]
+    },
+    "attack": {
+      "duration": 0.76,
+      "tracks": [
+        {
+          "part": "root",
+          "prop": "pos.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.18,
+              -0.08
+            ],
+            [
+              0.42,
+              0.14
+            ],
+            [
+              0.76,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "oberkoerper",
+          "prop": "rot.y",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.18,
+              0.22
+            ],
+            [
+              0.42,
+              -0.24
+            ],
+            [
+              0.76,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "armL",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.18,
+              0.5
+            ],
+            [
+              0.42,
+              -0.82
+            ],
+            [
+              0.76,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "armL",
+          "prop": "rot.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.18,
+              0.58
+            ],
+            [
+              0.42,
+              -0.36
+            ],
+            [
+              0.76,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "forearmL",
+          "prop": "rot.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.18,
+              0.32
+            ],
+            [
+              0.42,
+              -0.42
+            ],
+            [
+              0.76,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "kopf",
+          "prop": "rot.y",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.18,
+              0.12
+            ],
+            [
+              0.42,
+              -0.14
+            ],
+            [
+              0.76,
+              0
+            ]
+          ]
+        }
+      ]
+    },
+    "hit": {
+      "duration": 0.56,
+      "tracks": [
+        {
+          "part": "root",
+          "prop": "pos.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.12,
+              -0.15
+            ],
+            [
+              0.34,
+              -0.05
+            ],
+            [
+              0.56,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "root",
+          "prop": "rot.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.12,
+              0.11
+            ],
+            [
+              0.34,
+              -0.035
+            ],
+            [
+              0.56,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "oberkoerper",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.12,
+              -0.14
+            ],
+            [
+              0.34,
+              0.045
+            ],
+            [
+              0.56,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "kopf",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.12,
+              0.16
+            ],
+            [
+              0.34,
+              -0.05
+            ],
+            [
+              0.56,
+              0
+            ]
+          ]
+        }
+      ]
+    },
+    "death": {
+      "duration": 1.5,
+      "tracks": [
+        {
+          "part": "root",
+          "prop": "pos.y",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.55,
+              -0.05
+            ],
+            [
+              1,
+              -0.22
+            ],
+            [
+              1.5,
+              -0.48
+            ]
+          ]
+        },
+        {
+          "part": "root",
+          "prop": "rot.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.55,
+              0.06
+            ],
+            [
+              1,
+              0.38
+            ],
+            [
+              1.5,
+              1.05
+            ]
+          ]
+        },
+        {
+          "part": "oberkoerper",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.65,
+              0.12
+            ],
+            [
+              1.5,
+              0.34
+            ]
+          ]
+        },
+        {
+          "part": "kopf",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.55,
+              -0.06
+            ],
+            [
+              1.5,
+              0.38
+            ]
+          ]
+        },
+        {
+          "part": "armL",
+          "prop": "rot.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.7,
+              0.24
+            ],
+            [
+              1.5,
+              0.68
+            ]
+          ]
+        },
+        {
+          "part": "armR",
+          "prop": "rot.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.7,
+              -0.2
+            ],
+            [
+              1.5,
+              -0.58
+            ]
+          ]
+        }
+      ]
+    }
+  }
+}

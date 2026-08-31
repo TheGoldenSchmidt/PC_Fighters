@@ -7,6 +7,7 @@ import {
   getAbilities,
   hasAbility,
   onDeathTriggers,
+  onCardPlayedAbilities,
   onPlayAbilities,
   onRoundEndAbilities,
   onRoundStartAbilities,
@@ -34,6 +35,7 @@ import {
   recalcBoard
 } from './internal.js';
 import { hasKeyword } from './keywords.js';
+import { wuerfle } from './rng.js';
 import { basisSchaden } from './schild.js';
 import { rechneBuffSchadenZu, registriereAusspielen, registriereEnergie, registriereMulligan, zaehleCheerleader, zaehleKarte, zaehleSpieler } from './stats.js';
 import type {
@@ -95,7 +97,21 @@ function logDeaths(state: GameState): void {
   while (guard < 100) {
     const deaths = recalcBoard(state);
     for (const d of deaths) {
-      log(state, `${d.name} wird zerstört.`, { kind: 'death', lane: d.lane, owner: d.owner });
+      log(state, `${d.name} wird zerstört.`, {
+        kind: 'death', lane: d.lane, owner: d.owner, uid: d.creature.uid
+      });
+    }
+    // Fällt der vordere Team-Up-Kämpfer, rückt der überlebende Partner in den
+    // normalen Lane-Slot vor. Das hält Regelzustand und Kampf-Replay identisch
+    // und entfernt den Team-Bonus beim nächsten recalcBoard-Durchlauf sauber.
+    for (const owner of [0, 1] as PlayerIndex[]) {
+      for (let lane = 0; lane < state.config.lanes; lane++) {
+        const rear = state.teamBoard?.[owner]?.[lane];
+        if (!state.board[owner][lane] && rear && rear.currentHealth > 0) {
+          state.board[owner][lane] = rear;
+          state.teamBoard![owner][lane] = null;
+        }
+      }
     }
     const teamDeaths = [] as typeof deaths;
     for (const owner of [0, 1] as PlayerIndex[]) {
@@ -104,7 +120,9 @@ function logDeaths(state: GameState): void {
         if (!creature || creature.currentHealth > 0) continue;
         state.teamBoard![owner][lane] = null;
         teamDeaths.push({ owner, lane, name: creature.name, faction: creature.faction, creature });
-        log(state, `${creature.name} wird zerstört.`, { kind: 'death', lane, owner });
+        log(state, `${creature.name} wird zerstört.`, {
+          kind: 'death', lane, owner, uid: creature.uid
+        });
       }
     }
     const allDeaths = [...deaths, ...teamDeaths];
@@ -343,6 +361,7 @@ function mulliganAction(
   state: GameState,
   player: PlayerIndex,
   action: Extract<PlayerAction, { type: 'mulligan' }>,
+  data: GameData,
   random: () => number
 ): void {
   if (state.phase !== 'mulligan') throw new GameRuleError('Der Mulligan ist bereits vorbei.');
@@ -367,13 +386,13 @@ function mulliganAction(
   }
   p.mulliganDone = true;
   log(state, `Spieler ${player + 1} hat den Mulligan bestätigt.`);
-  if (state.players[0].mulliganDone && state.players[1].mulliganDone) startRound(state);
+  if (state.players[0].mulliganDone && state.players[1].mulliganDone) startRound(state, data);
   else state.active = otherPlayer(player);
 }
 
 // ---------------------------------------------------------------- Rundenablauf
 
-function startRound(state: GameState): void {
+function startRound(state: GameState, data: GameData): void {
   state.round += 1;
   if (state.round > 1) {
     state.startingPlayer = otherPlayer(state.startingPlayer);
@@ -406,6 +425,38 @@ function startRound(state: GameState): void {
   // Rundenbeginn-Effekte (Rundenwachstum, lernen/wissen pro Runde) – wirkt auf
   // Kreaturen, die aus einer früheren Runde übrig sind (Runde 1: leeres Feld).
   onRoundStartAbilities(state);
+  // Datenabhängige Rundenstart-Verwandlungen laufen nach den normalen Hooks:
+  // die Ausgangskreatur erhält ihren bisherigen Trigger noch, die neue nicht
+  // rückwirkend ein zweites Mal.
+  for (const owner of [0, 1] as PlayerIndex[]) {
+    for (let lane = 0; lane < state.config.lanes; lane++) {
+      for (const teamSlot of [false, true]) {
+        const row = teamSlot ? state.teamBoard?.[owner] : state.board[owner];
+        const creature = row?.[lane];
+        if (!creature) continue;
+        const ability = creature.abilities.find(
+          (entry): entry is Extract<(typeof creature.abilities)[number], { kind: 'verwandlung' }> =>
+            entry.kind === 'verwandlung' && entry.timing === 'rundenstart'
+        );
+        if (!ability) continue;
+        const candidates = data.cards.filter((card): card is Extract<CardDef, { type: 'creature' }> =>
+          card.type === 'creature' &&
+          card.id !== creature.cardId &&
+          card.cost <= ability.maxKosten &&
+          matchesScope(state.factionTree, ability.scope, creature.faction, card.faction)
+        );
+        if (candidates.length === 0) continue;
+        const target = candidates[wuerfle(state, 0, candidates.length - 1)];
+        const replacement = makeCreature(state, { cardId: target.id, ...target }, { isToken: false });
+        replacement.faceDown = false;
+        replacement.exhausted = false;
+        row![lane] = replacement;
+        log(state, `${creature.name} verwandelt sich in ${replacement.name}.`, {
+          kind: 'spell', lane, effect: 'summon', faction: replacement.faction
+        });
+      }
+    }
+  }
   recalcBoard(state);
   log(state, `— Runde ${state.round} beginnt (${energy} Energie, Spieler ${state.startingPlayer + 1} fängt an) —`);
 }
@@ -434,7 +485,7 @@ function rundenAbschluss(state: GameState): void {
   }
 }
 
-function zermuerbungUndNaechsteRunde(state: GameState): void {
+function zermuerbungUndNaechsteRunde(state: GameState, data: GameData): void {
   // Zermürbung (Regelwerk V2): ab config.zermuerbung.abRunde verlieren beide
   // Basen am Rundenende Leben – das ist die REGULÄRE Terminierung für lange
   // Partien (eine echte Spielentscheidung statt eines harten Abbruchs).
@@ -462,7 +513,7 @@ function zermuerbungUndNaechsteRunde(state: GameState): void {
     );
     return;
   }
-  startRound(state);
+  startRound(state, data);
 }
 
 // ---------------------------------------------------------------- Kampfphase
@@ -501,6 +552,38 @@ function referenzZahl(creature: Creature, begriff: string, fallback: number): nu
     if (match) return Number(match[1]);
   }
   return fallback;
+}
+
+function antiHeroBonus(creature: Creature): number {
+  const abilities = getAbilities(creature, 'antiHero');
+  return abilities.length > 0
+    ? abilities.reduce((sum, ability) => sum + ability.bonusAtk, 0)
+    : referenzZahl(creature, 'Anti-Hero', 3);
+}
+
+/** Effektive Werte des hinteren Team-Up-Slots. Er läuft nicht durch die
+ * board-basierten Aura-Helfer und braucht deshalb seine Team-Primitiven hier. */
+function rearTeamAttack(state: GameState, owner: PlayerIndex, lane: number, creature: Creature): number {
+  let attack = creature.baseAttack + creature.permAttackBonus + creature.tempAttackBonus;
+  for (const bonus of getAbilities(creature, 'teamBonus')) attack += bonus.bonus.atk;
+  const front = state.board[owner][lane];
+  if (front) {
+    for (const buff of getAbilities(front, 'teamBuff')) {
+      if (matchesScope(state.factionTree, buff.scope, front.faction, creature.faction)) attack += buff.atk;
+    }
+  }
+  return Math.max(0, attack);
+}
+
+function rearTeamMaxHealth(creature: Creature): number {
+  const teamHealth = getAbilities(creature, 'teamBonus').reduce(
+    (sum, bonus) => sum + bonus.bonus.hp,
+    0
+  );
+  return Math.max(
+    1,
+    creature.baseMaxHealth + creature.permHealthBonus + creature.tempHealthBonus + teamHealth
+  );
 }
 
 /** Ein Angriff Kreatur→Kreatur inkl. Gift, Wucht (Überschuss→Basis) und Dornen. */
@@ -603,9 +686,9 @@ function kampfLane(state: GameState, lane: number): void {
         if (attacker.exhausted || attacker.currentHealth <= 0) continue;
         const defenderIdx = otherPlayer(attackerIdx);
         const defender = rows[defenderIdx].find((creature) => creature.currentHealth > 0);
-        let attack = Math.max(0, attacker.baseAttack + attacker.permAttackBonus + attacker.tempAttackBonus);
+        let attack = rearTeamAttack(state, attackerIdx, lane, attacker);
         if (state.board[attackerIdx][lane]?.uid === attacker.uid) attack = getEffectiveAttack(state, attackerIdx, lane);
-        if (!defender && hasKeyword(attacker, 'antiHero')) attack += referenzZahl(attacker, 'Anti-Hero', 3);
+        if (!defender && hasKeyword(attacker, 'antiHero')) attack += antiHeroBonus(attacker);
         let strikes = hasKeyword(attacker, 'doubleStrike') ? 2 : 1;
         let frenzyAdded = false;
         for (let strike = 0; strike < strikes; strike++) {
@@ -676,7 +759,7 @@ function kampfLane(state: GameState, lane: number): void {
     a.attackedThisRound = true;
     // Der Schild entscheidet, wie viel wirklich ankommt. Das AttackEvent trägt
     // den effektiven Schaden, weil der Client damit direkt weiterrechnet.
-    const echt = basisSchaden(state, 1, dmg + (hasKeyword(a, 'antiHero') ? referenzZahl(a, 'Anti-Hero', 3) : 0), {
+    const echt = basisSchaden(state, 1, dmg + (hasKeyword(a, 'antiHero') ? antiHeroBonus(a) : 0), {
       bullseye: hasKeyword(a, 'bullseye')
     });
     zaehleKarte(state, 0, a.cardId, 'schadenBasis', echt);
@@ -698,7 +781,7 @@ function kampfLane(state: GameState, lane: number): void {
   if (b && !a && !b.exhausted) {
     const dmg = getEffectiveAttack(state, 1, lane) + soloBasisschaden(b);
     b.attackedThisRound = true;
-    const echt = basisSchaden(state, 0, dmg + (hasKeyword(b, 'antiHero') ? referenzZahl(b, 'Anti-Hero', 3) : 0), {
+    const echt = basisSchaden(state, 0, dmg + (hasKeyword(b, 'antiHero') ? antiHeroBonus(b) : 0), {
       bullseye: hasKeyword(b, 'bullseye')
     });
     zaehleKarte(state, 1, b.cardId, 'schadenBasis', echt);
@@ -715,6 +798,29 @@ function kampfLane(state: GameState, lane: number): void {
       { kind: 'attack', lane, attacker: 1, damage: echt, toBase: true, ...(echt === 0 ? { blockiert: true } : {}) }
     );
   }
+}
+
+/** Ein einzelner zusätzlicher Angriff, ausgelöst durch eine Aktionskarte. Der
+ * Schlag benutzt denselben Trefferpfad wie der normale Kampf (Rüstung,
+ * Tödlich, Gift, Wucht, Dornen und Schild), ohne einen Gegenschlag. */
+function bonusAngriff(state: GameState, owner: PlayerIndex, lane: number): void {
+  const attacker = state.board[owner][lane];
+  if (!attacker || attacker.currentHealth <= 0 || attacker.exhausted) return;
+  const enemy = otherPlayer(owner);
+  const defender = state.board[enemy][lane];
+  const attack = getEffectiveAttack(state, owner, lane) + kampfAngriffsBonus(state, owner, lane);
+  if (defender) {
+    creatureStrike(state, attacker, defender, attack, owner, lane);
+    applyShedding(state);
+    return;
+  }
+  attacker.attackedThisRound = true;
+  const raw = attack + (hasKeyword(attacker, 'antiHero') ? antiHeroBonus(attacker) : 0);
+  const damage = basisSchaden(state, enemy, raw, { bullseye: hasKeyword(attacker, 'bullseye') });
+  zaehleKarte(state, owner, attacker.cardId, 'schadenBasis', damage);
+  log(state, `${attacker.name} macht einen Bonusangriff auf die Basis für ${damage}.`, {
+    kind: 'attack', lane, attacker: owner, damage, toBase: true
+  });
 }
 
 /** Nach allen Lanes: Gift-Zermürbung und Häutung, danach wieder Tode auflösen. */
@@ -781,7 +887,7 @@ function advanceFlyPhase(state: GameState): void {
  * von applyAction endet hier – dadurch steht der Zustand danach IMMER entweder
  * auf "ein Spieler ist normal am Zug" oder auf "ein Fenster wartet".
  */
-function fahreAufloesungFort(state: GameState): void {
+function fahreAufloesungFort(state: GameState, data: GameData): void {
   let guard = 0;
   while (state.aufloesung.length > 0 && !state.reaktion && state.phase !== 'ended' && guard < 500) {
     guard += 1;
@@ -790,6 +896,9 @@ function fahreAufloesungFort(state: GameState): void {
     switch (schritt.art) {
       case 'kampfLane':
         kampfLane(state, schritt.lane);
+        break;
+      case 'bonusAngriff':
+        bonusAngriff(state, schritt.spieler, schritt.lane);
         break;
       case 'kampfAbschluss':
         kampfAbschluss(state);
@@ -809,7 +918,7 @@ function fahreAufloesungFort(state: GameState): void {
         rundenAbschluss(state);
         break;
       case 'zermuerbung':
-        zermuerbungUndNaechsteRunde(state);
+        zermuerbungUndNaechsteRunde(state, data);
         break;
     }
     checkBaseDestroyed(state);
@@ -833,6 +942,88 @@ function jagdAusloesen(state: GameState, gespieltVon: PlayerIndex, zielLane: num
   }
 }
 
+/** Öffnet alle Grabsteine genau einmal und liefert der Kampf-Abspielung die
+ * vollständige sichtbare Figur, bevor der erste Angriff beginnt. */
+function deckeGrabsteineAuf(state: GameState, data: GameData): void {
+  const revealed: { owner: PlayerIndex; lane: number; teamSlot: boolean; creature: Creature }[] = [];
+  for (const owner of [0, 1] as PlayerIndex[]) {
+    for (let lane = 0; lane < state.config.lanes; lane++) {
+      const slots = [
+        { creature: state.board[owner][lane], teamSlot: false },
+        { creature: state.teamBoard?.[owner]?.[lane] ?? null, teamSlot: true }
+      ];
+      for (const slot of slots) {
+        if (!slot.creature?.faceDown) continue;
+        slot.creature.faceDown = false;
+        revealed.push({ owner, lane, teamSlot: slot.teamSlot, creature: slot.creature });
+      }
+    }
+  }
+
+  if (revealed.length === 0) return;
+  log(state, '— Grabsteine werden direkt vor dem Kampf aufgedeckt —');
+  for (const item of revealed) {
+    const { owner, lane, teamSlot, creature } = item;
+    const card = data.cardsById[creature.cardId];
+    const maxHealth = Math.max(
+      1,
+      creature.baseMaxHealth + creature.permHealthBonus + creature.tempHealthBonus
+    );
+    const isFront = state.board[owner][lane]?.uid === creature.uid;
+    log(state, `${creature.name} wird in Lane ${lane + 1} aufgedeckt.`, {
+      kind: 'reveal',
+      lane,
+      owner,
+      faction: creature.faction,
+      teamSlot,
+      creature: {
+        uid: creature.uid,
+        cardId: creature.cardId,
+        name: creature.name,
+        keywords: creature.keywords,
+        abilities: creature.abilities,
+        poison: creature.poison,
+        attack: isFront
+          ? getEffectiveAttack(state, owner, lane)
+          : Math.max(0, creature.baseAttack + creature.permAttackBonus + creature.tempAttackBonus),
+        baseAttack: creature.baseAttack,
+        health: creature.currentHealth,
+        maxHealth,
+        baseMaxHealth: creature.baseMaxHealth,
+        exhausted: creature.exhausted,
+        canFly: false,
+        projectile: card?.type === 'creature' ? card.projectile : undefined,
+        text: card?.text,
+        faceDown: false
+      }
+    });
+
+    if (!hasKeyword(creature, 'overshoot')) continue;
+    const amount = referenzZahl(creature, 'Overshoot', 2);
+    const damage = basisSchaden(state, otherPlayer(owner), amount, {
+      bullseye: hasKeyword(creature, 'bullseye')
+    });
+    log(state, `${creature.name}: Overshoot trifft die Basis für ${damage}.`, {
+      kind: 'attack', lane, attacker: owner, damage, toBase: true
+    });
+  }
+
+  for (const item of revealed) {
+    const debuffs = item.creature.abilities.filter(
+      (ability): ability is Extract<(typeof item.creature.abilities)[number], { kind: 'aufdeckenDebuff' }> =>
+        ability.kind === 'aufdeckenDebuff'
+    );
+    for (const debuff of debuffs) {
+      const enemy = otherPlayer(item.owner);
+      for (const target of [state.board[enemy][item.lane], state.teamBoard?.[enemy]?.[item.lane]]) {
+        if (!target) continue;
+        target.permAttackBonus -= debuff.atk;
+        target.permHealthBonus -= debuff.hp;
+      }
+    }
+  }
+}
+
 function playPhaseAction(state: GameState, player: PlayerIndex, action: PlayerAction, data: GameData): void {
   if (state.active !== player) {
     throw new GameRuleError('Du bist gerade nicht am Zug.');
@@ -845,36 +1036,10 @@ function playPhaseAction(state: GameState, player: PlayerIndex, action: PlayerAc
     state.consecutivePasses += 1;
     log(state, `Spieler ${player + 1} passt.`);
     if (state.consecutivePasses >= 2) {
-      if (state.phase === 'play' && state.players.some((entry) => entry.championId)) {
-        state.phase = 'precombat';
-        state.consecutivePasses = 0;
-        state.active = state.startingPlayer;
-        for (const row of state.board) {
-          for (const creature of row) {
-            if (creature?.faceDown) creature.faceDown = false;
-          }
-        }
-        // Overshoot wirkt beim Aufdecken unmittelbar vor dem letzten
-        // Aktionsfenster; der Wert wird aus dem Referenztext gelesen.
-        for (const owner of [0, 1] as PlayerIndex[]) {
-          for (let lane = 0; lane < state.config.lanes; lane++) {
-            for (const creature of [state.board[owner][lane], state.teamBoard?.[owner]?.[lane]]) {
-              if (!creature || !hasKeyword(creature, 'overshoot')) continue;
-              const amount = referenzZahl(creature, 'Overshoot', 2);
-              const damage = basisSchaden(state, otherPlayer(owner), amount, {
-                bullseye: hasKeyword(creature, 'bullseye')
-              });
-              log(state, `${creature.name}: Overshoot trifft die Basis für ${damage}.`, {
-                kind: 'attack', lane, attacker: owner, damage, toBase: true
-              });
-            }
-          }
-        }
-        log(state, '— Grabsteine werden aufgedeckt; letzte Aktionsphase vor dem Kampf —');
-      } else {
-        log(state, '— Kampfphase —');
-        state.aufloesung.push(...kampfSchritte(state));
-      }
+      deckeGrabsteineAuf(state, data);
+      logDeaths(state);
+      log(state, '— Kampfphase —');
+      state.aufloesung.push(...kampfSchritte(state));
     } else {
       state.active = otherPlayer(player);
     }
@@ -925,6 +1090,14 @@ function playPhaseAction(state: GameState, player: PlayerIndex, action: PlayerAc
       }
       state.teamBoard[player][action.lane] = creature;
       teamSlot = true;
+      // Der hintere Slot wird von recalcBoard nicht durchlaufen. Einen eigenen
+      // Team-Bonus daher beim Betreten auf aktuelles und letztes Maximum legen.
+      const teamHealth = getAbilities(creature, 'teamBonus').reduce(
+        (sum, bonus) => sum + bonus.bonus.hp,
+        0
+      );
+      creature.currentHealth += teamHealth;
+      creature.lastMaxHealth += teamHealth;
     } else {
       state.board[player][action.lane] = creature;
     }
@@ -935,7 +1108,8 @@ function playPhaseAction(state: GameState, player: PlayerIndex, action: PlayerAc
     );
     // Beim-Ausspielen-Effekte (sturzflug, lernen, wissen, Puls, umverteilung,
     // beschwoeren, entwaffnen, experiment).
-    if (!teamSlot) onPlayAbilities(state, player, action.lane);
+    onPlayAbilities(state, player, action.lane, teamSlot);
+    onCardPlayedAbilities(state, player, card.faction);
     jagdAusloesen(state, player, action.lane);
   } else if (action.type === 'playEnvironment') {
     if (card.type !== 'environment') {
@@ -1155,14 +1329,14 @@ export function applyAction(
     throw new GameRuleError('Die Auflösung läuft noch – bitte kurz warten.');
   } else if (next.phase === 'mulligan') {
     if (action.type !== 'mulligan') throw new GameRuleError('Bitte zuerst den Mulligan bestätigen.');
-    mulliganAction(next, player, action, random);
+    mulliganAction(next, player, action, data, random);
   } else if (next.phase === 'play' || next.phase === 'precombat') {
     playPhaseAction(next, player, action, data);
   } else {
     flyPhaseAction(next, player, action);
   }
 
-  fahreAufloesungFort(next);
+  fahreAufloesungFort(next, data);
   // Sicherheitsnetz: resolveCombat prüft checkBaseDestroyed nur innerhalb der
   // Kampfphase. Basisschaden AUSSERHALB des Kampfes (z. B. sturzflug/experiment
   // beim Ausspielen) konnte die Basis bisher auf ≤0 senken, ohne die Partie zu
@@ -1242,10 +1416,10 @@ export function buildClientView(state: GameState, player: PlayerIndex, data: Gam
       keywords: creature.keywords,
       abilities: creature.abilities,
       poison: creature.poison,
-      attack: Math.max(0, creature.baseAttack + creature.permAttackBonus + creature.tempAttackBonus),
+      attack: rearTeamAttack(state, owner, lane, creature),
       baseAttack: creature.baseAttack,
       health: creature.currentHealth,
-      maxHealth: Math.max(1, creature.baseMaxHealth + creature.permHealthBonus + creature.tempHealthBonus),
+      maxHealth: rearTeamMaxHealth(creature),
       baseMaxHealth: creature.baseMaxHealth,
       exhausted: creature.exhausted,
       canFly: false,

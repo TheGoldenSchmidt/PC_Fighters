@@ -54,6 +54,7 @@ export function CardArt({
       // Ohne das startet der Browser beim Ziehen seinen eigenen Bild-Drag,
       // schickt ein `pointercancel` – und der Kartenzug bricht sofort ab.
       draggable={false}
+      onContextMenu={(event) => event.preventDefault()}
       onError={() => setFailed(true)}
     />
   );

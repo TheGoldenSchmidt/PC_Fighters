@@ -1,6 +1,6 @@
 export * from './types.js';
 export { KEYWORDS, hasKeyword } from './keywords.js';
-export { ABILITIES, getAbilities, getAbility, hasAbility } from './abilities.js';
+export { ABILITIES, ABILITY_KINDS, getAbilities, getAbility, hasAbility } from './abilities.js';
 export { createSeededRandom, wuerfle } from './rng.js';
 export { EFFECTS } from './effects.js';
 export { basisSchaden, schildAktiv } from './schild.js';

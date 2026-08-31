@@ -87,18 +87,49 @@ describe('Champ-Partie', () => {
     expect(state.environments).toHaveLength(5);
   });
 
-  it('öffnet nach zwei Pässen das Vor-Kampf-Fenster und kämpft erst nach zwei weiteren', () => {
+  it('beginnt nach zwei Pässen sofort den Kampf, ohne zweites Aktionsfenster', () => {
     let state = championGame();
     state = applyAction(state, 0, { type: 'mulligan', handIndices: [] }, data);
     state = applyAction(state, 1, { type: 'mulligan', handIndices: [] }, data);
-    state = applyAction(state, state.active, { type: 'pass' }, data);
-    state = applyAction(state, state.active, { type: 'pass' }, data);
-    expect(state.phase).toBe('precombat');
     const round = state.round;
     state = applyAction(state, state.active, { type: 'pass' }, data);
     state = applyAction(state, state.active, { type: 'pass' }, data);
     expect(state.round).toBe(round + 1);
     expect(state.phase).toBe('play');
+    expect(state.log.some((entry) => entry.text.includes('letzte Aktionsphase'))).toBe(false);
+  });
+
+  it('deckt Front- und Team-Up-Grabsteine erst nach dem zweiten Pass direkt vor Angriffen auf', () => {
+    let state = championGame();
+    state.phase = 'play';
+    state.active = 0;
+    const gravestones = data.cards.filter(
+      (card) => card.type === 'creature' && card.keywords.includes('gravestone')
+    );
+    expect(gravestones.length).toBeGreaterThan(0);
+    const card = gravestones[0];
+    state.players[0].energy = 20;
+    state.players[0].hand = [card.id];
+    state = applyAction(state, 0, { type: 'playCreature', handIndex: 0, lane: 1 }, data);
+    const rear = structuredClone(state.board[0][1]!);
+    rear.uid = ++state.uidCounter;
+    state.teamBoard![0][1] = rear;
+    state.board[0][1]!.exhausted = true;
+    state.teamBoard![0][1]!.exhausted = true;
+
+    state = applyAction(state, state.active, { type: 'pass' }, data);
+    expect(state.board[0][1]?.faceDown).toBe(true);
+    expect(state.teamBoard?.[0][1]?.faceDown).toBe(true);
+    state = applyAction(state, state.active, { type: 'pass' }, data);
+
+    const events = state.log.flatMap((entry) => entry.event ? [entry.event] : []);
+    const revealIndices = events.flatMap((event, index) => event.kind === 'reveal' ? [index] : []);
+    const firstAttack = events.findIndex((event) => event.kind === 'attack');
+    expect(revealIndices).toHaveLength(2);
+    expect(events.filter((event) => event.kind === 'reveal').map((event) =>
+      event.kind === 'reveal' ? event.teamSlot : false
+    )).toEqual([false, true]);
+    expect(firstAttack === -1 || Math.max(...revealIndices) < firstAttack).toBe(true);
   });
 
   it('setzt Wasser-, Team-Up- und Environment-Lanes durch', () => {

@@ -370,8 +370,8 @@ describe('Server: Raum, Beitritt, Aktionen, gefilterte Sicht', () => {
     guest.send({ type: 'join', code: created.code, championId: 'sonnenfackel', deckSelection: { kind: 'preset', id: 'sonnenfackel' } });
     await guest.next('joined');
     const hostView = (await host.next('state')).view as ClientView;
-    expect(hostView.players[0].deckName).toContain('Doktor Stahlbund');
-    expect(hostView.players[1].deckName).toContain('Funkenfeder');
+    expect(hostView.players[0].deckName).toContain('Coon & Friends');
+    expect(hostView.players[1].deckName).toContain('Korvo and Friends');
 
     const bad = await connect(server.port);
     bad.send({ type: 'create', deckSelection: { kind: 'custom', deck: { name: 'Cheat', cards: [{ cardId: 'wolf', count: 99 }] } } });

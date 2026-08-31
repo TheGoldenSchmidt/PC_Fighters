@@ -314,6 +314,8 @@
    des Browsers würde den Kartenzug mit einem pointercancel abwürgen. */
 .hand-card img {
   -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
   user-select: none;
 }
 

@@ -32,8 +32,9 @@
     ],
     "abilities": [
       {
-        "kind": "referenz",
-        "text": "Team-Up; Rundenstart +1 Sun für diese Runde"
+        "kind": "energie",
+        "timing": "rundenstart",
+        "amount": 1
       }
     ],
     "projectile": "✨"
@@ -55,15 +56,15 @@
     ],
     "abilities": [
       {
-        "kind": "referenz",
-        "text": "Mit Team-Up-Pflanze hier: +2/+2"
+        "kind": "teamBonus",
+        "bonus": { "atk": 2, "hp": 2 }
       }
     ],
     "projectile": "✨"
   },
   {
     "id": "squash",
-    "name": "Helle Atempause",
+    "name": "Gerechtes Urteil",
     "faction": "solar",
     "cost": 5,
     "deckable": true,
@@ -72,8 +73,8 @@
     "text": "Human zerstören",
     "type": "action",
     "effect": {
-      "kind": "referenz",
-      "text": "Zombie zerstören"
+      "kind": "destroy",
+      "target": "enemyCreature"
     }
   },
   {
