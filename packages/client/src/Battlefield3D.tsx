@@ -28,7 +28,7 @@ export type SpellEffectKind = 'buff' | 'attackBuff' | 'summon' | 'move' | 'envir
 /** Teilmenge des GameScreen-FxState, die das Schlachtfeld braucht. */
 export interface BattlefieldFx {
   projectiles: { key: string; lane: number; attacker: PlayerIndex; toBase: boolean; emoji: string }[];
-  dying: { lane: number; owner: PlayerIndex }[];
+  dying: { lane: number; owner: PlayerIndex; uid?: number }[];
   spells: { key: string; lane: number; effect: SpellEffectKind; faction: string }[];
   sacrifices: {
     key: string;
@@ -66,6 +66,8 @@ interface FigureRec {
   approach: THREE.Vector3;
   /** Tatsächliche Modellbreite nach Auto-Fit, für breite Tiere/Dinos. */
   width: number;
+  /** Team-Up-Aufstellung: der normale Board-Slot steht vor dem zweiten Slot. */
+  formation: 'solo' | 'front' | 'rear';
 }
 
 interface TeamFigureRec {
@@ -389,9 +391,6 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
   const worldRef = useRef<World | null>(null);
   const onUnsupportedRef = useRef(onUnsupported);
   onUnsupportedRef.current = onUnsupported;
-  // Katalog kann asynchron (nach dem Mount) eintreffen – über Ref lesen.
-  const catalogRef = useRef(catalog);
-  catalogRef.current = catalog;
 
   // ---- Szene einmalig aufbauen ----
   useEffect(() => {
@@ -587,11 +586,25 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
         const anchor = slotAnchor(world, rec.side, rec.lane, rec.width);
         if (anchor) {
           const root = rec.fig.root;
+          const target = anchor.pos.clone();
+          if (rec.formation !== 'solo') {
+            const opponent = slotAnchor(world, rec.side === 0 ? 1 : 0, rec.lane, rec.width);
+            if (opponent) {
+              const towardOpponent = opponent.pos.clone().sub(anchor.pos).setY(0);
+              if (towardOpponent.lengthSq() > 0.0001) {
+                towardOpponent.normalize();
+                target.addScaledVector(
+                  towardOpponent,
+                  anchor.scale * (rec.formation === 'front' ? 0.28 : -0.42)
+                );
+              }
+            }
+          }
           if (!rec.placed) {
-            root.position.copy(anchor.pos);
+            root.position.copy(target);
             rec.placed = true;
           } else {
-            tmp.copy(anchor.pos).sub(root.position);
+            tmp.copy(target).sub(root.position);
             const dist = tmp.length();
             if (dist > 0.04) {
               // konstante Schrittgeschwindigkeit, gegen Ende weich abbremsen
@@ -599,7 +612,7 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
               root.position.addScaledVector(tmp.normalize(), step);
               rec.fig.setWalking(true);
             } else {
-              root.position.copy(anchor.pos);
+              root.position.copy(target);
               rec.fig.setWalking(false);
             }
           }
@@ -610,7 +623,7 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
             if (k <= 0 && now - rec.attackStart > APPROACH_OUT_MS) rec.attackStart = 0;
             else root.position.addScaledVector(rec.approach, k);
           }
-          root.scale.setScalar(anchor.scale);
+          root.scale.setScalar(anchor.scale * (rec.formation === 'rear' ? 0.88 : 1));
         }
         rec.fig.update(now);
         if (rec.dying && !rec.onBoard && rec.fig.isDeathFinished(now)) {
@@ -939,28 +952,47 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
   // ---- Brett-Sync: Figuren erzeugen/aktualisieren/entfernen ----
   useEffect(() => {
     const world = worldRef.current;
-    if (!world) return;
+    // Der Katalog kommt nach dem ersten Spielzustand asynchron vom Server.
+    // Ohne ihn würden echte Modelle kurz als Golems erzeugt und wegen ihrer
+    // stabilen cardId später nie ersetzt. Darum erst synchronisieren, wenn der
+    // Katalog da ist; wirklich unbekannte IDs erhalten dann weiterhin den
+    // beabsichtigten Fallback.
+    if (!world || !catalog) return;
     world.me = me;
     world.lanes = view.lanes;
     const seen = new Set<number>();
 
     for (const side of [0, 1] as PlayerIndex[]) {
-      view.board[side].forEach((c, lane) => {
+      const syncRow = (
+        row: ClientView['board'][PlayerIndex],
+        formationForLane: (lane: number) => FigureRec['formation']
+      ) => row.forEach((c, lane) => {
         if (!c) return;
         seen.add(c.uid);
         let rec = world.figures.get(c.uid);
         if (!rec) {
-          const cat = catalogRef.current;
           const fig = createFigure(
             c.cardId,
             side === me ? -1 : 1,
             c.uid,
-            cat?.cards[c.cardId],
-            cat?.defaultClips,
+            catalog.cards[c.cardId],
+            catalog.defaultClips,
             { realShadows: world.realShadows }
           );
           const width = new THREE.Box3().setFromObject(fig.root).getSize(new THREE.Vector3()).x;
-          rec = { fig, side, lane, health: c.health, onBoard: true, dying: false, placed: false, attackStart: 0, approach: new THREE.Vector3(), width };
+          rec = {
+            fig,
+            side,
+            lane,
+            health: c.health,
+            onBoard: true,
+            dying: false,
+            placed: false,
+            attackStart: 0,
+            approach: new THREE.Vector3(),
+            width,
+            formation: formationForLane(lane)
+          };
           world.figures.set(c.uid, rec);
           world.scene.add(fig.root);
           if (!world.firstSync) fig.playSpawn();
@@ -970,9 +1002,12 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
           rec.lane = lane;
           rec.side = side;
           rec.onBoard = true;
+          rec.formation = formationForLane(lane);
         }
         rec.fig.setExhausted(c.exhausted);
       });
+      syncRow(view.board[side], (lane) => view.teamBoard[side]?.[lane] ? 'front' : 'solo');
+      syncRow(view.teamBoard[side] ?? [], () => 'rear');
     }
 
     // Vom Brett verschwundene Figuren: Sterbende zu Ende animieren lassen,
@@ -987,12 +1022,12 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
       }
     }
     world.firstSync = false;
-  }, [view, me]);
+  }, [view, me, catalog]);
 
   // ---- Öffentliche Teamroster: drei stabile Bankplätze je Seite ----
   useEffect(() => {
     const world = worldRef.current;
-    if (!world) return;
+    if (!world || !catalog) return;
     const present = new Set<string>();
     for (const side of [0, 1] as PlayerIndex[]) {
       view.players[side].cheerleaders.forEach((cardId, rawSlot) => {
@@ -1006,13 +1041,12 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
           world.scene.remove(current.fig.root);
           current.fig.dispose();
         }
-        const cat = catalogRef.current;
         const fig = createFigure(
           cardId,
           side === me ? -1 : 1,
           10000 + side * 10 + slot,
-          cat?.cards[cardId],
-          cat?.defaultClips,
+          catalog.cards[cardId],
+          catalog.defaultClips,
           { realShadows: world.realShadows }
         );
         const width = new THREE.Box3().setFromObject(fig.root).getSize(new THREE.Vector3()).x;
@@ -1037,7 +1071,7 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
       rec.fig.dispose();
       world.teamFigures.delete(key);
     }
-  }, [view.players, me]);
+  }, [view.players, me, catalog]);
 
   // ---- Kampf-Effekte: Angriffs-Ausfall, 3D-Geschosse, Sterbeanimationen ----
   useEffect(() => {
@@ -1098,7 +1132,12 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
 
     for (const d of fx.dying) {
       for (const rec of world.figures.values()) {
-        if (rec.side === d.owner && rec.lane === d.lane && !rec.dying) {
+        if (
+          rec.side === d.owner &&
+          rec.lane === d.lane &&
+          (d.uid === undefined || world.figures.get(d.uid) === rec) &&
+          !rec.dying
+        ) {
           rec.dying = true;
           rec.fig.playDeath();
         }

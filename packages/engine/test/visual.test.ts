@@ -257,4 +257,11 @@ describe('Standard-Klips & Katalog', () => {
     expect(cat.cards.rekrut?.visual?.parts.length).toBeGreaterThan(20);
     expect((cat.cards.rekrut as unknown as { baseId?: string }).baseId).toBeUndefined();
   });
+
+  it('liefert für jeden konfigurierten Bankplatz ein echtes Modell statt Golem-Fallback', () => {
+    const cat = buildVisualCatalog(data);
+    for (const cardId of data.config.schild?.cheerleaders ?? []) {
+      expect(cat.cards[cardId]?.visual, cardId).toBeTruthy();
+    }
+  });
 });

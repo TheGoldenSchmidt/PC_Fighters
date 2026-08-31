@@ -53,7 +53,7 @@ export interface FxState {
   projectiles: FxProjectile[];
   impacts: FxImpact[];
   baseImpacts: FxBaseImpact[];
-  dying: { lane: number; owner: PlayerIndex }[];
+  dying: { lane: number; owner: PlayerIndex; uid?: number }[];
   spells: FxSpell[];
   shield: FxShield | null;
   sacrifices: {

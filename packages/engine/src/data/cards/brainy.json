@@ -42,7 +42,7 @@
   },
   {
     "id": "lurch_for_lunch",
-    "name": "Gewagte These",
+    "name": "Überraschungsangriff",
     "faction": "brainy",
     "cost": 2,
     "deckable": true,
@@ -51,13 +51,14 @@
     "text": "Human macht Bonus Attack",
     "type": "action",
     "effect": {
-      "kind": "referenz",
-      "text": "Zombie macht Bonus Attack"
+      "kind": "bonusAttack",
+      "target": "friendlyCreature",
+      "count": 1
     }
   },
   {
     "id": "fun_dead_raiser",
-    "name": "Akademische These",
+    "name": "Doppelstudie",
     "faction": "brainy",
     "cost": 3,
     "deckable": true,
@@ -66,8 +67,8 @@
     "text": "2 Karten ziehen",
     "type": "action",
     "effect": {
-      "kind": "referenz",
-      "text": "2 Karten ziehen"
+      "kind": "draw",
+      "amount": 2
     }
   },
   {

@@ -40,6 +40,7 @@ describe('Vollständige Partie', () => {
     const playableEvents = new Set([
       'attack',
       'death',
+      'reveal',
       'spell',
       'schild',
       'cheerleaderSacrifice',

@@ -19,6 +19,7 @@ import type {
   DeathEvent,
   LogEvent,
   PlayerIndex,
+  RevealEvent,
   SpellEvent
 } from '@pcf/engine';
 import {
@@ -149,7 +150,27 @@ export function useKampfReplay(view: ClientView, speed = 1) {
     while (queueRef.current.length > 0 && !cancelledRef.current) {
       const ev = queueRef.current.shift()!;
 
-      if (ev.kind === 'attack') {
+      if (ev.kind === 'reveal') {
+        const reveal: RevealEvent = ev;
+        const next = structuredClone(shownViewRef.current);
+        if (reveal.teamSlot) next.teamBoard[reveal.owner][reveal.lane] = reveal.creature;
+        else next.board[reveal.owner][reveal.lane] = reveal.creature;
+        setShown(next);
+        setFx((f) => ({
+          ...f,
+          activeLane: reveal.lane,
+          spells: [{
+            key: `r-${reveal.owner}-${reveal.lane}-${Date.now()}`,
+            lane: reveal.lane,
+            effect: 'reveal',
+            faction: reveal.faction
+          }]
+        }));
+        await sleep(SPELL_MS);
+        if (cancelledRef.current) break;
+        setFx((f) => ({ ...f, spells: [] }));
+        await sleep(LANE_PAUSE_MS);
+      } else if (ev.kind === 'attack') {
         // Gleichzeitige Angriffe derselben Lane zusammen abspielen
         const group: AttackEvent[] = [ev];
         while (
@@ -212,16 +233,27 @@ export function useKampfReplay(view: ClientView, speed = 1) {
         setFx((f) => ({
           ...f,
           activeLane: ev.lane,
-          dying: [...f.dying, ...deaths.map((d) => ({ lane: d.lane, owner: d.owner }))]
+          dying: [...f.dying, ...deaths.map((d) => ({ lane: d.lane, owner: d.owner, uid: d.uid }))]
         }));
         await sleep(DEATH_MS);
         if (cancelledRef.current) break;
         const next = structuredClone(shownViewRef.current);
-        for (const d of deaths) next.board[d.owner][d.lane] = null;
+        for (const d of deaths) {
+          const front = next.board[d.owner][d.lane];
+          const rear = next.teamBoard[d.owner]?.[d.lane] ?? null;
+          if (d.uid !== undefined && rear?.uid === d.uid) {
+            next.teamBoard[d.owner][d.lane] = null;
+          } else if (d.uid === undefined || front?.uid === d.uid) {
+            next.board[d.owner][d.lane] = rear;
+            next.teamBoard[d.owner][d.lane] = null;
+          }
+        }
         setShown(next);
         setFx((f) => ({
           ...f,
-          dying: f.dying.filter((x) => !deaths.some((d) => d.lane === x.lane && d.owner === x.owner))
+          dying: f.dying.filter((x) => !deaths.some((d) =>
+            d.lane === x.lane && d.owner === x.owner && (d.uid === undefined || d.uid === x.uid)
+          ))
         }));
       } else if (ev.kind === 'schild') {
         // Basis-Schild: Ladebalken auf den Stand aus dem Event setzen. Was der

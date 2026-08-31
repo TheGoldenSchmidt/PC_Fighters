@@ -110,13 +110,10 @@ export function GameScreen({
     profile.settings.replaySpeed
   );
   const [detail, setDetail] = useState<DetailData | null>(null);
-  const [passConfirm, setPassConfirm] = useState(false);
-  const [passWarnedRound, setPassWarnedRound] = useState<number | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   /** Kampf-Log: normal nur als Ticker sichtbar, auf Tippen als Overlay. */
   const [logOffen, setLogOffen] = useState(false);
   const logRef = useRef<HTMLDivElement>(null);
-  const passDialogRef = useDialogFocus<HTMLDivElement>(passConfirm, () => setPassConfirm(false));
   const settingsDialogRef = useDialogFocus<HTMLDivElement>(settingsOpen, () => setSettingsOpen(false));
   const logDialogRef = useDialogFocus<HTMLDivElement>(logOffen, () => setLogOffen(false));
   const resultDialogRef = useDialogFocus<HTMLDivElement>(shownView.winner !== null);
@@ -156,10 +153,6 @@ export function GameScreen({
     shownView.active === me && shownView.winner === null && !isReplaying && reaktion === null;
   const myBoard = shownView.board[me];
   const energy = shownView.players[me].energy;
-  const playableCardCount = shownView.hand.filter((card) => card.cost <= energy).length;
-  const canPlaySomething =
-    myTurn && (shownView.phase === 'play' || shownView.phase === 'precombat') && playableCardCount > 0;
-
   // Zaehler-Blitz: die drei Chips aendern sich sonst lautlos mitten im Spiel.
   const energiePuls = useWertPuls(energy);
   const deckPuls = useWertPuls(shownView.players[me].deckCount);
@@ -274,8 +267,12 @@ export function GameScreen({
     }
     if (card.type === 'environment') return new Set(Array.from({ length: shownView.lanes }, (_, lane) => lane));
     const kind = card.effect.kind;
-    if (kind === 'buffHealth' || kind === 'buffAttackTemp' || kind === 'moveCreature') {
+    if (kind === 'buffHealth' || kind === 'buffAttackTemp' || kind === 'buff' || kind === 'bonusAttack' || kind === 'moveCreature') {
       return occupied;
+    }
+    if (kind === 'damage') return new Set(Array.from({ length: shownView.lanes }, (_, lane) => lane));
+    if (kind === 'destroy') {
+      return new Set(shownView.board[opp].flatMap((creature, lane) => creature ? [lane] : []));
     }
     if (kind === 'referenz') return new Set(Array.from({ length: shownView.lanes }, (_, lane) => lane));
     return new Set<number>();
@@ -595,17 +592,19 @@ export function GameScreen({
             const combatActive = isReplaying && fx.activeLane === lane;
             return (
               <div className={'lane' + (combatActive ? ' combat-active' : '')} key={lane}>
-                <div className="slot enemy-slot" data-slot={`${opp}-${lane}`}>
-                  <CreatureTile
-                    key={enemyCreature?.uid ?? 'leer'}
-                    creature={enemyCreature}
-                    flat3d={use3d}
-                    attacking={isAttacking(opp, lane)}
-                    dying={isDying(opp, lane)}
-                    moveDelta={enemyCreature ? moveFx[enemyCreature.uid] : undefined}
-                    onDetail={openCreatureDetail}
-                  />
-                  {enemyTeamCreature && <div className="team-up-secondary"><CreatureTile creature={enemyTeamCreature} flat3d={false} onDetail={openCreatureDetail} /></div>}
+                <div className={'slot enemy-slot' + (enemyTeamCreature ? ' team-up-lane' : '')} data-slot={`${opp}-${lane}`}>
+                  <div className={enemyTeamCreature ? 'team-up-primary' : 'team-up-solo'}>
+                    <CreatureTile
+                      key={enemyCreature?.uid ?? 'leer'}
+                      creature={enemyCreature}
+                      flat3d={use3d}
+                      attacking={isAttacking(opp, lane)}
+                      dying={isDying(opp, lane)}
+                      moveDelta={enemyCreature ? moveFx[enemyCreature.uid] : undefined}
+                      onDetail={openCreatureDetail}
+                    />
+                  </div>
+                  {enemyTeamCreature && <div className="team-up-secondary"><CreatureTile creature={enemyTeamCreature} flat3d={use3d} onDetail={openCreatureDetail} /></div>}
                   {enemyDmg && <span className="dmg-float">-{enemyDmg.damage}</span>}
                 </div>
                 <div className="lane-label">{shownView.laneKinds[lane] === 'height' ? '▲' : shownView.laneKinds[lane] === 'water' ? '≋' : lane + 1}</div>
@@ -628,17 +627,19 @@ export function GameScreen({
                   }
                   onClick={() => tapOwnLane(lane)}
                 >
-                  <CreatureTile
-                    key={ownCreature?.uid ?? 'leer'}
-                    creature={ownCreature}
-                    own
-                    flat3d={use3d}
-                    attacking={isAttacking(me, lane)}
-                    dying={isDying(me, lane)}
-                    moveDelta={ownCreature ? moveFx[ownCreature.uid] : undefined}
-                    onDetail={openCreatureDetail}
-                  />
-                  {ownTeamCreature && <div className="team-up-secondary"><CreatureTile creature={ownTeamCreature} own flat3d={false} onDetail={openCreatureDetail} /></div>}
+                  <div className={ownTeamCreature ? 'team-up-primary' : 'team-up-solo'}>
+                    <CreatureTile
+                      key={ownCreature?.uid ?? 'leer'}
+                      creature={ownCreature}
+                      own
+                      flat3d={use3d}
+                      attacking={isAttacking(me, lane)}
+                      dying={isDying(me, lane)}
+                      moveDelta={ownCreature ? moveFx[ownCreature.uid] : undefined}
+                      onDetail={openCreatureDetail}
+                    />
+                  </div>
+                  {ownTeamCreature && <div className="team-up-secondary"><CreatureTile creature={ownTeamCreature} own flat3d={use3d} onDetail={openCreatureDetail} /></div>}
                   {ownDmg && <span className="dmg-float">-{ownDmg.damage}</span>}
                   {/* Zauber-Effekt (2D-Fallback ohne WebGL) */}
                   {!use3d && spellOnLane(lane) && (
@@ -666,7 +667,7 @@ export function GameScreen({
         {/* ---- Eigene Zone: Bank mittig, Basis dahinter ---- */}
         <div className="zone-band zone-unten">
           <div className="hud-gruppe">
-            <div className={'energy-chip' + (canPlaySomething ? ' pulse' : '') + energiePuls}>
+            <div className={'energy-chip' + energiePuls}>
               ⚡ {energy}/{shownView.energyCap}
             </div>
           </div>
@@ -701,14 +702,7 @@ export function GameScreen({
             {(shownView.phase === 'play' || shownView.phase === 'precombat') && myTurn && (
               <button
                 className="pass-button"
-                onClick={() => {
-                  if (canPlaySomething && passWarnedRound !== shownView.round) {
-                    setPassWarnedRound(shownView.round);
-                    setPassConfirm(true);
-                  } else {
-                    onAction({ type: 'pass' });
-                  }
-                }}
+                onClick={() => onAction({ type: 'pass' })}
               >
                 Runde abschließen
               </button>
@@ -875,30 +869,6 @@ export function GameScreen({
             })
           }
         />
-      )}
-
-      {/* ---- Karten-Detailansicht ---- */}
-      {passConfirm && (
-        <div className="overlay" role="dialog" aria-modal="true" aria-label="Runde abschließen">
-          <div ref={passDialogRef} className="overlay-box pass-confirm-box">
-            <span className="eyebrow">Noch nicht alles gespielt</span>
-            <h1>Runde wirklich abschließen?</h1>
-            <p>
-              Du hast noch {playableCardCount} bezahlbare
-              {playableCardCount === 1 ? ' Karte' : ' Karten'}. Danach kann nur noch dein Gegner handeln.
-            </p>
-            <button
-              className="primary big"
-              onClick={() => {
-                setPassConfirm(false);
-                onAction({ type: 'pass' });
-              }}
-            >
-              Trotzdem abschließen
-            </button>
-            <button className="secondary" onClick={() => setPassConfirm(false)}>Weiterspielen</button>
-          </div>
-        </div>
       )}
 
       {settingsOpen && (

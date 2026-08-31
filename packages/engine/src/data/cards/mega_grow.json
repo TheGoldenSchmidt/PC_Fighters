@@ -32,8 +32,9 @@
     ],
     "abilities": [
       {
-        "kind": "referenz",
-        "text": "Team-Up; Peas dahinter +2 Angriff"
+        "kind": "teamBuff",
+        "scope": "same_sub",
+        "atk": 2
       }
     ],
     "projectile": "✨"
@@ -67,7 +68,7 @@
   },
   {
     "id": "fertilize",
-    "name": "Gemeinsame Jagd",
+    "name": "Rudelstärkung",
     "faction": "mega_grow",
     "cost": 3,
     "deckable": true,
@@ -76,13 +77,15 @@
     "text": "Animal +4/+4",
     "type": "action",
     "effect": {
-      "kind": "referenz",
-      "text": "Pflanze +4/+4"
+      "kind": "buff",
+      "atk": 4,
+      "hp": 4,
+      "target": "friendlyCreature"
     }
   },
   {
     "id": "flourish",
-    "name": "Wachsende Jagd",
+    "name": "Doppelter Beutezug",
     "faction": "mega_grow",
     "cost": 3,
     "deckable": true,
@@ -91,8 +94,8 @@
     "text": "2 Karten ziehen",
     "type": "action",
     "effect": {
-      "kind": "referenz",
-      "text": "2 Karten ziehen"
+      "kind": "draw",
+      "amount": 2
     }
   },
   {

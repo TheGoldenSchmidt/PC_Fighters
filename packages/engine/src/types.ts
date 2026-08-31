@@ -236,6 +236,11 @@ export interface TokenDef {
 export type Effect =
   | { kind: 'buffHealth'; amount: number; target: 'friendlyCreature' }
   | { kind: 'buffAttackTemp'; amount: number; target: 'friendlyCreature' }
+  | { kind: 'buff'; atk: number; hp: number; target: 'friendlyCreature' }
+  | { kind: 'draw'; amount: number }
+  | { kind: 'damage'; amount: number; target: 'enemyCreatureOrBase' }
+  | { kind: 'destroy'; target: 'enemyCreature'; maxAttack?: number }
+  | { kind: 'bonusAttack'; target: 'friendlyCreature'; count: number }
   | { kind: 'summon'; count: number; token: TokenDef }
   // tempAtkBonus: die bewegte Kreatur erhält zusätzlich bis zum Rundenende +X ATK (Hetzjagd).
   | { kind: 'moveCreature'; target: 'friendlyCreature'; tempAtkBonus?: number }
@@ -349,6 +354,17 @@ export type Ability =
   // Beim Ausspielen: setzt bei ALLEN gegnerischen Kreaturen auf dem Feld ATK und
   // Verteidigung dauerhaft auf einen Deckel (Peinigung, siehe Creature.atkDeckel).
   | { kind: 'peinigen'; atkDeckel: number; hpDeckel: number }
+  | { kind: 'basisHeilung'; timing: 'beim_ausspielen'; amount: number }
+  | { kind: 'energie'; timing: 'rundenstart'; amount: number }
+  | { kind: 'nullAngriffBuff'; timing: 'beim_ausspielen'; scope: Scope; atk: number }
+  | { kind: 'ausspielAura'; scope: Scope; atk: number }
+  | { kind: 'aufdeckenDebuff'; atk: number; hp: number; ziel: 'gegnerLane' }
+  | { kind: 'teamBuff'; scope: Scope; atk: number }
+  | { kind: 'teamBonus'; bonus: Stat }
+  | { kind: 'antiHero'; bonusAtk: number }
+  // Verwandelt sich am Rundenstart in eine zufällige Kreatur aus demselben
+  // Oberteam bis zu den angegebenen Kosten (z. B. Krawall-Stinktier).
+  | { kind: 'verwandlung'; timing: 'rundenstart'; maxKosten: number; scope: Scope }
   /** Originalregel aus der großen Kartenreferenz; zentrale PvZ-Primitive
    * werden über Keywords/Engine-Hooks umgesetzt, der vollständige Text bleibt
    * als überprüfbare Datenquelle an der Karte. */
@@ -879,6 +895,19 @@ export interface DeathEvent {
   lane: number;
   /** Besitzer der zerstörten Kreatur. */
   owner: PlayerIndex;
+  /** Eindeutige Figur – nötig, wenn zwei Team-Up-Kämpfer dieselbe Lane teilen. */
+  uid?: number;
+}
+
+/** Ein verdeckter Grabstein wird unmittelbar vor dem ersten Kampfangriff sichtbar. */
+export interface RevealEvent {
+  kind: 'reveal';
+  lane: number;
+  owner: PlayerIndex;
+  faction: string;
+  /** true, wenn die Kreatur im hinteren Team-Up-Slot steht. */
+  teamSlot: boolean;
+  creature: CreatureView;
 }
 
 /** Ein Cheerleader verlässt die Bank – die UI spielt darauf den Opfer-Clip ab. */
@@ -909,6 +938,7 @@ export interface CheerleaderPowerEvent {
 export type CombatEvent =
   | AttackEvent
   | DeathEvent
+  | RevealEvent
   | CheerleaderSacrificeEvent
   | CheerleaderPowerEvent;
 
@@ -969,6 +999,8 @@ export interface LogEntry {
 export type AufloesungsSchritt =
   /** Kampf in dieser Lane abhandeln (Angriffe, Basisschaden). */
   | { art: 'kampfLane'; lane: number }
+  /** Ein einzelner zusätzlicher Angriff einer eigenen Kreatur. */
+  | { art: 'bonusAngriff'; spieler: PlayerIndex; lane: number }
   /** Nach allen Lanes: Gift-Zermürbung und Häutung. */
   | { art: 'kampfAbschluss' }
   /** Flugphase starten oder direkt zur Rundenabrechnung. */

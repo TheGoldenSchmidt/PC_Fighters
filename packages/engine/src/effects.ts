@@ -6,9 +6,10 @@ import {
   GameRuleError,
   log,
   makeTokenCreature,
-  otherPlayer,
-  recalcBoard
+  otherPlayer
 } from './internal.js';
+import { isUnremovable } from './abilities.js';
+import { hasKeyword } from './keywords.js';
 import { basisSchaden } from './schild.js';
 import { zieheKarten } from './draw.js';
 import { registriereAktionsBuff, zaehleKarte } from './stats.js';
@@ -40,7 +41,93 @@ function requireFriendlyCreature(ctx: EffectContext, lane: number | undefined) {
   return { creature, lane };
 }
 
+function requireEnemyCreature(ctx: EffectContext, lane: number | undefined) {
+  if (lane === undefined || lane < 0 || lane >= ctx.state.config.lanes) {
+    throw new GameRuleError('Bitte eine gegnerische Kreatur als Ziel wählen.');
+  }
+  const creature = ctx.state.board[otherPlayer(ctx.player)][lane];
+  if (!creature) throw new GameRuleError('In dieser Lane steht keine gegnerische Kreatur.');
+  if (ctx.card.type === 'action' && hasKeyword(creature, 'untrickable')) {
+    throw new GameRuleError(`${creature.name} ist trickresistent.`);
+  }
+  return { creature, lane };
+}
+
 export const EFFECTS: { [K in Effect['kind']]: EffectResolver<K> } = {
+  buff(ctx, effect) {
+    const { creature, lane } = requireFriendlyCreature(ctx, targetLane(ctx.action));
+    creature.permAttackBonus += effect.atk;
+    creature.permHealthBonus += effect.hp;
+    if (effect.atk > 0) zaehleKarte(ctx.state, ctx.player, ctx.card.id, 'atkGewaehrt', effect.atk);
+    if (effect.hp > 0) zaehleKarte(ctx.state, ctx.player, ctx.card.id, 'hpGewaehrt', effect.hp);
+    log(ctx.state, `${ctx.card.name}: ${creature.name} erhält dauerhaft +${effect.atk}/+${effect.hp}.`, {
+      kind: 'spell', lane, effect: 'buff', faction: ctx.card.faction
+    });
+  },
+
+  draw(ctx, effect) {
+    zieheKarten(ctx.state, ctx.player, effect.amount);
+    log(ctx.state, `${ctx.card.name}: ${effect.amount} Karten gezogen.`, {
+      kind: 'spell', lane: 0, effect: 'superpower', faction: ctx.card.faction
+    });
+  },
+
+  damage(ctx, effect) {
+    const lane = targetLane(ctx.action);
+    if (lane === undefined || lane < 0 || lane >= ctx.state.config.lanes) {
+      throw new GameRuleError('Bitte eine Ziel-Lane wählen.');
+    }
+    const enemy = otherPlayer(ctx.player);
+    const target = ctx.state.board[enemy][lane];
+    if (target) {
+      if (ctx.card.type === 'action' && hasKeyword(target, 'untrickable')) {
+        throw new GameRuleError(`${target.name} ist trickresistent.`);
+      }
+      const damage = Math.max(0, effect.amount - (hasKeyword(target, 'armored') ? 1 : 0));
+      target.currentHealth -= damage;
+      target.letzterSchaden = { art: 'effekt', quelle: ctx.card.id, owner: ctx.player };
+      zaehleKarte(ctx.state, ctx.player, ctx.card.id, 'schadenKreatur', damage);
+      log(ctx.state, `${ctx.card.name}: ${target.name} erleidet ${damage} Schaden.`, {
+        kind: 'spell', lane, effect: 'attackBuff', faction: ctx.card.faction
+      });
+    } else {
+      const damage = basisSchaden(ctx.state, enemy, effect.amount);
+      zaehleKarte(ctx.state, ctx.player, ctx.card.id, 'schadenBasis', damage);
+      log(ctx.state, `${ctx.card.name}: Die Basis erleidet ${damage} Schaden.`, {
+        kind: 'attack', lane, attacker: ctx.player, damage, toBase: true
+      });
+    }
+  },
+
+  destroy(ctx, effect) {
+    const { creature, lane } = requireEnemyCreature(ctx, targetLane(ctx.action));
+    if (effect.maxAttack !== undefined) {
+      const attack = Math.max(0, creature.baseAttack + creature.permAttackBonus + creature.tempAttackBonus);
+      if (attack > effect.maxAttack) {
+        throw new GameRuleError(`${creature.name} hat mehr als ${effect.maxAttack} Angriff.`);
+      }
+    }
+    if (isUnremovable(creature)) throw new GameRuleError(`${creature.name} kann nicht zerstört werden.`);
+    creature.currentHealth = 0;
+    creature.letzterSchaden = { art: 'effekt', quelle: ctx.card.id, owner: ctx.player };
+    log(ctx.state, `${ctx.card.name}: ${creature.name} wird zerstört.`, {
+      kind: 'spell', lane, effect: 'attackBuff', faction: ctx.card.faction
+    });
+  },
+
+  bonusAttack(ctx, effect) {
+    const { lane } = requireFriendlyCreature(ctx, targetLane(ctx.action));
+    for (let i = 0; i < effect.count; i++) {
+      ctx.state.aufloesung.push(
+        { art: 'bonusAngriff', spieler: ctx.player, lane },
+        { art: 'todeStabilisieren' }
+      );
+    }
+    log(ctx.state, `${ctx.card.name}: Bonusangriff in Lane ${lane + 1}.`, {
+      kind: 'spell', lane, effect: 'attackBuff', faction: ctx.card.faction
+    });
+  },
+
   buffHealth(ctx, effect) {
     const { creature, lane } = requireFriendlyCreature(ctx, targetLane(ctx.action));
     // Nur das Maximum erhöhen – recalcBoard() hebt das aktuelle Leben mit an.
@@ -292,5 +379,4 @@ export function resolveEffect(ctx: EffectContext): void {
   const effect = ctx.card.effect;
   const resolver = EFFECTS[effect.kind] as EffectResolver<typeof effect.kind>;
   resolver(ctx, effect);
-  recalcBoard(ctx.state);
 }

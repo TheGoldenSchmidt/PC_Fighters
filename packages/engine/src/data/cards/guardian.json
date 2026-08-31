@@ -32,12 +32,7 @@
       "bullseye",
       "team_up"
     ],
-    "abilities": [
-      {
-        "kind": "referenz",
-        "text": "Amphibious, Bullseye, Team-Up"
-      }
-    ],
+    "abilities": [],
     "projectile": "✨"
   },
   {
@@ -55,12 +50,7 @@
     "keywords": [
       "team_up"
     ],
-    "abilities": [
-      {
-        "kind": "referenz",
-        "text": "Team-Up"
-      }
-    ],
+    "abilities": [],
     "projectile": "✨"
   },
   {
@@ -78,12 +68,7 @@
     "keywords": [
       "team_up"
     ],
-    "abilities": [
-      {
-        "kind": "referenz",
-        "text": "Team-Up"
-      }
-    ],
+    "abilities": [],
     "projectile": "✨"
   },
   {
@@ -101,8 +86,10 @@
     "keywords": [],
     "abilities": [
       {
-        "kind": "referenz",
-        "text": "Beim Ausspielen: Pflanzen mit 0 Angriff erhalten +2 Angriff"
+        "kind": "nullAngriffBuff",
+        "timing": "beim_ausspielen",
+        "scope": "same_top",
+        "atk": 2
       }
     ],
     "projectile": "✨"

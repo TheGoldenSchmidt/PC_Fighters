@@ -155,5 +155,11 @@ export const KLASSE_A_HOOKS: { [K in Ability['kind']]?: KlasseAHooks<K> } = {
       if (count < ab.mindestAnzahl) return NULL_BONUS;
       return { attack: ab.bonus.atk, health: ab.bonus.hp };
     }
+  },
+  teamBonus: {
+    beitragSelbst: (state, owner, lane, ab) =>
+      state.teamBoard?.[owner]?.[lane]
+        ? { attack: ab.bonus.atk, health: ab.bonus.hp }
+        : NULL_BONUS
   }
 };

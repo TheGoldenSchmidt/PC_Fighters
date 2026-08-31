@@ -17,7 +17,7 @@
   },
   {
     "id": "rolling_stone",
-    "name": "Gemeinsame Front",
+    "name": "Schwache Stelle",
     "faction": "hearty",
     "cost": 1,
     "deckable": true,
@@ -26,8 +26,9 @@
     "text": "Animal mit ≤2 Angriff zerstören",
     "type": "action",
     "effect": {
-      "kind": "referenz",
-      "text": "Pflanze mit ≤2 Angriff zerstören"
+      "kind": "destroy",
+      "target": "enemyCreature",
+      "maxAttack": 2
     }
   },
   {
@@ -92,8 +93,9 @@
     "keywords": [],
     "abilities": [
       {
-        "kind": "referenz",
-        "text": "Zombie-Held 4 heilen"
+        "kind": "basisHeilung",
+        "timing": "beim_ausspielen",
+        "amount": 4
       }
     ],
     "projectile": "✨"

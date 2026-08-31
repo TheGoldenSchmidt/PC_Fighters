@@ -412,15 +412,37 @@
   pointer-events: none;
 }
 
+.team-up-solo {
+  width: 100%;
+  height: 100%;
+}
+
+/* Zwei Team-Up-Kämpfer stehen perspektivisch hintereinander. Der primäre
+   Kämpfer ist vorne/unten, sein Partner etwas kleiner hinten/oben. Im
+   WebGL-Modus tragen diese Elemente nur die getrennten Werteplaketten; die
+   Figuren selbst bekommen denselben Tiefenversatz in Battlefield3D. */
+.team-up-primary,
 .team-up-secondary {
   position: absolute;
-  right: 2px;
+  min-width: 0;
+}
+
+.team-up-primary {
+  left: 0;
   bottom: 2px;
+  z-index: 7;
+  width: 72%;
+  height: 78%;
+}
+
+.team-up-secondary {
+  right: 0;
+  top: 1px;
   z-index: 6;
-  width: 46%;
-  height: 56%;
-  transform: scale(0.82);
-  transform-origin: right bottom;
+  width: 64%;
+  height: 70%;
+  transform: scale(0.88);
+  transform-origin: right top;
 }
 
 .slot {

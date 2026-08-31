@@ -17,7 +17,7 @@
   },
   {
     "id": "berry_blast",
-    "name": "Wilde Randale",
+    "name": "Gezielter Krawall",
     "faction": "kabloom",
     "cost": 2,
     "deckable": true,
@@ -26,8 +26,9 @@
     "text": "3 Schaden",
     "type": "action",
     "effect": {
-      "kind": "referenz",
-      "text": "3 Schaden"
+      "kind": "damage",
+      "amount": 3,
+      "target": "enemyCreatureOrBase"
     }
   },
   {
@@ -45,8 +46,10 @@
     "keywords": [],
     "abilities": [
       {
-        "kind": "referenz",
-        "text": "Alle eigenen Mushrooms +1/+1"
+        "kind": "aura",
+        "scope": "same_sub",
+        "buff": { "atk": 1, "hp": 1 },
+        "timing": "einmal_beim_ausspielen"
       }
     ],
     "projectile": "✨"
@@ -66,8 +69,10 @@
     "keywords": [],
     "abilities": [
       {
-        "kind": "referenz",
-        "text": "Rundenstart: verwandelt sich in zufällige Pflanze bis Kosten 6"
+        "kind": "verwandlung",
+        "timing": "rundenstart",
+        "maxKosten": 6,
+        "scope": "same_top"
       }
     ],
     "projectile": "✨"

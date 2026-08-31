@@ -352,6 +352,9 @@
   height: 100%;
   object-fit: cover;
   object-position: center top;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .detail-art-fallback {

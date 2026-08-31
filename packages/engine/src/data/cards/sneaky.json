@@ -32,15 +32,15 @@
     ],
     "abilities": [
       {
-        "kind": "referenz",
-        "text": "Anti-Hero 2"
+        "kind": "antiHero",
+        "bonusAtk": 2
       }
     ],
     "projectile": "✨"
   },
   {
     "id": "smoke_bomb",
-    "name": "Verdeckte Lieferung",
+    "name": "Nächtlicher Seitenweg",
     "faction": "sneaky",
     "cost": 1,
     "deckable": true,
@@ -49,8 +49,9 @@
     "text": "Human bewegen; +1 Angriff",
     "type": "action",
     "effect": {
-      "kind": "referenz",
-      "text": "Zombie bewegen; +1 Angriff"
+      "kind": "moveCreature",
+      "target": "friendlyCreature",
+      "tempAtkBonus": 1
     }
   },
   {
@@ -68,12 +69,7 @@
     "keywords": [
       "amphibious"
     ],
-    "abilities": [
-      {
-        "kind": "referenz",
-        "text": "Amphibious"
-      }
-    ],
+    "abilities": [],
     "projectile": "✨"
   },
   {
@@ -91,12 +87,7 @@
     "keywords": [
       "deadly"
     ],
-    "abilities": [
-      {
-        "kind": "referenz",
-        "text": "Deadly"
-      }
-    ],
+    "abilities": [],
     "projectile": "✨"
   },
   {

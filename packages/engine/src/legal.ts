@@ -6,6 +6,7 @@
 // stattdessen nur Züge, die applyAction garantiert akzeptiert.
 
 import { kraftVonSlot } from './cheerleader.js';
+import { isUnremovable } from './abilities.js';
 import { hasKeyword } from './keywords.js';
 import type { ActionCard, GameData, GameState, PlayerAction, PlayerIndex } from './types.js';
 
@@ -35,6 +36,8 @@ function aktionskartenZuege(
   switch (card.effect.kind) {
     case 'buffHealth':
     case 'buffAttackTemp':
+    case 'buff':
+    case 'bonusAttack':
       // Braucht eine eigene Kreatur als Ziel (effects.ts: requireFriendlyCreature).
       return belegteLanes(state, player).map((targetLane) => ({
         type: 'playAction' as const,
@@ -46,8 +49,22 @@ function aktionskartenZuege(
       return freieLanes(state, player).length > 0 ? [{ type: 'playAction', handIndex }] : [];
     case 'debuff':
     case 'spendKnowledge':
+    case 'draw':
       // Kein explizites Ziel – wirkt spielerweit (alle Gegner bzw. der eigene Wissens-Pool).
       return [{ type: 'playAction', handIndex }];
+    case 'damage':
+      return state.board[player === 0 ? 1 : 0].flatMap((creature, targetLane) =>
+        creature && hasKeyword(creature, 'untrickable')
+          ? []
+          : [{ type: 'playAction' as const, handIndex, targetLane }]
+      );
+    case 'destroy':
+      return state.board[player === 0 ? 1 : 0].flatMap((creature, targetLane) => {
+        if (!creature || hasKeyword(creature, 'untrickable') || isUnremovable(creature)) return [];
+        const attack = Math.max(0, creature.baseAttack + creature.permAttackBonus + creature.tempAttackBonus);
+        if (card.effect.kind === 'destroy' && card.effect.maxAttack !== undefined && attack > card.effect.maxAttack) return [];
+        return [{ type: 'playAction' as const, handIndex, targetLane }];
+      });
     case 'moveCreature': {
       // Jede eigene besetzte Lane → jede eigene freie Lane.
       const out: PlayerAction[] = [];

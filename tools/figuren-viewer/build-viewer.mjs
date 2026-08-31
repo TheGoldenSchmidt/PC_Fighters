@@ -19,6 +19,7 @@ import { tmpdir } from 'node:os';
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = join(HERE, '..', '..');
 const figDir = join(REPO, 'packages/engine/src/data/figures');
+const standaloneFigDir = join(HERE, 'standalone-figures');
 
 // 1) three.js → IIFE bündeln (setzt window.PCF_THREE).
 const tmp = mkdtempSync(join(tmpdir(), 'pcf-three-'));
@@ -40,6 +41,17 @@ const figureIds = readdirSync(figDir)
   .sort((a, b) => (a === 'wolf' ? -1 : b === 'wolf' ? 1 : a.localeCompare(b)));
 const figures = {};
 for (const id of figureIds) figures[id] = JSON.parse(readFileSync(join(figDir, `${id}.json`), 'utf8'));
+const standaloneFigureIds = readdirSync(standaloneFigDir)
+  .filter((f) => f.endsWith('.json'))
+  .map((f) => f.replace(/\.json$/, ''))
+  .sort((a, b) => a.localeCompare(b));
+for (const id of standaloneFigureIds) {
+  if (figures[id]) throw new Error(`Standalone-Figur "${id}" kollidiert mit einer Kartenfigur.`);
+  figures[id] = {
+    ...JSON.parse(readFileSync(join(standaloneFigDir, `${id}.json`), 'utf8')),
+    viewerOnly: true
+  };
+}
 const defaultClips = JSON.parse(readFileSync(join(REPO, 'packages/engine/src/data/animations.json'), 'utf8'));
 
 // 3) Zusammenbauen. Funktions-Ersetzung, damit `$`-Sequenzen im minifizierten
@@ -58,5 +70,6 @@ const standalone =
   '</body></html>';
 writeFileSync(join(HERE, 'figuren-viewer.html'), standalone);
 
-console.log('Figuren:', figureIds.join(', '));
+console.log('Kartenfiguren:', figureIds.join(', '));
+console.log('Standalone-Figuren:', standaloneFigureIds.join(', '));
 console.log('gebaut :', join(HERE, 'figuren-viewer.html'), `(${(standalone.length / 1024).toFixed(0)} KB)`);
