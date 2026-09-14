@@ -111,6 +111,15 @@ describe('Konkrete Aktionskarten-Effekte', () => {
     expect(state.board[0][1]?.currentHealth).toBe(attacker.currentHealth);
   });
 
+  it('Bewegung unterscheidet fehlende, identische und fremd belegte Ziel-Lanes', () => {
+    const state = emptyState();
+    put(state, 0, 0, 'imp');
+    put(state, 0, 1, 'peashooter');
+    expect(() => playAction(state, 'smoke_bomb', { targetLane: 0 })).toThrow(/Ziel-Lane wählen/);
+    expect(() => playAction(state, 'smoke_bomb', { targetLane: 0, toLane: 0 })).toThrow(/steht schon in dieser Lane/);
+    expect(() => playAction(state, 'smoke_bomb', { targetLane: 0, toLane: 1 })).toThrow(/Ziel-Lane ist nicht frei/);
+  });
+
   it('Bewegung versetzt die Kreatur und gibt den temporären Angriffsbonus', () => {
     let state = emptyState();
     put(state, 0, 0, 'imp');

@@ -20,6 +20,13 @@ Worktree `tmp/login-fix-worktree` ausgecheckt.
 Der frühere StartScreen-Test der freien Cheerleader-Auswahl wurde an die aktuelle
 Champ-Auswahl angepasst. Die aktuellen Login-/Champ-APIs und deren Dokumentation
 bleiben erhalten; Server- und Typkonflikte betrafen nur alte Kommentarformulierungen.
+Die in PR #9 ergänzte Unterscheidung ungültiger Bewegungsziele wird mit der
+aktuellen Karte `smoke_bomb` aktiv geprüft; die alte Karte `hetzjagd` existiert
+im aktuellen Set nicht mehr. Der damalige Test, der die Abwesenheit von
+Cheerleader-Opferereignissen erwartete, ist durch die heutigen Regeln überholt.
+Aus `43d576d` wird außerdem die direkte Entwicklungsabhängigkeit `esbuild`
+übernommen, die der Viewer-Build verwendet. Die Version 0.28.1 war bereits im
+Lockfile vorhanden; die übrigen Paketauflösungen bleiben unverändert.
 
 ## Bereits vollständig in master enthalten
 

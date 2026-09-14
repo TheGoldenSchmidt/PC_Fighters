@@ -6,6 +6,9 @@
   "workspaces": [
     "packages/*"
   ],
+  "devDependencies": {
+    "esbuild": "^0.28.1"
+  },
   "scripts": {
     "server": "npm run dev --workspace @pcf/server",
     "client": "npm run dev --workspace @pcf/client",
