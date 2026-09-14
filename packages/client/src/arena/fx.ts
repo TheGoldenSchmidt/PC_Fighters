@@ -79,15 +79,28 @@ export const EMPTY_FX: FxState = {
 };
 
 // Timing der Kampf-Abspielung (Millisekunden)
-export const PROJECTILE_MS = 500;
-export const IMPACT_MS = 650;
-export const DEATH_MS = 600;
-export const SPELL_MS = 750;
-export const SHIELD_MS = 550;
+//
+// Ein einziger Regler fuer das Kampftempo: kleiner = langsamer. Alle Dauern
+// unten sind die Werte bei Tempo 1 und werden durch den Regler geteilt, damit
+// das Verhaeltnis der Schritte zueinander erhalten bleibt. 0.8 = ein Viertel
+// mehr Zeit pro Schritt.
+export const KAMPF_TEMPO = 0.8;
+
+/** Basisdauer auf das eingestellte Kampftempo umrechnen. */
+const takt = (ms: number) => Math.round(ms / KAMPF_TEMPO);
+
+export const PROJECTILE_MS = takt(500);
+export const IMPACT_MS = takt(650);
+export const DEATH_MS = takt(600);
+export const SPELL_MS = takt(750);
+export const SHIELD_MS = takt(550);
 /** Block ist der Höhepunkt: länger, damit Banner und Superkraft lesbar sind. */
-export const SHIELD_BLOCK_MS = 1200;
+export const SHIELD_BLOCK_MS = takt(1200);
 /** Cheerleader-Kraft: lang genug, dass das Banner mit dem Kraftnamen lesbar ist. */
-export const POWER_MS = 1100;
-export const LANE_PAUSE_MS = 200;
-export const BANNER_MS = 1500;
+export const POWER_MS = takt(1100);
+/** Opfer auf der Bank: die Figur springt vor die Basis, das braucht Zeit. */
+export const SACRIFICE_MS = takt(1250);
+export const LANE_PAUSE_MS = takt(200);
+export const BANNER_MS = takt(1500);
+/** Eingabe, kein Kampf – bleibt vom Tempo-Regler bewusst unberührt. */
 export const LONG_PRESS_MS = 450;

@@ -37,7 +37,7 @@ The server holds the complete `GameState`. It never sends it raw. `buildClientVi
 
 ### The bench IS the base shield (`schild.ts` + `cheerleader.ts`)
 
-Every hit on a base goes through `basisSchaden(state, ziel, menge)` — the single funnel that owns `player.base`. It charges the defender's shield by a random 1–3 segments; on reaching `config.schild.abschnitte` (7) it blocks that hit entirely and resets to 0. It returns the damage that actually landed, so callers must use the return value for both `base` bookkeeping and telemetry. Deliberate exception: attrition (`zermuerbung` in `endRound`) writes `base` directly and stays unblockable.
+Every hit on a base goes through `basisSchaden(state, ziel, menge)` — the single funnel that owns `player.base`. It charges the defender's shield by a random 1–3 segments; on reaching `config.schild.abschnitte` (8) it blocks that hit entirely and resets to 0. It returns the damage that actually landed, so callers must use the return value for both `base` bookkeeping and telemetry. Deliberate exception: attrition (`zermuerbung` in `endRound`) writes `base` directly and stays unblockable.
 
 The shield has no powers of its own. **A block is paid for with a cheerleader**: it is the one and only trigger (`CheerleaderAusloeser = 'schildBlock'`), the defender picks *which* bench slot sacrifices itself, and declining is impossible — the block already happened. The flip side is `schildAktiv()`: an empty bench means no shield at all, so the meter stops charging and hits go straight through. Three bench slots = at most three blocks per game.
 
@@ -95,6 +95,6 @@ A short tap opens the detail overlay with the card text. Its `Ausspielen` button
 - **Engine internal imports use `.js` extensions** on `.ts` files (`from './game.js'`) — ESM/NodeNext resolution. Keep this in new engine files or imports break at runtime.
 - **Keyword name ≠ behavior flag.** JSON keywords are German names (`fliegend`, `flink`, `gift`) that are *keys* in the `KEYWORDS` registry (`keywords.ts`); each maps to behavior flags. Engine code checks the **flag**, e.g. `hasKeyword(creature, 'flying')`, not the keyword name `fliegend`. Add a keyword = add a `KEYWORDS` entry (name → flags) AND implement the flag's effect; the schema rejects any keyword not in the registry.
 - User-facing strings and comments are **German** — match that in anything players or modders see (log lines, errors, card text).
-- Config knobs (`lanes`, `baseHealth`, `roundLimit`, …) live in `data/config.json`; the client renders `lanes` dynamically, so nothing is hardcoded to a lane count. **`lanes` is per room**: the creator picks 3–6 in the start screen, the server stores it on the `Room` (persisted) and feeds `createGame` a `GameData` with that override via `mitLanes()` — the same trick `testGameData()` uses. `config.lanes` is only the default offered in the UI.
+- Config knobs (`lanes`, `baseHealth`, `roundLimit`, …) live in `data/config.json`; the client renders `lanes` dynamically, so the layout itself remains datengetrieben. **Im Spiel sind dauerhaft genau 5 Bahnen verbindlich**: Server, Raum-Persistenz und Startbildschirm akzeptieren keine andere Zahl. Alte gespeicherte Räume mit abweichender Bahnzahl werden verworfen.
 
 See `README.md` for the (German, non-programmer) guide to adding cards/factions/topics and deploying to Render.

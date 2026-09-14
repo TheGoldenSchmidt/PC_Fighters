@@ -6,9 +6,11 @@ import type { CheerleaderSlots, PlayerIndex } from '@pcf/engine';
 import type { FxBaseImpact, FxShield } from './fx';
 
 /**
- * Basis-Schild als Segmentbalken. Jeder Treffer an der Basis füllt 1–3
- * Abschnitte; ist der Balken voll, blockt der Schild und löst eine Superkraft
- * aus (der Server schickt dann ein SchildEvent mit `blockiert`).
+ * Basis-Schild als Segmentbalken. Jeder Treffer an der Basis füllt 1–3 der
+ * insgesamt 8 Abschnitte; ist der Balken voll, blockt der Schild diesen einen
+ * Treffer komplett und geht auf 0 zurück (der Server schickt dann ein
+ * SchildEvent mit `blockiert`). Bezahlt wird der Block mit einem Cheerleader –
+ * eigene Kräfte hat der Schild keine.
  */
 export function ShieldMeter({
   stand,

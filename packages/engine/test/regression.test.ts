@@ -16,63 +16,67 @@
 // Bewertungsverschiebungen, die die beste Zugwahl nicht ändern.
 
 import { describe, expect, it } from 'vitest';
-import { BOT_PROFILE, ladeDecks, loadGameData, spielePartie } from '../src/index.js';
+import {
+  BOT_PROFILE,
+  ladeAktiveDecks,
+  loadGameData,
+  spielePartie,
+  zustandsFingerabdruck
+} from '../src/index.js';
 import type { BotProfil } from '../src/index.js';
 
 const data = loadGameData();
-const decks = ladeDecks(data);
+const decks = ladeAktiveDecks(data);
 const profil: BotProfil = { ...BOT_PROFILE.ausgewogen, epsilonBand: 0 };
 
-/** deckA, deckB, Saat, erwarteter Hash `sieger:runden:basisA:basisB:uidCounter`. */
-// Neu erzeugt nach dem finalen Alpha-Balancing vom 2026-08-02: 10 statt 12
-// Basisleben sowie die bewusst angepassten Werte von T-Rex und PC Principal.
-// Die geänderte Konfiguration beeinflusst jede Partie.
-//
-// Davor: neu erzeugt, nachdem der Bot Schild und Basis-Immunitaet SIEHT. Beides fehlte
-// in `bewerteZustand`; „Sicherer Raum" sah fuer ihn aus wie ein verschenkter
-// Bankplatz. Die Spielregeln sind unveraendert – nur die Zugwahl des Bots.
-//
-// Davor: neu erzeugt nach der Feld- und Tempo-Aenderung: 5 statt 3 Bahnen und
-// Zermuerbung erst ab Runde 15 statt 13. Beides sind Zahlen in config.json,
-// aendert aber jede Partie von Grund auf. Bewusste Regeländerung – Decklisten
-// und Kartenwerte sind unverändert.
-//
-// Davor: neu erzeugt, nachdem die BANK ZUM SCHILD geworden ist: Der Basis-Schild hat
-// keine eigenen Superkräfte mehr, ein Block wird mit einem Cheerleader-Opfer
-// bezahlt, und ohne Cheerleader gibt es gar keinen Schild. Damit fallen die
-// alten Auslöser (Ausspielen, eigener Tod) weg und alle fünf Kräfte sind neu
-// geschrieben. Bewusste Regeländerung – Decklisten und Kartenwerte sind
-// unverändert.
-//
-// Davor: neu erzeugt nach Einführung der Cheerleader-Superkräfte, und davor
-// nach Einführung des Basis-Schilds.
-const GOLDEN_MASTER: [string, string, number, string][] = [
-  ['a1_rudeljaeger', 'a2_luftangriff', 5000, '0:8:4:0:20'],
-  ['a1_rudeljaeger', 'a3_gift_urgewalt', 5001, '1:9:-2:4:23'],
-  ['a1_rudeljaeger', 'a4_urzeitliches_rudel', 5002, '0:6:9:0:14'],
-  ['a1_rudeljaeger', 'h1_solidaritaet', 5003, '0:5:7:-2:11'],
-  ['a1_rudeljaeger', 'h2_schicht', 5004, '0:4:2:-2:9'],
-  ['a1_rudeljaeger', 'h3_campus', 5005, '1:7:0:3:17'],
-  ['a2_luftangriff', 'a3_gift_urgewalt', 5006, '0:8:10:-1:20'],
-  ['a2_luftangriff', 'a4_urzeitliches_rudel', 5007, '0:8:1:-2:19'],
-  ['a2_luftangriff', 'h1_solidaritaet', 5008, '0:9:2:-1:23'],
-  ['a2_luftangriff', 'h2_schicht', 5009, '0:11:3:-4:28'],
-  ['a2_luftangriff', 'h3_campus', 5010, '0:8:3:-3:21'],
-  ['a3_gift_urgewalt', 'a4_urzeitliches_rudel', 5011, '1:9:-4:1:20'],
-  ['a3_gift_urgewalt', 'h1_solidaritaet', 5012, '0:10:1:0:23'],
-  ['a3_gift_urgewalt', 'h2_schicht', 5013, '1:8:-3:10:16'],
-  ['a3_gift_urgewalt', 'h3_campus', 5014, '0:14:4:-3:32'],
-  ['a4_urzeitliches_rudel', 'h1_solidaritaet', 5015, '1:7:-2:6:14'],
-  ['a4_urzeitliches_rudel', 'h2_schicht', 5016, '0:9:5:-1:19'],
-  ['a4_urzeitliches_rudel', 'h3_campus', 5017, '1:13:-2:4:30'],
-  ['h1_solidaritaet', 'h2_schicht', 5018, '0:13:3:-2:28'],
-  ['h1_solidaritaet', 'h3_campus', 5019, '0:14:3:0:31']
+// Referenzen vom 14.09.2026 nach der Integration des aktuellen Champ-Kartensets.
+// Alle aktiven Decks werden in beiden Sitzordnungen geprüft. Alte Alpha-Decks
+// sind ersetzt; Kurzstand und Zustandsfingerabdruck sichern das heutige Verhalten.
+const GOLDEN_MASTER: [string, string, number, string, string][] = [
+  ['der_zerschmetterer', 'kaeptn_kompostible', 5000, '0:6:20:-3:14', '9f685d94'],
+  ['kaeptn_kompostible', 'der_zerschmetterer', 5001, '1:11:0:17:24', 'f4210a96'],
+  ['der_zerschmetterer', 'rostbolzen', 5002, '0:15:20:-2:28', '74938eb1'],
+  ['rostbolzen', 'der_zerschmetterer', 5003, '1:10:-2:20:20', '81362974'],
+  ['der_zerschmetterer', 'sonnenfackel', 5004, '0:11:13:-1:26', '58ed169d'],
+  ['sonnenfackel', 'der_zerschmetterer', 5005, '1:9:0:16:21', '2422121c'],
+  ['der_zerschmetterer', 'super_brainz', 5006, '0:11:16:-4:23', '9c2298ac'],
+  ['super_brainz', 'der_zerschmetterer', 5007, '1:10:0:8:18', '3e3a741e'],
+  ['der_zerschmetterer', 'wall_halla', 5008, '0:11:13:-1:25', '4c6870e4'],
+  ['wall_halla', 'der_zerschmetterer', 5009, '1:15:-2:20:27', '290dcb7d'],
+  ['kaeptn_kompostible', 'rostbolzen', 5010, '0:11:6:-4:24', 'bb8921b7'],
+  ['rostbolzen', 'kaeptn_kompostible', 5011, '1:11:-3:15:27', '5bfc35f1'],
+  ['kaeptn_kompostible', 'sonnenfackel', 5012, '0:8:18:-1:17', '6d956be1'],
+  ['sonnenfackel', 'kaeptn_kompostible', 5013, '0:8:14:0:19', '2d97b230'],
+  ['kaeptn_kompostible', 'super_brainz', 5014, '0:9:12:-1:16', '511ffd72'],
+  ['super_brainz', 'kaeptn_kompostible', 5015, '0:8:14:0:20', '0ada22da'],
+  ['kaeptn_kompostible', 'wall_halla', 5016, '1:10:0:11:20', '7fc39b69'],
+  ['wall_halla', 'kaeptn_kompostible', 5017, '1:10:-1:13:19', '06f717e1'],
+  ['rostbolzen', 'sonnenfackel', 5018, '0:12:11:-1:21', 'adc1e82d'],
+  ['sonnenfackel', 'rostbolzen', 5019, '0:11:14:-4:26', '6d6cc206'],
+  ['rostbolzen', 'super_brainz', 5020, '1:11:0:6:21', 'dec111da'],
+  ['super_brainz', 'rostbolzen', 5021, '1:13:-1:16:26', 'c7f915c1'],
+  ['rostbolzen', 'wall_halla', 5022, '0:15:6:0:32', 'c3ee9e07'],
+  ['wall_halla', 'rostbolzen', 5023, '1:11:-1:9:21', 'e6870e49'],
+  ['sonnenfackel', 'super_brainz', 5024, '0:8:12:0:17', '8d627180'],
+  ['super_brainz', 'sonnenfackel', 5025, '1:12:-3:2:21', 'd544798e'],
+  ['sonnenfackel', 'wall_halla', 5026, '0:13:13:-5:29', '117cfe4e'],
+  ['wall_halla', 'sonnenfackel', 5027, '0:16:3:-1:33', 'a3ef6557'],
+  ['super_brainz', 'wall_halla', 5028, '0:17:11:0:37', 'c05449e9'],
+  ['wall_halla', 'super_brainz', 5029, '1:13:0:20:24', '1bf5d548'],
 ];
 
-describe.skip('Golden Master des ersetzten Ein-Fraktions-Sets', () => {
-  it.each(GOLDEN_MASTER)('%s vs %s (Saat %i)', (deckAId, deckBId, saat, erwarteterHash) => {
-    const r = spielePartie(data, decks[deckAId], decks[deckBId], { saat, profilA: profil, profilB: profil });
-    const hash = `${r.gewinner}:${r.runden}:${r.endState.players[0].base}:${r.endState.players[1].base}:${r.endState.uidCounter}`;
-    expect(hash).toBe(erwarteterHash);
-  });
+describe('Golden Master: Partie-Simulation bleibt bei Refactors unverändert', () => {
+  it.each(GOLDEN_MASTER)(
+    '%s vs %s (Saat %i)',
+    (deckAId, deckBId, saat, erwarteterKurzstand, erwarteterZustand) => {
+      const r = spielePartie(data, decks[deckAId], decks[deckBId], {
+        saat,
+        profilA: profil,
+        profilB: profil
+      });
+      const kurzstand = `${r.gewinner}:${r.runden}:${r.endState.players[0].base}:${r.endState.players[1].base}:${r.endState.uidCounter}`;
+      expect(kurzstand).toBe(erwarteterKurzstand);
+      expect(zustandsFingerabdruck(r.endState)).toBe(erwarteterZustand);
+    }
+  );
 });

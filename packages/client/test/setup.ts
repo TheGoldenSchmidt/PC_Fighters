@@ -8,6 +8,10 @@ if (!Element.prototype.scrollTo) {
   Element.prototype.scrollTo = () => {};
 }
 
+if (!Element.prototype.scrollIntoView) {
+  Element.prototype.scrollIntoView = () => {};
+}
+
 // jsdom kann kein WebGL. Ohne diesen Stub würde webglSupported() bei jedem
 // Rendern eine "Not implemented"-Warnung erzeugen. `null` ist genau das, was
 // ein Browser ohne WebGL liefert – die Tests laufen dadurch im 2D-Fallback.
