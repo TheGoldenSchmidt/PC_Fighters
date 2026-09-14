@@ -51,7 +51,18 @@ Lockfile vorhanden; die übrigen Paketauflösungen bleiben unverändert.
 
 ## Prüfung
 
-Die Zusammenführung wird auf `codex/konsolidierung-2026-09-14` vorbereitet.
-Vor der Übernahme nach master werden Typprüfung, alle Tests, Produktionsbuild
-und Viewer-Build ausgeführt. Der Viewer-Build ist aus den gesicherten Quelldaten
-reproduzierbar. Bestehende übersprungene Legacy-Tests werden gesondert ausgewiesen.
+Die Zusammenführung wurde auf `codex/konsolidierung-2026-09-14` vorbereitet.
+Alle geprüften Entwicklungsbranches sind im Ergebnis als Vorfahren enthalten;
+ausgenommen bleiben ausschließlich die oben genannten Archive und das alte Backup.
+
+- `npm run typecheck`: erfolgreich.
+- `npm test`: 190 bestanden, 114 bestehende Legacy-Tests übersprungen.
+- Anschließend ergänzte Bewegungsregression: alle 26 aktuellen Karteneffekt-Tests
+  bestanden, darunter der neue Fall. Damit ist ein weiterer aktiver Test abgesichert.
+- `npm run build`: erfolgreich; bestehender Hinweis auf den großen, separat
+  geladenen Three.js-Chunk.
+- `node tools/figuren-viewer/build-viewer.mjs`: erfolgreich und ohne inhaltlichen
+  Unterschied zum gesicherten Viewer, einschließlich der zehn neuen Figuren.
+- `git diff --check`: keine Fehler; Arbeitsverzeichnis sauber.
+
+Es wurden keine alten Branches, Archivstände, Stashes oder lokalen Artefakte gelöscht.
