@@ -41,7 +41,8 @@ bereits daraus folgt.
   aus.** → Identitätsfarben dunkler und satter als das Zielbild anlegen, benachbarte
   Großflächen über Helligkeit trennen und `emissive` nicht auf farbtragenden Teilen
   verwenden. Glut über dunkle Grundfarbe, Form und Bewegung statt Dauerleuchten
-  darstellen.
+  darstellen. Kleine Glutkerne dürfen leuchten; farbtragende Flächen bleiben matt
+  (hohe roughness, niedrige metalness) und erhalten einen dunklen Kontrastrand.
 - **Details zählen nur, wenn sie im Spielmaßstab lesbar sind.** → Gesicht zuerst als
   klare Masse bauen; dann helle Augenfläche plus dunkle Pupille, abgesetzten Kiefer,
   Ohrinnenteile und wenige kontrastierende Zähne/Strähnen ergänzen. Wichtige Details
@@ -84,7 +85,9 @@ bereits daraus folgt.
    Eltern-vor-Kind, Pflichtgrößen und alle Animationstrack-Ziele validieren.
 2. **Den gerenderten Datenstand beweisen:** Server nach jeder Datenrunde neu starten,
    einen markanten Wert aus `/info` mit der Datei vergleichen und die Bausteinzahl im
-   Viewer strukturiert auslesen. Erst danach kritisieren.
+   Viewer strukturiert auslesen. Ein HTTP-200 oder ein Start-Exitcode beweist keinen
+   aktuellen Server: bei EADDRINUSE kann noch der Altprozess antworten. Erst nach
+   dem Datenvergleich kritisieren.
 3. **Das Sichtbare prüfen:** Front, beide Seiten/3/4 und Rückseite sowie semantische
    Angriffsphasen rendern; Einzug und Tod zusätzlich in mindestens zwei Phasen
    ansehen. Gesicht, Griff und jede geänderte Problemzone als Ausschnitt prüfen.
@@ -101,6 +104,10 @@ bereits daraus folgt.
   WLAN-IP verwenden und Client sowie Server über diese Adresse prüfen.
 
 ## Pflege
+
+Werkstatt-Wissen liegt auch unter `.claude/skills/figuren-werkstatt/`. Inhaltliche
+Korrekturen mit beiden Fassungen abgleichen; deren unterschiedliche Struktur
+beibehalten und gemeinsame Regeln nicht durch ältere Vollkopien überschreiben.
 
 Am Laufende nur nach Nutzerfreigabe ändern. Vor jeder Ergänzung in dieser Reihenfolge
 prüfen: bestehende Regel erweitern → widersprechende Regel korrigieren → nur sonst
