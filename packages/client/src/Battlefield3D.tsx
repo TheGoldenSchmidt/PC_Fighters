@@ -24,13 +24,13 @@ import { createEnvironment, type EnvironmentRec, type FieldMetrics } from './env
 import { SACRIFICE_MS } from './arena/fx';
 
 /** Zauber-Effektarten der Aktionskarten (Spiegel des engine-SpellEvent). */
-export type SpellEffectKind = 'buff' | 'attackBuff' | 'summon' | 'move' | 'environment' | 'reveal' | 'superpower';
+export type SpellEffectKind = import('@pcf/engine').SpellEvent['effect'];
 
 /** Teilmenge des GameScreen-FxState, die das Schlachtfeld braucht. */
 export interface BattlefieldFx {
   projectiles: { key: string; lane: number; attacker: PlayerIndex; toBase: boolean; emoji: string }[];
   dying: { lane: number; owner: PlayerIndex; uid?: number }[];
-  spells: { key: string; lane: number; effect: SpellEffectKind; faction: string }[];
+  spells: { key: string; lane: number; effect: SpellEffectKind; faction: string; owner?: PlayerIndex; targetUid?: number }[];
   sacrifices: {
     key: string;
     owner: PlayerIndex;
@@ -274,14 +274,7 @@ function safeColor(hex: string | undefined, fallback: number): THREE.Color {
 
 /** Farbe eines Zauber-Effekts (Effektart bestimmt Grundton, Fraktion tönt nach). */
 function spellColor(effect: SpellEffectKind, faction: string): THREE.Color {
-  const base =
-    effect === 'buff'
-      ? 0x5ee8a0
-      : effect === 'attackBuff'
-        ? 0xff8a4d
-        : effect === 'summon'
-          ? 0xffd766
-          : 0xd9c4a0; // move
+  const base = effect === 'buff' || effect === 'attackBuff' ? 0xffd166 : effect === 'heal' ? 0x5ee8a0 : effect === 'debuff' ? 0xbc80ff : effect === 'damage' ? 0xff5555 : effect === 'shield' ? 0x84d4ff : 0xffd766;
   const c = new THREE.Color(base);
   const tint = faction === 'animals' ? new THREE.Color(0x8be98f) : new THREE.Color(0x63c9f8);
   return c.lerp(tint, 0.18);
@@ -1163,12 +1156,12 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
     for (const sp of fx.spells) {
       if (world.seenSpells.has(sp.key)) continue;
       world.seenSpells.add(sp.key);
-      const anchor = slotAnchor(world, me, sp.lane);
+      const anchor = slotAnchor(world, sp.owner ?? me, sp.lane);
       if (!anchor) continue;
       const color = spellColor(sp.effect, sp.faction);
 
       const group = new THREE.Group();
-      group.position.copy(anchor.pos);
+      group.position.copy((sp.targetUid !== undefined ? world.figures.get(sp.targetUid)?.fig.root.position : undefined) ?? anchor.pos);
 
       const ring = new THREE.Mesh(
         new THREE.RingGeometry(0.5, 0.62, 28),

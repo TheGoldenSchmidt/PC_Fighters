@@ -9,10 +9,19 @@
     "tribes": [],
     "signaturePower": true,
     "effect": {
-      "kind": "referenz",
-      "text": "2 Schaden; dauerhaft +1 Sun pro Runde"
+      "kind": "script",
+      "target": "enemyOrBase",
+      "steps": [
+        {
+          "op": "damage",
+          "amount": 2
+        },
+        {
+          "op": "ramp"
+        }
+      ]
     },
-    "text": "2 Schaden; dauerhaft +1 Energie pro Runde"
+    "text": "Verursache 2 Schaden an einer gegnerischen Figur oder Basis. Erhalte dauerhaft +1 Energie pro Runde."
   },
   {
     "id": "super_weed_whack",
@@ -24,10 +33,19 @@
     "tribes": [],
     "signaturePower": false,
     "effect": {
-      "kind": "referenz",
-      "text": "Zombie -2 Angriff"
+      "kind": "script",
+      "target": "enemy",
+      "steps": [
+        {
+          "op": "buff",
+          "atk": -2,
+          "hp": 0,
+          "scope": "selected",
+          "temporary": false
+        }
+      ]
     },
-    "text": "Human -2 Angriff"
+    "text": "Eine gegnerische Figur erhält dauerhaft -2 Angriff."
   },
   {
     "id": "super_more_spore",
@@ -39,10 +57,17 @@
     "tribes": [],
     "signaturePower": false,
     "effect": {
-      "kind": "referenz",
-      "text": "1/1 Button Mushroom in gewählte Lane + einen weiteren zufällig"
+      "kind": "script",
+      "target": "none",
+      "steps": [
+        {
+          "op": "summon",
+          "amount": 2,
+          "cardId": "alpha_wall_bewohner"
+        }
+      ]
     },
-    "text": "1/1 Krawall-Krähe in gewählte Lane + einen weiteren zufällig"
+    "text": "Beschwöre zwei 1/2 Wall-Bewohner in freien Landbahnen."
   },
   {
     "id": "super_scorched_earth",
@@ -54,10 +79,19 @@
     "tribes": [],
     "signaturePower": false,
     "effect": {
-      "kind": "referenz",
-      "text": "Alle Boden-Zombies -1/-1"
+      "kind": "script",
+      "target": "none",
+      "steps": [
+        {
+          "op": "buff",
+          "atk": -1,
+          "hp": -1,
+          "scope": "groundEnemy",
+          "temporary": false
+        }
+      ]
     },
-    "text": "Alle Boden-Humans -1/-1"
+    "text": "Gegnerische Figuren auf den drei Bodenbahnen erhalten dauerhaft -1/-1."
   },
   {
     "id": "super_blazing_bark",
@@ -69,10 +103,19 @@
     "tribes": [],
     "signaturePower": true,
     "effect": {
-      "kind": "referenz",
-      "text": "Pflanze +4 Angriff"
+      "kind": "script",
+      "target": "friendly",
+      "steps": [
+        {
+          "op": "buff",
+          "atk": 4,
+          "hp": 0,
+          "scope": "selected",
+          "temporary": false
+        }
+      ]
     },
-    "text": "Animal +4 Angriff"
+    "text": "Eine eigene Figur erhält dauerhaft +4 Angriff."
   },
   {
     "id": "super_meteor_strike",
@@ -84,10 +127,16 @@
     "tribes": [],
     "signaturePower": false,
     "effect": {
-      "kind": "referenz",
-      "text": "3 Schaden an Zombie"
+      "kind": "script",
+      "target": "enemy",
+      "steps": [
+        {
+          "op": "damage",
+          "amount": 3
+        }
+      ]
     },
-    "text": "3 Schaden an Human"
+    "text": "Verursache 3 Schaden an einer gegnerischen Figur."
   },
   {
     "id": "super_embiggen",
@@ -99,10 +148,19 @@
     "tribes": [],
     "signaturePower": false,
     "effect": {
-      "kind": "referenz",
-      "text": "Pflanze +2/+2"
+      "kind": "script",
+      "target": "friendly",
+      "steps": [
+        {
+          "op": "buff",
+          "atk": 2,
+          "hp": 2,
+          "scope": "selected",
+          "temporary": false
+        }
+      ]
     },
-    "text": "Animal +2/+2"
+    "text": "Eine eigene Figur erhält dauerhaft +2/+2."
   },
   {
     "id": "super_time_to_shine",
@@ -114,10 +172,15 @@
     "tribes": [],
     "signaturePower": false,
     "effect": {
-      "kind": "referenz",
-      "text": "Pflanze macht Bonus Attack"
+      "kind": "script",
+      "target": "friendly",
+      "steps": [
+        {
+          "op": "bonus"
+        }
+      ]
     },
-    "text": "Animal macht Bonus Attack"
+    "text": "Eine eigene Figur führt einen Bonusangriff aus."
   },
   {
     "id": "super_uncrackable",
@@ -189,10 +252,25 @@
     "tribes": [],
     "signaturePower": true,
     "effect": {
-      "kind": "referenz",
-      "text": "Zombie bewegen; +1/+1; Bonus Attack"
+      "kind": "script",
+      "target": "move",
+      "steps": [
+        {
+          "op": "move"
+        },
+        {
+          "op": "buff",
+          "atk": 1,
+          "hp": 1,
+          "scope": "selected",
+          "temporary": false
+        },
+        {
+          "op": "bonus"
+        }
+      ]
     },
-    "text": "Human bewegen; +1/+1; Bonus Attack"
+    "text": "Bewege eine eigene Figur, gib ihr dauerhaft +1/+1 und führe dort einen Bonusangriff aus."
   },
   {
     "id": "super_telepathy",
@@ -204,10 +282,16 @@
     "tribes": [],
     "signaturePower": false,
     "effect": {
-      "kind": "referenz",
-      "text": "2 Karten ziehen"
+      "kind": "script",
+      "target": "none",
+      "steps": [
+        {
+          "op": "draw",
+          "amount": 2
+        }
+      ]
     },
-    "text": "2 Karten ziehen"
+    "text": "Ziehe 2 Karten."
   },
   {
     "id": "super_cut_down_to_size",
@@ -219,10 +303,16 @@
     "tribes": [],
     "signaturePower": false,
     "effect": {
-      "kind": "referenz",
-      "text": "Pflanze mit ≥5 Angriff zerstören"
+      "kind": "script",
+      "target": "enemy",
+      "steps": [
+        {
+          "op": "destroy",
+          "minAttack": 5
+        }
+      ]
     },
-    "text": "Animal mit ≥5 Angriff zerstören"
+    "text": "Zerstöre eine gegnerische Figur mit mindestens 5 Angriff."
   },
   {
     "id": "super_super_stench",
@@ -234,10 +324,19 @@
     "tribes": [],
     "signaturePower": false,
     "effect": {
-      "kind": "referenz",
-      "text": "Zombies diese Runde Deadly; Karte ziehen"
+      "kind": "script",
+      "target": "none",
+      "steps": [
+        {
+          "op": "deadly",
+          "scope": "own"
+        },
+        {
+          "op": "draw"
+        }
+      ]
     },
-    "text": "Humans diese Runde Deadly; Karte ziehen"
+    "text": "Eigene Figuren erhalten diese Runde Tödlich. Ziehe 1 Karte."
   },
   {
     "id": "super_shrink_ray",
@@ -249,10 +348,22 @@
     "tribes": [],
     "signaturePower": true,
     "effect": {
-      "kind": "referenz",
-      "text": "Pflanze -3 Angriff; Karte ziehen"
+      "kind": "script",
+      "target": "enemy",
+      "steps": [
+        {
+          "op": "buff",
+          "atk": -3,
+          "hp": 0,
+          "scope": "selected",
+          "temporary": false
+        },
+        {
+          "op": "draw"
+        }
+      ]
     },
-    "text": "Animal -3 Angriff; Karte ziehen"
+    "text": "Ein Gegner erhält dauerhaft -3 Angriff. Ziehe 1 Karte."
   },
   {
     "id": "super_heroic_health",
@@ -264,10 +375,17 @@
     "tribes": [],
     "signaturePower": false,
     "effect": {
-      "kind": "referenz",
-      "text": "Held +6 heilen"
+      "kind": "script",
+      "target": "none",
+      "steps": [
+        {
+          "op": "heal",
+          "scope": "base",
+          "amount": 6
+        }
+      ]
     },
-    "text": "Held +6 heilen"
+    "text": "Heile deine Basis um 6."
   },
   {
     "id": "super_rock_wall",
@@ -279,10 +397,19 @@
     "tribes": [],
     "signaturePower": false,
     "effect": {
-      "kind": "referenz",
-      "text": "Zombie +5 Leben"
+      "kind": "script",
+      "target": "friendly",
+      "steps": [
+        {
+          "op": "buff",
+          "atk": 0,
+          "hp": 5,
+          "scope": "selected",
+          "temporary": false
+        }
+      ]
     },
-    "text": "Human +5 Leben"
+    "text": "Eine eigene Figur erhält dauerhaft +5 Leben."
   },
   {
     "id": "super_slammin_smackdown",

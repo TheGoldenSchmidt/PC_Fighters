@@ -29,40 +29,27 @@ const data = loadGameData();
 const decks = ladeAktiveDecks(data);
 const profil: BotProfil = { ...BOT_PROFILE.ausgewogen, epsilonBand: 0 };
 
-// Referenzen vom 14.09.2026 nach der Integration des aktuellen Champ-Kartensets.
-// Alle aktiven Decks werden in beiden Sitzordnungen geprüft. Alte Alpha-Decks
-// sind ersetzt; Kurzstand und Zustandsfingerabdruck sichern das heutige Verhalten.
+// Referenzen vom 15.09.2026: vier vollständige Teams und explizite Alpha-Regeln.
+// Sechs Paarungen in beiden Sitzordnungen plus vier Spiegelpartien. Der Hash
+// umfasst auch Team-Up, Handinstanzen und offene Auswahlen; die Botbewertung
+// berücksichtigt beide Figurenplätze.
 const GOLDEN_MASTER: [string, string, number, string, string][] = [
-  ['der_zerschmetterer', 'kaeptn_kompostible', 5000, '0:6:20:-3:14', '9f685d94'],
-  ['kaeptn_kompostible', 'der_zerschmetterer', 5001, '1:11:0:17:24', 'f4210a96'],
-  ['der_zerschmetterer', 'rostbolzen', 5002, '0:15:20:-2:28', '74938eb1'],
-  ['rostbolzen', 'der_zerschmetterer', 5003, '1:10:-2:20:20', '81362974'],
-  ['der_zerschmetterer', 'sonnenfackel', 5004, '0:11:13:-1:26', '58ed169d'],
-  ['sonnenfackel', 'der_zerschmetterer', 5005, '1:9:0:16:21', '2422121c'],
-  ['der_zerschmetterer', 'super_brainz', 5006, '0:11:16:-4:23', '9c2298ac'],
-  ['super_brainz', 'der_zerschmetterer', 5007, '1:10:0:8:18', '3e3a741e'],
-  ['der_zerschmetterer', 'wall_halla', 5008, '0:11:13:-1:25', '4c6870e4'],
-  ['wall_halla', 'der_zerschmetterer', 5009, '1:15:-2:20:27', '290dcb7d'],
-  ['kaeptn_kompostible', 'rostbolzen', 5010, '0:11:6:-4:24', 'bb8921b7'],
-  ['rostbolzen', 'kaeptn_kompostible', 5011, '1:11:-3:15:27', '5bfc35f1'],
-  ['kaeptn_kompostible', 'sonnenfackel', 5012, '0:8:18:-1:17', '6d956be1'],
-  ['sonnenfackel', 'kaeptn_kompostible', 5013, '0:8:14:0:19', '2d97b230'],
-  ['kaeptn_kompostible', 'super_brainz', 5014, '0:9:12:-1:16', '511ffd72'],
-  ['super_brainz', 'kaeptn_kompostible', 5015, '0:8:14:0:20', '0ada22da'],
-  ['kaeptn_kompostible', 'wall_halla', 5016, '1:10:0:11:20', '7fc39b69'],
-  ['wall_halla', 'kaeptn_kompostible', 5017, '1:10:-1:13:19', '06f717e1'],
-  ['rostbolzen', 'sonnenfackel', 5018, '0:12:11:-1:21', 'adc1e82d'],
-  ['sonnenfackel', 'rostbolzen', 5019, '0:11:14:-4:26', '6d6cc206'],
-  ['rostbolzen', 'super_brainz', 5020, '1:11:0:6:21', 'dec111da'],
-  ['super_brainz', 'rostbolzen', 5021, '1:13:-1:16:26', 'c7f915c1'],
-  ['rostbolzen', 'wall_halla', 5022, '0:15:6:0:32', 'c3ee9e07'],
-  ['wall_halla', 'rostbolzen', 5023, '1:11:-1:9:21', 'e6870e49'],
-  ['sonnenfackel', 'super_brainz', 5024, '0:8:12:0:17', '8d627180'],
-  ['super_brainz', 'sonnenfackel', 5025, '1:12:-3:2:21', 'd544798e'],
-  ['sonnenfackel', 'wall_halla', 5026, '0:13:13:-5:29', '117cfe4e'],
-  ['wall_halla', 'sonnenfackel', 5027, '0:16:3:-1:33', 'a3ef6557'],
-  ['super_brainz', 'wall_halla', 5028, '0:17:11:0:37', 'c05449e9'],
-  ['wall_halla', 'super_brainz', 5029, '1:13:0:20:24', '1bf5d548'],
+  ['kaeptn_kompostible', 'kaeptn_kompostible', 5000, '1:10:-4:4:18', '34af2491'],
+  ['kaeptn_kompostible', 'rostbolzen', 5001, '0:12:1:-1:25', '7e56b19f'],
+  ['rostbolzen', 'kaeptn_kompostible', 5002, '1:9:-3:20:12', '1c27636b'],
+  ['kaeptn_kompostible', 'sonnenfackel', 5003, '0:12:14:-4:28', '817a0ece'],
+  ['sonnenfackel', 'kaeptn_kompostible', 5004, '1:10:0:10:23', '517ee9b4'],
+  ['kaeptn_kompostible', 'super_brainz', 5005, '1:7:0:5:8', '5d8f3f82'],
+  ['super_brainz', 'kaeptn_kompostible', 5006, '1:9:0:15:19', 'bde587d4'],
+  ['rostbolzen', 'rostbolzen', 5007, '1:15:0:8:27', 'c36feabf'],
+  ['rostbolzen', 'sonnenfackel', 5008, '0:9:20:-1:19', '8b48f123'],
+  ['sonnenfackel', 'rostbolzen', 5009, '1:9:-1:20:19', '29d9bd34'],
+  ['rostbolzen', 'super_brainz', 5010, '1:14:-4:2:30', 'dda5f8c1'],
+  ['super_brainz', 'rostbolzen', 5011, '1:12:-6:10:28', '2d80a19d'],
+  ['sonnenfackel', 'sonnenfackel', 5012, '0:15:15:-4:31', 'db74496d'],
+  ['sonnenfackel', 'super_brainz', 5013, '0:12:10:-3:24', '74a5ac90'],
+  ['super_brainz', 'sonnenfackel', 5014, '0:8:18:0:19', '915e9852'],
+  ['super_brainz', 'super_brainz', 5015, '0:14:10:0:38', 'db6163a0'],
 ];
 
 describe('Golden Master: Partie-Simulation bleibt bei Refactors unverändert', () => {

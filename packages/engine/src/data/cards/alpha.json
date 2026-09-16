@@ -1,0 +1,2489 @@
+[
+  {
+    "id": "alpha_the_coon",
+    "name": "The Coon – Eric Cartman",
+    "faction": "brainy",
+    "teamId": "south_park",
+    "type": "creature",
+    "cost": 3,
+    "attack": 2,
+    "health": 4,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "aura",
+        "scope": "same_top",
+        "buff": {
+          "atk": 1,
+          "hp": 0
+        },
+        "timing": "dauerhaft"
+      }
+    ],
+    "text": "Andere eigene Humans erhalten +1 Angriff.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_mysterion",
+    "name": "Mysterion – Kenny McCormick",
+    "faction": "brainy",
+    "teamId": "south_park",
+    "type": "creature",
+    "cost": 2,
+    "attack": 1,
+    "health": 3,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "rettung",
+        "mode": "revive_1hp"
+      }
+    ],
+    "text": "Überlebt den ersten tödlichen Schaden mit 1 Leben.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_toolshed",
+    "name": "Toolshed – Stan Marsh",
+    "faction": "brainy",
+    "teamId": "south_park",
+    "type": "creature",
+    "cost": 2,
+    "attack": 1,
+    "health": 3,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "heilung",
+        "scope": "same_top",
+        "reichweite": "nachbarn",
+        "amount": 1
+      }
+    ],
+    "text": "Heilt benachbarte eigene Humans am Rundenende um 1.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_human_kite",
+    "name": "Human Kite – Kyle Broflovski",
+    "faction": "brainy",
+    "teamId": "south_park",
+    "type": "creature",
+    "cost": 1,
+    "attack": 1,
+    "health": 2,
+    "keywords": [
+      "team_up"
+    ],
+    "abilities": [],
+    "text": "Team-Up: Darf mit einer weiteren eigenen Figur eine Bahn teilen.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_mosquito",
+    "name": "Mosquito – Clyde Donovan",
+    "faction": "brainy",
+    "teamId": "south_park",
+    "type": "creature",
+    "cost": 2,
+    "attack": 1,
+    "health": 3,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "basisHeilung",
+        "timing": "beim_ausspielen",
+        "amount": 2
+      }
+    ],
+    "text": "Beim Ausspielen: Heile deine Basis um 2.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_tupperware",
+    "name": "Tupperware – Tolkien Black",
+    "faction": "brainy",
+    "teamId": "south_park",
+    "type": "creature",
+    "cost": 3,
+    "attack": 2,
+    "health": 4,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "aura",
+        "scope": "same_top",
+        "buff": {
+          "atk": 1,
+          "hp": 0
+        },
+        "timing": "dauerhaft"
+      }
+    ],
+    "text": "Andere eigene Humans erhalten +1 Angriff.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_doctor_timothy",
+    "name": "Doctor Timothy – Timmy Burch",
+    "faction": "brainy",
+    "teamId": "south_park",
+    "type": "creature",
+    "cost": 4,
+    "attack": 3,
+    "health": 5,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "rettung",
+        "mode": "revive_1hp"
+      }
+    ],
+    "text": "Überlebt den ersten tödlichen Schaden mit 1 Leben.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_fastpass",
+    "name": "Fastpass – Jimmy Valmer",
+    "faction": "brainy",
+    "teamId": "south_park",
+    "type": "creature",
+    "cost": 2,
+    "attack": 1,
+    "health": 3,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "heilung",
+        "scope": "same_top",
+        "reichweite": "nachbarn",
+        "amount": 1
+      }
+    ],
+    "text": "Heilt benachbarte eigene Humans am Rundenende um 1.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_super_craig",
+    "name": "Super Craig – Craig Tucker",
+    "faction": "brainy",
+    "teamId": "south_park",
+    "type": "creature",
+    "cost": 3,
+    "attack": 2,
+    "health": 4,
+    "keywords": [
+      "team_up"
+    ],
+    "abilities": [],
+    "text": "Team-Up: Darf mit einer weiteren eigenen Figur eine Bahn teilen.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_wonder_tweek",
+    "name": "Wonder Tweek – Tweek Tweak",
+    "faction": "brainy",
+    "teamId": "south_park",
+    "type": "creature",
+    "cost": 3,
+    "attack": 2,
+    "health": 4,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "basisHeilung",
+        "timing": "beim_ausspielen",
+        "amount": 2
+      }
+    ],
+    "text": "Beim Ausspielen: Heile deine Basis um 2.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_call_girl",
+    "name": "Call Girl – Wendy Testaburger",
+    "faction": "hearty",
+    "teamId": "south_park",
+    "type": "creature",
+    "cost": 4,
+    "attack": 3,
+    "health": 5,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "aura",
+        "scope": "same_top",
+        "buff": {
+          "atk": 1,
+          "hp": 0
+        },
+        "timing": "dauerhaft"
+      }
+    ],
+    "text": "Andere eigene Humans erhalten +1 Angriff.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_captain_diabetes",
+    "name": "Captain Diabetes – Scott Malkinson",
+    "faction": "hearty",
+    "teamId": "south_park",
+    "type": "creature",
+    "cost": 2,
+    "attack": 1,
+    "health": 3,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "rettung",
+        "mode": "revive_1hp"
+      }
+    ],
+    "text": "Überlebt den ersten tödlichen Schaden mit 1 Leben.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_mint_berry_crunch",
+    "name": "Mint-Berry Crunch – Bradley Biggle",
+    "faction": "hearty",
+    "teamId": "south_park",
+    "type": "creature",
+    "cost": 5,
+    "attack": 4,
+    "health": 6,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "heilung",
+        "scope": "same_top",
+        "reichweite": "nachbarn",
+        "amount": 1
+      }
+    ],
+    "text": "Heilt benachbarte eigene Humans am Rundenende um 1.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_the_new_kid",
+    "name": "The New Kid",
+    "faction": "hearty",
+    "teamId": "south_park",
+    "type": "creature",
+    "cost": 5,
+    "attack": 4,
+    "health": 6,
+    "keywords": [
+      "team_up"
+    ],
+    "abilities": [],
+    "text": "Team-Up: Darf mit einer weiteren eigenen Figur eine Bahn teilen.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_professor_chaos",
+    "name": "Professor Chaos – Butters Stotch",
+    "faction": "hearty",
+    "teamId": "south_park",
+    "type": "creature",
+    "cost": 4,
+    "attack": 3,
+    "health": 5,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "basisHeilung",
+        "timing": "beim_ausspielen",
+        "amount": 2
+      }
+    ],
+    "text": "Beim Ausspielen: Heile deine Basis um 2.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_general_disarray",
+    "name": "General Disarray – Dougie O’Connell",
+    "faction": "hearty",
+    "teamId": "south_park",
+    "type": "creature",
+    "cost": 1,
+    "attack": 1,
+    "health": 2,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "aura",
+        "scope": "same_top",
+        "buff": {
+          "atk": 1,
+          "hp": 0
+        },
+        "timing": "dauerhaft"
+      }
+    ],
+    "text": "Andere eigene Humans erhalten +1 Angriff.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_cthulhu",
+    "name": "Cthulhu",
+    "faction": "hearty",
+    "teamId": "south_park",
+    "type": "creature",
+    "cost": 7,
+    "attack": 6,
+    "health": 8,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "rettung",
+        "mode": "revive_1hp"
+      }
+    ],
+    "text": "Überlebt den ersten tödlichen Schaden mit 1 Leben.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_captain_hindsight",
+    "name": "Captain Hindsight",
+    "faction": "hearty",
+    "teamId": "south_park",
+    "type": "creature",
+    "cost": 3,
+    "attack": 2,
+    "health": 4,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "heilung",
+        "scope": "same_top",
+        "reichweite": "nachbarn",
+        "amount": 1
+      }
+    ],
+    "text": "Heilt benachbarte eigene Humans am Rundenende um 1.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_manbearpig",
+    "name": "ManBearPig",
+    "faction": "hearty",
+    "teamId": "south_park",
+    "type": "creature",
+    "cost": 6,
+    "attack": 5,
+    "health": 7,
+    "keywords": [
+      "team_up"
+    ],
+    "abilities": [],
+    "text": "Team-Up: Darf mit einer weiteren eigenen Figur eine Bahn teilen.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_nathan",
+    "name": "Nathan",
+    "faction": "hearty",
+    "teamId": "south_park",
+    "type": "creature",
+    "cost": 2,
+    "attack": 1,
+    "health": 3,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "basisHeilung",
+        "timing": "beim_ausspielen",
+        "amount": 2
+      }
+    ],
+    "text": "Beim Ausspielen: Heile deine Basis um 2.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_south_park_vereinigt",
+    "name": "Coon & Friends, vereinigt euch!",
+    "faction": "brainy",
+    "teamId": "south_park",
+    "type": "action",
+    "cost": 3,
+    "effect": {
+      "kind": "script",
+      "target": "none",
+      "steps": [
+        {
+          "op": "buff",
+          "atk": 1,
+          "hp": 1,
+          "scope": "own",
+          "temporary": false
+        }
+      ]
+    },
+    "text": "Alle eigenen Figuren erhalten dauerhaft +1/+1.",
+    "tribes": [],
+    "deckable": true
+  },
+  {
+    "id": "alpha_south_park_autoritaet",
+    "name": "Respektiert meine Autoritäh!",
+    "faction": "hearty",
+    "teamId": "south_park",
+    "type": "action",
+    "cost": 3,
+    "effect": {
+      "kind": "script",
+      "target": "enemy",
+      "steps": [
+        {
+          "op": "buff",
+          "atk": -2,
+          "hp": 0,
+          "scope": "selected",
+          "temporary": true
+        },
+        {
+          "op": "stun"
+        }
+      ]
+    },
+    "text": "Ein Gegner erhält diese Runde -2 Angriff und kann bis zum nächsten Rundenbeginn nicht angreifen.",
+    "tribes": [],
+    "deckable": true
+  },
+  {
+    "id": "alpha_south_park_kenny",
+    "name": "Oh mein Gott, sie haben Kenny getötet!",
+    "faction": "brainy",
+    "teamId": "south_park",
+    "type": "action",
+    "cost": 3,
+    "effect": {
+      "kind": "script",
+      "target": "grave",
+      "steps": [
+        {
+          "op": "revive",
+          "maxCost": 3
+        }
+      ]
+    },
+    "text": "Hole eine besiegte eigene Figur mit Kosten bis 3 frisch in eine freie Bahn zurück.",
+    "tribes": [],
+    "deckable": true
+  },
+  {
+    "id": "alpha_south_park_kite_schild",
+    "name": "Schutzschild des Human Kite",
+    "faction": "hearty",
+    "teamId": "south_park",
+    "type": "action",
+    "cost": 1,
+    "effect": {
+      "kind": "script",
+      "target": "friendly",
+      "steps": [
+        {
+          "op": "shield"
+        }
+      ]
+    },
+    "text": "Verhindere den nächsten Schaden an einer eigenen Figur.",
+    "tribes": [],
+    "deckable": true
+  },
+  {
+    "id": "alpha_south_park_mint",
+    "name": "Mint-Berry-Kraft!",
+    "faction": "brainy",
+    "teamId": "south_park",
+    "type": "action",
+    "cost": 4,
+    "effect": {
+      "kind": "script",
+      "target": "none",
+      "steps": [
+        {
+          "op": "heal",
+          "scope": "own",
+          "amount": 2
+        },
+        {
+          "op": "buff",
+          "atk": 1,
+          "hp": 0,
+          "scope": "own",
+          "temporary": false
+        }
+      ]
+    },
+    "text": "Heile alle eigenen Figuren um 2 und gib ihnen dauerhaft +1 Angriff.",
+    "tribes": [],
+    "deckable": true
+  },
+  {
+    "id": "alpha_south_park_chaos",
+    "name": "Professor Chaos’ genialer Plan",
+    "faction": "hearty",
+    "teamId": "south_park",
+    "type": "action",
+    "cost": 2,
+    "effect": {
+      "kind": "script",
+      "target": "none",
+      "steps": [
+        {
+          "op": "buff",
+          "atk": -2,
+          "hp": 0,
+          "scope": "enemy",
+          "temporary": true
+        },
+        {
+          "op": "random",
+          "scope": "base",
+          "amount": 2
+        }
+      ]
+    },
+    "text": "Alle gegnerischen Figuren verlieren diese Runde 2 Angriff. Deine Basis erleidet als Risiko 1 bis 2 Schaden.",
+    "tribes": [],
+    "deckable": true
+  },
+  {
+    "id": "alpha_south_park_poofs",
+    "name": "Cheesy Poofs für alle",
+    "faction": "brainy",
+    "teamId": "south_park",
+    "type": "action",
+    "cost": 3,
+    "effect": {
+      "kind": "script",
+      "target": "none",
+      "steps": [
+        {
+          "op": "heal",
+          "scope": "base",
+          "amount": 4
+        },
+        {
+          "op": "buff",
+          "atk": 0,
+          "hp": 1,
+          "scope": "own",
+          "temporary": false
+        }
+      ]
+    },
+    "text": "Heile deine Basis um 4. Alle eigenen Figuren erhalten dauerhaft +1 Leben.",
+    "tribes": [],
+    "deckable": true
+  },
+  {
+    "id": "alpha_south_park_going_home",
+    "name": "Screw You Guys, I’m Going Home",
+    "faction": "hearty",
+    "teamId": "south_park",
+    "type": "action",
+    "cost": 1,
+    "effect": {
+      "kind": "script",
+      "target": "friendly",
+      "steps": [
+        {
+          "op": "return",
+          "amount": 1
+        }
+      ]
+    },
+    "text": "Nimm eine eigene Figur ohne ihre Verstärkungen zurück auf die Hand. Diese Kopie kostet 1 weniger.",
+    "tribes": [],
+    "deckable": true
+  },
+  {
+    "id": "alpha_mr_nimbus",
+    "name": "Mr. Nimbus",
+    "faction": "brainy",
+    "teamId": "rick_morty",
+    "type": "creature",
+    "cost": 3,
+    "attack": 2,
+    "health": 4,
+    "keywords": [
+      "amphibious"
+    ],
+    "abilities": [],
+    "text": "Darf in der Wasserbahn stehen.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_squanchy",
+    "name": "Squanchy",
+    "faction": "brainy",
+    "teamId": "rick_morty",
+    "type": "creature",
+    "cost": 2,
+    "attack": 1,
+    "health": 3,
+    "keywords": [
+      "flink"
+    ],
+    "abilities": [],
+    "text": "Ist sofort kampfbereit.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_vogelmensch",
+    "name": "Birdperson / Phoenixperson",
+    "faction": "brainy",
+    "teamId": "rick_morty",
+    "type": "creature",
+    "cost": 2,
+    "attack": 1,
+    "health": 3,
+    "keywords": [
+      "fliegend"
+    ],
+    "abilities": [],
+    "text": "Darf nach dem Kampf in eine freie Bahn fliegen.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_unity",
+    "name": "Unity",
+    "faction": "brainy",
+    "teamId": "rick_morty",
+    "type": "creature",
+    "cost": 1,
+    "attack": 1,
+    "health": 2,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "lernen",
+        "n": 1
+      }
+    ],
+    "text": "Beim Ausspielen: Ziehe 1 Karte.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_mr_meeseeks",
+    "name": "Mr. Meeseeks",
+    "faction": "brainy",
+    "teamId": "rick_morty",
+    "type": "creature",
+    "cost": 2,
+    "attack": 2,
+    "health": 2,
+    "keywords": [
+      "flink"
+    ],
+    "abilities": [],
+    "text": "Ist sofort kampfbereit.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_krombopulos_michael",
+    "name": "Krombopulos Michael",
+    "faction": "brainy",
+    "teamId": "rick_morty",
+    "type": "creature",
+    "cost": 3,
+    "attack": 2,
+    "health": 4,
+    "keywords": [
+      "amphibious"
+    ],
+    "abilities": [],
+    "text": "Darf in der Wasserbahn stehen.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_scary_terry",
+    "name": "Scary Terry",
+    "faction": "brainy",
+    "teamId": "rick_morty",
+    "type": "creature",
+    "cost": 4,
+    "attack": 3,
+    "health": 5,
+    "keywords": [
+      "flink"
+    ],
+    "abilities": [],
+    "text": "Ist sofort kampfbereit.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_abradolf_lincler",
+    "name": "Abradolf Lincler",
+    "faction": "brainy",
+    "teamId": "rick_morty",
+    "type": "creature",
+    "cost": 2,
+    "attack": 1,
+    "health": 3,
+    "keywords": [
+      "fliegend"
+    ],
+    "abilities": [],
+    "text": "Darf nach dem Kampf in eine freie Bahn fliegen.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_mr_poopybutthole",
+    "name": "Mr. Poopybutthole",
+    "faction": "brainy",
+    "teamId": "rick_morty",
+    "type": "creature",
+    "cost": 3,
+    "attack": 2,
+    "health": 4,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "lernen",
+        "n": 1
+      }
+    ],
+    "text": "Beim Ausspielen: Ziehe 1 Karte.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_evil_morty",
+    "name": "Evil Morty",
+    "faction": "brainy",
+    "teamId": "rick_morty",
+    "type": "creature",
+    "cost": 3,
+    "attack": 2,
+    "health": 4,
+    "keywords": [
+      "flink"
+    ],
+    "abilities": [],
+    "text": "Ist sofort kampfbereit.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_rick_prime",
+    "name": "Rick Prime",
+    "faction": "sneaky",
+    "teamId": "rick_morty",
+    "type": "creature",
+    "cost": 4,
+    "attack": 3,
+    "health": 5,
+    "keywords": [
+      "amphibious"
+    ],
+    "abilities": [],
+    "text": "Darf in der Wasserbahn stehen.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_president_andre_curtis",
+    "name": "President Andre Curtis",
+    "faction": "sneaky",
+    "teamId": "rick_morty",
+    "type": "creature",
+    "cost": 2,
+    "attack": 1,
+    "health": 3,
+    "keywords": [
+      "flink"
+    ],
+    "abilities": [],
+    "text": "Ist sofort kampfbereit.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_jaguar",
+    "name": "Jaguar",
+    "faction": "sneaky",
+    "teamId": "rick_morty",
+    "type": "creature",
+    "cost": 5,
+    "attack": 4,
+    "health": 6,
+    "keywords": [
+      "fliegend"
+    ],
+    "abilities": [],
+    "text": "Darf nach dem Kampf in eine freie Bahn fliegen.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_noob_noob",
+    "name": "Noob-Noob",
+    "faction": "sneaky",
+    "teamId": "rick_morty",
+    "type": "creature",
+    "cost": 5,
+    "attack": 4,
+    "health": 6,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "lernen",
+        "n": 1
+      }
+    ],
+    "text": "Beim Ausspielen: Ziehe 1 Karte.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_snowball",
+    "name": "Snowball / Snuffles",
+    "faction": "sneaky",
+    "teamId": "rick_morty",
+    "type": "creature",
+    "cost": 4,
+    "attack": 3,
+    "health": 5,
+    "keywords": [
+      "flink"
+    ],
+    "abilities": [],
+    "text": "Ist sofort kampfbereit.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_zeep_xanflorp",
+    "name": "Zeep Xanflorp",
+    "faction": "sneaky",
+    "teamId": "rick_morty",
+    "type": "creature",
+    "cost": 1,
+    "attack": 1,
+    "health": 2,
+    "keywords": [
+      "amphibious"
+    ],
+    "abilities": [],
+    "text": "Darf in der Wasserbahn stehen.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_glootie",
+    "name": "Glootie",
+    "faction": "sneaky",
+    "teamId": "rick_morty",
+    "type": "creature",
+    "cost": 7,
+    "attack": 6,
+    "health": 8,
+    "keywords": [
+      "flink"
+    ],
+    "abilities": [],
+    "text": "Ist sofort kampfbereit.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_fart",
+    "name": "Fart",
+    "faction": "sneaky",
+    "teamId": "rick_morty",
+    "type": "creature",
+    "cost": 3,
+    "attack": 2,
+    "health": 4,
+    "keywords": [
+      "fliegend"
+    ],
+    "abilities": [],
+    "text": "Darf nach dem Kampf in eine freie Bahn fliegen.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_cromulon",
+    "name": "Cromulon",
+    "faction": "sneaky",
+    "teamId": "rick_morty",
+    "type": "creature",
+    "cost": 6,
+    "attack": 5,
+    "health": 7,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "lernen",
+        "n": 1
+      }
+    ],
+    "text": "Beim Ausspielen: Ziehe 1 Karte.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_traflorkianer",
+    "name": "Traflorkianer",
+    "faction": "sneaky",
+    "teamId": "rick_morty",
+    "type": "creature",
+    "cost": 2,
+    "attack": 1,
+    "health": 3,
+    "keywords": [
+      "flink"
+    ],
+    "abilities": [],
+    "text": "Ist sofort kampfbereit.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_rick_morty_portal",
+    "name": "Portalpistole",
+    "faction": "brainy",
+    "teamId": "rick_morty",
+    "type": "action",
+    "cost": 1,
+    "effect": {
+      "kind": "script",
+      "target": "move",
+      "steps": [
+        {
+          "op": "move"
+        }
+      ]
+    },
+    "text": "Bewege eine eigene Figur in eine freie erlaubte Bahn. Sie wird kampfbereit.",
+    "tribes": [],
+    "deckable": true
+  },
+  {
+    "id": "alpha_rick_morty_hinterhalt",
+    "name": "Portal-Hinterhalt",
+    "faction": "sneaky",
+    "teamId": "rick_morty",
+    "type": "action",
+    "cost": 3,
+    "effect": {
+      "kind": "script",
+      "target": "move",
+      "steps": [
+        {
+          "op": "move"
+        },
+        {
+          "op": "bonus"
+        }
+      ]
+    },
+    "text": "Bewege eine eigene Figur in eine freie erlaubte Bahn. Sie führt dort einen Bonusangriff aus.",
+    "tribes": [],
+    "deckable": true
+  },
+  {
+    "id": "alpha_rick_morty_meeseeks_box",
+    "name": "Mr.-Meeseeks-Box",
+    "faction": "brainy",
+    "teamId": "rick_morty",
+    "type": "action",
+    "cost": 2,
+    "effect": {
+      "kind": "script",
+      "target": "none",
+      "steps": [
+        {
+          "op": "summon",
+          "cardId": "alpha_mr_meeseeks",
+          "temporary": true
+        }
+      ]
+    },
+    "text": "Beschwöre einen kampfbereiten 2/2 Meeseeks in der ersten freien erlaubten Bahn. Er stirbt zum nächsten Rundenbeginn.",
+    "tribes": [],
+    "deckable": true
+  },
+  {
+    "id": "alpha_rick_morty_wubba",
+    "name": "Wubba Lubba Dub-Dub!",
+    "faction": "sneaky",
+    "teamId": "rick_morty",
+    "type": "action",
+    "cost": 3,
+    "effect": {
+      "kind": "script",
+      "target": "damaged",
+      "steps": [
+        {
+          "op": "buff",
+          "atk": 2,
+          "hp": 0,
+          "scope": "selected",
+          "temporary": false
+        },
+        {
+          "op": "bonus"
+        }
+      ]
+    },
+    "text": "Eine beschädigte eigene Figur erhält dauerhaft +2 Angriff und führt einen Bonusangriff aus.",
+    "tribes": [],
+    "deckable": true
+  },
+  {
+    "id": "alpha_rick_morty_plan",
+    "name": "Ricks improvisierter Plan",
+    "faction": "brainy",
+    "teamId": "rick_morty",
+    "type": "action",
+    "cost": 2,
+    "effect": {
+      "kind": "script",
+      "target": "none",
+      "steps": [
+        {
+          "op": "draw",
+          "amount": 2
+        },
+        {
+          "op": "discard"
+        }
+      ]
+    },
+    "text": "Ziehe 2 Karten. Wähle danach eine Handkarte zum Abwerfen.",
+    "tribes": [],
+    "deckable": true
+  },
+  {
+    "id": "alpha_rick_morty_saeure",
+    "name": "Säurebottich-Trick",
+    "faction": "sneaky",
+    "teamId": "rick_morty",
+    "type": "action",
+    "cost": 1,
+    "effect": {
+      "kind": "script",
+      "target": "friendly",
+      "steps": [
+        {
+          "op": "hide"
+        }
+      ]
+    },
+    "text": "Verstecke eine eigene Figur bis zum nächsten Rundenbeginn. Sie kann weder angreifen noch anvisiert werden; Gegner greifen an ihr vorbei.",
+    "tribes": [],
+    "deckable": true
+  },
+  {
+    "id": "alpha_rick_morty_kabel",
+    "name": "Interdimensionales Kabelfernsehen",
+    "faction": "brainy",
+    "teamId": "rick_morty",
+    "type": "action",
+    "cost": 2,
+    "effect": {
+      "kind": "script",
+      "target": "none",
+      "steps": [
+        {
+          "op": "conjure"
+        }
+      ]
+    },
+    "text": "Erzeuge eine zufällige Karte aus deinem freigegebenen Team auf der Hand.",
+    "tribes": [],
+    "deckable": true
+  },
+  {
+    "id": "alpha_rick_morty_schwifty",
+    "name": "Get Schwifty!",
+    "faction": "sneaky",
+    "teamId": "rick_morty",
+    "type": "action",
+    "cost": 4,
+    "effect": {
+      "kind": "script",
+      "target": "none",
+      "steps": [
+        {
+          "op": "moveAll"
+        },
+        {
+          "op": "buff",
+          "atk": 1,
+          "hp": 0,
+          "scope": "own",
+          "temporary": true
+        }
+      ]
+    },
+    "text": "Verschiebe alle eigenen Figuren der vier Landbahnen zyklisch eine Bahn nach rechts und mache sie kampfbereit. Alle erhalten diese Runde +1 Angriff.",
+    "tribes": [],
+    "deckable": true
+  },
+  {
+    "id": "alpha_korvo",
+    "name": "Korvo",
+    "faction": "kabloom",
+    "teamId": "solar_opposites",
+    "type": "creature",
+    "cost": 3,
+    "attack": 2,
+    "health": 4,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "energie",
+        "timing": "rundenstart",
+        "amount": 1
+      }
+    ],
+    "text": "Erzeugt am Rundenbeginn 1 zusätzliche Energie.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_terry_solar_opposites",
+    "name": "Terry",
+    "faction": "kabloom",
+    "teamId": "solar_opposites",
+    "type": "creature",
+    "cost": 2,
+    "attack": 1,
+    "health": 3,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "basisHeilung",
+        "timing": "beim_ausspielen",
+        "amount": 2
+      }
+    ],
+    "text": "Beim Ausspielen: Heile deine Basis um 2.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_yumyulack",
+    "name": "Yumyulack",
+    "faction": "kabloom",
+    "teamId": "solar_opposites",
+    "type": "creature",
+    "cost": 2,
+    "attack": 1,
+    "health": 3,
+    "keywords": [
+      "armored"
+    ],
+    "abilities": [],
+    "text": "Rüstung: Erleidet 1 weniger Kampfschaden.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_jesse_solar_opposites",
+    "name": "Jesse",
+    "faction": "kabloom",
+    "teamId": "solar_opposites",
+    "type": "creature",
+    "cost": 1,
+    "attack": 1,
+    "health": 2,
+    "keywords": [
+      "team_up"
+    ],
+    "abilities": [],
+    "text": "Team-Up: Darf mit einer weiteren eigenen Figur eine Bahn teilen.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_pupa",
+    "name": "The Pupa",
+    "faction": "kabloom",
+    "teamId": "solar_opposites",
+    "type": "creature",
+    "cost": 2,
+    "attack": 1,
+    "health": 3,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "wachstum",
+        "per_round": {
+          "atk": 1,
+          "hp": 1
+        },
+        "maxTriggers": 3
+      }
+    ],
+    "text": "Wächst am Rundenbeginn um +1/+1, höchstens dreimal.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_tim",
+    "name": "Tim",
+    "faction": "kabloom",
+    "teamId": "solar_opposites",
+    "type": "creature",
+    "cost": 3,
+    "attack": 2,
+    "health": 4,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "energie",
+        "timing": "rundenstart",
+        "amount": 1
+      }
+    ],
+    "text": "Erzeugt am Rundenbeginn 1 zusätzliche Energie.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_cherie",
+    "name": "Cherie",
+    "faction": "kabloom",
+    "teamId": "solar_opposites",
+    "type": "creature",
+    "cost": 4,
+    "attack": 3,
+    "health": 5,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "basisHeilung",
+        "timing": "beim_ausspielen",
+        "amount": 2
+      }
+    ],
+    "text": "Beim Ausspielen: Heile deine Basis um 2.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_ringo",
+    "name": "Ringo / The Duke",
+    "faction": "kabloom",
+    "teamId": "solar_opposites",
+    "type": "creature",
+    "cost": 2,
+    "attack": 1,
+    "health": 3,
+    "keywords": [
+      "armored"
+    ],
+    "abilities": [],
+    "text": "Rüstung: Erleidet 1 weniger Kampfschaden.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_the_janitor",
+    "name": "The Janitor",
+    "faction": "kabloom",
+    "teamId": "solar_opposites",
+    "type": "creature",
+    "cost": 3,
+    "attack": 2,
+    "health": 4,
+    "keywords": [
+      "team_up"
+    ],
+    "abilities": [],
+    "text": "Team-Up: Darf mit einer weiteren eigenen Figur eine Bahn teilen.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_halk_hogam",
+    "name": "Halk Hogam",
+    "faction": "kabloom",
+    "teamId": "solar_opposites",
+    "type": "creature",
+    "cost": 3,
+    "attack": 2,
+    "health": 4,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "wachstum",
+        "per_round": {
+          "atk": 1,
+          "hp": 1
+        },
+        "maxTriggers": 3
+      }
+    ],
+    "text": "Wächst am Rundenbeginn um +1/+1, höchstens dreimal.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_nova",
+    "name": "Nova / Sister Blista",
+    "faction": "solar",
+    "teamId": "solar_opposites",
+    "type": "creature",
+    "cost": 4,
+    "attack": 3,
+    "health": 5,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "energie",
+        "timing": "rundenstart",
+        "amount": 1
+      }
+    ],
+    "text": "Erzeugt am Rundenbeginn 1 zusätzliche Energie.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_sister_sisto",
+    "name": "Sister Sisto",
+    "faction": "solar",
+    "teamId": "solar_opposites",
+    "type": "creature",
+    "cost": 2,
+    "attack": 1,
+    "health": 3,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "basisHeilung",
+        "timing": "beim_ausspielen",
+        "amount": 2
+      }
+    ],
+    "text": "Beim Ausspielen: Heile deine Basis um 2.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_pezlie",
+    "name": "Pezlie",
+    "faction": "solar",
+    "teamId": "solar_opposites",
+    "type": "creature",
+    "cost": 5,
+    "attack": 4,
+    "health": 6,
+    "keywords": [
+      "armored"
+    ],
+    "abilities": [],
+    "text": "Rüstung: Erleidet 1 weniger Kampfschaden.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_glen_kumstein",
+    "name": "Glen Kumstein / Dodge Charger",
+    "faction": "solar",
+    "teamId": "solar_opposites",
+    "type": "creature",
+    "cost": 5,
+    "attack": 4,
+    "health": 6,
+    "keywords": [
+      "team_up"
+    ],
+    "abilities": [],
+    "text": "Team-Up: Darf mit einer weiteren eigenen Figur eine Bahn teilen.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_lonesun",
+    "name": "LoneSun",
+    "faction": "solar",
+    "teamId": "solar_opposites",
+    "type": "creature",
+    "cost": 4,
+    "attack": 3,
+    "health": 5,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "wachstum",
+        "per_round": {
+          "atk": 1,
+          "hp": 1
+        },
+        "maxTriggers": 3
+      }
+    ],
+    "text": "Wächst am Rundenbeginn um +1/+1, höchstens dreimal.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_ventrez",
+    "name": "Ventrez",
+    "faction": "solar",
+    "teamId": "solar_opposites",
+    "type": "creature",
+    "cost": 1,
+    "attack": 1,
+    "health": 2,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "energie",
+        "timing": "rundenstart",
+        "amount": 1
+      }
+    ],
+    "text": "Erzeugt am Rundenbeginn 1 zusätzliche Energie.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_pobo",
+    "name": "Pobo",
+    "faction": "solar",
+    "teamId": "solar_opposites",
+    "type": "creature",
+    "cost": 7,
+    "attack": 6,
+    "health": 8,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "basisHeilung",
+        "timing": "beim_ausspielen",
+        "amount": 2
+      }
+    ],
+    "text": "Beim Ausspielen: Heile deine Basis um 2.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_cromus",
+    "name": "Cromus",
+    "faction": "solar",
+    "teamId": "solar_opposites",
+    "type": "creature",
+    "cost": 3,
+    "attack": 2,
+    "health": 4,
+    "keywords": [
+      "armored"
+    ],
+    "abilities": [],
+    "text": "Rüstung: Erleidet 1 weniger Kampfschaden.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_zylenol",
+    "name": "Zylenol „Zy“ Peehem",
+    "faction": "solar",
+    "teamId": "solar_opposites",
+    "type": "creature",
+    "cost": 6,
+    "attack": 5,
+    "health": 7,
+    "keywords": [
+      "team_up"
+    ],
+    "abilities": [],
+    "text": "Team-Up: Darf mit einer weiteren eigenen Figur eine Bahn teilen.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_skeletom",
+    "name": "Skeletom",
+    "faction": "solar",
+    "teamId": "solar_opposites",
+    "type": "creature",
+    "cost": 2,
+    "attack": 1,
+    "health": 3,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "wachstum",
+        "per_round": {
+          "atk": 1,
+          "hp": 1
+        },
+        "maxTriggers": 3
+      }
+    ],
+    "text": "Wächst am Rundenbeginn um +1/+1, höchstens dreimal.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_solar_opposites_zelle",
+    "name": "Schlorpianische Energiezelle",
+    "faction": "kabloom",
+    "teamId": "solar_opposites",
+    "type": "action",
+    "cost": 0,
+    "effect": {
+      "kind": "script",
+      "target": "none",
+      "steps": [
+        {
+          "op": "energy",
+          "amount": 2
+        }
+      ]
+    },
+    "text": "Erhalte 2 Energie für diese Runde, höchstens bis zum Energielimit.",
+    "tribes": [],
+    "deckable": true
+  },
+  {
+    "id": "alpha_solar_opposites_reparatur",
+    "name": "Korvos Reparaturwahn",
+    "faction": "solar",
+    "teamId": "solar_opposites",
+    "type": "action",
+    "cost": 2,
+    "effect": {
+      "kind": "script",
+      "target": "friendly",
+      "steps": [
+        {
+          "op": "heal",
+          "amount": 4
+        },
+        {
+          "op": "shield"
+        }
+      ]
+    },
+    "text": "Heile eine eigene Figur um 4 und verhindere ihren nächsten Schaden.",
+    "tribes": [],
+    "deckable": true
+  },
+  {
+    "id": "alpha_solar_opposites_idee",
+    "name": "Terry hatte eine Idee",
+    "faction": "kabloom",
+    "teamId": "solar_opposites",
+    "type": "action",
+    "cost": 1,
+    "effect": {
+      "kind": "script",
+      "target": "none",
+      "steps": [
+        {
+          "op": "random",
+          "amount": 2
+        }
+      ]
+    },
+    "text": "Erhalte zufällig 2 Energie für diese Runde oder ziehe 2 Karten.",
+    "tribes": [],
+    "deckable": true
+  },
+  {
+    "id": "alpha_solar_opposites_replikanten",
+    "name": "Replikanten-Technologie",
+    "faction": "solar",
+    "teamId": "solar_opposites",
+    "type": "action",
+    "cost": 1,
+    "effect": {
+      "kind": "script",
+      "target": "hand",
+      "steps": [
+        {
+          "op": "discount",
+          "amount": 2
+        }
+      ]
+    },
+    "text": "Eine gewählte Figurenkarte auf deiner Hand kostet 2 weniger, mindestens 0.",
+    "tribes": [],
+    "deckable": true
+  },
+  {
+    "id": "alpha_solar_opposites_evolution",
+    "name": "Pupa-Evolution",
+    "faction": "kabloom",
+    "teamId": "solar_opposites",
+    "type": "action",
+    "cost": 2,
+    "effect": {
+      "kind": "script",
+      "target": "none",
+      "steps": [
+        {
+          "op": "evolve"
+        }
+      ]
+    },
+    "text": "Erhalte 1 Pupa-Fortschritt. Bei 3 Fortschritt: Verbrauche 3 und gib allen eigenen Figuren dauerhaft +2/+2.",
+    "tribes": [],
+    "deckable": true
+  },
+  {
+    "id": "alpha_solar_opposites_wall",
+    "name": "Ausbruch aus der Wall",
+    "faction": "solar",
+    "teamId": "solar_opposites",
+    "type": "action",
+    "cost": 2,
+    "effect": {
+      "kind": "script",
+      "target": "none",
+      "steps": [
+        {
+          "op": "summon",
+          "amount": 2,
+          "cardId": "alpha_wall_bewohner"
+        }
+      ]
+    },
+    "text": "Beschwöre zwei 1/2 Wall-Bewohner in den ersten freien Landbahnen.",
+    "tribes": [],
+    "deckable": true
+  },
+  {
+    "id": "alpha_solar_opposites_silvercop",
+    "name": "SilverCop-Verstärkung",
+    "faction": "kabloom",
+    "teamId": "solar_opposites",
+    "type": "action",
+    "cost": 3,
+    "effect": {
+      "kind": "script",
+      "target": "none",
+      "steps": [
+        {
+          "op": "summon",
+          "cardId": "alpha_silvercop",
+          "atk": 3
+        }
+      ]
+    },
+    "text": "Beschwöre einen 2/2 SilverCop. Investiere danach bis zu 3 restliche Energie: je +1/+1.",
+    "tribes": [],
+    "deckable": true
+  },
+  {
+    "id": "alpha_solar_opposites_neustart",
+    "name": "Neustart des Raumschiffs",
+    "faction": "solar",
+    "teamId": "solar_opposites",
+    "type": "action",
+    "cost": 1,
+    "effect": {
+      "kind": "script",
+      "target": "friendly",
+      "steps": [
+        {
+          "op": "spendEnergy",
+          "amount": 4
+        }
+      ]
+    },
+    "text": "Investiere bis zu 4 restliche Energie. Eine eigene Figur erhält je investierter Energie dauerhaft +1/+1.",
+    "tribes": [],
+    "deckable": true
+  },
+  {
+    "id": "alpha_wolf",
+    "name": "Wolf",
+    "faction": "kabloom",
+    "teamId": "tier_rudel",
+    "type": "creature",
+    "cost": 3,
+    "attack": 2,
+    "health": 4,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "skalierung",
+        "scope": "same_top",
+        "per": {
+          "atk": 1,
+          "hp": 0
+        },
+        "cap": 2,
+        "includeSelf": false
+      }
+    ],
+    "text": "Erhält +1 Angriff je weiterem eigenen Animal, höchstens +2.",
+    "tribes": [
+      "wolf"
+    ],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_alphawolf",
+    "name": "Alphawolf",
+    "faction": "kabloom",
+    "teamId": "tier_rudel",
+    "type": "creature",
+    "cost": 2,
+    "attack": 1,
+    "health": 3,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "aura",
+        "scope": "same_top",
+        "buff": {
+          "atk": 1,
+          "hp": 0
+        },
+        "timing": "dauerhaft"
+      }
+    ],
+    "text": "Andere eigene Animals erhalten +1 Angriff.",
+    "tribes": [
+      "wolf"
+    ],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_baer",
+    "name": "Bär",
+    "faction": "kabloom",
+    "teamId": "tier_rudel",
+    "type": "creature",
+    "cost": 2,
+    "attack": 1,
+    "health": 3,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "bedingt",
+        "scope": "same_top",
+        "mindestAnzahl": 2,
+        "bonus": {
+          "atk": 1,
+          "hp": 1
+        }
+      }
+    ],
+    "text": "Solange mindestens zwei weitere eigene Animals stehen: +1/+1.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_eisbaer",
+    "name": "Eisbär",
+    "faction": "kabloom",
+    "teamId": "tier_rudel",
+    "type": "creature",
+    "cost": 1,
+    "attack": 1,
+    "health": 2,
+    "keywords": [
+      "team_up"
+    ],
+    "abilities": [],
+    "text": "Team-Up: Darf mit einer weiteren eigenen Figur eine Bahn teilen.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_adler",
+    "name": "Adler",
+    "faction": "kabloom",
+    "teamId": "tier_rudel",
+    "type": "creature",
+    "cost": 2,
+    "attack": 1,
+    "health": 3,
+    "keywords": [
+      "fliegend"
+    ],
+    "abilities": [],
+    "text": "Darf nach dem Kampf in eine freie Bahn fliegen.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_luchs",
+    "name": "Luchs",
+    "faction": "kabloom",
+    "teamId": "tier_rudel",
+    "type": "creature",
+    "cost": 3,
+    "attack": 2,
+    "health": 4,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "skalierung",
+        "scope": "same_top",
+        "per": {
+          "atk": 1,
+          "hp": 0
+        },
+        "cap": 2,
+        "includeSelf": false
+      }
+    ],
+    "text": "Erhält +1 Angriff je weiterem eigenen Animal, höchstens +2.",
+    "tribes": [
+      "cat"
+    ],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_pferd",
+    "name": "Pferd",
+    "faction": "kabloom",
+    "teamId": "tier_rudel",
+    "type": "creature",
+    "cost": 4,
+    "attack": 3,
+    "health": 5,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "aura",
+        "scope": "same_top",
+        "buff": {
+          "atk": 1,
+          "hp": 0
+        },
+        "timing": "dauerhaft"
+      }
+    ],
+    "text": "Andere eigene Animals erhalten +1 Angriff.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_ratte",
+    "name": "Ratte",
+    "faction": "kabloom",
+    "teamId": "tier_rudel",
+    "type": "creature",
+    "cost": 2,
+    "attack": 1,
+    "health": 3,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "bedingt",
+        "scope": "same_top",
+        "mindestAnzahl": 2,
+        "bonus": {
+          "atk": 1,
+          "hp": 1
+        }
+      }
+    ],
+    "text": "Solange mindestens zwei weitere eigene Animals stehen: +1/+1.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_schlange",
+    "name": "Schlange",
+    "faction": "kabloom",
+    "teamId": "tier_rudel",
+    "type": "creature",
+    "cost": 3,
+    "attack": 2,
+    "health": 4,
+    "keywords": [
+      "team_up"
+    ],
+    "abilities": [],
+    "text": "Team-Up: Darf mit einer weiteren eigenen Figur eine Bahn teilen.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_krokodil",
+    "name": "Krokodil",
+    "faction": "kabloom",
+    "teamId": "tier_rudel",
+    "type": "creature",
+    "cost": 3,
+    "attack": 2,
+    "health": 4,
+    "keywords": [
+      "fliegend",
+      "amphibious"
+    ],
+    "abilities": [],
+    "text": "Darf nach dem Kampf in eine freie Bahn fliegen.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_schildkroete",
+    "name": "Schildkröte",
+    "faction": "mega_grow",
+    "teamId": "tier_rudel",
+    "type": "creature",
+    "cost": 4,
+    "attack": 3,
+    "health": 5,
+    "keywords": [
+      "amphibious"
+    ],
+    "abilities": [
+      {
+        "kind": "skalierung",
+        "scope": "same_top",
+        "per": {
+          "atk": 1,
+          "hp": 0
+        },
+        "cap": 2,
+        "includeSelf": false
+      }
+    ],
+    "text": "Erhält +1 Angriff je weiterem eigenen Animal, höchstens +2.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_hauskater",
+    "name": "Hauskater",
+    "faction": "mega_grow",
+    "teamId": "tier_rudel",
+    "type": "creature",
+    "cost": 2,
+    "attack": 1,
+    "health": 3,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "aura",
+        "scope": "same_top",
+        "buff": {
+          "atk": 1,
+          "hp": 0
+        },
+        "timing": "dauerhaft"
+      }
+    ],
+    "text": "Andere eigene Animals erhalten +1 Angriff.",
+    "tribes": [
+      "cat"
+    ],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_schwarze_katze",
+    "name": "Schwarze Katze",
+    "faction": "mega_grow",
+    "teamId": "tier_rudel",
+    "type": "creature",
+    "cost": 5,
+    "attack": 4,
+    "health": 6,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "bedingt",
+        "scope": "same_top",
+        "mindestAnzahl": 2,
+        "bonus": {
+          "atk": 1,
+          "hp": 1
+        }
+      }
+    ],
+    "text": "Solange mindestens zwei weitere eigene Animals stehen: +1/+1.",
+    "tribes": [
+      "cat"
+    ],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_streuner",
+    "name": "Streunerkatze",
+    "faction": "mega_grow",
+    "teamId": "tier_rudel",
+    "type": "creature",
+    "cost": 5,
+    "attack": 4,
+    "health": 6,
+    "keywords": [
+      "team_up"
+    ],
+    "abilities": [],
+    "text": "Team-Up: Darf mit einer weiteren eigenen Figur eine Bahn teilen.",
+    "tribes": [
+      "cat"
+    ],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_velociraptor",
+    "name": "Velociraptor",
+    "faction": "mega_grow",
+    "teamId": "tier_rudel",
+    "type": "creature",
+    "cost": 4,
+    "attack": 3,
+    "health": 5,
+    "keywords": [
+      "fliegend"
+    ],
+    "abilities": [],
+    "text": "Darf nach dem Kampf in eine freie Bahn fliegen.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_stegosaurus",
+    "name": "Stegosaurus",
+    "faction": "mega_grow",
+    "teamId": "tier_rudel",
+    "type": "creature",
+    "cost": 1,
+    "attack": 1,
+    "health": 2,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "skalierung",
+        "scope": "same_top",
+        "per": {
+          "atk": 1,
+          "hp": 0
+        },
+        "cap": 2,
+        "includeSelf": false
+      }
+    ],
+    "text": "Erhält +1 Angriff je weiterem eigenen Animal, höchstens +2.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_triceratops",
+    "name": "Triceratops",
+    "faction": "mega_grow",
+    "teamId": "tier_rudel",
+    "type": "creature",
+    "cost": 7,
+    "attack": 6,
+    "health": 8,
+    "keywords": [],
+    "abilities": [
+      {
+        "kind": "aura",
+        "scope": "same_top",
+        "buff": {
+          "atk": 1,
+          "hp": 0
+        },
+        "timing": "dauerhaft"
+      }
+    ],
+    "text": "Andere eigene Animals erhalten +1 Angriff.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_spinosaurus",
+    "name": "Spinosaurus",
+    "faction": "mega_grow",
+    "teamId": "tier_rudel",
+    "type": "creature",
+    "cost": 3,
+    "attack": 2,
+    "health": 4,
+    "keywords": [
+      "amphibious"
+    ],
+    "abilities": [
+      {
+        "kind": "bedingt",
+        "scope": "same_top",
+        "mindestAnzahl": 2,
+        "bonus": {
+          "atk": 1,
+          "hp": 1
+        }
+      }
+    ],
+    "text": "Solange mindestens zwei weitere eigene Animals stehen: +1/+1.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_brachiosaurus",
+    "name": "Brachiosaurus",
+    "faction": "mega_grow",
+    "teamId": "tier_rudel",
+    "type": "creature",
+    "cost": 6,
+    "attack": 5,
+    "health": 7,
+    "keywords": [
+      "team_up"
+    ],
+    "abilities": [],
+    "text": "Team-Up: Darf mit einer weiteren eigenen Figur eine Bahn teilen.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_tyrannosaurus_rex",
+    "name": "Tyrannosaurus Rex",
+    "faction": "mega_grow",
+    "teamId": "tier_rudel",
+    "type": "creature",
+    "cost": 2,
+    "attack": 1,
+    "health": 3,
+    "keywords": [
+      "fliegend"
+    ],
+    "abilities": [],
+    "text": "Darf nach dem Kampf in eine freie Bahn fliegen.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
+  },
+  {
+    "id": "alpha_tier_rudel_ruf",
+    "name": "Ruf des Alphawolfs",
+    "faction": "kabloom",
+    "teamId": "tier_rudel",
+    "type": "action",
+    "cost": 3,
+    "effect": {
+      "kind": "script",
+      "target": "none",
+      "steps": [
+        {
+          "op": "buff",
+          "atk": 1,
+          "hp": 1,
+          "scope": "own",
+          "temporary": false
+        }
+      ]
+    },
+    "text": "Alle eigenen Figuren erhalten dauerhaft +1/+1.",
+    "tribes": [],
+    "deckable": true
+  },
+  {
+    "id": "alpha_tier_rudel_jagd",
+    "name": "Gemeinsam auf der Jagd",
+    "faction": "mega_grow",
+    "teamId": "tier_rudel",
+    "type": "action",
+    "cost": 4,
+    "effect": {
+      "kind": "script",
+      "target": "friendly",
+      "steps": [
+        {
+          "op": "bonus",
+          "scope": "adjacent"
+        }
+      ]
+    },
+    "text": "Eine eigene Figur und eigene Figuren in direkt benachbarten Bahnen führen je einen Bonusangriff aus.",
+    "tribes": [],
+    "deckable": true
+  },
+  {
+    "id": "alpha_tier_rudel_futter",
+    "name": "Fütterungszeit",
+    "faction": "kabloom",
+    "teamId": "tier_rudel",
+    "type": "action",
+    "cost": 2,
+    "effect": {
+      "kind": "script",
+      "target": "friendly",
+      "steps": [
+        {
+          "op": "buff",
+          "atk": 2,
+          "hp": 2,
+          "scope": "selected",
+          "temporary": false
+        }
+      ]
+    },
+    "text": "Eine eigene Figur erhält dauerhaft +2/+2.",
+    "tribes": [],
+    "deckable": true
+  },
+  {
+    "id": "alpha_tier_rudel_instinkt",
+    "name": "Beschützerinstinkt",
+    "faction": "mega_grow",
+    "teamId": "tier_rudel",
+    "type": "action",
+    "cost": 1,
+    "effect": {
+      "kind": "script",
+      "target": "sacrifice",
+      "steps": [
+        {
+          "op": "protect"
+        }
+      ]
+    },
+    "text": "Wähle einen Beschützer mit Kosten bis 2 und einen anderen Verbündeten. Bis zum nächsten Rundenbeginn übernimmt der Beschützer den nächsten Schaden für ihn.",
+    "tribes": [],
+    "deckable": true
+  },
+  {
+    "id": "alpha_tier_rudel_nachwuchs",
+    "name": "Nachwuchs im Rudel",
+    "faction": "kabloom",
+    "teamId": "tier_rudel",
+    "type": "action",
+    "cost": 1,
+    "effect": {
+      "kind": "script",
+      "target": "none",
+      "steps": [
+        {
+          "op": "summon",
+          "cardId": "alpha_pteranodon"
+        }
+      ]
+    },
+    "text": "Beschwöre einen 1/1 Pteranodon in der ersten freien erlaubten Bahn.",
+    "tribes": [],
+    "deckable": true
+  },
+  {
+    "id": "alpha_tier_rudel_vollmond",
+    "name": "Heulen bei Vollmond",
+    "faction": "mega_grow",
+    "teamId": "tier_rudel",
+    "type": "action",
+    "cost": 3,
+    "effect": {
+      "kind": "script",
+      "target": "none",
+      "steps": [
+        {
+          "op": "buff",
+          "atk": 2,
+          "hp": 1,
+          "scope": "wolvesCats",
+          "temporary": false
+        }
+      ]
+    },
+    "text": "Eigene Wölfe und Katzen erhalten dauerhaft +2/+1.",
+    "tribes": [],
+    "deckable": true
+  },
+  {
+    "id": "alpha_tier_rudel_stampede",
+    "name": "Wilde Stampede",
+    "faction": "kabloom",
+    "teamId": "tier_rudel",
+    "type": "action",
+    "cost": 6,
+    "effect": {
+      "kind": "script",
+      "target": "none",
+      "steps": [
+        {
+          "op": "bonus",
+          "scope": "own"
+        }
+      ]
+    },
+    "text": "Alle eigenen Figuren führen je einen Bonusangriff aus.",
+    "tribes": [],
+    "deckable": true
+  },
+  {
+    "id": "alpha_tier_rudel_staerkste",
+    "name": "Überleben des Stärksten",
+    "faction": "mega_grow",
+    "teamId": "tier_rudel",
+    "type": "action",
+    "cost": 2,
+    "effect": {
+      "kind": "script",
+      "target": "sacrifice",
+      "steps": [
+        {
+          "op": "sacrifice"
+        }
+      ]
+    },
+    "text": "Opfere ein eigenes Tier mit Kosten bis 2. Übertrage seinen aktuellen Angriff und sein übriges Leben dauerhaft auf ein anderes eigenes Tier.",
+    "tribes": [],
+    "deckable": true
+  },
+  {
+    "id": "alpha_pteranodon",
+    "name": "Pteranodon",
+    "attack": 1,
+    "health": 1,
+    "keywords": [
+      "fliegend",
+      "amphibious"
+    ],
+    "faction": "mega_grow",
+    "teamId": "tier_rudel",
+    "type": "creature",
+    "cost": 1,
+    "abilities": [],
+    "text": "Nur durch Beschwörung erzeugt.",
+    "deckable": false,
+    "tribes": []
+  },
+  {
+    "id": "alpha_wall_bewohner",
+    "name": "Wall-Bewohner",
+    "attack": 1,
+    "health": 2,
+    "keywords": [],
+    "faction": "solar",
+    "teamId": "solar_opposites",
+    "type": "creature",
+    "cost": 1,
+    "abilities": [],
+    "text": "Nur durch Beschwörung erzeugt.",
+    "deckable": false,
+    "tribes": []
+  },
+  {
+    "id": "alpha_silvercop",
+    "name": "SilverCop",
+    "attack": 2,
+    "health": 2,
+    "keywords": [],
+    "faction": "solar",
+    "teamId": "solar_opposites",
+    "type": "creature",
+    "cost": 1,
+    "abilities": [],
+    "text": "Nur durch Beschwörung erzeugt.",
+    "deckable": false,
+    "tribes": []
+  }
+]

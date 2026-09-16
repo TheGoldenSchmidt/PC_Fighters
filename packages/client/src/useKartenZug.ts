@@ -15,6 +15,7 @@ import type { PointerEvent as ReactPointerEvent } from 'react';
 /** Ein Rechteck reicht – volle DOMRects braucht die Trefferprüfung nicht. */
 export interface LaneRect {
   lane: number;
+  uid?: number;
   left: number;
   top: number;
   right: number;
@@ -33,11 +34,11 @@ export interface KartenZugOptionen {
   /** Darf diese Handkarte gerade gezogen werden? */
   ziehbar: (handIndex: number) => boolean;
   /** Rechtecke der möglichen Ziel-Lanes, beim Zugbeginn abgefragt. */
-  laneRects: () => LaneRect[];
+  laneRects: (handIndex: number) => LaneRect[];
   /** Darf die gezogene Karte auf dieser Lane abgelegt werden? */
   gueltig: (lane: number, handIndex: number) => boolean;
   /** Ablegen auf einer gültigen Lane. */
-  onAblegen: (handIndex: number, lane: number) => void;
+  onAblegen: (handIndex: number, lane: number, uid?: number) => void;
   /** Kurzes Antippen ohne nennenswerte Bewegung. */
   onTippen: (handIndex: number) => void;
 }
@@ -53,9 +54,9 @@ export function useKartenZug(optionen: KartenZugOptionen) {
   const start = useRef<{ handIndex: number; x: number; y: number; aktiv: boolean } | null>(null);
   const rects = useRef<LaneRect[]>([]);
 
-  const laneUnter = (x: number, y: number): number | null => {
+  const laneUnter = (x: number, y: number): LaneRect | null => {
     for (const r of rects.current) {
-      if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) return r.lane;
+      if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) return r;
     }
     return null;
   };
@@ -67,6 +68,7 @@ export function useKartenZug(optionen: KartenZugOptionen) {
   };
 
   const handlers = (handIndex: number) => ({
+    onClick: (e: React.MouseEvent<HTMLElement>) => { if (e.detail === 0) opt.current.onTippen(handIndex); },
     onPointerDown: (e: ReactPointerEvent<HTMLElement>) => {
       // Nur die primäre Taste zieht; Rechtsklick/Mittelklick bleiben unberührt.
       if (e.button !== 0) return;
@@ -88,14 +90,14 @@ export function useKartenZug(optionen: KartenZugOptionen) {
           return;
         }
         s.aktiv = true;
-        rects.current = opt.current.laneRects();
+        rects.current = opt.current.laneRects(s.handIndex);
       }
       const lane = laneUnter(e.clientX, e.clientY);
       setZug({
         handIndex: s.handIndex,
         x: e.clientX,
         y: e.clientY,
-        lane: lane !== null && opt.current.gueltig(lane, s.handIndex) ? lane : null
+        lane: lane !== null && opt.current.gueltig(lane.lane, s.handIndex) ? lane.lane : null
       });
     },
     onPointerUp: (e: ReactPointerEvent<HTMLElement>) => {
@@ -108,8 +110,9 @@ export function useKartenZug(optionen: KartenZugOptionen) {
       }
       const lane = laneUnter(e.clientX, e.clientY);
       beenden();
-      if (lane !== null && opt.current.gueltig(lane, s.handIndex)) {
-        opt.current.onAblegen(s.handIndex, lane);
+      if (lane !== null && opt.current.gueltig(lane.lane, s.handIndex)) {
+        if (lane.uid === undefined) opt.current.onAblegen(s.handIndex, lane.lane);
+        else opt.current.onAblegen(s.handIndex, lane.lane, lane.uid);
       }
     },
     onPointerCancel: beenden

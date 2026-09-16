@@ -28,6 +28,7 @@ export interface UserAccount {
 }
 
 export interface GameClientState {
+  pendingAction: boolean;
   screen: Screen;
   status: ConnectionStatus;
   view: ClientView | null;
@@ -50,6 +51,7 @@ export interface GameClientState {
 }
 
 const initial: GameClientState = {
+  pendingAction: false,
   screen: 'start',
   status: 'idle',
   view: null,
@@ -94,6 +96,8 @@ export function useGame() {
   const reconnectTimer = useRef<number | null>(null);
   const errorTimer = useRef<number | null>(null);
   const intentionalClose = useRef(false);
+  const revision = useRef(0);
+  const pendingAction = useRef(false);
 
   const patch = (p: Partial<GameClientState>) => setState((s) => ({ ...s, ...p }));
 
@@ -140,6 +144,8 @@ export function useGame() {
           session.current!.code = msg.code as string;
           saveSession();
           patch({
+            status: 'connected',
+            screen: 'lobby',
             roomCode: msg.code as string,
             topic: (msg.topic as Topic) ?? null,
             keywordInfo: (msg.keywords as KeywordInfo) ?? null,
@@ -147,7 +153,12 @@ export function useGame() {
           });
           break;
         case 'state':
+          if (!Number.isSafeInteger(msg.revision)) { showError('Spielversion inkompatibel. Bitte neu laden.'); break; }
+          revision.current = msg.revision as number;
+          pendingAction.current = false;
           patch({
+            pendingAction: false,
+            status: 'connected',
             screen: 'game',
             view: msg.view as ClientView,
             matchNumber: Number(msg.matchNumber) || 1,
@@ -175,6 +186,15 @@ export function useGame() {
           patch({ dataError: msg.message as string });
           break;
         case 'error':
+          pendingAction.current = false;
+          patch({ pendingAction: false });
+          if (msg.code === 'session_expired' || msg.code === 'incompatible_state') {
+            intentionalClose.current = true;
+            session.current = null;
+            sessionStorage.removeItem('pcf.session');
+            ws.current?.close();
+            patch({ screen: 'start', status: 'idle', view: null, roomCode: null });
+          }
           showError(msg.message as string);
           break;
       }
@@ -195,10 +215,11 @@ export function useGame() {
       ws.current = socket;
 
       socket.onopen = () => {
-        patch({ status: 'connected' });
+        if (!reconnect) patch({ status: 'connected' });
         onOpen(socket);
       };
       socket.onmessage = (ev) => {
+        if (ws.current !== socket) return;
         try {
           handleMessage(JSON.parse(ev.data as string));
         } catch {
@@ -207,6 +228,8 @@ export function useGame() {
       };
       socket.onclose = () => {
         if (intentionalClose.current || ws.current !== socket) return;
+        pendingAction.current = false;
+        patch({ pendingAction: false });
         // Verbindung verloren → automatisch neu verbinden, falls wir in
         // einer Partie sind (Raum-Code + Token vorhanden).
         const s = session.current;
@@ -336,8 +359,11 @@ export function useGame() {
 
   const sendAction = useCallback(
     (action: PlayerAction) => {
+      if (pendingAction.current) return;
       if (ws.current?.readyState === WebSocket.OPEN) {
-        ws.current.send(JSON.stringify({ type: 'action', action }));
+        pendingAction.current = true;
+        patch({ pendingAction: true });
+        ws.current.send(JSON.stringify({ type: 'action', revision: revision.current, action }));
       } else {
         showError('Gerade keine Verbindung – einen Moment …');
       }

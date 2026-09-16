@@ -1,6 +1,12 @@
 # Projektstatus
 
-## Aktuell: Zusammenführung vom 14.09.2026
+## Aktuell: Vier-Team-Alpha vom 15.09.2026
+
+Die vier festen Starterdecks, 80 Figuren, 32 Aktionen und die aktiven Champ-Superkräfte sind eingebaut. Die Alpha ist **noch nicht freigegeben**: reale Android-/iPhone-Prüfungen und zwölf menschliche Testpartien fehlen.
+
+Der aktuelle Nachweis und die nächsten Schritte stehen in [ALPHA-STATUS.md](ALPHA-STATUS.md). Kartentexte und Regelvorlagen stehen in [ALPHA-KARTEN.md](ALPHA-KARTEN.md); [ALPHA-SIMULATION.md](ALPHA-SIMULATION.md) dokumentiert den automatisierten Paarungslauf. Ältere Testergebnisse unten gelten nicht als Abnahme der neuen Alpha.
+
+## Historische Zusammenführung vom 14.09.2026
 
 Arbeitsbasis ist `master`. Die Branch-Prüfung und die Entscheidungen zu älteren
 Entwicklungsständen stehen in [branch-konsolidierung-2026-09-14.md](branch-konsolidierung-2026-09-14.md).

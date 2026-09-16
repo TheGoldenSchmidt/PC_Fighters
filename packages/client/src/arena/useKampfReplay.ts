@@ -52,6 +52,7 @@ import {
 export function useKampfReplay(view: ClientView, speed = 1) {
   const [shownView, setShownViewState] = useState<ClientView>(view);
   const [isReplaying, setIsReplaying] = useState(false);
+  const [replayKind, setReplayKind] = useState<'combat' | 'effect'>('effect');
   const [fx, setFx] = useState<FxState>(EMPTY_FX);
   const [moveFx, setMoveFx] = useState<Record<number, number>>({});
   const [banner, setBanner] = useState<{ key: number; text: string } | null>(null);
@@ -103,9 +104,9 @@ export function useKampfReplay(view: ClientView, speed = 1) {
   };
 
   useEffect(() => {
-    if (isReplaying) showBanner('⚔️ Kampf!');
+    if (isReplaying && replayKind === 'combat') showBanner('⚔️ Kampf!');
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isReplaying]);
+  }, [isReplaying, replayKind]);
 
   // Neue Kampf-Events sammeln und die Abspielung starten.
   useEffect(() => {
@@ -148,6 +149,7 @@ export function useKampfReplay(view: ClientView, speed = 1) {
 
   async function runReplay() {
     runningRef.current = true;
+    setReplayKind(queueRef.current.some(e => e.kind === 'attack') ? 'combat' : 'effect');
     setIsReplaying(true);
     const sleep = (ms: number) =>
       new Promise<void>((r) => window.setTimeout(r, ms / Math.max(1, speedRef.current)));
@@ -215,7 +217,7 @@ export function useKampfReplay(view: ClientView, speed = 1) {
             baseImpacts.push({ key: `b-${angriff.lane}-${Date.now()}`, side: defender, damage: angriff.damage });
           }
         } else {
-          const target = next.board[defender][angriff.lane];
+          const target = angriff.targetUid === undefined ? next.board[defender][angriff.lane] : [...next.board[defender], ...next.teamBoard[defender]].find(c => c?.uid === angriff.targetUid);
           if (target) target.health = Math.max(0, target.health - angriff.damage);
           impacts.push({
             key: `i-${angriff.lane}-${Date.now()}`,
@@ -282,18 +284,28 @@ export function useKampfReplay(view: ClientView, speed = 1) {
         // Zauber-Effekte einer Aktionskarte: alle direkt aufeinanderfolgenden
         // Spell-Events gemeinsam zeigen (z. B. Beschwörung mehrerer Tokens).
         const spellEvents: SpellEvent[] = [ev];
-        while (queueRef.current[0]?.kind === 'spell') {
+        while (queueRef.current[0]?.kind === 'spell' && (ev.batch !== undefined ? (queueRef.current[0] as SpellEvent).batch === ev.batch : !ev.boardAfter && !(queueRef.current[0] as SpellEvent).boardAfter)) {
           spellEvents.push(queueRef.current.shift() as SpellEvent);
         }
         const spells: FxSpell[] = spellEvents.map((s, i) => ({
           key: `s-${s.lane}-${i}-${Date.now()}`,
           lane: s.lane,
           effect: s.effect,
-          faction: s.faction
+          faction: s.faction,
+          owner: s.owner, targetUid: s.targetUid, delta: s.delta
         }));
-        // Neuen Serverzustand direkt zeigen: beschworene Kreatur erscheint,
-        // Buff-Zahlen/Lane-Wechsel werden sichtbar – parallel zum Effekt.
-        setShown(latestViewRef.current);
+        // Nur den Zwischenstand dieses Effektschritts zeigen. Spätere
+        // Teilwirkungen bleiben bis zu ihrem eigenen Ereignis ausstehend.
+        if (ev.boardAfter) {
+          const next = structuredClone(shownViewRef.current);
+          next.board = ev.boardAfter;
+          if (ev.teamBoardAfter) next.teamBoard = ev.teamBoardAfter;
+          for (const p of [0, 1] as const) {
+            if (ev.basesAfter) next.players[p].base = ev.basesAfter[p];
+            if (ev.energyAfter) next.players[p].energy = ev.energyAfter[p];
+          }
+          setShown(next);
+        }
         setFx((f) => ({ ...f, activeLane: ev.lane, spells }));
         await sleep(SPELL_MS);
         if (cancelledRef.current) break;
@@ -348,5 +360,5 @@ export function useKampfReplay(view: ClientView, speed = 1) {
     runningRef.current = false;
     setIsReplaying(false);
   }
-  return { shownView, isReplaying, fx, moveFx, banner, showBanner };
+  return { shownView, isReplaying, replayKind, fx, moveFx, banner, showBanner };
 }

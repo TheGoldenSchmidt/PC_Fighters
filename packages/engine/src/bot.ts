@@ -119,10 +119,10 @@ export function waehleMulligan(
 const SIEG_WERT = 1_000_000_000;
 
 /** Grober Wert einer Kreatur (für die Kampf-Prognose): Angriff + aktuelles Leben. */
-function kreaturWert(state: GameState, owner: PlayerIndex, lane: number): number {
-  const c = state.board[owner][lane];
+function kreaturWert(state: GameState, owner: PlayerIndex, lane: number, rear = false): number {
+  const c = (rear ? state.teamBoard : state.board)?.[owner][lane];
   if (!c) return 0;
-  return getEffectiveAttack(state, owner, lane) + c.currentHealth;
+  return getEffectiveAttack(state, owner, lane, rear) + c.currentHealth;
 }
 
 /**
@@ -218,6 +218,8 @@ export function bewerteZustand(state: GameState, ich: PlayerIndex, profil: BotPr
   for (let lane = 0; lane < state.config.lanes; lane++) {
     if (state.board[ich][lane]) brettIch += kreaturWert(state, ich, lane);
     if (state.board[gegner][lane]) brettGegner += kreaturWert(state, gegner, lane);
+    if (state.teamBoard?.[ich][lane]) brettIch += kreaturWert(state, ich, lane, true);
+    if (state.teamBoard?.[gegner][lane]) brettGegner += kreaturWert(state, gegner, lane, true);
   }
 
   const bankIch = p.cheerleaders.filter((c) => c != null).length;

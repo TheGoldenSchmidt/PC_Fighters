@@ -1,0 +1,703 @@
+{
+  "version": 1,
+  "teams": [
+    {
+      "id": "south_park",
+      "championId": "rostbolzen",
+      "name": "South Park",
+      "side": "humans"
+    },
+    {
+      "id": "rick_morty",
+      "championId": "super_brainz",
+      "name": "Rick and Morty",
+      "side": "humans"
+    },
+    {
+      "id": "solar_opposites",
+      "championId": "sonnenfackel",
+      "name": "Solar Opposites",
+      "side": "animals"
+    },
+    {
+      "id": "tier_rudel",
+      "championId": "kaeptn_kompostible",
+      "name": "Tier-Rudel",
+      "side": "animals"
+    }
+  ],
+  "cards": [
+    {
+      "cardId": "alpha_the_coon",
+      "teamId": "south_park",
+      "role": "Andere eigene Humans erhalten +1 Angriff.",
+      "sourceModel": "the_coon"
+    },
+    {
+      "cardId": "alpha_mysterion",
+      "teamId": "south_park",
+      "role": "Überlebt den ersten tödlichen Schaden mit 1 Leben.",
+      "sourceModel": "mysterion"
+    },
+    {
+      "cardId": "alpha_toolshed",
+      "teamId": "south_park",
+      "role": "Heilt benachbarte eigene Humans am Rundenende um 1.",
+      "sourceModel": "toolshed"
+    },
+    {
+      "cardId": "alpha_human_kite",
+      "teamId": "south_park",
+      "role": "Team-Up: Darf mit einer weiteren eigenen Figur eine Bahn teilen.",
+      "sourceModel": "human_kite"
+    },
+    {
+      "cardId": "alpha_mosquito",
+      "teamId": "south_park",
+      "role": "Beim Ausspielen: Heile deine Basis um 2.",
+      "sourceModel": "mosquito"
+    },
+    {
+      "cardId": "alpha_tupperware",
+      "teamId": "south_park",
+      "role": "Andere eigene Humans erhalten +1 Angriff.",
+      "sourceModel": "tupperware"
+    },
+    {
+      "cardId": "alpha_doctor_timothy",
+      "teamId": "south_park",
+      "role": "Überlebt den ersten tödlichen Schaden mit 1 Leben.",
+      "sourceModel": "doctor_timothy"
+    },
+    {
+      "cardId": "alpha_fastpass",
+      "teamId": "south_park",
+      "role": "Heilt benachbarte eigene Humans am Rundenende um 1.",
+      "sourceModel": "fastpass"
+    },
+    {
+      "cardId": "alpha_super_craig",
+      "teamId": "south_park",
+      "role": "Team-Up: Darf mit einer weiteren eigenen Figur eine Bahn teilen.",
+      "sourceModel": "super_craig"
+    },
+    {
+      "cardId": "alpha_wonder_tweek",
+      "teamId": "south_park",
+      "role": "Beim Ausspielen: Heile deine Basis um 2.",
+      "sourceModel": "wonder_tweek"
+    },
+    {
+      "cardId": "alpha_call_girl",
+      "teamId": "south_park",
+      "role": "Andere eigene Humans erhalten +1 Angriff.",
+      "sourceModel": "call_girl"
+    },
+    {
+      "cardId": "alpha_captain_diabetes",
+      "teamId": "south_park",
+      "role": "Überlebt den ersten tödlichen Schaden mit 1 Leben.",
+      "sourceModel": "captain_diabetes"
+    },
+    {
+      "cardId": "alpha_mint_berry_crunch",
+      "teamId": "south_park",
+      "role": "Heilt benachbarte eigene Humans am Rundenende um 1.",
+      "sourceModel": "mint_berry_crunch"
+    },
+    {
+      "cardId": "alpha_the_new_kid",
+      "teamId": "south_park",
+      "role": "Team-Up: Darf mit einer weiteren eigenen Figur eine Bahn teilen.",
+      "sourceModel": "the_new_kid"
+    },
+    {
+      "cardId": "alpha_professor_chaos",
+      "teamId": "south_park",
+      "role": "Beim Ausspielen: Heile deine Basis um 2.",
+      "sourceModel": "professor_chaos"
+    },
+    {
+      "cardId": "alpha_general_disarray",
+      "teamId": "south_park",
+      "role": "Andere eigene Humans erhalten +1 Angriff.",
+      "sourceModel": "general_disarray"
+    },
+    {
+      "cardId": "alpha_cthulhu",
+      "teamId": "south_park",
+      "role": "Überlebt den ersten tödlichen Schaden mit 1 Leben.",
+      "sourceModel": "cthulhu"
+    },
+    {
+      "cardId": "alpha_captain_hindsight",
+      "teamId": "south_park",
+      "role": "Heilt benachbarte eigene Humans am Rundenende um 1.",
+      "sourceModel": "captain_hindsight"
+    },
+    {
+      "cardId": "alpha_manbearpig",
+      "teamId": "south_park",
+      "role": "Team-Up: Darf mit einer weiteren eigenen Figur eine Bahn teilen.",
+      "sourceModel": "manbearpig"
+    },
+    {
+      "cardId": "alpha_nathan",
+      "teamId": "south_park",
+      "role": "Beim Ausspielen: Heile deine Basis um 2.",
+      "sourceModel": "nathan"
+    },
+    {
+      "cardId": "alpha_south_park_vereinigt",
+      "teamId": "south_park",
+      "role": "Alle eigenen Figuren erhalten dauerhaft +1/+1.",
+      "sourceModel": null
+    },
+    {
+      "cardId": "alpha_south_park_autoritaet",
+      "teamId": "south_park",
+      "role": "Ein Gegner erhält diese Runde -2 Angriff und kann bis zum nächsten Rundenbeginn nicht angreifen.",
+      "sourceModel": null
+    },
+    {
+      "cardId": "alpha_south_park_kenny",
+      "teamId": "south_park",
+      "role": "Hole eine besiegte eigene Figur mit Kosten bis 3 frisch in eine freie Bahn zurück.",
+      "sourceModel": null
+    },
+    {
+      "cardId": "alpha_south_park_kite_schild",
+      "teamId": "south_park",
+      "role": "Verhindere den nächsten Schaden an einer eigenen Figur.",
+      "sourceModel": null
+    },
+    {
+      "cardId": "alpha_south_park_mint",
+      "teamId": "south_park",
+      "role": "Heile alle eigenen Figuren um 2 und gib ihnen dauerhaft +1 Angriff.",
+      "sourceModel": null
+    },
+    {
+      "cardId": "alpha_south_park_chaos",
+      "teamId": "south_park",
+      "role": "Alle gegnerischen Figuren verlieren diese Runde 2 Angriff. Deine Basis erleidet als Risiko 1 bis 2 Schaden.",
+      "sourceModel": null
+    },
+    {
+      "cardId": "alpha_south_park_poofs",
+      "teamId": "south_park",
+      "role": "Heile deine Basis um 4. Alle eigenen Figuren erhalten dauerhaft +1 Leben.",
+      "sourceModel": null
+    },
+    {
+      "cardId": "alpha_south_park_going_home",
+      "teamId": "south_park",
+      "role": "Nimm eine eigene Figur ohne ihre Verstärkungen zurück auf die Hand. Diese Kopie kostet 1 weniger.",
+      "sourceModel": null
+    },
+    {
+      "cardId": "alpha_mr_nimbus",
+      "teamId": "rick_morty",
+      "role": "Darf in der Wasserbahn stehen.",
+      "sourceModel": "mr_nimbus"
+    },
+    {
+      "cardId": "alpha_squanchy",
+      "teamId": "rick_morty",
+      "role": "Ist sofort kampfbereit.",
+      "sourceModel": "squanchy"
+    },
+    {
+      "cardId": "alpha_vogelmensch",
+      "teamId": "rick_morty",
+      "role": "Darf nach dem Kampf in eine freie Bahn fliegen.",
+      "sourceModel": "vogelmensch_2"
+    },
+    {
+      "cardId": "alpha_unity",
+      "teamId": "rick_morty",
+      "role": "Beim Ausspielen: Ziehe 1 Karte.",
+      "sourceModel": "unity"
+    },
+    {
+      "cardId": "alpha_mr_meeseeks",
+      "teamId": "rick_morty",
+      "role": "Ist sofort kampfbereit.",
+      "sourceModel": "mr_meeseeks"
+    },
+    {
+      "cardId": "alpha_krombopulos_michael",
+      "teamId": "rick_morty",
+      "role": "Darf in der Wasserbahn stehen.",
+      "sourceModel": "krombopulos_michael"
+    },
+    {
+      "cardId": "alpha_scary_terry",
+      "teamId": "rick_morty",
+      "role": "Ist sofort kampfbereit.",
+      "sourceModel": "scary_terry"
+    },
+    {
+      "cardId": "alpha_abradolf_lincler",
+      "teamId": "rick_morty",
+      "role": "Darf nach dem Kampf in eine freie Bahn fliegen.",
+      "sourceModel": "abradolf_lincler"
+    },
+    {
+      "cardId": "alpha_mr_poopybutthole",
+      "teamId": "rick_morty",
+      "role": "Beim Ausspielen: Ziehe 1 Karte.",
+      "sourceModel": "mr_poopybutthole"
+    },
+    {
+      "cardId": "alpha_evil_morty",
+      "teamId": "rick_morty",
+      "role": "Ist sofort kampfbereit.",
+      "sourceModel": "evil_morty"
+    },
+    {
+      "cardId": "alpha_rick_prime",
+      "teamId": "rick_morty",
+      "role": "Darf in der Wasserbahn stehen.",
+      "sourceModel": "rick_prime"
+    },
+    {
+      "cardId": "alpha_president_andre_curtis",
+      "teamId": "rick_morty",
+      "role": "Ist sofort kampfbereit.",
+      "sourceModel": "president_andre_curtis"
+    },
+    {
+      "cardId": "alpha_jaguar",
+      "teamId": "rick_morty",
+      "role": "Darf nach dem Kampf in eine freie Bahn fliegen.",
+      "sourceModel": "jaguar"
+    },
+    {
+      "cardId": "alpha_noob_noob",
+      "teamId": "rick_morty",
+      "role": "Beim Ausspielen: Ziehe 1 Karte.",
+      "sourceModel": "noob_noob"
+    },
+    {
+      "cardId": "alpha_snowball",
+      "teamId": "rick_morty",
+      "role": "Ist sofort kampfbereit.",
+      "sourceModel": "snowball"
+    },
+    {
+      "cardId": "alpha_zeep_xanflorp",
+      "teamId": "rick_morty",
+      "role": "Darf in der Wasserbahn stehen.",
+      "sourceModel": "zeep_xanflorp"
+    },
+    {
+      "cardId": "alpha_glootie",
+      "teamId": "rick_morty",
+      "role": "Ist sofort kampfbereit.",
+      "sourceModel": "glootie"
+    },
+    {
+      "cardId": "alpha_fart",
+      "teamId": "rick_morty",
+      "role": "Darf nach dem Kampf in eine freie Bahn fliegen.",
+      "sourceModel": "fart"
+    },
+    {
+      "cardId": "alpha_cromulon",
+      "teamId": "rick_morty",
+      "role": "Beim Ausspielen: Ziehe 1 Karte.",
+      "sourceModel": "cromulon"
+    },
+    {
+      "cardId": "alpha_traflorkianer",
+      "teamId": "rick_morty",
+      "role": "Ist sofort kampfbereit.",
+      "sourceModel": "traflorkianer"
+    },
+    {
+      "cardId": "alpha_rick_morty_portal",
+      "teamId": "rick_morty",
+      "role": "Bewege eine eigene Figur in eine freie erlaubte Bahn. Sie wird kampfbereit.",
+      "sourceModel": null
+    },
+    {
+      "cardId": "alpha_rick_morty_hinterhalt",
+      "teamId": "rick_morty",
+      "role": "Bewege eine eigene Figur in eine freie erlaubte Bahn. Sie führt dort einen Bonusangriff aus.",
+      "sourceModel": null
+    },
+    {
+      "cardId": "alpha_rick_morty_meeseeks_box",
+      "teamId": "rick_morty",
+      "role": "Beschwöre einen kampfbereiten 2/2 Meeseeks in der ersten freien erlaubten Bahn. Er stirbt zum nächsten Rundenbeginn.",
+      "sourceModel": null
+    },
+    {
+      "cardId": "alpha_rick_morty_wubba",
+      "teamId": "rick_morty",
+      "role": "Eine beschädigte eigene Figur erhält dauerhaft +2 Angriff und führt einen Bonusangriff aus.",
+      "sourceModel": null
+    },
+    {
+      "cardId": "alpha_rick_morty_plan",
+      "teamId": "rick_morty",
+      "role": "Ziehe 2 Karten. Wähle danach eine Handkarte zum Abwerfen.",
+      "sourceModel": null
+    },
+    {
+      "cardId": "alpha_rick_morty_saeure",
+      "teamId": "rick_morty",
+      "role": "Verstecke eine eigene Figur bis zum nächsten Rundenbeginn. Sie kann weder angreifen noch anvisiert werden; Gegner greifen an ihr vorbei.",
+      "sourceModel": null
+    },
+    {
+      "cardId": "alpha_rick_morty_kabel",
+      "teamId": "rick_morty",
+      "role": "Erzeuge eine zufällige Karte aus deinem freigegebenen Team auf der Hand.",
+      "sourceModel": null
+    },
+    {
+      "cardId": "alpha_rick_morty_schwifty",
+      "teamId": "rick_morty",
+      "role": "Verschiebe alle eigenen Figuren der vier Landbahnen zyklisch eine Bahn nach rechts und mache sie kampfbereit. Alle erhalten diese Runde +1 Angriff.",
+      "sourceModel": null
+    },
+    {
+      "cardId": "alpha_korvo",
+      "teamId": "solar_opposites",
+      "role": "Erzeugt am Rundenbeginn 1 zusätzliche Energie.",
+      "sourceModel": "korvo_3"
+    },
+    {
+      "cardId": "alpha_terry_solar_opposites",
+      "teamId": "solar_opposites",
+      "role": "Beim Ausspielen: Heile deine Basis um 2.",
+      "sourceModel": "terry_solar_opposites"
+    },
+    {
+      "cardId": "alpha_yumyulack",
+      "teamId": "solar_opposites",
+      "role": "Rüstung: Erleidet 1 weniger Kampfschaden.",
+      "sourceModel": "yumyulack"
+    },
+    {
+      "cardId": "alpha_jesse_solar_opposites",
+      "teamId": "solar_opposites",
+      "role": "Team-Up: Darf mit einer weiteren eigenen Figur eine Bahn teilen.",
+      "sourceModel": "jesse_solar_opposites"
+    },
+    {
+      "cardId": "alpha_pupa",
+      "teamId": "solar_opposites",
+      "role": "Wächst am Rundenbeginn um +1/+1, höchstens dreimal.",
+      "sourceModel": "pupa"
+    },
+    {
+      "cardId": "alpha_tim",
+      "teamId": "solar_opposites",
+      "role": "Erzeugt am Rundenbeginn 1 zusätzliche Energie.",
+      "sourceModel": "tim"
+    },
+    {
+      "cardId": "alpha_cherie",
+      "teamId": "solar_opposites",
+      "role": "Beim Ausspielen: Heile deine Basis um 2.",
+      "sourceModel": "cherie"
+    },
+    {
+      "cardId": "alpha_ringo",
+      "teamId": "solar_opposites",
+      "role": "Rüstung: Erleidet 1 weniger Kampfschaden.",
+      "sourceModel": "ringo"
+    },
+    {
+      "cardId": "alpha_the_janitor",
+      "teamId": "solar_opposites",
+      "role": "Team-Up: Darf mit einer weiteren eigenen Figur eine Bahn teilen.",
+      "sourceModel": "the_janitor"
+    },
+    {
+      "cardId": "alpha_halk_hogam",
+      "teamId": "solar_opposites",
+      "role": "Wächst am Rundenbeginn um +1/+1, höchstens dreimal.",
+      "sourceModel": "halk_hogam"
+    },
+    {
+      "cardId": "alpha_nova",
+      "teamId": "solar_opposites",
+      "role": "Erzeugt am Rundenbeginn 1 zusätzliche Energie.",
+      "sourceModel": "nova"
+    },
+    {
+      "cardId": "alpha_sister_sisto",
+      "teamId": "solar_opposites",
+      "role": "Beim Ausspielen: Heile deine Basis um 2.",
+      "sourceModel": "sister_sisto"
+    },
+    {
+      "cardId": "alpha_pezlie",
+      "teamId": "solar_opposites",
+      "role": "Rüstung: Erleidet 1 weniger Kampfschaden.",
+      "sourceModel": "pezlie"
+    },
+    {
+      "cardId": "alpha_glen_kumstein",
+      "teamId": "solar_opposites",
+      "role": "Team-Up: Darf mit einer weiteren eigenen Figur eine Bahn teilen.",
+      "sourceModel": "glen_kumstein"
+    },
+    {
+      "cardId": "alpha_lonesun",
+      "teamId": "solar_opposites",
+      "role": "Wächst am Rundenbeginn um +1/+1, höchstens dreimal.",
+      "sourceModel": "lonesun"
+    },
+    {
+      "cardId": "alpha_ventrez",
+      "teamId": "solar_opposites",
+      "role": "Erzeugt am Rundenbeginn 1 zusätzliche Energie.",
+      "sourceModel": "ventrez"
+    },
+    {
+      "cardId": "alpha_pobo",
+      "teamId": "solar_opposites",
+      "role": "Beim Ausspielen: Heile deine Basis um 2.",
+      "sourceModel": "pobo"
+    },
+    {
+      "cardId": "alpha_cromus",
+      "teamId": "solar_opposites",
+      "role": "Rüstung: Erleidet 1 weniger Kampfschaden.",
+      "sourceModel": "cromus"
+    },
+    {
+      "cardId": "alpha_zylenol",
+      "teamId": "solar_opposites",
+      "role": "Team-Up: Darf mit einer weiteren eigenen Figur eine Bahn teilen.",
+      "sourceModel": "zylenol"
+    },
+    {
+      "cardId": "alpha_skeletom",
+      "teamId": "solar_opposites",
+      "role": "Wächst am Rundenbeginn um +1/+1, höchstens dreimal.",
+      "sourceModel": "skeletom"
+    },
+    {
+      "cardId": "alpha_solar_opposites_zelle",
+      "teamId": "solar_opposites",
+      "role": "Erhalte 2 Energie für diese Runde, höchstens bis zum Energielimit.",
+      "sourceModel": null
+    },
+    {
+      "cardId": "alpha_solar_opposites_reparatur",
+      "teamId": "solar_opposites",
+      "role": "Heile eine eigene Figur um 4 und verhindere ihren nächsten Schaden.",
+      "sourceModel": null
+    },
+    {
+      "cardId": "alpha_solar_opposites_idee",
+      "teamId": "solar_opposites",
+      "role": "Erhalte zufällig 2 Energie für diese Runde oder ziehe 2 Karten.",
+      "sourceModel": null
+    },
+    {
+      "cardId": "alpha_solar_opposites_replikanten",
+      "teamId": "solar_opposites",
+      "role": "Eine gewählte Figurenkarte auf deiner Hand kostet 2 weniger, mindestens 0.",
+      "sourceModel": null
+    },
+    {
+      "cardId": "alpha_solar_opposites_evolution",
+      "teamId": "solar_opposites",
+      "role": "Erhalte 1 Pupa-Fortschritt. Bei 3 Fortschritt: Verbrauche 3 und gib allen eigenen Figuren dauerhaft +2/+2.",
+      "sourceModel": null
+    },
+    {
+      "cardId": "alpha_solar_opposites_wall",
+      "teamId": "solar_opposites",
+      "role": "Beschwöre zwei 1/2 Wall-Bewohner in den ersten freien Landbahnen.",
+      "sourceModel": null
+    },
+    {
+      "cardId": "alpha_solar_opposites_silvercop",
+      "teamId": "solar_opposites",
+      "role": "Beschwöre einen 2/2 SilverCop. Investiere danach bis zu 3 restliche Energie: je +1/+1.",
+      "sourceModel": null
+    },
+    {
+      "cardId": "alpha_solar_opposites_neustart",
+      "teamId": "solar_opposites",
+      "role": "Investiere bis zu 4 restliche Energie. Eine eigene Figur erhält je investierter Energie dauerhaft +1/+1.",
+      "sourceModel": null
+    },
+    {
+      "cardId": "alpha_wolf",
+      "teamId": "tier_rudel",
+      "role": "Erhält +1 Angriff je weiterem eigenen Animal, höchstens +2.",
+      "sourceModel": "wolf"
+    },
+    {
+      "cardId": "alpha_alphawolf",
+      "teamId": "tier_rudel",
+      "role": "Andere eigene Animals erhalten +1 Angriff.",
+      "sourceModel": "alphawolf"
+    },
+    {
+      "cardId": "alpha_baer",
+      "teamId": "tier_rudel",
+      "role": "Solange mindestens zwei weitere eigene Animals stehen: +1/+1.",
+      "sourceModel": "baer"
+    },
+    {
+      "cardId": "alpha_eisbaer",
+      "teamId": "tier_rudel",
+      "role": "Team-Up: Darf mit einer weiteren eigenen Figur eine Bahn teilen.",
+      "sourceModel": "eisbaer"
+    },
+    {
+      "cardId": "alpha_adler",
+      "teamId": "tier_rudel",
+      "role": "Darf nach dem Kampf in eine freie Bahn fliegen.",
+      "sourceModel": "adler"
+    },
+    {
+      "cardId": "alpha_luchs",
+      "teamId": "tier_rudel",
+      "role": "Erhält +1 Angriff je weiterem eigenen Animal, höchstens +2.",
+      "sourceModel": "luchs"
+    },
+    {
+      "cardId": "alpha_pferd",
+      "teamId": "tier_rudel",
+      "role": "Andere eigene Animals erhalten +1 Angriff.",
+      "sourceModel": "pferd"
+    },
+    {
+      "cardId": "alpha_ratte",
+      "teamId": "tier_rudel",
+      "role": "Solange mindestens zwei weitere eigene Animals stehen: +1/+1.",
+      "sourceModel": "ratte"
+    },
+    {
+      "cardId": "alpha_schlange",
+      "teamId": "tier_rudel",
+      "role": "Team-Up: Darf mit einer weiteren eigenen Figur eine Bahn teilen.",
+      "sourceModel": "schlange"
+    },
+    {
+      "cardId": "alpha_krokodil",
+      "teamId": "tier_rudel",
+      "role": "Darf nach dem Kampf in eine freie Bahn fliegen.",
+      "sourceModel": "krokodil"
+    },
+    {
+      "cardId": "alpha_schildkroete",
+      "teamId": "tier_rudel",
+      "role": "Erhält +1 Angriff je weiterem eigenen Animal, höchstens +2.",
+      "sourceModel": "schildkroete"
+    },
+    {
+      "cardId": "alpha_hauskater",
+      "teamId": "tier_rudel",
+      "role": "Andere eigene Animals erhalten +1 Angriff.",
+      "sourceModel": "hauskater"
+    },
+    {
+      "cardId": "alpha_schwarze_katze",
+      "teamId": "tier_rudel",
+      "role": "Solange mindestens zwei weitere eigene Animals stehen: +1/+1.",
+      "sourceModel": "schwarze_katze"
+    },
+    {
+      "cardId": "alpha_streuner",
+      "teamId": "tier_rudel",
+      "role": "Team-Up: Darf mit einer weiteren eigenen Figur eine Bahn teilen.",
+      "sourceModel": "streuner"
+    },
+    {
+      "cardId": "alpha_velociraptor",
+      "teamId": "tier_rudel",
+      "role": "Darf nach dem Kampf in eine freie Bahn fliegen.",
+      "sourceModel": "velociraptor"
+    },
+    {
+      "cardId": "alpha_stegosaurus",
+      "teamId": "tier_rudel",
+      "role": "Erhält +1 Angriff je weiterem eigenen Animal, höchstens +2.",
+      "sourceModel": "stegosaurus"
+    },
+    {
+      "cardId": "alpha_triceratops",
+      "teamId": "tier_rudel",
+      "role": "Andere eigene Animals erhalten +1 Angriff.",
+      "sourceModel": "triceratops"
+    },
+    {
+      "cardId": "alpha_spinosaurus",
+      "teamId": "tier_rudel",
+      "role": "Solange mindestens zwei weitere eigene Animals stehen: +1/+1.",
+      "sourceModel": "spinosaurus"
+    },
+    {
+      "cardId": "alpha_brachiosaurus",
+      "teamId": "tier_rudel",
+      "role": "Team-Up: Darf mit einer weiteren eigenen Figur eine Bahn teilen.",
+      "sourceModel": "brachiosaurus"
+    },
+    {
+      "cardId": "alpha_tyrannosaurus_rex",
+      "teamId": "tier_rudel",
+      "role": "Darf nach dem Kampf in eine freie Bahn fliegen.",
+      "sourceModel": "tyrannosaurus_rex"
+    },
+    {
+      "cardId": "alpha_tier_rudel_ruf",
+      "teamId": "tier_rudel",
+      "role": "Alle eigenen Figuren erhalten dauerhaft +1/+1.",
+      "sourceModel": null
+    },
+    {
+      "cardId": "alpha_tier_rudel_jagd",
+      "teamId": "tier_rudel",
+      "role": "Eine eigene Figur und eigene Figuren in direkt benachbarten Bahnen führen je einen Bonusangriff aus.",
+      "sourceModel": null
+    },
+    {
+      "cardId": "alpha_tier_rudel_futter",
+      "teamId": "tier_rudel",
+      "role": "Eine eigene Figur erhält dauerhaft +2/+2.",
+      "sourceModel": null
+    },
+    {
+      "cardId": "alpha_tier_rudel_instinkt",
+      "teamId": "tier_rudel",
+      "role": "Wähle einen Beschützer mit Kosten bis 2 und einen anderen Verbündeten. Bis zum nächsten Rundenbeginn übernimmt der Beschützer den nächsten Schaden für ihn.",
+      "sourceModel": null
+    },
+    {
+      "cardId": "alpha_tier_rudel_nachwuchs",
+      "teamId": "tier_rudel",
+      "role": "Beschwöre einen 1/1 Pteranodon in der ersten freien erlaubten Bahn.",
+      "sourceModel": null
+    },
+    {
+      "cardId": "alpha_tier_rudel_vollmond",
+      "teamId": "tier_rudel",
+      "role": "Eigene Wölfe und Katzen erhalten dauerhaft +2/+1.",
+      "sourceModel": null
+    },
+    {
+      "cardId": "alpha_tier_rudel_stampede",
+      "teamId": "tier_rudel",
+      "role": "Alle eigenen Figuren führen je einen Bonusangriff aus.",
+      "sourceModel": null
+    },
+    {
+      "cardId": "alpha_tier_rudel_staerkste",
+      "teamId": "tier_rudel",
+      "role": "Opfere ein eigenes Tier mit Kosten bis 2. Übertrage seinen aktuellen Angriff und sein übriges Leben dauerhaft auf ein anderes eigenes Tier.",
+      "sourceModel": null
+    }
+  ]
+}

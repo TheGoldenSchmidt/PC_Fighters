@@ -510,3 +510,26 @@
   to { opacity: 0; }
 }
 
+/* Gemeinsame Auswahl für mehrstufige Alpha-Aktionen. */
+.alpha-action-panel { pointer-events: auto; width: min(100%, 680px); margin: 0 auto 8px; padding: 12px; border: 1px solid #f5bd63; border-radius: 14px; background: #121929f5; box-shadow: 0 8px 30px #0009; color: #fff; max-height: 34dvh; overflow-y: auto; }
+.alpha-action-head { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+.alpha-action-panel p { font-size: 14px; line-height: 1.4; margin: 6px 0; }
+.alpha-target-options { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.alpha-action-panel button { min-height: 44px; padding: 8px 12px; border: 1px solid #7183a1; border-radius: 8px; background: #26334b; color: #fff; cursor: pointer; }
+.alpha-action-panel button:hover { background: #455573; }
+.alpha-action-panel { flex-shrink: 0; }
+/* Die Zielwahl ersetzt vorübergehend die Hand, damit das Feld erreichbar bleibt. */
+.own-area:has(.alpha-action-panel) .hand { display: none; }
+.own-area .alpha-action-panel { max-height: calc(var(--hand-hoehe) - 72px); }
+.pass-button:disabled { opacity: .45; cursor: default; animation: none; }
+.alpha-hud-fx { border: 1px solid currentColor; border-radius: 8px; padding: 5px 8px; background: #122030ed; color: #ffd36f; font-weight: 800; font-size: 13px; }
+.figure-status { position: absolute; top: 0; left: 0; right: 0; color: #b4e5ff; font-size: 10px; text-align: center; background: #10243bdd; border-radius: 5px; }
+.alpha-valid-target { outline: 3px solid #fbd077; border-radius: 12px; cursor: pointer; }
+[data-target-uid] { position: relative; }
+.alpha-target-fx { position: absolute; inset: 0; z-index: 30; display: grid; place-items: center; border-radius: 14px; pointer-events: none; color: #ffda70; background: #d69d233d; box-shadow: inset 0 0 28px currentColor; font-weight: 900; font-size: 24px; text-shadow: 0 2px 4px #000; animation: alpha-pulse .65s ease-out; }
+.alpha-fx-heal { color: #72ffa4; background: #29a36033; }
+.alpha-fx-debuff { color: #d59cff; background: #992fcc33; }
+.alpha-fx-damage { color: #ff7878; background: #dc262633; }
+.alpha-fx-shield { color: #a9deff; background: #269ada33; }
+@keyframes alpha-pulse { from { opacity: 0; transform: scale(.8); } 25% { opacity: 1; } to { opacity: 0; transform: scale(1.12); } }
+@media (prefers-reduced-motion: reduce) { .alpha-target-fx { animation: none; } }

@@ -784,35 +784,28 @@ function firstScopeAlly(
 }
 
 export function onRoundStartAbilities(state: GameState): void {
-  for (const owner of [0, 1] as PlayerIndex[]) {
-    state.board[owner].forEach((c, lane) => {
-      if (!c) return;
-      rufeKlasseBHook('onRoundStart', state, owner, lane, c);
-    });
-  }
-  for (const owner of [0, 1] as PlayerIndex[]) {
-    for (const creature of state.teamBoard?.[owner] ?? []) {
-      if (!creature) continue;
-      for (const ability of creature.abilities) {
-        if (ability.kind !== 'energie') continue;
-        state.players[owner].energy = Math.min(
-          state.config.energy.cap ?? Infinity,
-          state.players[owner].energy + ability.amount
-        );
-      }
-    }
+  roundHooks(state, 'onRoundStart');
+}
+
+/** Beide Team-Up-Plätze lösen Rundenfähigkeiten genau einmal aus. */
+function roundHooks(state: GameState, hook: 'onRoundStart' | 'onRoundEnd'): void {
+  for (const owner of [0, 1] as PlayerIndex[]) for (let lane = 0; lane < state.config.lanes; lane++) {
+    const c = state.board[owner][lane];
+    if (c) rufeKlasseBHook(hook, state, owner, lane, c);
+    const rear = state.teamBoard?.[owner]?.[lane];
+    if (!rear || !state.teamBoard) continue;
+    const front = state.board[owner][lane];
+    state.board[owner][lane] = rear;
+    state.teamBoard[owner][lane] = front;
+    try { rufeKlasseBHook(hook, state, owner, lane, rear); }
+    finally { [state.board[owner][lane], state.teamBoard[owner][lane]] = [state.teamBoard[owner][lane], state.board[owner][lane]]; }
   }
 }
 
 // ---------------------------------------------------------------- Rundenende
 
 export function onRoundEndAbilities(state: GameState): void {
-  for (const owner of [0, 1] as PlayerIndex[]) {
-    state.board[owner].forEach((c, lane) => {
-      if (!c) return;
-      rufeKlasseBHook('onRoundEnd', state, owner, lane, c);
-    });
-  }
+  roundHooks(state, 'onRoundEnd');
 }
 
 function applyHeilung(
@@ -835,11 +828,12 @@ function applyHeilung(
 
   let geheiltAnzahl = 0;
   for (const tLane of targetLanes) {
+    for (const rear of [false, true]) {
     if (ab.maxTargets != null && geheiltAnzahl >= ab.maxTargets) break;
-    const t = state.board[owner]?.[tLane];
+    const t = rear ? state.teamBoard?.[owner]?.[tLane] : state.board[owner]?.[tLane];
     if (!t) continue;
     if (!matchesScope(state.factionTree, ab.scope, source.faction, t.faction)) continue;
-    const max = getMaxHealth(state, owner, tLane);
+    const max = getMaxHealth(state, owner, tLane, rear);
     if (t.currentHealth < max) {
       const vorher = t.currentHealth;
       t.currentHealth = Math.min(max, t.currentHealth + amount);
@@ -848,6 +842,7 @@ function applyHeilung(
       zaehleSpieler(state, owner, 'heilung', geheilt);
       log(state, `${source.name} heilt ${t.name} um ${amount}.`);
       geheiltAnzahl += 1;
+    }
     }
   }
 }

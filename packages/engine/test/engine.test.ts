@@ -235,7 +235,7 @@ describe('Match-Zusammenfassung', () => {
     state.round = 12;
     state.phase = 'ended';
     state.winner = 0;
-    state.log = Array.from({ length: 65 }, (_, id) => ({
+    state.log = Array.from({ length: 205 }, (_, id) => ({
       id,
       round: 1,
       text: `Eintrag ${id}`
@@ -248,7 +248,7 @@ describe('Match-Zusammenfassung', () => {
 
     const view = buildClientView(state, 0, data);
 
-    expect(view.log).toHaveLength(60);
+    expect(view.log).toHaveLength(200);
     expect(view.matchSummary).toEqual({
       round: 12,
       baseDamageDealt: [4, 3],

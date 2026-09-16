@@ -86,13 +86,11 @@ function champSuperblockFenster(): GameState {
   state.phase = 'play';
   state.active = 1;
   state.players[0].schild = data.config.schild!.abschnitte - 1;
-  const damageAction = data.cards.find(
-    (card) => card.type === 'action' && /\d+\s+Schaden/i.test(card.text ?? '')
-  );
+  const damageAction = data.cardsById.super_sunburn;
   if (!damageAction) throw new Error('Fixture findet keine Schadensaktion.');
   state.players[1].hand = [damageAction.id];
   state.players[1].energy = 20;
-  state = applyAction(state, 1, { type: 'playAction', handIndex: 0, targetLane: 0 }, data);
+  state = applyAction(state, 1, { type: 'playAction', handIndex: 0, targetLane: -1 }, data);
   if (!state.reaktion) throw new Error('Fixture öffnet keine Superkraft-Auswahl.');
   return state;
 }

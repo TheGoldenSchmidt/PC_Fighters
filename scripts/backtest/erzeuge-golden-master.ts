@@ -14,6 +14,7 @@ import {
   zustandsFingerabdruck
 } from '../../packages/engine/src/index.js';
 import type { BotProfil } from '../../packages/engine/src/index.js';
+import { readFileSync, writeFileSync } from 'node:fs';
 
 const data = loadGameData();
 const decks = ladeAktiveDecks(data);
@@ -22,6 +23,7 @@ const profil: BotProfil = { ...BOT_PROFILE.ausgewogen, epsilonBand: 0 };
 
 const paare: [string, string][] = [];
 for (let i = 0; i < ids.length; i++) {
+  paare.push([ids[i], ids[i]]);
   for (let j = i + 1; j < ids.length; j++) {
     // Jede Paarung in beiden Sitzordnungen. So bleibt der Test klein, deckt
     // aber alle freigegebenen Champ-Decks symmetrisch ab.
@@ -38,4 +40,9 @@ for (let k = 0; k < paare.length; k++) {
   const zustand = zustandsFingerabdruck(r.endState);
   zeilen.push(`  ['${a}', '${b}', ${saat}, '${kurz}', '${zustand}'],`);
 }
-console.log(zeilen.join('\n'));
+if (process.argv.includes('--write')) {
+  const file = 'packages/engine/test/regression.test.ts';
+  const current = readFileSync(file, 'utf8');
+  writeFileSync(file, current.replace(/const GOLDEN_MASTER:.*? = \[[\s\S]*?\n\];/, `const GOLDEN_MASTER: [string, string, number, string, string][] = [\n${zeilen.join('\n')}\n];`));
+  console.log(`${paare.length} Alpha-Paarungen inklusive Spiegelpartien aktualisiert.`);
+} else console.log(zeilen.join('\n'));
