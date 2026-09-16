@@ -1,4 +1,4 @@
-// 3D-Schlachtfeld: ein transparentes WebGL-Canvas liegt über dem Lane-Raster.
+// 3D-Schlachtfeld: WebGL-Bühne unter den transparenten Lane-Bedienflächen.
 //
 // Die DOM-Slots bleiben die Wahrheit für Layout und Bedienung (Tap-Flächen,
 // Stat-Badges, Namensschilder). Diese Komponente projiziert die Slot-Mitten
@@ -22,6 +22,7 @@ import type { ClientView, EnvironmentKind, PlayerIndex, Topic, VisualCatalog } f
 import { createFigure, type Figure } from './figures3d';
 import { createEnvironment, type EnvironmentRec, type FieldMetrics } from './environments3d';
 import { SACRIFICE_MS } from './arena/fx';
+import { createArenaStage, createArenaFloorTexture, createArenaGlowTexture } from './arenaStage3d';
 
 /** Zauber-Effektarten der Aktionskarten (Spiegel des engine-SpellEvent). */
 export type SpellEffectKind = import('@pcf/engine').SpellEvent['effect'];
@@ -85,6 +86,7 @@ interface TeamFigureRec {
 
 interface TeamZoneRec {
   group: THREE.Group;
+  bastion: THREE.Group;
   bench: THREE.Mesh;
   markers: THREE.Mesh[];
   base: THREE.Mesh;
@@ -163,6 +165,7 @@ interface World {
   spellFx: SpellFx[];
   ground: Ground;
   environment: EnvironmentRec | null;
+  stage: ReturnType<typeof createArenaStage>;
   /** Pro Lane ein getönter Bodenstreifen (der „Weg", auf dem gekämpft wird). */
   lanePaths: THREE.Mesh[];
   pathGeo: THREE.PlaneGeometry;
@@ -202,9 +205,10 @@ function setFigureOpacity(root: THREE.Object3D, opacity: number): void {
 
 function createTeamZone(): TeamZoneRec {
   const group = new THREE.Group();
-  const steel = new THREE.MeshStandardMaterial({ color: 0x252a33, roughness: 0.7, metalness: 0.35 });
-  const wood = new THREE.MeshStandardMaterial({ color: 0x9c6a44, roughness: 0.82, metalness: 0.04 });
-  const gold = new THREE.MeshBasicMaterial({ color: 0xf5b74a, transparent: true, opacity: 0.72 });
+  const steel = new THREE.MeshStandardMaterial({ color: 0x344355, roughness: 0.6, metalness: 0.35 });
+  const wood = new THREE.MeshStandardMaterial({ color: 0x76523b, roughness: 0.82, metalness: 0.04 });
+  const trim = new THREE.MeshStandardMaterial({ color: 0xc49a57, roughness: 0.4, metalness: 0.65 });
+  const gold = new THREE.MeshBasicMaterial({ color: 0xf5b74a, transparent: true, opacity: 0.36 });
   const light = new THREE.MeshBasicMaterial({
     color: 0xeaf4ff,
     transparent: true,
@@ -215,11 +219,23 @@ function createTeamZone(): TeamZoneRec {
   // Bewusst OHNE Lehne: die Lehne stand genau zwischen Kamera und Bankfiguren
   // und verdeckte sie von vorn. Ohne sie muss die Sitzfläche selbst die Bank
   // lesbar machen – deshalb dicker, tiefer und heller als zuvor.
-  const bench = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.4, 0.92), wood);
-  bench.position.y = 0.32;
+  const bench = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.22, 0.92), steel);
+  bench.position.y = 0.22;
   bench.castShadow = true;
   bench.receiveShadow = true;
   group.add(bench);
+  // Einzelne Holzplanken und drei eingefasste Plätze machen die Bank lesbar.
+  for (const z of [-0.3, 0, 0.3]) {
+    const plank = new THREE.Mesh(new THREE.BoxGeometry(3.28, 0.1, 0.26), wood);
+    plank.position.set(0, 0.38, z);
+    plank.receiveShadow = true;
+    group.add(plank);
+  }
+  for (const x of [-1.67, -0.525, 0.525, 1.67]) {
+    const bracket = new THREE.Mesh(new THREE.BoxGeometry(0.045, 0.12, 0.96), trim);
+    bracket.position.set(x, 0.37, 0);
+    group.add(bracket);
+  }
   // Zwei Kufen statt einer Lehne: sie erden die Bank optisch, ohne etwas zu
   // verdecken – sie liegen unter der Sitzfläche.
   for (const x of [-1.45, 1.45]) {
@@ -229,24 +245,33 @@ function createTeamZone(): TeamZoneRec {
     group.add(kufe);
   }
   const markers = [-1.05, 0, 1.05].map((x) => {
-    const marker = new THREE.Mesh(new THREE.RingGeometry(0.34, 0.5, 22), gold.clone());
+    const marker = new THREE.Mesh(new THREE.RingGeometry(0.35, 0.4, 22), gold);
     marker.rotation.x = -Math.PI / 2;
-    marker.position.set(x, 0.015, 0.2);
+    marker.position.set(x, 0.435, 0);
     group.add(marker);
     return marker;
   });
-  // Die Basis steht HINTER der Bank (lokales +z). Bei der Gegnerzone dreht die
-  // 180°-Drehung der Gruppe dieses "hinten" korrekt nach hinten weg. Weiter als
-  // knapp zwei Einheiten darf sie nicht rücken, sonst schiebt die Perspektive
-  // die eigene Basis unter die Handkarten.
-  const base = new THREE.Mesh(new THREE.CylinderGeometry(0.92, 1.1, 0.42, 8), steel.clone());
-  base.position.set(0, 0.2, 1.85);
+  // Die Basis flankiert die Bank. Hinter ihr verschwand sie unter den Karten
+  // bzw. am oberen Bildrand. Die Seitenausrichtung folgt unten der Kamera.
+  const bastion = new THREE.Group();
+  group.add(bastion);
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(0.78, 0.96, 0.24, 8), steel.clone());
+  base.position.set(0, 0.12, 0);
   base.castShadow = true;
   base.receiveShadow = true;
-  group.add(base);
-  const core = new THREE.Mesh(new THREE.CylinderGeometry(0.52, 0.62, 0.47, 8), light);
-  core.position.copy(base.position);
-  group.add(core);
+  bastion.add(base);
+  const collar = new THREE.Mesh(new THREE.CylinderGeometry(0.65, 0.78, 0.12, 8), trim);
+  collar.position.set(0, 0.29, 0);
+  bastion.add(collar);
+  const core = new THREE.Mesh(new THREE.OctahedronGeometry(0.38), light);
+  core.position.set(0, 0.64, 0);
+  bastion.add(core);
+  for (const x of [-0.58, 0.58]) {
+    const guard = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.16, 0.5, 6), steel);
+    guard.position.set(x, 0.46, 0);
+    guard.rotation.z = x > 0 ? -0.22 : 0.22;
+    bastion.add(guard);
+  }
   const shield = new THREE.Mesh(
     new THREE.SphereGeometry(1.2, 16, 10, 0, Math.PI * 2, 0, Math.PI / 2),
     new THREE.MeshBasicMaterial({
@@ -258,9 +283,9 @@ function createTeamZone(): TeamZoneRec {
       depthWrite: false
     })
   );
-  shield.position.set(0, 0.18, 1.85);
-  group.add(shield);
-  return { group, bench, markers, base, core, shield, flashStart: 0 };
+  shield.position.set(0, 0.18, 0);
+  bastion.add(shield);
+  return { group, bastion, bench, markers, base, core, shield, flashStart: 0 };
 }
 
 /** three.Color aus einem Hex-String, mit Fallback bei ungültiger Angabe. */
@@ -428,13 +453,11 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
     }
 
     const scene = new THREE.Scene();
-    // Gekippte, tiefere Kamera: man blickt von der eigenen Seite über das Feld,
-    // der Boden weicht perspektivisch zurück (eigene Reihe groß, gegnerische
-    // kleiner). Die Figuren bleiben über den DOM-Slot-Raycast pinnend
-    // ausgerichtet – die Kamera bestimmt nur Blickwinkel und Tiefenwirkung.
+    // Erhöhte Dreiviertelansicht: beide Bänke bleiben im Bild und auch die
+    // oberen DOM-Anker treffen den Boden deutlich vor dem Horizont.
     const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
-    camera.position.set(0, 8, 10.5);
-    camera.lookAt(0, 1.1, -2.5);
+    camera.position.set(0, 13, 12);
+    camera.lookAt(0, 0, -1.8);
 
     scene.add(new THREE.HemisphereLight(0xcfe0ff, 0x4a3d2c, 1.85));
     const sun = new THREE.DirectionalLight(0xfff2dd, 2.35);
@@ -472,10 +495,13 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
 
     // ---- Thematischer 3D-Boden (halbtransparent, damit die DOM-Lane-Rahmen,
     // "FREI"-Hinweise und Ziel-Markierungen darunter sichtbar bleiben) ----
+    const floorTexture = createArenaFloorTexture();
+    floorTexture.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy());
     const floor = new THREE.Mesh(
       new THREE.PlaneGeometry(60, 60),
       new THREE.MeshStandardMaterial({
         color: 0x1d2940,
+        map: floorTexture,
         roughness: 0.95,
         metalness: 0,
         transparent: true,
@@ -488,7 +514,7 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
     scene.add(floor);
 
     // Rasterlinien geben dem Boden Tiefe/Perspektive
-    const grid = new THREE.GridHelper(60, 30, 0x63c9f8, 0x63c9f8);
+    const grid = new THREE.GridHelper(60, 60, 0x63c9f8, 0x63c9f8);
     (grid.material as THREE.Material).transparent = true;
     (grid.material as THREE.Material).opacity = 0.16;
     (grid.material as THREE.Material).depthWrite = false;
@@ -496,10 +522,12 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
     scene.add(grid);
 
     // Weicher Horizont-Schimmer hinter dem Feld (Additiv, thematische Akzentfarbe)
+    const glowTexture = createArenaGlowTexture();
     const glow = new THREE.Mesh(
       new THREE.PlaneGeometry(70, 26),
       new THREE.MeshBasicMaterial({
         color: 0x63c9f8,
+        map: glowTexture,
         transparent: true,
         opacity: 0.14,
         depthWrite: false,
@@ -541,6 +569,9 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
       zone.group.visible = false;
       scene.add(zone.group);
     });
+    const stage = createArenaStage();
+    stage.group.visible = false;
+    scene.add(stage.group);
 
     const world: World = {
       renderer,
@@ -555,6 +586,7 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
       spellFx: [],
       ground: { floor, grid, glow },
       environment: null,
+      stage,
       lanePaths,
       pathGeo,
       shadowCatcher,
@@ -664,19 +696,9 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
         const ownZone = world.teamZones[world.me];
         const opponentZone = world.teamZones[farSide];
 
-        // Bank und Basis stehen mittig vor bzw. hinter den Lanes – dort, wo im
-        // Vorbild der Held steht. Die Basis sitzt im lokalen Raum der Zone bei
-        // z = +2.4, also HINTER der Bank; die 180°-Drehung der Gegnerzone dreht
-        // dieses „dahinter" dort korrekt nach hinten.
-        //
-        // Die eigene Zone hängt vollständig am DOM-Anker `[data-zone="<seite>"]`
-        // (Position und Größe), den auch der 2D-Fallback bespielt. Bei der
-        // gegnerischen Zone geht das nicht: Ihr Anker sitzt am oberen Bildrand,
-        // wo der Boden in den Horizont läuft – der Raycast landet dort zig
-        // Einheiten hinter dem Feld und die Bank würde riesig. Sie übernimmt
-        // deshalb nur die x-Mitte; Tiefe und Größe kommen aus der
-        // Feldgeometrie, verkleinert um genau den Faktor, um den auch die
-        // Figuren der hinteren Reihe kleiner sind.
+        // Mit steilerer Kamera treffen auch die oberen DOM-Anker zuverlässig
+        // den Boden. Beide Bänke folgen deshalb Position UND Breite ihres
+        // Ankers; die gegnerische Bank rutscht nicht mehr in die Kampfreihe.
         const mitteX = (leftX + rightX) / 2;
         const ownSpot = elementAnchor(world, `[data-zone="${world.me}"]`);
         const oppSpot = elementAnchor(world, `[data-zone="${farSide}"]`);
@@ -688,7 +710,7 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
           0.25,
           Math.min(2.1, (ownSpot ? ownSpot.breite : laneStep) / BANK_BREITE)
         );
-        const tiefenFaktor = a0!.scale > 0 ? Math.min(1, f0!.scale / a0!.scale) : 0.75;
+        const opponentScale = Math.max(0.25, Math.min(2.1, (oppSpot?.breite ?? laneStep) / BANK_BREITE));
 
         ownZone.group.position.set(
           ownSpot ? ownSpot.pos.x : mitteX,
@@ -697,14 +719,18 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
         );
         ownZone.group.rotation.y = 0;
         ownZone.group.scale.setScalar(ownScale);
+        ownZone.bastion.position.set(2.5, 0, 0);
+        ownZone.bastion.scale.setScalar(0.72);
 
         opponentZone.group.position.set(
           oppSpot ? oppSpot.pos.x : mitteX,
           0,
-          farZ - laneStep * 0.5
+          oppSpot ? oppSpot.pos.z : farZ - laneStep * 0.5
         );
         opponentZone.group.rotation.y = Math.PI;
-        opponentZone.group.scale.setScalar(ownScale * tiefenFaktor);
+        opponentZone.group.scale.setScalar(opponentScale);
+        opponentZone.bastion.position.set(-2.5, 0, 0);
+        opponentZone.bastion.scale.setScalar(0.72);
 
         for (const zone of [ownZone, opponentZone]) {
           zone.group.visible = true;
@@ -730,7 +756,7 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
           const seatSpacing = skala * 1.05 * (own ? 1 : -1);
           const rest = new THREE.Vector3(
             zone.group.position.x + (rec.slot - 1) * seatSpacing,
-            (rec.slot === 1 ? 0.18 : 0.3) * skala,
+            0.43 * skala,
             zone.group.position.z
           );
           const figureScale = Math.min(skala * 0.72, (skala * 1.0) / Math.max(rec.width, 0.2));
@@ -783,23 +809,32 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
         strip.visible = true;
       }
 
-      // Umgebung (Deko) lane-frei an die aktuellen Feldkanten setzen
-      if (world.environment) {
+      // Architektur und Kulisse verwenden dieselben Feldkanten.
+      world.stage.group.visible = haveField;
+      if (world.environment || haveField) {
         if (haveField) {
-          world.environment.layout({
+          const metrics: FieldMetrics = {
             leftX,
             rightX,
             nearZ: Math.max(a0!.pos.z, aN!.pos.z),
             farZ: Math.min(f0!.pos.z, fN!.pos.z),
             laneStep,
             scale: a0!.scale
-          });
-          world.environment.group.visible = true;
-        } else {
+          };
+          // Die Bande folgt den Slot-Außenkanten, nicht den Füßen der Figuren.
+          const fieldRect = world.layoutRoot.querySelector('.lane-grid')?.getBoundingClientRect();
+          const canvasRect = world.container.getBoundingClientRect();
+          const stageFar = fieldRect
+            ? groundPoint(world, world.container.clientWidth / 2, fieldRect.top - canvasRect.top, new THREE.Vector3()).z
+            : metrics.farZ;
+          world.stage.layout({ ...metrics, farZ: stageFar + laneStep * 0.52 });
+          world.environment?.layout(metrics);
+          if (world.environment) world.environment.group.visible = true;
+        } else if (world.environment) {
           // Slots noch nicht im DOM (z. B. vor dem ersten Layout) → verbergen
           world.environment.group.visible = false;
         }
-        world.environment.update(now);
+        world.environment?.update(now);
       }
 
       // Geschosse: leichte Bogenflugbahn von Angreifer zu Ziel
@@ -877,12 +912,15 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
         scene.remove(world.environment.group);
         world.environment.dispose();
       }
+      world.stage.dispose();
       for (const strip of world.lanePaths) {
         scene.remove(strip);
         (strip.material as THREE.Material).dispose();
       }
       pathGeo.dispose();
       floor.geometry.dispose();
+      floorTexture.dispose();
+      glowTexture.dispose();
       (floor.material as THREE.Material).dispose();
       grid.geometry.dispose();
       (grid.material as THREE.Material).dispose();
@@ -908,10 +946,10 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
     const floorMat = world.ground.floor.material as THREE.MeshStandardMaterial;
     const gridMat = world.ground.grid.material as THREE.LineBasicMaterial;
     const glowMat = world.ground.glow.material as THREE.MeshBasicMaterial;
-    floorMat.color.copy(lane);
+    floorMat.color.copy(lane).lerp(new THREE.Color(0x647185), 0.3);
     floorMat.opacity = style.floorOpacity;
     gridMat.color.copy(border);
-    gridMat.opacity = style.gridOpacity;
+    gridMat.opacity = style.gridOpacity * 0.32;
     glowMat.color.copy(accent);
     glowMat.opacity = style.glowOpacity;
     world.renderer.toneMappingExposure = style.exposure;
@@ -919,7 +957,7 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
     for (const strip of world.lanePaths) {
       const material = strip.material as THREE.MeshBasicMaterial;
       material.color.copy(accent);
-      material.opacity = style.pathOpacity;
+      material.opacity = style.pathOpacity * 0.45;
     }
     world.teamZones.forEach((zone, side) => {
       const faction = view.players[side as PlayerIndex].faction;
@@ -932,8 +970,8 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
     // Nebelfarbe dunkel aus der Lane-Farbe ableiten → weicher Horizont
     if (world.scene.fog instanceof THREE.Fog) {
       world.scene.fog.color.copy(lane.clone().multiplyScalar(0.4));
-      world.scene.fog.near = style.fogNear;
-      world.scene.fog.far = style.fogFar;
+      world.scene.fog.near = style.fogNear + 12;
+      world.scene.fog.far = style.fogFar + 20;
     }
   }, [topic, view.players]);
 
@@ -1100,10 +1138,10 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
       if (!from) continue;
       let to = slotAnchor(world, defender, p.lane)?.pos ?? null;
       if (p.toBase || !to) {
-        // Basis-Treffer: über die Feldkante hinaus in Richtung der Basis
-        const dir = defender === me ? 1 : -1;
-        to = from.pos.clone();
-        to.z += dir * 7;
+        // Der Kristall ist das sichtbare Ziel, auch bei seitlicher Basis.
+        const zone = world.teamZones[defender];
+        zone.group.updateMatrixWorld(true);
+        to = zone.core.getWorldPosition(new THREE.Vector3());
       }
       // Angreifer läuft vor dem Schlag ein Stück auf den Gegner zu (gedeckelt,
       // damit Basis-Angriffe nicht quer übers Feld stürmen).
@@ -1129,7 +1167,7 @@ export function Battlefield3D({ view, me, fx, topic, catalog, onUnsupported }: P
       world.orbs.push({
         mesh,
         from: start,
-        to: to.clone().setY(start.y * 0.8),
+        to: p.toBase ? to.clone() : to.clone().setY(start.y * 0.8),
         start: now + PROJECTILE_DELAY_MS,
         done: false
       });
