@@ -121,9 +121,8 @@ export function ladeDeckStatus(data: GameData, dataDir: string = DATA_DIR): Deck
   for (const id of active) {
     if (!decks[id]) problems.push(`Aktives Deck "${id}" existiert nicht in data/decks/.`);
   }
-  if (active.length !== data.champions.length) {
-    problems.push(`Es muss genau ein aktives Starterdeck je Champ geben (aktuell ${active.length}, erwartet ${data.champions.length}).`);
-  }
+  const champs = active.map(id => decks[id]?.championId);
+  if (new Set(champs).size !== champs.length) problems.push('Jeder aktive Champ darf nur ein Starterdeck haben.');
   if (typeof raw.disabledReason !== 'string' || raw.disabledReason.trim().length === 0) {
     problems.push('"disabledReason" muss ein nicht-leerer Text sein.');
   }
@@ -154,6 +153,13 @@ export function validateAlphaTestDeck(id: string, deck: DeckList, data: GameData
     problems.push(`Unbekannter Champ "${deck.championId}".`);
   }
   const total = deck.cards.reduce((sum, entry) => sum + entry.count, 0);
+  const entries = deck.cards.map(e => data.cardsById[e.cardId]);
+  if (entries.some(c => c?.teamId)) {
+    const teams = new Set(entries.map(c => c?.teamId));
+    if (teams.size !== 1 || teams.has(undefined)) problems.push('Alle Alpha-Karten müssen demselben Team angehören.');
+    if (entries.filter(c => c?.type === 'creature').length !== 20 || entries.filter(c => c?.type === 'action').length !== 8) problems.push('Jedes Alpha-Deck benötigt 20 verschiedene Figuren und acht Aktionen.');
+    if (entries.some(c => !c || c.deckable === false)) problems.push('Tokens und Superkräfte gehören nicht ins Starterdeck.');
+  }
   if (total !== data.config.deckbuilding.size) problems.push(`Das Starterdeck enthält ${total} statt ${data.config.deckbuilding.size} Karten.`);
   if (problems.length > 0) throw new DataError(`decks/${id}.json`, problems);
 }

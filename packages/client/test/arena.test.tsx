@@ -145,7 +145,7 @@ describe('Handkarten in der Arena', () => {
 
     expect(gesendet).toEqual([]);
     // Die Detailansicht zeigt Werte der Karte – hier reicht der Name als Beleg.
-    expect(screen.getByRole('heading', { name: /Rekrut/i })).toBeTruthy();
+    expect(screen.getByLabelText('Figur ausspielen')).toBeTruthy();
   });
 
   it('unterdrückt am Handy das native Bild-Kopiermenü', () => {
@@ -165,6 +165,7 @@ describe('Handkarten in der Arena', () => {
     const karte = handkarte('Rekrut');
     fireEvent.pointerDown(karte, { button: 0, pointerId: 1, clientX: 40, clientY: 700 });
     fireEvent.pointerUp(karte, { pointerId: 1, clientX: 40, clientY: 700 });
+    fireEvent.click(screen.getByRole('button', { name: 'Vergrößern' }));
     fireEvent.click(screen.getByRole('button', { name: /^Ausspielen$/ }));
 
     const lane2 = container.querySelector<HTMLElement>('[data-slot="0-2"]');
@@ -194,7 +195,7 @@ describe('Arena-Aufbau', () => {
     const gesendet: PlayerAction[] = [];
     zeige(view, (action) => gesendet.push(action));
 
-    fireEvent.click(screen.getByRole('button', { name: 'Runde abschließen' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Passen' }));
     expect(gesendet).toEqual([{ type: 'pass' }]);
     expect(screen.queryByRole('dialog', { name: 'Runde abschließen' })).toBeNull();
   });

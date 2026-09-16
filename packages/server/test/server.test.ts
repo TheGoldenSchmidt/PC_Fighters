@@ -3,12 +3,15 @@
 // Spieler B NIE im Netzwerkverkehr sieht.
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, rmSync, writeFileSync, mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import WebSocket from 'ws';
 import type { ClientView } from '@pcf/engine';
 import { buildFactionTree, ladeDecks, loadGameData, topOf } from '@pcf/engine';
-import { startServer, type RunningServer } from '../src/server.js';
+import { startServer as startServerImpl, type RunningServer, type StartServerOptions } from '../src/server.js';
+const testPersist = join(mkdtempSync(join(tmpdir(), 'pcf-server-test-')), 'rooms.json');
+const startServer = (port: number, options: StartServerOptions = {}) => startServerImpl(port, { persistPath: testPersist, ...options });
 import { createUserStore } from '../src/users.js';
 
 const factionTree = buildFactionTree(loadGameData().factions);
@@ -51,7 +54,8 @@ function connect(port: number): Promise<TestClient> {
           }));
           return;
         }
-        ws.send(JSON.stringify(msg));
+        const lastRevision = received.filter(m => m.type === 'state').at(-1)?.revision ?? 0;
+        ws.send(JSON.stringify(value.type === 'action' ? { revision: lastRevision, ...value } : value));
       },
       next: (type) => {
         const i = unread.findIndex((m) => m.type === type);
@@ -215,7 +219,7 @@ describe('Server: Raum, Beitritt, Aktionen, gefilterte Sicht', () => {
     const c = await connect(server.port);
     c.send({ type: 'rejoin', code, token: 'falsch' });
     const err = await c.next('error');
-    expect(String(err.message)).toContain('Wiederverbinden');
+    expect(err.code).toBe('session_expired');
     c.ws.close();
   });
 
@@ -301,8 +305,8 @@ describe('Server: Raum, Beitritt, Aktionen, gefilterte Sicht', () => {
     const angeboteneDecks = Object.keys(info.decks as object).sort();
     const aktiveDecks = (info.deckStatus as { active: string[] }).active.sort();
     expect(angeboteneDecks).toEqual(aktiveDecks);
-    expect(angeboteneDecks).toHaveLength(6);
-    expect((info.champions as unknown[])).toHaveLength(6);
+    expect(angeboteneDecks).toHaveLength(4);
+    expect((info.champions as unknown[])).toHaveLength(4);
     expect(response.headers.get('cache-control')).toBe('no-store');
     const visuals = info.visuals as { cards: Record<string, unknown> };
     expect(Object.keys(visuals.cards)).toEqual(expect.arrayContaining([
@@ -370,13 +374,13 @@ describe('Server: Raum, Beitritt, Aktionen, gefilterte Sicht', () => {
     guest.send({ type: 'join', code: created.code, championId: 'sonnenfackel', deckSelection: { kind: 'preset', id: 'sonnenfackel' } });
     await guest.next('joined');
     const hostView = (await host.next('state')).view as ClientView;
-    expect(hostView.players[0].deckName).toContain('Coon & Friends');
-    expect(hostView.players[1].deckName).toContain('Korvo and Friends');
+    expect(hostView.players[0].deckName).toContain('South Park');
+    expect(hostView.players[1].deckName).toContain('Solar Opposites');
 
     const bad = await connect(server.port);
     bad.send({ type: 'create', deckSelection: { kind: 'custom', deck: { name: 'Cheat', cards: [{ cardId: 'wolf', count: 99 }] } } });
     const err = await bad.next('error');
-    expect(String(err.message)).toContain('Deck ungültig');
+    expect(err.code).toBe('invalid_message');
     host.ws.close(); guest.ws.close(); bad.ws.close();
   });
 
@@ -456,7 +460,7 @@ describe('Verbindliche Bahnenzahl', () => {
     const c1 = await connect(srv.port);
     c1.send({ type: 'create', faction: 'humans', lanes: 3 });
     const fehler = await c1.next('error');
-    expect(String(fehler.message)).toMatch(/Bahnenzahl/);
+    expect(fehler.code).toBe('invalid_message');
 
     c1.ws.close();
     await srv.close();

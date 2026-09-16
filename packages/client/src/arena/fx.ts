@@ -30,6 +30,9 @@ export interface FxBaseImpact {
 }
 
 export interface FxSpell {
+  owner?: PlayerIndex;
+  targetUid?: number;
+  delta?: number;
   key: string;
   lane: number;
   effect: SpellEffectKind;

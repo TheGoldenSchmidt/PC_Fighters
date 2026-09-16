@@ -108,7 +108,7 @@ export function StartScreen({
   useEffect(() => {
     if (!info || !championId) return;
     const remembered = profile.lastLoadouts[championId]?.deckSelection;
-    if (remembered && deckFor(info, remembered)) {
+    if (remembered && remembered.kind === 'preset' && activeIds.has(remembered.id) && deckFor(info, remembered)) {
       setSelection(remembered);
       return;
     }
@@ -156,7 +156,7 @@ export function StartScreen({
       <header className="start-hero">
         <p className="eyebrow">HUMANS VS. ANIMALS</p>
         <h1>PC Fighters</h1>
-        <p>Wähle einen Champ. Seine zwei Klassen bestimmen, welche 40 Karten dein Deck enthalten darf.</p>
+        <p>Vier Teams. Fünf Bahnen. Wähle dein Team und fordere einen Freund heraus.</p>
       </header>
 
       {!isCloud && (
@@ -165,7 +165,8 @@ export function StartScreen({
           <button className="secondary" onClick={() => void loadInfo(server)}>Daten laden</button>
         </section>
       )}
-      <section className="panel account-panel">
+      <details className="panel account-panel">
+        <summary>{account ? `Profil: ${account.username}` : 'Optionales Profil'}</summary>
         {account ? (
           <>
             <div className="account-head">
@@ -212,7 +213,7 @@ export function StartScreen({
             </div>
           </>
         )}
-      </section>
+      </details>
       {loadError && <div className="error-box">{loadError}</div>}
 
       {info && (
@@ -240,13 +241,13 @@ export function StartScreen({
 
           {champion && (
             <section className="panel wizard-step">
-              <h2>2. Deck wählen</h2>
-              <p>Exakt 40 Karten, höchstens 4 Kopien und mindestens eine Karte aus jeder Champ-Klasse.</p>
+              <h2>Dein Starterdeck</h2>
+              <p>20 Figuren und acht Aktionen in einem fertigen 40-Karten-Deck.</p>
               <div className="deck-choice-list">
                 {presets.map(([id, deck]) => (
                   <button key={id} className={`secondary ${selection?.kind === 'preset' && selection.id === id ? 'selected' : ''}`} onClick={() => setSelection({ kind: 'preset', id })}>{deck.name ?? id}</button>
                 ))}
-                {customDecks.map((deck) => (
+                {info.deckStatus?.allowCustomDecks !== false && customDecks.map((deck) => (
                   <div key={deck.id} className="deck-choice-row">
                     <button className={`secondary ${selection?.kind === 'custom' && (selection.deck as SavedDeck).id === deck.id ? 'selected' : ''}`} onClick={() => setSelection({ kind: 'custom', deck })}>{deck.name}</button>
                     <button className="secondary" onClick={() => setEditor(deck)}>Bearbeiten</button>
@@ -259,7 +260,7 @@ export function StartScreen({
           )}
 
           <section className="panel wizard-step">
-            <h2>3. Partie starten</h2>
+            <h2>2. Partie starten</h2>
             {mode === 'create' ? (
               <label>Schauplatz<select value={topicId ?? ''} onChange={(event) => setTopicId(event.target.value)}>{info.topics.map((topic) => <option key={topic.id} value={topic.id}>{topic.emoji} {topic.name}</option>)}</select></label>
             ) : (
@@ -269,7 +270,7 @@ export function StartScreen({
               <button className={mode === 'create' ? 'primary' : 'secondary'} onClick={() => setMode('create')}>Raum erstellen</button>
               <button className={mode === 'join' ? 'primary' : 'secondary'} onClick={() => setMode('join')}>Raum beitreten</button>
             </div>
-            {mode === 'create' && <label className="check"><input type="checkbox" checked={testMode} onChange={(event) => setTestMode(event.target.checked)} /> Figuren-Testmodus</label>}
+            {mode === 'create' && <details><summary>Erweiterte Einstellungen</summary><label className="check"><input type="checkbox" checked={testMode} onChange={(event) => setTestMode(event.target.checked)} /> Figuren-Testmodus</label></details>}
             <button className="primary big" disabled={!ready || busy || (mode === 'join' && room.length !== 4)} onClick={submit}>{busy ? 'Verbinde …' : mode === 'create' ? 'Partie erstellen' : 'Beitreten'}</button>
           </section>
         </>

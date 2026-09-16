@@ -192,6 +192,19 @@ const tokenSchema = z.object({
 
 export const effectSchema = z.discriminatedUnion('kind', [
   z.object({
+    kind: z.literal('script'),
+    target: z.enum(['none', 'friendly', 'enemy', 'enemyOrBase', 'move', 'hand', 'grave', 'sacrifice', 'damaged']),
+    steps: z.array(z.object({
+      op: z.enum(['buff', 'heal', 'shield', 'protect', 'stun', 'hide', 'damage', 'destroy', 'move', 'moveAll', 'bonus', 'draw', 'discard', 'return', 'revive', 'discount', 'energy', 'ramp', 'evolve', 'summon', 'conjure', 'sacrifice', 'spendEnergy', 'random', 'deadly']),
+      scope: z.enum(['selected', 'own', 'enemy', 'adjacent', 'wolvesCats', 'base', 'groundEnemy']).optional(),
+      amount: z.number().int().min(0).max(20).optional(),
+      atk: z.number().int().min(-10).max(10).optional(),
+      hp: z.number().int().min(-10).max(10).optional(),
+      temporary: z.boolean().optional(), cardId: z.string().min(1).optional(),
+      maxCost: z.number().int().min(0).optional(), minAttack: z.number().int().min(0).optional(), maxAttack: z.number().int().min(0).optional()
+    }).strict()).min(1).max(8)
+  }).strict(),
+  z.object({
     kind: z.literal('buffHealth'),
     amount: z.number().int().min(1),
     target: z.literal('friendlyCreature')
@@ -317,9 +330,11 @@ export const abilitySchema = z.discriminatedUnion('kind', [
 
 const HEX = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
 const vec3 = z.tuple([z.number(), z.number(), z.number()]);
-const PART_SHAPES = ['ico', 'box', 'cyl', 'cone', 'sph', 'capsule', 'torus', 'group'] as const;
+const PART_SHAPES = ['ico', 'box', 'cyl', 'cone', 'sph', 'capsule', 'torus', 'group', 'morphHead'] as const;
 
 const visualPartSchema = z.object({
+  morph: z.record(z.number().finite()).optional(),
+  smoothShading: z.boolean().optional(),
   id: z.string().min(1),
   shape: z.enum(PART_SHAPES),
   size: z.union([z.number(), z.array(z.number()).min(1)]).optional(),
@@ -471,6 +486,7 @@ export const animationProfileFileSchema = z.object({
 }).strict();
 
 const cardBase = {
+  teamId: z.enum(['south_park', 'rick_morty', 'solar_opposites', 'tier_rudel']).optional(),
   id: z.string().min(1),
   name: z.string().min(1),
   faction: z.string().min(1),

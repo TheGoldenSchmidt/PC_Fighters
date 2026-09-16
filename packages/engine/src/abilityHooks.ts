@@ -34,9 +34,9 @@ export function countScope(
   const self = state.board[owner][lane];
   if (!self) return 0;
   let n = 0;
-  state.board[owner].forEach((c, i) => {
+  [...state.board[owner], ...(state.teamBoard?.[owner] ?? [])].forEach((c) => {
     if (!c) return;
-    if (i === lane) {
+    if (c.uid === self.uid) {
       if (includeSelf) n += 1;
       return;
     }

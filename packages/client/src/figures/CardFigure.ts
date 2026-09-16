@@ -64,6 +64,48 @@ function buildGeometry(part: VisualPart, detail: DetailLevel): THREE.BufferGeome
           : new THREE.SphereGeometry(r, d.seg, Math.max(4, d.seg - 1))
       );
     }
+    case 'morphHead': {
+      const r = numOf(s); const morph = part.morph ?? {};
+      const seg = Math.max(24, d.seg * 2);
+      const key = `mh${r},${seg},${JSON.stringify(morph)}`;
+      return geo(key, () => {
+        const g = new THREE.SphereGeometry(r, seg, Math.max(18, seg - 6));
+        const p = g.attributes.position;
+        const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
+        const gaussian = (v: number, center: number, width: number) => {
+          const n = (v - center) / width;
+          return Math.exp(-0.5 * n * n);
+        };
+        for (let i = 0; i < p.count; i += 1) {
+          let x = p.getX(i); const y = p.getY(i); let z = p.getZ(i);
+          const nx = x / r; const ny = y / r; const nz = z / r;
+          const lower = clamp01((-ny - 0.05) / 0.95);
+          x *= 1 - (morph.lowerTaper ?? 0.18) * lower * lower;
+          if (nz > -0.08) {
+            const frontLinear = clamp01((nz + 0.08) / 0.72);
+            const front = frontLinear * frontLinear * (3 - 2 * frontLinear);
+            const noseX = morph.noseX ?? 0.05;
+            const bridge = gaussian(nx, noseX, morph.bridgeWidth ?? 0.22)
+              * gaussian(ny, morph.bridgeY ?? 0.08, morph.bridgeHeight ?? 0.46);
+            const nose = gaussian(nx, noseX, morph.noseWidth ?? 0.25)
+              * gaussian(ny, morph.noseY ?? -0.18, morph.noseHeight ?? 0.20);
+            const chin = gaussian(nx, morph.chinX ?? 0.08, morph.chinWidth ?? 0.36)
+              * gaussian(ny, morph.chinY ?? -0.80, morph.chinHeight ?? 0.22);
+            z += r * front * (
+              bridge * (morph.bridgeDepth ?? 0.18)
+              + nose * (morph.noseDepth ?? 0.76)
+              + chin * (morph.chinDepth ?? 0.12)
+            );
+          }
+          p.setXYZ(i, x, y, z);
+        }
+        p.needsUpdate = true;
+        g.computeVertexNormals();
+        g.computeBoundingBox();
+        g.computeBoundingSphere();
+        return g;
+      });
+    }
     case 'box': {
       const [x, y, z] = tripleOf(s);
       return geo(`b${x},${y},${z}`, () => new THREE.BoxGeometry(x, y, z));
@@ -103,7 +145,7 @@ function resolveColor(color: string | undefined, palette?: Record<string, string
 function makeMaterial(part: VisualPart, palette?: Record<string, string>): THREE.MeshStandardMaterial {
   return new THREE.MeshStandardMaterial({
     color: resolveColor(part.color, palette),
-    flatShading: true,
+    flatShading: !part.smoothShading,
     roughness: part.roughness ?? 0.85,
     metalness: part.metalness ?? 0.05,
     transparent: part.transparent ?? false,

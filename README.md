@@ -1,11 +1,20 @@
 # Political Correct Fighters 🃏
 
-Ein digitales Karten-Duell für zwei Spieler: **Humans gegen Animals**.
+Ein digitales Karten-Duell für zwei Spieler mit **vier festen Teams** auf fünf Bahnen.
 Gespielt wird auf zwei Geräten (z. B. zwei Handys) im selben WLAN – eines erstellt die Partie, das andere tritt mit einem 4-stelligen Raum-Code bei.
 
 Diese Anleitung ist bewusst einfach gehalten. Du musst **nicht programmieren können**, um das Spiel zu starten oder eigene Karten, Fraktionen und Schauplätze hinzuzufügen.
 
-> **Woran gerade gearbeitet wird:** [docs/STATUS.md](docs/STATUS.md) – der aktuelle Stand (Now / Next / Later), letzte Messwerte und offene Entscheidungen.
+> **Vier-Team-Alpha in Abnahme:** [Projektstatus](docs/STATUS.md), [Prüfstand und offene Freigabe](docs/ALPHA-STATUS.md), [vollständiger Kartenkatalog](docs/ALPHA-KARTEN.md). Reale Touch-Tests und menschliche Testpartien stehen noch aus.
+
+| Team | Seite | Schwerpunkt |
+|---|---|---|
+| South Park | Humans | Verstärken, schützen, wiederbeleben |
+| Rick and Morty | Humans | Bewegung und Bonusangriffe |
+| Solar Opposites | Animals | Energie, Rabatte und starke Figuren |
+| Tier-Rudel | Animals | Wachstum und gemeinsame Angriffe |
+
+Jedes Team hat 20 Figuren und acht Aktionen in einem festen 40-Karten-Deck; vier Champ-Superkräfte kommen zusätzlich über das Superblock-System hinzu. Fehlende Figurenmodelle werden durch Platzhalter ersetzt. Freier Deckbau ist für die Alpha deaktiviert.
 
 ---
 
@@ -50,8 +59,8 @@ Auch hier erscheint eine „Network"-Adresse, z. B. `http://192.168.178.66:5173`
 
 **Schritt 5 – Auf den Handys spielen:**
 
-1. **Spieler 1** öffnet auf seinem Handy im Browser die Client-Adresse (z. B. `http://192.168.178.66:5173`), wählt einen Champ, ein passendes Deck und einen Schauplatz und tippt auf **„Partie erstellen"**. Es erscheinen ein 4-stelliger Raum-Code und ein QR-Code.
-2. **Spieler 2** scannt einfach den QR-Code mit der Handy-Kamera – Adresse und Raum-Code werden automatisch ausgefüllt. (Oder von Hand: dieselbe Adresse im Browser öffnen, Champ und Deck wählen, „Partie beitreten", Raum-Code eintippen.)
+1. **Spieler 1** öffnet auf seinem Handy im Browser die Client-Adresse (z. B. `http://192.168.178.66:5173`), wählt ein Team und einen Schauplatz und tippt auf **„Partie erstellen"**. Es erscheinen ein 4-stelliger Raum-Code und ein QR-Code.
+2. **Spieler 2** scannt den QR-Code mit der Handy-Kamera – Adresse und Raum-Code werden automatisch ausgefüllt. (Oder dieselbe Adresse öffnen, Team wählen, „Raum beitreten“ und Raum-Code eintippen.)
 
 > **Tipp:** Falls du deine WLAN-Adresse selbst herausfinden willst: Im Terminal `ipconfig` eintippen (Mac/Linux: `ifconfig`) und nach „IPv4-Adresse" suchen – das ist die Nummer im Format `192.168.x.x`.
 
@@ -66,11 +75,25 @@ Auch hier erscheint eine „Network"-Adresse, z. B. `http://192.168.178.66:5173`
 
 ### Deckwahl und Mulligan
 
-Vor einer Partie wählst du einen von sechs **Champs**. Jeder Champ gehört zu Humans oder Animals und legt genau zwei Klassen fest. Sein Deck enthält 40 Karten aus beiden Klassen (plus optional neutrale Karten), höchstens vier Exemplare je Karte. Zu jedem Champ gibt es ein Startdeck. Nach dem Beitritt tauschen beide Spieler im Mulligan optional beliebig viele Karten; Runde 1 beginnt erst nach beiden Bestätigungen.
+Vor einer Partie wählst du eines der vier Teams. Der zugehörige Champ behält seine beiden Klassen und sein festes Starterdeck. Alle 28 verschiedenen Teamkarten sind enthalten, insgesamt 40 Karten und höchstens vier Exemplare derselben Karte. Nach dem Beitritt tauschen beide Spieler im Mulligan optional Karten; Runde 1 beginnt erst nach beiden Bestätigungen.
+
+### Karten ausspielen und eine Partie beenden
+
+Tippe eine Handkarte an: Ihr Text und die gültigen Ziele erscheinen. Wähle eine markierte Bahn oder Figur; beide Team-Up-Plätze sind einzeln erreichbar. Alternativ kannst du eine Karte auf ihr Ziel ziehen. Karten ohne Ziel haben einen **Ausspielen**-Knopf. Mehrstufige Auswahlen zeigen den Fortschritt und lassen sich abbrechen. Während der Auswahl ist **Passen** gesperrt.
+
+Wenn beide Seiten nacheinander passen, beginnt der simultane Kampf. Die Darstellung zeigt die Angriffe nacheinander. Gold steht für Verstärkung, Grün für Heilung, Violett für Schwächung und Rot für Schaden. Über die Arena-Einstellungen lässt sich der 2D-Fallback einschalten oder die Partie ausdrücklich aufgeben. Nach dem Ergebnis können beide Spieler ein **Rückspiel** anfordern.
+
+### Wiederverbindung und Betrieb
+
+Ein Reload im selben Browser-Tab oder eine kurze Netzunterbrechung verbindet zur Partie zurück. Bloßes Verlassen zählt nicht als Niederlage. Der Server speichert auch offene Auswahlen, Handkartenrabatte und temporäre Zustände. Das Speicherformat ist Version 5; inkompatible alte Partien werden mit einer verständlichen Meldung abgewiesen.
+
+Räume ohne verbundene Spieler werden nach 24 Stunden aufgeräumt, solange sie in der Lobby oder beendet sind. Laufende verlassene Partien bleiben sieben Tage erhalten. Solange jemand verbunden ist, greift diese Bereinigung nicht. `/health` meldet Betriebszustand, Version und Raumzahl. Für einen Neustart muss `rooms_persist.json` auf dauerhaftem Speicher liegen.
+
+Für einen einzelnen lokalen Produktionsprozess: zuerst `npm run build`, danach `npm start`. Nach einem neuen Produktionsbuild auch den Server neu starten.
 
 ### Optionale Benutzerkonten
 
-Ohne Anmeldung funktioniert das Spiel unverändert als Gast; eigene Decks und die Bilanz bleiben dann lokal in diesem Browser. Mit einem freigeschalteten Benutzernamen speichert der Server eigene Decks, Siege, Niederlagen, Unentschieden und Siegesserien. Ein Passwort gibt es in dieser ersten Version bewusst noch nicht – der Benutzername identifiziert nur das Profil und schützt es nicht vor anderen Personen.
+Ohne Anmeldung funktioniert das Spiel als Gast; die Bilanz bleibt lokal im Browser. Bestehende Profile und gespeicherte Decks bleiben erhalten, in Alpha-Partien werden ausschließlich die vier Starterdecks verwendet. Mit einem freigeschalteten Benutzernamen speichert der Server Siege, Niederlagen, Unentschieden und Siegesserien. Der Benutzername identifiziert das Profil; er ist kein persönlicher Passwortschutz.
 
 Welche Namen sich anmelden dürfen, legst du in `users.json` im Hauptordner fest:
 
@@ -97,6 +120,10 @@ Das Ergebnis des jeweils letzten vollständigen Laufs steht in [docs/STATUS.md](
 ---
 
 ## 2. Eine neue Karte hinzufügen
+
+**Für den freigegebenen Alpha-Pool:** Die Quelldaten liegen in `scripts/alpha/generate.mjs`. `node scripts/alpha/generate.mjs` erzeugt daraus `data/cards/alpha.json`, die vier Decks, Figuren-Zuordnungen und den versionierten Kartenkatalog. Änderungen an Regeln, Zahlen und Texten dort gemeinsam pflegen. Alpha-Aktionen verwenden ausdrücklich parametrisierte `script`-Effekte; Beschreibungstexte steuern keine Wirkung. Zusätzliche historische Karten gelangen nicht automatisch in die Starterdecks oder den Zufallspool.
+
+Die folgende Anleitung beschreibt den allgemeinen Datenbestand für spätere Erweiterungen:
 
 Alle Karten liegen als einfache Textdateien hier:
 

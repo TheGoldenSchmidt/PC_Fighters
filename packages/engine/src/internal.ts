@@ -78,6 +78,13 @@ function auraBonus(state: GameState, owner: PlayerIndex, lane: number): Bonus {
     const b = sourceContribution(state, owner, sourceLane, lane);
     attack += b.attack;
     health += b.health;
+    const rear = state.teamBoard?.[owner]?.[sourceLane];
+    const target = state.board[owner][lane];
+    if (rear && target && rear.uid !== target.uid) for (const ab of rear.abilities) {
+      if (ab.kind === 'aura' && ab.timing === 'dauerhaft' && matchesScope(state.factionTree, ab.scope, rear.faction, target.faction)) { attack += ab.buff.atk; health += ab.buff.hp; }
+      if (ab.kind === 'teamBuff' && sourceLane === lane && matchesScope(state.factionTree, ab.scope, rear.faction, target.faction)) attack += ab.atk;
+      if (ab.kind === 'nachbar' && Math.abs(sourceLane - lane) === 1 && matchesScope(state.factionTree, ab.scope, rear.faction, target.faction)) { if (ab.effect === 'banner') attack += ab.amount; if (ab.effect === 'schild') health += ab.amount; }
+    }
   }
   return { attack, health };
 }
@@ -102,7 +109,8 @@ function selfAbilityBonus(state: GameState, owner: PlayerIndex, lane: number): B
 }
 
 /** Effektiver Angriff inkl. Fähigkeiten, Buffs und Auren. */
-export function getEffectiveAttack(state: GameState, owner: PlayerIndex, lane: number): number {
+export function getEffectiveAttack(state: GameState, owner: PlayerIndex, lane: number, rear = false): number {
+  if (rear) return getEffectiveAttack(rearView(state, owner, lane), owner, lane);
   const c = state.board[owner][lane];
   if (!c) return 0;
   let attack = c.baseAttack + c.permAttackBonus + c.tempAttackBonus;
@@ -114,13 +122,22 @@ export function getEffectiveAttack(state: GameState, owner: PlayerIndex, lane: n
 }
 
 /** Effektives Lebens-Maximum inkl. dauerhafter Buffs, Fähigkeiten und Auren. */
-export function getMaxHealth(state: GameState, owner: PlayerIndex, lane: number): number {
+export function getMaxHealth(state: GameState, owner: PlayerIndex, lane: number, rear = false): number {
+  if (rear) return getMaxHealth(rearView(state, owner, lane), owner, lane);
   const c = state.board[owner][lane];
   if (!c) return 0;
   const bonus = selfAbilityBonus(state, owner, lane).health + auraBonus(state, owner, lane).health;
   const max = c.baseMaxHealth + c.permHealthBonus + c.tempHealthBonus + bonus;
   // Deckel (`peinigen`) greift ZULETZT – nach allen Boni und Auren.
   return Math.max(1, c.hpDeckel != null ? Math.min(max, c.hpDeckel) : max);
+}
+
+/** Reine Sicht für bestehende Wert-Hooks: beide Plätze bleiben erhalten. */
+function rearView(state: GameState, owner: PlayerIndex, lane: number): GameState {
+  const board = state.board.map(row => [...row]) as GameState['board'];
+  const teamBoard = (state.teamBoard ?? state.board.map(row => row.map(() => null))).map(row => [...row]) as NonNullable<GameState['teamBoard']>;
+  [board[owner][lane], teamBoard[owner][lane]] = [teamBoard[owner][lane], board[owner][lane]];
+  return { ...state, board, teamBoard };
 }
 
 export interface DeathInfo {
@@ -139,7 +156,7 @@ function tryRettung(
   creature: Creature,
   maxHealth: number
 ): boolean {
-  if (creature.rettungUsed) return false;
+  if (creature.rettungUsed || creature.destroyed) return false;
   const rescue = creature.abilities.find(
     (a): a is Extract<Ability, { kind: 'rettung' }> => a.kind === 'rettung'
   );
@@ -230,9 +247,10 @@ export function recalcBoard(state: GameState): DeathInfo[] {
     changed = false;
     for (const owner of [0, 1] as PlayerIndex[]) {
       for (let lane = 0; lane < state.board[owner].length; lane++) {
-        const c = state.board[owner][lane];
+        for (const rear of [false, true]) {
+        const c = rear ? state.teamBoard?.[owner]?.[lane] : state.board[owner][lane];
         if (!c) continue;
-        const max = getMaxHealth(state, owner, lane);
+        const max = getMaxHealth(state, owner, lane, rear);
         if (max > c.lastMaxHealth) {
           c.currentHealth += max - c.lastMaxHealth;
         } else if (max < c.lastMaxHealth) {
@@ -244,14 +262,16 @@ export function recalcBoard(state: GameState): DeathInfo[] {
             changed = true; // gerettet – Auren neu rechnen
             continue;
           }
-          if (trySchutz(state, owner, lane)) {
+          if (!rear && !c.destroyed && trySchutz(state, owner, lane)) {
             changed = true; // Nachbar opfert sich – neu rechnen
             continue;
           }
-          state.board[owner][lane] = null;
+          if (rear) state.teamBoard![owner][lane] = null;
+          else state.board[owner][lane] = null;
           deaths.push({ owner, lane, name: c.name, faction: c.faction, creature: c });
           verarbeiteTodesstatistik(state, owner, c);
           changed = true; // Auren der toten Kreatur fallen weg → neu rechnen
+        }
         }
       }
     }
@@ -279,7 +299,7 @@ export function makeCreature(
     cardId: def.cardId,
     name: def.name,
     faction: def.faction,
-    keywords: def.keywords,
+      keywords: [...def.keywords],
     abilities: def.abilities ? def.abilities.map((a) => ({ ...a })) : [],
     baseAttack: def.attack,
     baseMaxHealth: def.health,

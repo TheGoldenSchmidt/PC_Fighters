@@ -234,6 +234,7 @@ export interface TokenDef {
 }
 
 export type Effect =
+  | import('./alphaTypes.js').ScriptEffect
   | { kind: 'buffHealth'; amount: number; target: 'friendlyCreature' }
   | { kind: 'buffAttackTemp'; amount: number; target: 'friendlyCreature' }
   | { kind: 'buff'; atk: number; hp: number; target: 'friendlyCreature' }
@@ -389,9 +390,11 @@ export type AusspielTeil =
 export type DetailLevel = 'low' | 'mid' | 'high';
 
 /** Primitiv-Bausteine. `group` ist ein reiner Container ohne Geometrie. */
-export type PartShape = 'ico' | 'box' | 'cyl' | 'cone' | 'sph' | 'capsule' | 'torus' | 'group';
+export type PartShape = 'ico' | 'box' | 'cyl' | 'cone' | 'sph' | 'capsule' | 'torus' | 'group' | 'morphHead';
 
 export interface VisualPart {
+  morph?: Record<string, number>;
+  smoothShading?: boolean;
   /** Eindeutig je Figur; von Animations-Tracks adressierbar. "root" ist reserviert. */
   id: string;
   shape: PartShape;
@@ -467,6 +470,7 @@ export type Animations = Record<string, AnimationClip>;
 export type CardCategory = 'hero' | 'principal';
 
 export interface CreatureCard {
+  teamId?: import('./alphaTypes.js').TeamId;
   id: string;
   name: string;
   faction: string;
@@ -539,6 +543,7 @@ export interface FigureVariantDef {
 export type FigureFileDef = FigureDef | FigureVariantDef;
 
 export interface ActionCard {
+  teamId?: import('./alphaTypes.js').TeamId;
   id: string;
   name: string;
   faction: string;
@@ -555,6 +560,7 @@ export interface ActionCard {
 }
 
 export interface EnvironmentCard {
+  teamId?: import('./alphaTypes.js').TeamId;
   id: string;
   name: string;
   faction: string;
@@ -570,6 +576,7 @@ export interface EnvironmentCard {
 }
 
 export interface SuperpowerCard {
+  teamId?: import('./alphaTypes.js').TeamId;
   id: string;
   name: string;
   faction: string;
@@ -654,6 +661,14 @@ export interface GameData {
 
 // Eine Kreatur auf dem Spielfeld.
 export interface Creature {
+  /** Zerstören und Opfern zählen nicht als überlebbarer Schaden. */
+  destroyed?: boolean;
+  shieldHits?: number;
+  stunnedUntil?: number;
+  hiddenUntil?: number;
+  expiresRound?: number;
+  temporaryDeadly?: boolean;
+  protectorUid?: number;
   uid: number;
   cardId: string;
   name: string;
@@ -823,6 +838,9 @@ export interface MatchStatistik {
 }
 
 export interface PlayerState {
+  handInstances?: import('./alphaTypes.js').HandInstance[];
+  graveyard?: import('./alphaTypes.js').GraveEntry[];
+  evolution?: number;
   faction: string;
   championId?: string;
   classes?: [string, string];
@@ -875,6 +893,8 @@ export type Phase = 'mulligan' | 'play' | 'precombat' | 'fly' | 'ended';
  * Sequenz ab (Lane für Lane: Projektil, Schaden, Sterbeanimation).
  */
 export interface AttackEvent {
+  attackerUid?: number;
+  targetUid?: number;
   kind: 'attack';
   lane: number;
   attacker: PlayerIndex;
@@ -948,10 +968,19 @@ export type CombatEvent =
  * eigenes Event: ihr Erscheinen löst die Spawn-Animation über die neue uid aus.
  */
 export interface SpellEvent {
+  batch?: number;
+  boardAfter?: ClientView['board'];
+  teamBoardAfter?: ClientView['teamBoard'];
+  basesAfter?: [number, number];
+  energyAfter?: [number, number];
+  owner?: PlayerIndex;
+  targetUid?: number;
+  sourceCardId?: string;
+  delta?: number;
   kind: 'spell';
   lane: number;
   /** Welche Art Effekt gespielt wird (bestimmt Farbe/Form der Animation). */
-  effect: 'buff' | 'attackBuff' | 'summon' | 'move' | 'environment' | 'reveal' | 'superpower';
+  effect: 'buff' | 'attackBuff' | 'summon' | 'move' | 'environment' | 'reveal' | 'superpower' | 'heal' | 'debuff' | 'damage' | 'shield' | 'energy' | 'hand';
   /** Fraktion des Ausspielenden – färbt den Effekt ein. */
   faction: string;
 }
@@ -1000,7 +1029,7 @@ export type AufloesungsSchritt =
   /** Kampf in dieser Lane abhandeln (Angriffe, Basisschaden). */
   | { art: 'kampfLane'; lane: number }
   /** Ein einzelner zusätzlicher Angriff einer eigenen Kreatur. */
-  | { art: 'bonusAngriff'; spieler: PlayerIndex; lane: number }
+  | { art: 'bonusAngriff'; spieler: PlayerIndex; lane: number; uid?: number }
   /** Nach allen Lanes: Gift-Zermürbung und Häutung. */
   | { art: 'kampfAbschluss' }
   /** Flugphase starten oder direkt zur Rundenabrechnung. */
@@ -1040,6 +1069,8 @@ export interface OffeneReaktion {
 }
 
 export interface GameState {
+  nextHandId?: number;
+  choice?: import('./alphaTypes.js').CardChoice | null;
   config: GameConfig;
   /** Fraktionsbaum (parent-Lookup), damit scope=same_top ohne GameData auflösbar ist. */
   factionTree: FactionTree;
@@ -1085,12 +1116,14 @@ export interface GameState {
 }
 
 export type PlayerAction =
+  | { type: 'surrender' }
+  | { type: 'chooseCard'; choiceId: number; instanceId: number }
   | { type: 'mulligan'; handIndices: number[] }
   | { type: 'playCreature'; handIndex: number; lane: number }
-  | { type: 'playAction'; handIndex: number; targetLane?: number; toLane?: number }
+  | { type: 'playAction'; handIndex: number; targetLane?: number; toLane?: number; targetUid?: number; secondUid?: number; handInstanceId?: number; graveId?: number }
   | { type: 'playEnvironment'; handIndex: number; lane: number }
   | { type: 'pass' }
-  | { type: 'flyMove'; fromLane: number; toLane: number }
+  | { type: 'flyMove'; fromLane: number; toLane: number; targetUid?: number }
   | { type: 'flyDone' }
   /**
    * Antwort auf ein offenes Reaktionsfenster. `slot: null` bleibt als
@@ -1102,6 +1135,9 @@ export type PlayerAction =
 // ---- Client-Sicht (gefiltert, wird vom Server an die Clients geschickt) ----
 
 export interface CreatureView {
+  shieldHits?: number;
+  hiddenUntil?: number;
+  stunnedUntil?: number;
   uid: number;
   cardId: string;
   name: string;
@@ -1183,6 +1219,12 @@ export interface MatchSummaryView {
 }
 
 export interface ClientView {
+  legalActions?: PlayerAction[];
+  handInstanceIds?: number[];
+  graveyard?: import('./alphaTypes.js').GraveEntry[];
+  choice?: import('./alphaTypes.js').CardChoice | null;
+  consecutivePasses?: number;
+  evolution?: number;
   you: PlayerIndex;
   round: number;
   roundLimit: number;

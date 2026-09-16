@@ -24,8 +24,8 @@ function championGame() {
 }
 
 describe('Humans-vs-Animals-Kartenset', () => {
-  it('lädt 401 Deckkarten, 22 Superkräfte, acht Klassen und sechs Champs', () => {
-    expect(data.cards.filter((card) => card.deckable !== false)).toHaveLength(401);
+  it('bewahrt die historischen Karten und ergänzt die 112 Alpha-Karten', () => {
+    expect(data.cards.filter((card) => card.deckable !== false)).toHaveLength(513);
     expect(data.cards.filter((card) => card.type === 'superpower')).toHaveLength(22);
     expect(data.factions.filter((faction) => faction.parent === 'animals' || faction.parent === 'humans')).toHaveLength(8);
     expect(data.champions).toHaveLength(6);
@@ -163,16 +163,14 @@ describe('Champ-Partie', () => {
     state.active = 1;
     state.players[0].hand = [];
     state.players[0].schild = 7;
-    const damageAction = data.cards.find(
-      (card) => card.type === 'action' && /\d+\s+Schaden/i.test(card.text ?? '')
-    );
+    const damageAction = data.cardsById.super_sunburn;
     expect(damageAction).toBeTruthy();
     state.players[1].hand = [damageAction!.id];
     state.players[1].energy = 20;
     const remaining = state.players[0].superpowersRemaining!.length;
     const selectedPower = state.players[0].cheerleaderPowers![1]!;
     const selectedCarrier = state.players[0].cheerleaders[1];
-    state = applyAction(state, 1, { type: 'playAction', handIndex: 0, targetLane: 0 }, data);
+    state = applyAction(state, 1, { type: 'playAction', handIndex: 0, targetLane: -1 }, data);
     expect(state.players[0].base).toBe(20);
     expect(state.players[0].blocksRemaining).toBe(2);
     expect(state.players[0].superpowersRemaining).toHaveLength(remaining);

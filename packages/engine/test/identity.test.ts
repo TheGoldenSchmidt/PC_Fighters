@@ -18,7 +18,7 @@ function validateCatalog(identityCatalog: IdentityCatalog) {
 
 describe('Humans-vs.-Animals-Identitätskatalog', () => {
   it('deckt alle Karten und Champs exakt einmal ab', () => {
-    expect(data.cards).toHaveLength(423);
+    expect(data.cards).toHaveLength(538);
     expect(data.identityCatalog.cards).toHaveLength(data.cards.length);
     expect(data.identityCatalog.champions).toHaveLength(data.champions.length);
     expect(new Set(data.identityCatalog.cards.map((entry) => entry.cardId)).size).toBe(data.cards.length);
@@ -27,8 +27,8 @@ describe('Humans-vs.-Animals-Identitätskatalog', () => {
 
   it('ordnet Humans humanoid/technisch und Animals tierisch ein', () => {
     const creatures = data.identityCatalog.cards.filter((entry) => entry.cardType === 'creature');
-    expect(creatures.filter((entry) => entry.side === 'animals')).toHaveLength(162);
-    expect(creatures.filter((entry) => entry.side === 'humans')).toHaveLength(156);
+    expect(creatures.filter((entry) => entry.side === 'animals')).toHaveLength(205);
+    expect(creatures.filter((entry) => entry.side === 'humans')).toHaveLength(196);
     expect(
       creatures
         .filter((entry) => entry.side === 'animals')

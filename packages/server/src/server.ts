@@ -14,6 +14,7 @@ import { writeFileSync, readFileSync, existsSync, renameSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sirv from 'sirv';
+import { messageSchema } from './protocol.js';
 import {
   createUserStore,
   UserAccountError,
@@ -63,6 +64,8 @@ interface RoomPlayer {
 }
 
 interface Room {
+  revision: number;
+  updatedAt: number;
   code: string;
   players: RoomPlayer[];
   state: GameState | null;
@@ -113,6 +116,8 @@ export interface RunningServer {
 }
 
 export interface StartServerOptions {
+  /** null deaktiviert Persistenz für isolierte Tests. */
+  persistPath?: string | null;
   /** Austauschbarer Speicher für Integrationstests. */
   userStore?: UserStore;
   /** Optionaler gemeinsamer Zugangsschutz. undefined liest die Render-Umgebung,
@@ -238,10 +243,15 @@ const persistTempPath = persistFilePath + '.tmp';
  * 3 – Rückspiel-Bereitschaft und Matchnummer werden mit dem Raum gespeichert.
  * 4 – Champ, Zwei-Klassen-Deck und Superkräfte ersetzen das alte Loadout.
  *     Der optionale Benutzername ist innerhalb dieses Formats abwärtskompatibel.
+ * 5 – Vier Teams, Handinstanzen, Auswahlen, temporäre Zustände und Revisionen.
  */
-const PERSIST_VERSION = 4;
+const PERSIST_VERSION = 5;
+const ABANDONED_ROOM_MS = 7 * 24 * 60 * 60 * 1000;
+const LOBBY_ROOM_MS = 24 * 60 * 60 * 1000;
 
 interface PersistedRoom {
+  revision?: number;
+  updatedAt?: number;
   code: string;
   topic: Topic;
   state: GameState | null;
@@ -263,12 +273,15 @@ interface PersistedFile {
   rooms: PersistedRoom[];
 }
 
-function saveRooms(rooms: Map<string, Room>) {
+function saveRoomsFile(rooms: Map<string, Room>, file: string | null = persistFilePath) {
+  if (file === null) return;
   try {
     const dataToSave: PersistedFile = {
       version: PERSIST_VERSION,
       rooms: Array.from(rooms.values()).map((room) => ({
         code: room.code,
+        revision: room.revision,
+        updatedAt: room.updatedAt,
         topic: room.topic,
         state: room.state,
         lanes: room.lanes,
@@ -287,8 +300,8 @@ function saveRooms(rooms: Map<string, Room>) {
     // umbenennen. Ein Absturz mitten im Schreiben kann so nicht mehr eine halb
     // geschriebene und damit unlesbare Datei hinterlassen – bisher wäre in dem
     // Fall jeder laufende Raum verloren gewesen.
-    writeFileSync(persistTempPath, JSON.stringify(dataToSave, null, 2), 'utf-8');
-    renameSync(persistTempPath, persistFilePath);
+    writeFileSync(file + '.tmp', JSON.stringify(dataToSave, null, 2), 'utf-8');
+    renameSync(file + '.tmp', file);
   } catch (err) {
     console.error('Failed to persist rooms:', err);
   }
@@ -302,34 +315,41 @@ function migriereZustand(state: GameState): GameState {
   return state;
 }
 
-function loadRooms(data: GameData): Map<string, Room> {
+function loadRooms(data: GameData, file: string | null = persistFilePath, incompatible = new Set<string>()): Map<string, Room> {
   const map = new Map<string, Room>();
+  if (file === null) return map;
   try {
-    if (existsSync(persistFilePath)) {
-      const content = readFileSync(persistFilePath, 'utf-8');
+    if (existsSync(file)) {
+      const content = readFileSync(file, 'utf-8');
       const wurzel = JSON.parse(content) as PersistedFile | PersistedRoom[];
       // Version 1 war ein nacktes Array ohne Versionsfeld – daran wird sie
       // erkannt. Neuere Versionen tragen { version, rooms }.
       const parsed: PersistedRoom[] = Array.isArray(wurzel) ? wurzel : (wurzel.rooms ?? []);
       const version = Array.isArray(wurzel) ? 1 : wurzel.version;
-      if (version < PERSIST_VERSION) {
-        console.warn(`Historische Räume (Version ${version}) werden wegen der Champion-Migration verworfen.`);
-        return map;
-      }
-      if (!Array.isArray(wurzel) && version > PERSIST_VERSION) {
-        // Neuere Datei als dieser Server sie versteht: lieber mit leerem
-        // Raumverzeichnis starten, als Zustände halb interpretiert zu laden.
-        console.warn(
-          `rooms_persist.json hat Version ${version}, dieser Server kennt nur bis ${PERSIST_VERSION}. Räume werden ignoriert.`
-        );
+      if (version !== PERSIST_VERSION) {
+        for (const item of parsed) if (typeof item.code === 'string') incompatible.add(item.code);
+        console.warn(`Gespeicherte Räume mit Version ${version} sind mit Version ${PERSIST_VERSION} nicht kompatibel.`);
         return map;
       }
       for (const item of parsed) {
         try {
+          if (!Number.isSafeInteger(item.revision) || !Number.isFinite(item.updatedAt)) throw new GameRuleError('Unvollständiger Alpha-Spielstand.');
+          if (Date.now() - item.updatedAt! > (item.state?.phase !== 'ended' && item.state ? ABANDONED_ROOM_MS : LOBBY_ROOM_MS)) continue;
           if (item.state && item.state.config.lanes !== FESTE_BAHNEN) {
             throw new GameRuleError(
               `Der gespeicherte Raum verwendet ${item.state.config.lanes} statt ${FESTE_BAHNEN} Bahnen.`
             );
+          }
+          if (item.state) {
+            const ids = new Set<number>();
+            if (item.state.players.length !== 2 || !Number.isSafeInteger(item.state.nextHandId)) throw new GameRuleError('Unvollständige Handkarteninstanzen.');
+            for (const p of item.state.players) {
+              if (p.handInstances?.length !== p.hand.length || !Array.isArray(p.graveyard)) throw new GameRuleError('Unvollständige Handkarten oder Friedhof.');
+              p.handInstances.forEach((card, i) => {
+                if (!Number.isSafeInteger(card.id) || ids.has(card.id) || card.id >= item.state!.nextHandId! || card.cardId !== p.hand[i] || !data.cardsById[card.cardId] || !Number.isFinite(card.discount) || card.discount < 0) throw new GameRuleError('Ungültige Handkarteninstanz.');
+                ids.add(card.id);
+              });
+            }
           }
           const players = item.players.map((p, idx) => {
             const deck = p.deck ?? null;
@@ -340,6 +360,8 @@ function loadRooms(data: GameData): Map<string, Room> {
             return { token: p.token, username: p.username ?? null, championId, deck, socket: null };
           });
           map.set(item.code, {
+            revision: item.revision!,
+            updatedAt: item.updatedAt!,
             code: item.code,
             topic: item.topic,
             state: item.state ? migriereZustand(item.state) : null,
@@ -350,6 +372,7 @@ function loadRooms(data: GameData): Map<string, Room> {
             players
           });
         } catch (error) {
+          incompatible.add(item.code);
           const grund = error instanceof Error ? error.message : String(error);
           console.warn(`Historischer Raum ${item.code} wurde übersprungen: ${grund}`);
         }
@@ -379,7 +402,18 @@ export function startServer(port: number, options: StartServerOptions = {}): Pro
     console.error('\n⚠ Datendateien fehlerhaft:\n' + dataError + '\n');
   }
 
-  const rooms = data ? loadRooms(data) : new Map<string, Room>();
+  const incompatibleRooms = new Set<string>();
+  const rooms = data ? loadRooms(data, options.persistPath, incompatibleRooms) : new Map<string, Room>();
+  const saveRooms = (value: Map<string, Room>) => saveRoomsFile(value, options.persistPath);
+  const cleanupTimer = setInterval(() => {
+    let changed = false;
+    for (const [code, room] of rooms) {
+      const ttl = room.state && room.state.phase !== 'ended' ? ABANDONED_ROOM_MS : LOBBY_ROOM_MS;
+      if (room.players.every(p => p.socket === null) && Date.now() - room.updatedAt > ttl) { rooms.delete(code); changed = true; }
+    }
+    if (changed) saveRooms(rooms);
+  }, 60_000);
+  cleanupTimer.unref();
   const users = options.userStore ?? createUserStore();
 
   const newRoomCode = (): string => {
@@ -396,6 +430,7 @@ export function startServer(port: number, options: StartServerOptions = {}): Pro
       if (player.socket) {
         send(player.socket, {
           type: 'state',
+          revision: room.revision,
           topic: room.topic,
           matchNumber: room.matchNumber,
           view: buildClientView(room.state!, idx as PlayerIndex, data!)
@@ -464,6 +499,8 @@ export function startServer(port: number, options: StartServerOptions = {}): Pro
     }
     room.rematchReady = [false, false];
     room.matchNumber += 1;
+    room.revision += 1;
+    room.updatedAt = Date.now();
     saveRooms(rooms);
     broadcastRematchState(room);
     broadcastState(room);
@@ -584,6 +621,10 @@ export function startServer(port: number, options: StartServerOptions = {}): Pro
       });
       return;
     }
+    if (req.url === '/health') {
+      sendHttpJson(res, dataError ? 503 : 200, { ok: !dataError, version: PERSIST_VERSION, activeRooms: rooms.size }, cors);
+      return;
+    }
     if (req.url?.startsWith('/info')) {
       if (dataError) {
         res.writeHead(500, { 'content-type': 'application/json; charset=utf-8', ...cors });
@@ -604,7 +645,7 @@ export function startServer(port: number, options: StartServerOptions = {}): Pro
         JSON.stringify({
           name: 'Political Correct Fighters',
           factions: data!.factions,
-          champions: data!.champions,
+          champions: data!.champions.filter(c => ladeDeckStatus(data!).active.includes(c.id)),
           topics: data!.topics,
           // Aussehen/Animation als OPAKE Daten – der Server interpretiert sie nie,
           // er reicht sie nur weiter (wie factions/keywords). Der Client rendert.
@@ -634,6 +675,7 @@ export function startServer(port: number, options: StartServerOptions = {}): Pro
   });
   const wss = new WebSocketServer({
     server: httpServer,
+    maxPayload: 64 * 1024,
     // Der Browser übernimmt nach dem HTTP-Passwortdialog die Basic-Auth-Daten
     // auch für den WebSocket-Handshake derselben Origin. Direkte Verbindungen
     // ohne Zugangsdaten werden damit ebenfalls abgewiesen.
@@ -650,7 +692,12 @@ export function startServer(port: number, options: StartServerOptions = {}): Pro
     socket.on('message', (raw) => {
       let msg: Record<string, unknown>;
       try {
-        msg = JSON.parse(String(raw));
+        const parsed = messageSchema.safeParse(JSON.parse(String(raw)));
+        if (!parsed.success) {
+          send(socket, { type: 'error', code: 'invalid_message', message: 'Ungültige Nachricht. Bitte die aktuelle Spielversion neu laden.' });
+          return;
+        }
+        msg = parsed.data;
       } catch {
         send(socket, { type: 'error', message: 'Ungültige Nachricht (kein JSON).' });
         return;
@@ -662,8 +709,8 @@ export function startServer(port: number, options: StartServerOptions = {}): Pro
         if (e instanceof GameRuleError) {
           send(socket, { type: 'error', message: e.message });
         } else {
-          console.error(e);
-          send(socket, { type: 'error', message: 'Interner Serverfehler.' });
+          console.error({ version: PERSIST_VERSION, match: ctx.room ? `${ctx.room.code}:${ctx.room.matchNumber}` : null, error: e instanceof Error ? e.message : 'Unbekannter Fehler' });
+          send(socket, { type: 'error', message: `Interner Serverfehler (Alpha ${PERSIST_VERSION}, Partie ${ctx.room?.code ?? '–'}).` });
         }
       }
     });
@@ -673,11 +720,13 @@ export function startServer(port: number, options: StartServerOptions = {}): Pro
         const player = ctx.room.players[ctx.playerIndex];
         if (player && player.socket === socket) {
           player.socket = null;
+          ctx.room.updatedAt = Date.now();
           notifyOpponentConnection(ctx.room, ctx.playerIndex);
+          saveRooms(rooms);
         }
         // Raum aufräumen, wenn die Partie vorbei ist und niemand mehr da ist
         if (
-          ctx.room.state?.phase === 'ended' &&
+          Date.now() - ctx.room.updatedAt > LOBBY_ROOM_MS &&
           ctx.room.players.every((p) => p.socket === null)
         ) {
           rooms.delete(ctx.room.code);
@@ -697,7 +746,7 @@ export function startServer(port: number, options: StartServerOptions = {}): Pro
 
     function validChampion(championId: unknown): string {
       const d = requireData();
-      if (typeof championId !== 'string' || !d.champions.some((champion) => champion.id === championId)) {
+      if (typeof championId !== 'string' || !ladeDeckStatus(d).active.includes(championId)) {
         throw new GameRuleError(
           `Unbekannter Champ. Verfügbar: ${d.champions.map((champion) => champion.id).join(', ')}`
         );
@@ -718,7 +767,8 @@ export function startServer(port: number, options: StartServerOptions = {}): Pro
     function resolveDeck(selection: unknown, requestedChampion: unknown): { championId: string; deck: DeckList | null } {
       const d = requireData();
       if (!selection || typeof selection !== 'object') {
-        return { championId: validChampion(requestedChampion), deck: null };
+        const championId = validChampion(requestedChampion);
+        return { championId, deck: ladeDecks(d)[championId] };
       }
       const value = selection as DeckSelection;
       let deck: DeckList;
@@ -745,7 +795,7 @@ export function startServer(port: number, options: StartServerOptions = {}): Pro
         throw new GameRuleError('Ungültige Deckauswahl.');
       }
       const championId = validChampion(deck.championId ?? requestedChampion);
-      if (deck.championId && deck.championId !== championId) {
+      if (requestedChampion && requestedChampion !== championId) {
         throw new GameRuleError('Deck und ausgewählter Champ passen nicht zusammen.');
       }
       return { championId, deck };
@@ -779,12 +829,15 @@ export function startServer(port: number, options: StartServerOptions = {}): Pro
     }
 
     function attach(room: Room, idx: PlayerIndex): void {
+      room.updatedAt = Date.now();
       ctx.room = room;
       ctx.playerIndex = idx;
       room.players[idx].socket = socket;
     }
 
     function handleMessage(msg: Record<string, unknown>): void {
+      if (ctx.room && ctx.playerIndex !== null && ctx.room.players[ctx.playerIndex].socket !== socket) throw new GameRuleError('Diese Verbindung wurde durch eine neue Anmeldung ersetzt.');
+      if (ctx.room && (msg.type === 'create' || msg.type === 'join')) throw new GameRuleError('Du bist bereits in einem Raum.');
       switch (msg.type) {
         case 'create': {
           const username = optionalUsername(msg.username);
@@ -792,6 +845,8 @@ export function startServer(port: number, options: StartServerOptions = {}): Pro
           const topic = validTopic(msg.topic);
           const lanes = validLanes(msg.lanes);
           const room: Room = {
+            revision: 0,
+            updatedAt: Date.now(),
             code: newRoomCode(),
             players: [{
               token: randomBytes(12).toString('hex'),
@@ -886,7 +941,9 @@ export function startServer(port: number, options: StartServerOptions = {}): Pro
           const room = rooms.get(String(msg.code));
           const idx = room?.players.findIndex((p) => p.token === msg.token) ?? -1;
           if (!room || idx === -1) {
-            throw new GameRuleError('Wiederverbinden fehlgeschlagen: Raum oder Spieler unbekannt.');
+            const incompatible = incompatibleRooms.has(String(msg.code));
+            send(socket, { type: 'error', code: incompatible ? 'incompatible_state' : 'session_expired', message: incompatible ? 'Dieser gespeicherte Spielstand ist mit der aktuellen Spielversion nicht kompatibel. Bitte einen neuen Raum starten.' : 'Diese Partie ist nicht mehr verfügbar oder der Zugang ist ungültig. Bitte einen neuen Raum starten.' });
+            return;
           }
           // Alte Verbindung (falls noch offen) ersetzen
           room.players[idx].socket?.close();
@@ -906,13 +963,14 @@ export function startServer(port: number, options: StartServerOptions = {}): Pro
           if (room.state) {
             send(socket, {
               type: 'state',
+              revision: room.revision,
               topic: room.topic,
               matchNumber: room.matchNumber,
               view: buildClientView(room.state, idx as PlayerIndex, requireData())
             });
             send(socket, {
               type: 'opponent',
-              connected: room.players[idx === 0 ? 1 : 0]?.socket !== null
+              connected: Boolean(room.players[idx === 0 ? 1 : 0]?.socket)
             });
             send(socket, { type: 'rematchState', ready: room.rematchReady });
           }
@@ -943,12 +1001,19 @@ export function startServer(port: number, options: StartServerOptions = {}): Pro
             throw new GameRuleError('Die Partie hat noch nicht begonnen (Gegner fehlt).');
           }
           const wasEnded = ctx.room.state.phase === 'ended';
+          if (msg.revision !== ctx.room.revision) {
+            send(socket, { type: 'error', code: 'stale_state', message: 'Der Spielstand hat sich geändert. Deine Aktion wurde nicht ausgeführt.' });
+            broadcastState(ctx.room);
+            return;
+          }
           ctx.room.state = applyAction(
             ctx.room.state,
             ctx.playerIndex,
             msg.action as PlayerAction,
             requireData()
           );
+          ctx.room.revision += 1;
+          ctx.room.updatedAt = Date.now();
           if (!wasEnded && ctx.room.state.phase === 'ended') recordRoomResult(ctx.room);
           saveRooms(rooms);
           broadcastState(ctx.room);
@@ -969,6 +1034,7 @@ export function startServer(port: number, options: StartServerOptions = {}): Pro
         port: actualPort,
         close: () =>
           new Promise<void>((done) => {
+            clearInterval(cleanupTimer);
             for (const client of wss.clients) client.terminate();
             wss.close(() => httpServer.close(() => done()));
           })

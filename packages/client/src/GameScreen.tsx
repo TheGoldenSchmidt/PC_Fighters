@@ -44,6 +44,7 @@ import { CreatureTile } from './arena/CreatureTile';
 import { BasisAnzeige, CheerleaderStrip } from './arena/Anzeigen';
 import { ReaktionsAuswahl } from './arena/ReaktionsAuswahl';
 import { CoachHint } from './arena/CoachHint';
+import { AktionsAuswahl } from './arena/AktionsAuswahl';
 import { useDialogFocus } from './arena/useDialogFocus';
 import { playFeedback } from './feedback';
 import { defaultProfile, type LocalProfileV1 } from './profile';
@@ -60,6 +61,7 @@ const Battlefield3D = lazy(() =>
 );
 
 interface Props {
+  pendingAction?: boolean;
   view: ClientView;
   topic: Topic | null;
   keywordInfo: KeywordInfo | null;
@@ -80,10 +82,11 @@ interface Props {
 type Selection =
   | { kind: 'hand'; index: number }
   | { kind: 'move'; index: number; fromLane: number }
-  | { kind: 'fly'; fromLane: number }
+  | { kind: 'fly'; fromLane: number; targetUid?: number }
   | null;
 
 export function GameScreen({
+  pendingAction = false,
   view,
   topic,
   keywordInfo,
@@ -101,11 +104,12 @@ export function GameScreen({
   onLeave
 }: Props) {
   const [selection, setSelection] = useState<Selection>(null);
+  const [targetUid, setTargetUid] = useState<number | undefined>();
   // 3D-Figuren nur, wenn der Browser WebGL kann – sonst 2D-Fallback (Artwork)
   const [use3d, setUse3d] = useState(
     () => !new URLSearchParams(window.location.search).has('no3d') && webglSupported(),
   );
-  const { shownView, isReplaying, fx, moveFx, banner, showBanner } = useKampfReplay(
+  const { shownView, isReplaying, replayKind, fx, moveFx, banner, showBanner } = useKampfReplay(
     view,
     profile.settings.replaySpeed
   );
@@ -150,7 +154,7 @@ export function GameScreen({
 
   // Ein offenes Fenster sperrt jede normale Aktion, auch die des Gegners.
   const myTurn =
-    shownView.active === me && shownView.winner === null && !isReplaying && reaktion === null;
+    shownView.active === me && shownView.winner === null && !isReplaying && reaktion === null && !view.choice && status === 'connected' && !pendingAction;
   const myBoard = shownView.board[me];
   const energy = shownView.players[me].energy;
   // Zaehler-Blitz: die drei Chips aendern sich sonst lautlos mitten im Spiel.
@@ -159,7 +163,7 @@ export function GameScreen({
   const rundenPuls = useWertPuls(shownView.round);
 
   // Auswahl zurücksetzen, wenn sich die angezeigte Lage ändert
-  useEffect(() => setSelection(null), [shownView]);
+  useEffect(() => { setSelection(null); setTargetUid(undefined); }, [shownView]);
 
   useEffect(() => {
     logRef.current?.scrollTo({ top: logRef.current.scrollHeight });
@@ -250,6 +254,14 @@ export function GameScreen({
    * damit auch nicht ziehbar.
    */
   function laneZieleFuerKarte(card: CardDef | null): Set<number> {
+    if (card && shownView.legalActions && (card.type === 'action' || card.type === 'superpower') && card.effect.kind === 'script') {
+      const index = shownView.hand.indexOf(card);
+      return new Set(shownView.legalActions.flatMap(a => a.type === 'playAction' && a.handIndex === index && a.targetLane !== undefined ? [a.targetLane] : []));
+    }
+    if (card && shownView.legalActions && card.type === 'creature') {
+      const index = shownView.hand.indexOf(card);
+      return new Set(shownView.legalActions.flatMap(a => a.type === 'playCreature' && a.handIndex === index ? [a.lane] : []));
+    }
     const free = new Set<number>();
     const occupied = new Set<number>();
     myBoard.forEach((c, i) => (c ? occupied.add(i) : free.add(i)));
@@ -299,7 +311,7 @@ export function GameScreen({
     // Flug-Phase: eigene fliegende Kreatur wählen bzw. Ziel-Lane antippen
     if (shownView.phase === 'fly') {
       if (selection?.kind === 'fly' && targets.lanes.has(lane)) {
-        onAction({ type: 'flyMove', fromLane: selection.fromLane, toLane: lane });
+        onAction({ type: 'flyMove', fromLane: selection.fromLane, toLane: lane, ...(selection.targetUid !== undefined ? { targetUid: selection.targetUid } : {}) });
         setSelection(null);
       } else if (myBoard[lane]?.canFly) {
         setSelection({ kind: 'fly', fromLane: lane });
@@ -333,9 +345,16 @@ export function GameScreen({
    * den Tap-Weg aus dem Detailfenster. Die Regelprüfung ist vorher passiert
    * (`laneZieleFuerKarte`); hier steht nur noch, welche Aktion daraus wird.
    */
-  function karteAufLane(handIndex: number, lane: number) {
+  function karteAufLane(handIndex: number, lane: number, uid?: number) {
     const card = shownView.hand[handIndex];
     if (!card) return;
+    if ((card.type === 'action' || card.type === 'superpower') && card.effect.kind === 'script') {
+      const actions = (shownView.legalActions ?? []).filter((a): a is Extract<PlayerAction, { type: 'playAction' }> => a.type === 'playAction' && a.handIndex === handIndex && a.targetLane === lane && (uid === undefined || a.targetUid === uid));
+      setSelection({ kind: 'hand', index: handIndex });
+      if (actions.length === 1 && actions[0].toLane === undefined && actions[0].secondUid === undefined) { onAction(actions[0]); setSelection(null); }
+      else setTargetUid(uid);
+      return;
+    }
     playFeedback('card', profile.settings.sound, profile.settings.haptics);
     if (card.type === 'creature') {
       onAction({ type: 'playCreature', handIndex, lane });
@@ -354,6 +373,7 @@ export function GameScreen({
   /** Kann diese Handkarte gerade bezahlt und gespielt werden? */
   function karteSpielbar(index: number): boolean {
     const card = shownView.hand[index];
+    if (shownView.legalActions) return myTurn && shownView.legalActions.some(a => 'handIndex' in a && a.handIndex === index);
     return Boolean(
       myTurn &&
       (shownView.phase === 'play' || shownView.phase === 'precombat') &&
@@ -367,7 +387,20 @@ export function GameScreen({
     // Nur Karten mit Lane-Ziel sind ziehbar; alles andere läuft über das Detail.
     ziehbar: (index) =>
       karteSpielbar(index) && laneZieleFuerKarte(shownView.hand[index] ?? null).size > 0,
-    laneRects: () => eigeneLaneRects(me, shownView.lanes),
+    laneRects: (index) => {
+      const card = shownView.hand[index];
+      if (card && (card.type === 'action' || card.type === 'superpower') && card.effect.kind === 'script') {
+        const actions = shownView.legalActions?.filter(a => a.type === 'playAction' && a.handIndex === index) ?? [];
+        return actions.flatMap(a => {
+          if (a.type !== 'playAction' || a.targetUid === undefined || a.targetLane === undefined) return [];
+          const el = document.querySelector<HTMLElement>(`[data-target-uid="${a.targetUid}"]`);
+          if (!el) return [];
+          const r = el.getBoundingClientRect();
+          return [{ lane: a.targetLane, uid: a.targetUid, left: r.left, right: r.right, top: r.top, bottom: r.bottom }];
+        });
+      }
+      return eigeneLaneRects(me, shownView.lanes);
+    },
     gueltig: (lane, index) => laneZieleFuerKarte(shownView.hand[index] ?? null).has(lane),
     onAblegen: karteAufLane,
     onTippen: (index) => {
@@ -377,7 +410,8 @@ export function GameScreen({
         return;
       }
       const card = shownView.hand[index];
-      if (card) openCardDetail(card, index);
+      if (card && myTurn) { setSelection({ kind: 'hand', index }); setTargetUid(undefined); }
+      else if (card) openCardDetail(card, index);
     }
   });
 
@@ -410,7 +444,17 @@ export function GameScreen({
     });
   }
 
-  const showDirectConfirm =
+  const scriptSelected = selectedCard && (selectedCard.type === 'action' || selectedCard.type === 'superpower') && selectedCard.effect.kind === 'script';
+  const scriptOptions = scriptSelected && selection?.kind === 'hand' ? (shownView.legalActions ?? []).filter((a): a is Extract<PlayerAction, { type: 'playAction' }> => a.type === 'playAction' && a.handIndex === selection.index) : [];
+  const figureTarget = (uid?: number) => uid !== undefined && scriptOptions.some(a => a.targetUid === uid);
+  function chooseFigure(uid?: number) {
+    if (!myTurn || !figureTarget(uid)) return;
+    const actions = scriptOptions.filter(a => a.targetUid === uid);
+    if (actions.length === 1 && actions[0].toLane === undefined && actions[0].secondUid === undefined) { onAction(actions[0]); setSelection(null); }
+    else setTargetUid(uid);
+  }
+  const targetEffect = (uid?: number) => fx.spells.filter(s => uid !== undefined && s.targetUid === uid).map(s => <span key={s.key} className={`alpha-target-fx alpha-fx-${s.effect}`} aria-hidden>{s.delta === undefined ? (s.effect === 'shield' ? '🛡' : '✦') : `${s.delta > 0 ? '+' : ''}${s.delta}`}</span>);
+  const showDirectConfirm = !scriptSelected &&
     selection?.kind === 'hand' &&
     selectedCard != null &&
     selectedCard.type !== 'creature' &&
@@ -418,8 +462,8 @@ export function GameScreen({
     selectedCard.effect.kind !== 'moveCreature' &&
     laneZieleFuerKarte(selectedCard).size === 0;
 
-  const statusText = isReplaying
-    ? '⚔️ Kampf läuft …'
+  const statusText = status !== 'connected' ? 'Verbindung unterbrochen – Wiederverbindung läuft …' : view.choice ? (view.choice.owner === me ? view.choice.title : 'Gegner wählt eine Karte …') : isReplaying
+    ? replayKind === 'combat' ? '⚔️ Kampf läuft …' : 'Kartenwirkung wird angezeigt …'
     : shownView.winner !== null
       ? 'Partie beendet'
       : reaktion !== null
@@ -436,8 +480,8 @@ export function GameScreen({
           ? selection
             ? selection.kind === 'move'
               ? 'Ziel-Lane wählen'
-              : 'Ziel-Lane antippen (oder Karte erneut antippen zum Abwählen)'
-            : 'Du bist am Zug – Karte in eine Lane ziehen'
+              : 'Markiertes Ziel wählen oder Auswahl abbrechen'
+            : 'Du bist am Zug – Karte antippen oder ziehen'
           : 'Gegner ist am Zug …';
 
   // ---- Effekt-Abfragen fürs Rendering ----
@@ -449,8 +493,9 @@ export function GameScreen({
     fx.impacts.find((i) => i.side === side && i.lane === lane);
   const baseHit = (side: PlayerIndex) => fx.baseImpacts.find((b) => b.side === side);
   const shieldFx = (side: PlayerIndex) => (fx.shield?.owner === side ? fx.shield : null);
-  // Zauber-Effekte treffen immer eigene Lanes (Aktionskarten zielen auf sich selbst)
-  const spellOnLane = (lane: number) => fx.spells.find((s) => s.lane === lane);
+  const hudEffects = (side: PlayerIndex, zone: 'base' | 'resources') => fx.spells.filter(s => s.lane < 0 && s.owner === side && ((s.effect === 'energy' || s.effect === 'hand') === (zone === 'resources'))).map(s => <span key={s.key} className={`alpha-hud-fx alpha-fx-${s.effect}`}>{s.effect === 'hand' ? 'Hand verändert' : s.effect === 'energy' ? '⚡ Energie' : s.effect === 'heal' ? '♥' : '✦'} {s.delta ? `${s.delta > 0 ? '+' : ''}${s.delta}` : ''}</span>);
+  // Ältere Effekte ohne Figuren-ID verwenden weiterhin die eigene Bahn.
+  const spellOnLane = (lane: number) => fx.spells.find((s) => s.lane === lane && s.owner === me && s.targetUid === undefined);
 
   const themeVars = (
     topic
@@ -485,7 +530,7 @@ export function GameScreen({
     ? null
     : zeigeReaktionsAuswahl && !profile.onboarding.shield
       ? 'shield'
-      : isReplaying && !profile.onboarding.combat
+      : isReplaying && replayKind === 'combat' && !profile.onboarding.combat
         ? 'combat'
         : myTurn && shownView.phase === 'play' && !profile.onboarding.firstTurn
           ? 'firstTurn'
@@ -513,6 +558,7 @@ export function GameScreen({
         {/* ---- Gegnerische Zone: Basis und Bank mittig über den Lanes ---- */}
         <div className="zone-band zone-oben">
           <div className="hud-gruppe">
+            {hudEffects(opp, 'resources')}
             <div
               className="hand-backs"
               aria-label={`Gegner hat ${shownView.players[opp].handCount} Handkarten`}
@@ -526,6 +572,7 @@ export function GameScreen({
           </div>
 
           <div className="zone-mitte">
+            {hudEffects(opp, 'base')}
             <BasisAnzeige
               leben={shownView.players[opp].base}
               max={shownView.baseMax}
@@ -593,7 +640,8 @@ export function GameScreen({
             return (
               <div className={'lane' + (combatActive ? ' combat-active' : '')} key={lane}>
                 <div className={'slot enemy-slot' + (enemyTeamCreature ? ' team-up-lane' : '')} data-slot={`${opp}-${lane}`}>
-                  <div className={enemyTeamCreature ? 'team-up-primary' : 'team-up-solo'}>
+                  <div data-target-uid={enemyCreature?.uid} className={(enemyTeamCreature ? 'team-up-primary' : 'team-up-solo') + (figureTarget(enemyCreature?.uid) ? ' alpha-valid-target' : '')} onClickCapture={e => { if (scriptSelected) { e.stopPropagation(); chooseFigure(enemyCreature?.uid); } }}>
+                    {targetEffect(enemyCreature?.uid)}
                     <CreatureTile
                       key={enemyCreature?.uid ?? 'leer'}
                       creature={enemyCreature}
@@ -604,10 +652,10 @@ export function GameScreen({
                       onDetail={openCreatureDetail}
                     />
                   </div>
-                  {enemyTeamCreature && <div className="team-up-secondary"><CreatureTile creature={enemyTeamCreature} flat3d={use3d} onDetail={openCreatureDetail} /></div>}
+                  {enemyTeamCreature && <div data-target-uid={enemyTeamCreature.uid} className={'team-up-secondary' + (figureTarget(enemyTeamCreature.uid) ? ' alpha-valid-target' : '')} onClickCapture={e => { if (scriptSelected) { e.stopPropagation(); chooseFigure(enemyTeamCreature.uid); } }}>{targetEffect(enemyTeamCreature.uid)}<CreatureTile creature={enemyTeamCreature} flat3d={use3d} onDetail={openCreatureDetail} /></div>}
                   {enemyDmg && <span className="dmg-float">-{enemyDmg.damage}</span>}
                 </div>
-                <div className="lane-label">{shownView.laneKinds[lane] === 'height' ? '▲' : shownView.laneKinds[lane] === 'water' ? '≋' : lane + 1}</div>
+                <div className="lane-label">{lane + 1} {shownView.laneKinds[lane] === 'height' ? '▲ Höhe' : shownView.laneKinds[lane] === 'water' ? '≋ Wasser' : ''}</div>
                 {shownView.environments[lane] && <div className="lane-environment" title={shownView.environments[lane]?.text}>{shownView.environments[lane]?.name}</div>}
                 <button
                   className={
@@ -627,7 +675,8 @@ export function GameScreen({
                   }
                   onClick={() => tapOwnLane(lane)}
                 >
-                  <div className={ownTeamCreature ? 'team-up-primary' : 'team-up-solo'}>
+                  <div data-target-uid={ownCreature?.uid} className={(ownTeamCreature ? 'team-up-primary' : 'team-up-solo') + (figureTarget(ownCreature?.uid) ? ' alpha-valid-target' : '')} onClickCapture={e => { if (scriptSelected) { e.stopPropagation(); chooseFigure(ownCreature?.uid); } }}>
+                    {targetEffect(ownCreature?.uid)}
                     <CreatureTile
                       key={ownCreature?.uid ?? 'leer'}
                       creature={ownCreature}
@@ -639,7 +688,7 @@ export function GameScreen({
                       onDetail={openCreatureDetail}
                     />
                   </div>
-                  {ownTeamCreature && <div className="team-up-secondary"><CreatureTile creature={ownTeamCreature} own flat3d={use3d} onDetail={openCreatureDetail} /></div>}
+                  {ownTeamCreature && <div data-target-uid={ownTeamCreature.uid} className={'team-up-secondary' + (figureTarget(ownTeamCreature.uid) ? ' alpha-valid-target' : '')} onClickCapture={e => { if (myTurn && ownTeamCreature.canFly) { e.stopPropagation(); setSelection({ kind: 'fly', fromLane: lane, targetUid: ownTeamCreature.uid }); } else if (scriptSelected) { e.stopPropagation(); chooseFigure(ownTeamCreature.uid); } }}>{targetEffect(ownTeamCreature.uid)}<CreatureTile creature={ownTeamCreature} own flat3d={use3d} onDetail={openCreatureDetail} /></div>}
                   {ownDmg && <span className="dmg-float">-{ownDmg.damage}</span>}
                   {/* Zauber-Effekt (2D-Fallback ohne WebGL) */}
                   {!use3d && spellOnLane(lane) && (
@@ -667,12 +716,15 @@ export function GameScreen({
         {/* ---- Eigene Zone: Bank mittig, Basis dahinter ---- */}
         <div className="zone-band zone-unten">
           <div className="hud-gruppe">
+            {hudEffects(me, 'resources')}
             <div className={'energy-chip' + energiePuls}>
               ⚡ {energy}/{shownView.energyCap}
             </div>
+            {shownView.players[me].championId === 'sonnenfackel' && <div className="deck-chip">Pupa: {shownView.evolution ?? 0}/3</div>}
           </div>
 
           <div className="zone-mitte">
+            {hudEffects(me, 'base')}
             <BasisAnzeige
               leben={shownView.players[me].base}
               max={shownView.baseMax}
@@ -702,9 +754,10 @@ export function GameScreen({
             {(shownView.phase === 'play' || shownView.phase === 'precombat') && myTurn && (
               <button
                 className="pass-button"
+                disabled={selection !== null}
                 onClick={() => onAction({ type: 'pass' })}
               >
-                Runde abschließen
+                {shownView.consecutivePasses ? 'Passen · Kampf starten' : 'Passen'}
               </button>
             )}
             {shownView.phase === 'fly' && myTurn && (
@@ -744,13 +797,16 @@ export function GameScreen({
           onSkip={() => finishCoach(coachKey, true)}
         >
           {coachKey === 'firstTurn'
-            ? 'Tippe eine Karte für Details oder ziehe eine leuchtende Karte direkt in eine markierte Lane. Danach ist dein Gegner am Zug.'
+            ? 'Tippe eine Karte: Lies ihren Text und wähle ein markiertes Ziel. Du kannst sie auch direkt dorthin ziehen. Danach ist dein Gegner am Zug.'
             : coachKey === 'combat'
-              ? 'Wenn beide Seiten ihre Runde abschließen, kämpfen alle Lanes automatisch nacheinander.'
+              ? 'Wenn beide Seiten nacheinander passen, beginnt der simultane Kampf. Die Angriffe werden der Reihe nach gezeigt.'
               : 'Wähle den Cheerleader, dessen Kraft jetzt wirken soll. Der belegte Bankplatz ist danach verbraucht.'}
         </CoachHint>
       )}
       <footer className="own-area">
+        {selectedCard?.type === 'creature' && selection?.kind === 'hand' && myTurn && <aside className="alpha-action-panel" aria-label="Figur ausspielen"><div className="alpha-action-head"><strong>{selectedCard.name} · {selectedCard.cost} Energie</strong><button aria-label="Auswahl abbrechen" onClick={() => setSelection(null)}>✕</button></div><p>{selectedCard.attack} Angriff · {selectedCard.health} Leben. {selectedCard.text}</p><p>{targets.lanes.size ? 'Tippe eine markierte eigene Bahn.' : 'Momentan keine erlaubte Bahn oder zu wenig Energie.'}</p><button onClick={() => openCardDetail(selectedCard, shownView.hand.indexOf(selectedCard))}>Vergrößern</button></aside>}
+        {scriptSelected && selectedCard && myTurn && <AktionsAuswahl key={`${selection?.kind === 'hand' ? selection.index : ''}:${targetUid ?? ''}`} view={shownView} card={selectedCard} actions={scriptOptions} initialUid={targetUid} onAction={a => { onAction(a); setSelection(null); }} onCancel={() => { setSelection(null); setTargetUid(undefined); }} />}
+        {view.choice?.owner === me && !isReplaying && status === 'connected' && <aside className="alpha-action-panel" role="dialog" aria-label={view.choice.title}><strong>{view.choice.title}</strong><div className="alpha-target-options">{view.hand.map((card, i) => <button key={view.handInstanceIds?.[i] ?? i} onClick={() => onAction({ type: 'chooseCard', choiceId: view.choice!.id, instanceId: view.handInstanceIds![i] })}>{card.name}</button>)}</div></aside>}
         {/* role=status: Die Zeile ist die Live-Region der Partie – sie meldet
             Zugwechsel, Kampf und wartende Cheerleader-Reaktionen. */}
         <div
@@ -758,8 +814,8 @@ export function GameScreen({
           role="status"
         >
           <span className="schlagabtausch-kicker">
-            {isReplaying && fx.activeLane !== null
-              ? `Kampf · Lane ${fx.activeLane + 1}`
+            {isReplaying
+              ? `${replayKind === 'combat' ? 'Kampf' : 'Kartenwirkung'}${fx.activeLane !== null && fx.activeLane >= 0 ? ` · Bahn ${fx.activeLane + 1}` : ''}`
               : myTurn
                 ? 'Dein Auftritt'
                 : 'Gegner am Zug'}
@@ -917,6 +973,7 @@ export function GameScreen({
               <input type="checkbox" checked={use3d} onChange={(event) => setUse3d(event.target.checked)} />
             </label>
             <button className="primary" onClick={() => setSettingsOpen(false)}>Fertig</button>
+            {view.winner === null && <button className="secondary" disabled={status !== 'connected'} onClick={() => { onAction({ type: 'surrender' }); setSettingsOpen(false); }}>Partie aufgeben</button>}
           </div>
         </div>
       )}

@@ -8,6 +8,7 @@
 import { kraftVonSlot } from './cheerleader.js';
 import { isUnremovable } from './abilities.js';
 import { hasKeyword } from './keywords.js';
+import { cardCost, figures, scriptActions } from './alpha.js';
 import type { ActionCard, GameData, GameState, PlayerAction, PlayerIndex } from './types.js';
 
 function freieLanes(state: GameState, player: PlayerIndex): number[] {
@@ -86,14 +87,18 @@ function legaleSpielAktionen(state: GameState, player: PlayerIndex, data: GameDa
   const frei = freieLanes(state, player);
   p.hand.forEach((cardId, handIndex) => {
     const card = data.cardsById[cardId];
-    const cost = card?.type === 'superpower' && p.freeSuperpowerId === cardId ? 0 : card?.cost;
+    const cost = card ? cardCost(state, player, handIndex, card) : undefined;
     if (!card || cost === undefined || cost > p.energy) return;
     if (card.type === 'creature') {
       if (state.phase === 'precombat') return;
-      for (const lane of frei) {
+      for (let lane = 0; lane < state.config.lanes; lane++) {
+        const front = state.board[player][lane];
+        if (state.teamBoard?.[player]?.[lane] || (front && !front.keywords.includes('team_up') && !card.keywords.includes('team_up'))) continue;
         if (lane === state.config.lanes - 1 && !card.keywords.includes('amphibious')) continue;
         actions.push({ type: 'playCreature', handIndex, lane });
       }
+    } else if ((card.type === 'action' || card.type === 'superpower') && card.effect.kind === 'script') {
+      actions.push(...scriptActions(state, player, handIndex, card.effect, data));
     } else if (card.type === 'action') {
       actions.push(...aktionskartenZuege(state, player, handIndex, card));
     } else if (card.type === 'environment') {
@@ -111,9 +116,9 @@ function legaleSpielAktionen(state: GameState, player: PlayerIndex, data: GameDa
 function legaleFlugAktionen(state: GameState, player: PlayerIndex): PlayerAction[] {
   const actions: PlayerAction[] = [];
   const frei = freieLanes(state, player);
-  state.board[player].forEach((c, fromLane) => {
-    if (!c || !hasKeyword(c, 'flying') || c.movedThisFlyPhase) return;
-    for (const toLane of frei) actions.push({ type: 'flyMove', fromLane, toLane });
+  figures(state, player).forEach(({ creature: c, lane: fromLane }) => {
+    if (!hasKeyword(c, 'flying') || c.movedThisFlyPhase || c.hiddenUntil) return;
+    for (const toLane of frei) actions.push({ type: 'flyMove', fromLane, toLane, targetUid: c.uid });
   });
   actions.push({ type: 'flyDone' });
   return actions;
@@ -127,6 +132,8 @@ function legaleFlugAktionen(state: GameState, player: PlayerIndex): PlayerAction
  * jeder Aufrufer (Bot, Backtest) diese Invariante ohnehin selbst hält.
  */
 export function legaleAktionen(state: GameState, player: PlayerIndex, data: GameData): PlayerAction[] {
+  if (state.phase === 'ended') return [];
+  if (state.choice) return state.choice.owner === player ? (state.players[player].handInstances ?? []).map(h => ({ type: 'chooseCard' as const, choiceId: state.choice!.id, instanceId: h.id })) : [];
   // Ein offenes Reaktionsfenster sperrt alles andere: hier gibt es nur die
   // passenden Opfer (mit Wahl, wo die Kraft eine stellt).
   if (state.reaktion) {
@@ -153,7 +160,8 @@ export function legaleAktionen(state: GameState, player: PlayerIndex, data: Game
     }
     return actions;
   }
-  if (state.phase === 'mulligan') return [{ type: 'mulligan', handIndices: [] }];
+  if (state.phase === 'mulligan') return state.players[player].mulliganDone ? [] : [{ type: 'mulligan', handIndices: [] }];
+  if (state.active !== player) return [];
   return state.phase === 'fly'
     ? legaleFlugAktionen(state, player)
     : legaleSpielAktionen(state, player, data);

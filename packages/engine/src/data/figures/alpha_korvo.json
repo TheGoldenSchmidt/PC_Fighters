@@ -1,0 +1,1466 @@
+{
+  "cardId": "alpha_korvo",
+  "visual": {
+    "detailLevel": "high",
+    "height": 1.1,
+    "palette": {
+      "skin": "#64a5bd",
+      "skinShade": "#3e788e",
+      "eye": "#e5d969",
+      "ink": "#18282f",
+      "robe": "#303038",
+      "robeShade": "#22242b",
+      "robeLight": "#42444c",
+      "red": "#a02d31",
+      "gem": "#66c73c",
+      "frame": "#304f38",
+      "metal": "#748d94",
+      "screen": "#4ed0c6"
+    },
+    "parts": [
+      {
+        "id": "stance",
+        "shape": "group",
+        "pos": [
+          0,
+          0.28,
+          0
+        ]
+      },
+      {
+        "id": "legL",
+        "shape": "group",
+        "pos": [
+          -0.18,
+          0.12,
+          0
+        ],
+        "parent": "stance"
+      },
+      {
+        "id": "shinL",
+        "shape": "capsule",
+        "size": [
+          0.11,
+          0.35
+        ],
+        "pos": [
+          0,
+          -0.015,
+          0
+        ],
+        "parent": "legL",
+        "color": "robeShade"
+      },
+      {
+        "id": "bootL",
+        "shape": "sph",
+        "size": 0.16,
+        "pos": [
+          0,
+          -0.29,
+          0.08
+        ],
+        "parent": "legL",
+        "color": "ink",
+        "scale": [
+          0.9,
+          0.55,
+          1.55
+        ]
+      },
+      {
+        "id": "legR",
+        "shape": "group",
+        "pos": [
+          0.18,
+          0.12,
+          0
+        ],
+        "parent": "stance"
+      },
+      {
+        "id": "shinR",
+        "shape": "capsule",
+        "size": [
+          0.11,
+          0.35
+        ],
+        "pos": [
+          0,
+          -0.015,
+          0
+        ],
+        "parent": "legR",
+        "color": "robeShade"
+      },
+      {
+        "id": "bootR",
+        "shape": "sph",
+        "size": 0.16,
+        "pos": [
+          0,
+          -0.29,
+          0.08
+        ],
+        "parent": "legR",
+        "color": "ink",
+        "scale": [
+          0.9,
+          0.55,
+          1.55
+        ]
+      },
+      {
+        "id": "body",
+        "shape": "group",
+        "pos": [
+          0,
+          0.94,
+          0
+        ],
+        "parent": "stance"
+      },
+      {
+        "id": "skirt",
+        "shape": "cyl",
+        "size": [
+          0.255,
+          0.41,
+          1.1
+        ],
+        "pos": [
+          0,
+          -0.42,
+          0
+        ],
+        "parent": "body",
+        "color": "robe",
+        "scale": [
+          1,
+          1,
+          0.7
+        ]
+      },
+      {
+        "id": "torso",
+        "shape": "sph",
+        "size": 0.34,
+        "pos": [
+          0,
+          0.2,
+          0
+        ],
+        "parent": "body",
+        "color": "robe",
+        "scale": [
+          0.96,
+          1.53,
+          0.64
+        ]
+      },
+      {
+        "id": "fold-1",
+        "shape": "capsule",
+        "size": [
+          0.024,
+          0.8
+        ],
+        "pos": [
+          -0.25,
+          -0.46,
+          0.17
+        ],
+        "parent": "body",
+        "color": "robeLight",
+        "rot": [
+          0,
+          0,
+          -0.065
+        ],
+        "scale": [
+          1,
+          1,
+          0.5
+        ]
+      },
+      {
+        "id": "fold1",
+        "shape": "capsule",
+        "size": [
+          0.024,
+          0.8
+        ],
+        "pos": [
+          0.25,
+          -0.46,
+          0.17
+        ],
+        "parent": "body",
+        "color": "robeLight",
+        "rot": [
+          0,
+          0,
+          0.065
+        ],
+        "scale": [
+          1,
+          1,
+          0.5
+        ]
+      },
+      {
+        "id": "collarBack",
+        "shape": "cyl",
+        "size": [
+          0.2,
+          0.27,
+          0.23
+        ],
+        "pos": [
+          0,
+          0.6,
+          0
+        ],
+        "parent": "body",
+        "color": "red",
+        "scale": [
+          1,
+          1,
+          0.8
+        ]
+      },
+      {
+        "id": "collarL",
+        "shape": "cone",
+        "size": [
+          0.13,
+          0.39
+        ],
+        "pos": [
+          -0.145,
+          0.49,
+          0.21
+        ],
+        "parent": "body",
+        "color": "red",
+        "rot": [
+          0,
+          0,
+          -0.5
+        ],
+        "scale": [
+          1,
+          1,
+          0.27
+        ]
+      },
+      {
+        "id": "collarR",
+        "shape": "cone",
+        "size": [
+          0.13,
+          0.39
+        ],
+        "pos": [
+          0.145,
+          0.49,
+          0.21
+        ],
+        "parent": "body",
+        "color": "red",
+        "rot": [
+          0,
+          0,
+          0.5
+        ],
+        "scale": [
+          1,
+          1,
+          0.27
+        ]
+      },
+      {
+        "id": "gemFrame",
+        "shape": "box",
+        "size": [
+          0.2,
+          0.2,
+          0.045
+        ],
+        "pos": [
+          0,
+          0.355,
+          0.263
+        ],
+        "parent": "body",
+        "color": "frame",
+        "rot": [
+          0,
+          0,
+          0.7853981633974483
+        ]
+      },
+      {
+        "id": "gem",
+        "shape": "box",
+        "size": [
+          0.145,
+          0.145,
+          0.045
+        ],
+        "pos": [
+          0,
+          0.355,
+          0.3
+        ],
+        "parent": "body",
+        "color": "gem",
+        "rot": [
+          0,
+          0,
+          0.7853981633974483
+        ],
+        "roughness": 0.35
+      },
+      {
+        "id": "armL",
+        "shape": "group",
+        "pos": [
+          -0.36,
+          0.44,
+          0
+        ],
+        "parent": "body",
+        "rot": [
+          -0.04,
+          0,
+          -0.08
+        ]
+      },
+      {
+        "id": "sleeveL",
+        "shape": "capsule",
+        "size": [
+          0.105,
+          0.34
+        ],
+        "pos": [
+          0,
+          -0.25,
+          0
+        ],
+        "parent": "armL",
+        "color": "robe"
+      },
+      {
+        "id": "elbowL",
+        "shape": "group",
+        "pos": [
+          0,
+          -0.47,
+          0
+        ],
+        "parent": "armL",
+        "rot": [
+          -0.12,
+          0,
+          0
+        ]
+      },
+      {
+        "id": "forearmL",
+        "shape": "capsule",
+        "size": [
+          0.09,
+          0.32
+        ],
+        "pos": [
+          0,
+          -0.2,
+          0
+        ],
+        "parent": "elbowL",
+        "color": "robe"
+      },
+      {
+        "id": "cuffL",
+        "shape": "cyl",
+        "size": [
+          0.108,
+          0.1,
+          0.1
+        ],
+        "pos": [
+          0,
+          -0.4,
+          0
+        ],
+        "parent": "elbowL",
+        "color": "red"
+      },
+      {
+        "id": "handL",
+        "shape": "group",
+        "pos": [
+          0,
+          -0.5,
+          0
+        ],
+        "parent": "elbowL"
+      },
+      {
+        "id": "palmL",
+        "shape": "sph",
+        "size": 0.098,
+        "pos": [
+          0,
+          0,
+          0
+        ],
+        "parent": "handL",
+        "color": "skin",
+        "scale": [
+          0.87,
+          1.07,
+          0.6
+        ]
+      },
+      {
+        "id": "fingerL0",
+        "shape": "capsule",
+        "size": [
+          0.023,
+          0.095
+        ],
+        "pos": [
+          -0.052,
+          -0.102,
+          0.012
+        ],
+        "parent": "handL",
+        "color": "skin"
+      },
+      {
+        "id": "fingerL1",
+        "shape": "capsule",
+        "size": [
+          0.023,
+          0.095
+        ],
+        "pos": [
+          0,
+          -0.102,
+          0.012
+        ],
+        "parent": "handL",
+        "color": "skin"
+      },
+      {
+        "id": "fingerL2",
+        "shape": "capsule",
+        "size": [
+          0.023,
+          0.095
+        ],
+        "pos": [
+          0.052,
+          -0.102,
+          0.012
+        ],
+        "parent": "handL",
+        "color": "skin"
+      },
+      {
+        "id": "thumbL",
+        "shape": "capsule",
+        "size": [
+          0.028,
+          0.065
+        ],
+        "pos": [
+          0.09,
+          -0.025,
+          0.018
+        ],
+        "parent": "handL",
+        "color": "skin",
+        "rot": [
+          0,
+          0,
+          0.42
+        ]
+      },
+      {
+        "id": "armR",
+        "shape": "group",
+        "pos": [
+          0.36,
+          0.44,
+          0
+        ],
+        "parent": "body",
+        "rot": [
+          -0.04,
+          0,
+          0.08
+        ]
+      },
+      {
+        "id": "sleeveR",
+        "shape": "capsule",
+        "size": [
+          0.105,
+          0.34
+        ],
+        "pos": [
+          0,
+          -0.25,
+          0
+        ],
+        "parent": "armR",
+        "color": "robe"
+      },
+      {
+        "id": "elbowR",
+        "shape": "group",
+        "pos": [
+          0,
+          -0.47,
+          0
+        ],
+        "parent": "armR",
+        "rot": [
+          -0.55,
+          0,
+          0
+        ]
+      },
+      {
+        "id": "forearmR",
+        "shape": "capsule",
+        "size": [
+          0.09,
+          0.32
+        ],
+        "pos": [
+          0,
+          -0.2,
+          0
+        ],
+        "parent": "elbowR",
+        "color": "robe"
+      },
+      {
+        "id": "cuffR",
+        "shape": "cyl",
+        "size": [
+          0.108,
+          0.1,
+          0.1
+        ],
+        "pos": [
+          0,
+          -0.4,
+          0
+        ],
+        "parent": "elbowR",
+        "color": "red"
+      },
+      {
+        "id": "handR",
+        "shape": "group",
+        "pos": [
+          0,
+          -0.5,
+          0
+        ],
+        "parent": "elbowR"
+      },
+      {
+        "id": "palmR",
+        "shape": "sph",
+        "size": 0.098,
+        "pos": [
+          0,
+          0,
+          0
+        ],
+        "parent": "handR",
+        "color": "skin",
+        "scale": [
+          0.87,
+          1.07,
+          0.6
+        ]
+      },
+      {
+        "id": "fingerR0",
+        "shape": "capsule",
+        "size": [
+          0.023,
+          0.095
+        ],
+        "pos": [
+          -0.052,
+          -0.102,
+          0.012
+        ],
+        "parent": "handR",
+        "color": "skin"
+      },
+      {
+        "id": "fingerR1",
+        "shape": "capsule",
+        "size": [
+          0.023,
+          0.095
+        ],
+        "pos": [
+          0,
+          -0.102,
+          0.012
+        ],
+        "parent": "handR",
+        "color": "skin"
+      },
+      {
+        "id": "fingerR2",
+        "shape": "capsule",
+        "size": [
+          0.023,
+          0.095
+        ],
+        "pos": [
+          0.052,
+          -0.102,
+          0.012
+        ],
+        "parent": "handR",
+        "color": "skin"
+      },
+      {
+        "id": "thumbR",
+        "shape": "capsule",
+        "size": [
+          0.028,
+          0.065
+        ],
+        "pos": [
+          -0.09,
+          -0.025,
+          0.018
+        ],
+        "parent": "handR",
+        "color": "skin",
+        "rot": [
+          0,
+          0,
+          -0.42
+        ]
+      },
+      {
+        "id": "device",
+        "shape": "box",
+        "size": [
+          0.18,
+          0.16,
+          0.08
+        ],
+        "pos": [
+          0,
+          -0.33,
+          0.1
+        ],
+        "parent": "elbowR",
+        "color": "metal",
+        "roughness": 0.4
+      },
+      {
+        "id": "screen",
+        "shape": "box",
+        "size": [
+          0.13,
+          0.095,
+          0.018
+        ],
+        "pos": [
+          0,
+          -0.33,
+          0.15
+        ],
+        "parent": "elbowR",
+        "color": "screen"
+      },
+      {
+        "id": "neck",
+        "shape": "cyl",
+        "size": [
+          0.095,
+          0.09,
+          0.2
+        ],
+        "pos": [
+          0,
+          0.66,
+          0
+        ],
+        "parent": "body",
+        "color": "skin"
+      },
+      {
+        "id": "head",
+        "shape": "group",
+        "pos": [
+          0,
+          1.09,
+          0.025
+        ],
+        "parent": "body"
+      },
+      {
+        "id": "cranium",
+        "shape": "sph",
+        "size": 0.38,
+        "pos": [
+          0,
+          0.08,
+          -0.02
+        ],
+        "parent": "head",
+        "color": "skin",
+        "scale": [
+          1.08,
+          1.42,
+          0.77
+        ]
+      },
+      {
+        "id": "jaw",
+        "shape": "sph",
+        "size": 0.28,
+        "pos": [
+          0,
+          -0.26,
+          0.015
+        ],
+        "parent": "head",
+        "color": "skin",
+        "scale": [
+          0.88,
+          0.64,
+          0.77
+        ]
+      },
+      {
+        "id": "eyeL",
+        "shape": "sph",
+        "size": 0.166,
+        "pos": [
+          -0.162,
+          0.05,
+          0.292
+        ],
+        "parent": "head",
+        "color": "eye",
+        "scale": [
+          0.92,
+          1.14,
+          0.3
+        ]
+      },
+      {
+        "id": "pupilL",
+        "shape": "sph",
+        "size": 0.027,
+        "pos": [
+          -0.155,
+          0.02,
+          0.347
+        ],
+        "parent": "head",
+        "color": "ink",
+        "scale": [
+          0.85,
+          1.22,
+          0.35
+        ]
+      },
+      {
+        "id": "upperLidL",
+        "shape": "sph",
+        "size": 0.163,
+        "pos": [
+          -0.162,
+          0.156,
+          0.306
+        ],
+        "parent": "head",
+        "color": "skin",
+        "scale": [
+          0.98,
+          0.47,
+          0.3
+        ]
+      },
+      {
+        "id": "lidL",
+        "shape": "capsule",
+        "size": [
+          0.03,
+          0.22
+        ],
+        "pos": [
+          -0.162,
+          0.191,
+          0.31
+        ],
+        "parent": "head",
+        "color": "skinShade",
+        "rot": [
+          0,
+          0,
+          1.6807963267948967
+        ],
+        "scale": [
+          1,
+          1,
+          0.7
+        ]
+      },
+      {
+        "id": "nostrilL",
+        "shape": "sph",
+        "size": 0.018,
+        "pos": [
+          -0.032,
+          -0.159,
+          0.288
+        ],
+        "parent": "head",
+        "color": "skinShade",
+        "scale": [
+          0.65,
+          1,
+          0.3
+        ]
+      },
+      {
+        "id": "eyeR",
+        "shape": "sph",
+        "size": 0.166,
+        "pos": [
+          0.162,
+          0.05,
+          0.292
+        ],
+        "parent": "head",
+        "color": "eye",
+        "scale": [
+          0.92,
+          1.14,
+          0.3
+        ]
+      },
+      {
+        "id": "pupilR",
+        "shape": "sph",
+        "size": 0.027,
+        "pos": [
+          0.155,
+          0.02,
+          0.347
+        ],
+        "parent": "head",
+        "color": "ink",
+        "scale": [
+          0.85,
+          1.22,
+          0.35
+        ]
+      },
+      {
+        "id": "upperLidR",
+        "shape": "sph",
+        "size": 0.163,
+        "pos": [
+          0.162,
+          0.156,
+          0.306
+        ],
+        "parent": "head",
+        "color": "skin",
+        "scale": [
+          0.98,
+          0.47,
+          0.3
+        ]
+      },
+      {
+        "id": "lidR",
+        "shape": "capsule",
+        "size": [
+          0.03,
+          0.22
+        ],
+        "pos": [
+          0.162,
+          0.191,
+          0.31
+        ],
+        "parent": "head",
+        "color": "skinShade",
+        "rot": [
+          0,
+          0,
+          1.4607963267948965
+        ],
+        "scale": [
+          1,
+          1,
+          0.7
+        ]
+      },
+      {
+        "id": "nostrilR",
+        "shape": "sph",
+        "size": 0.018,
+        "pos": [
+          0.032,
+          -0.159,
+          0.288
+        ],
+        "parent": "head",
+        "color": "skinShade",
+        "scale": [
+          0.65,
+          1,
+          0.3
+        ]
+      },
+      {
+        "id": "mouth",
+        "shape": "capsule",
+        "size": [
+          0.014,
+          0.205
+        ],
+        "pos": [
+          0,
+          -0.29,
+          0.238
+        ],
+        "parent": "head",
+        "color": "ink",
+        "rot": [
+          0,
+          0,
+          1.62
+        ],
+        "scale": [
+          1,
+          1,
+          0.5
+        ]
+      },
+      {
+        "id": "lip",
+        "shape": "capsule",
+        "size": [
+          0.012,
+          0.15
+        ],
+        "pos": [
+          0,
+          -0.325,
+          0.205
+        ],
+        "parent": "head",
+        "color": "skinShade",
+        "rot": [
+          0,
+          0,
+          1.5707963267948966
+        ]
+      }
+    ]
+  },
+  "animations": {
+    "idle": {
+      "duration": 3.4,
+      "loop": true,
+      "tracks": [
+        {
+          "part": "body",
+          "prop": "pos.y",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              1.7,
+              0.018
+            ],
+            [
+              3.4,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "head",
+          "prop": "rot.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              1.7,
+              -0.025
+            ],
+            [
+              3.4,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "elbowR",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              1.7,
+              -0.05
+            ],
+            [
+              3.4,
+              0
+            ]
+          ]
+        }
+      ]
+    },
+    "entrance": {
+      "duration": 1.2,
+      "tracks": [
+        {
+          "part": "root",
+          "prop": "pos.z",
+          "keys": [
+            [
+              0,
+              -0.48
+            ],
+            [
+              0.55,
+              -0.14
+            ],
+            [
+              1.2,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "root",
+          "prop": "rot.y",
+          "keys": [
+            [
+              0,
+              -0.32
+            ],
+            [
+              0.55,
+              -0.14
+            ],
+            [
+              1.2,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "legL",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              0.16
+            ],
+            [
+              0.35,
+              -0.13
+            ],
+            [
+              0.7,
+              0.1
+            ],
+            [
+              1.2,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "legR",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              -0.16
+            ],
+            [
+              0.35,
+              0.13
+            ],
+            [
+              0.7,
+              -0.1
+            ],
+            [
+              1.2,
+              0
+            ]
+          ]
+        }
+      ]
+    },
+    "attack": {
+      "duration": 1.2,
+      "tracks": [
+        {
+          "part": "armR",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.3,
+              -0.35
+            ],
+            [
+              0.58,
+              -1.02
+            ],
+            [
+              0.78,
+              -0.9
+            ],
+            [
+              1.2,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "elbowR",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.3,
+              -0.65
+            ],
+            [
+              0.58,
+              0.35
+            ],
+            [
+              0.78,
+              0.18
+            ],
+            [
+              1.2,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "armR",
+          "prop": "rot.y",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.3,
+              -0.28
+            ],
+            [
+              0.58,
+              0.28
+            ],
+            [
+              1.2,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "armL",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.3,
+              -0.65
+            ],
+            [
+              0.58,
+              -0.3
+            ],
+            [
+              1.2,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "armL",
+          "prop": "rot.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.3,
+              -0.5
+            ],
+            [
+              0.58,
+              -0.25
+            ],
+            [
+              1.2,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "body",
+          "prop": "rot.y",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.3,
+              -0.15
+            ],
+            [
+              0.58,
+              0.17
+            ],
+            [
+              1.2,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "head",
+          "prop": "rot.y",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.3,
+              0.12
+            ],
+            [
+              0.58,
+              -0.12
+            ],
+            [
+              1.2,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "screen",
+          "prop": "scale",
+          "keys": [
+            [
+              0,
+              1
+            ],
+            [
+              0.3,
+              1
+            ],
+            [
+              0.58,
+              1.12
+            ],
+            [
+              0.8,
+              1
+            ],
+            [
+              1.2,
+              1
+            ]
+          ]
+        }
+      ]
+    },
+    "hit": {
+      "duration": 0.55,
+      "tracks": [
+        {
+          "part": "body",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.12,
+              -0.15
+            ],
+            [
+              0.32,
+              0.04
+            ],
+            [
+              0.55,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "head",
+          "prop": "rot.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.12,
+              0.14
+            ],
+            [
+              0.55,
+              0
+            ]
+          ]
+        }
+      ]
+    },
+    "death": {
+      "duration": 1.5,
+      "tracks": [
+        {
+          "part": "root",
+          "prop": "rot.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.35,
+              0.15
+            ],
+            [
+              1.08,
+              1.5
+            ],
+            [
+              1.5,
+              1.5
+            ]
+          ]
+        },
+        {
+          "part": "root",
+          "prop": "pos.y",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.35,
+              0
+            ],
+            [
+              1.08,
+              0.22
+            ],
+            [
+              1.5,
+              0.22
+            ]
+          ]
+        },
+        {
+          "part": "armR",
+          "prop": "rot.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.35,
+              0.12
+            ],
+            [
+              1.08,
+              0.35
+            ],
+            [
+              1.5,
+              0.35
+            ]
+          ]
+        },
+        {
+          "part": "head",
+          "prop": "rot.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.35,
+              -0.06
+            ],
+            [
+              1.08,
+              -0.12
+            ],
+            [
+              1.5,
+              -0.12
+            ]
+          ]
+        }
+      ]
+    }
+  }
+}

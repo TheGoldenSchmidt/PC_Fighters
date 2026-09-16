@@ -109,6 +109,7 @@ function Game() {
       )}
       {state.screen === 'game' && state.view && state.view.phase !== 'mulligan' && (
         <GameScreen
+          pendingAction={state.pendingAction}
           view={state.view}
           topic={state.topic}
           keywordInfo={state.keywordInfo}

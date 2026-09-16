@@ -27,14 +27,19 @@ const figures = readdirSync(FIGURES)
 const artManifest = readJson(ART);
 
 const cardsById = new Map(cards.map((card) => [card.id, card]));
-const cardsByName = new Map(cards.map((card) => [card.name, card]));
+const activeChampions = new Set(readJson(join(DATA, 'deck-status.json')).active);
+const activePowers = readJson(join(DATA, 'champions.json')).filter(c => activeChampions.has(c.id)).flatMap(c => c.superpowers);
+const alphaIds = new Set([...cards.filter(c => c.teamId).map(c => c.id), ...activePowers]);
+// Archiv und Alpha dürfen dieselbe Figur unter verschiedenen IDs erhalten.
+// Innerhalb des spielbaren Pools muss jeder sichtbare Name eindeutig bleiben.
+const cardsByName = new Map(cards.map(card => [`${alphaIds.has(card.id) ? 'Alpha' : 'Archiv'}:${card.name}`, card]));
 const identitiesById = new Map(catalog.cards.map((entry) => [entry.cardId, entry]));
 const figuresById = new Map(figures.map((figure) => [figure.cardId, figure]));
 const hardProblems = [];
 const semanticProblems = [];
 
 if (cardsById.size !== cards.length) hardProblems.push('Karten-IDs sind nicht eindeutig.');
-if (cardsByName.size !== cards.length) hardProblems.push('Sichtbare Kartennamen sind nicht eindeutig.');
+if (cardsByName.size !== cards.length) hardProblems.push('Sichtbare Kartennamen sind innerhalb von Alpha oder Archiv nicht eindeutig.');
 if (identitiesById.size !== catalog.cards.length) hardProblems.push('Katalog-IDs sind nicht eindeutig.');
 if (figuresById.size !== figures.length) hardProblems.push('Figuren-Zuordnungen sind nicht eindeutig.');
 if (catalog.cards.length !== cards.length) {

@@ -115,6 +115,7 @@ export function CreatureTile({
       <div className="figure-plaque" title={creature.name}>
         {creature.name}
       </div>
+      {(creature.shieldHits || creature.hiddenUntil || creature.stunnedUntil) && <div className="figure-status" aria-label="Aktive Zustände">{creature.shieldHits ? '🛡' : ''}{creature.hiddenUntil ? ' Versteckt' : ''}{creature.stunnedUntil ? ' Angriff gesperrt' : ''}</div>}
       {creature.keywords.length > 0 && (
         <div className="figure-keywords" title={creature.keywords.join(' · ')}>
           {creature.keywords[0]}

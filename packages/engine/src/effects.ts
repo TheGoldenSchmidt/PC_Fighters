@@ -12,12 +12,14 @@ import { isUnremovable } from './abilities.js';
 import { hasKeyword } from './keywords.js';
 import { basisSchaden } from './schild.js';
 import { zieheKarten } from './draw.js';
+import { resolveScript } from './alpha.js';
 import { registriereAktionsBuff, zaehleKarte } from './stats.js';
 import type { ActionCard, Effect, EnvironmentCard, GameState, PlayerAction, PlayerIndex, SuperpowerCard } from './types.js';
 
 type EffectOf<K extends Effect['kind']> = Extract<Effect, { kind: K }>;
 
 interface EffectContext {
+  data?: import('./types.js').GameData;
   state: GameState;
   player: PlayerIndex;
   card: ActionCard | EnvironmentCard | SuperpowerCard;
@@ -54,6 +56,10 @@ function requireEnemyCreature(ctx: EffectContext, lane: number | undefined) {
 }
 
 export const EFFECTS: { [K in Effect['kind']]: EffectResolver<K> } = {
+  script(ctx, effect) {
+    if (!ctx.data || ctx.action.type !== 'playAction') throw new GameRuleError('Kartendaten für Aktion fehlen.');
+    resolveScript(ctx.state, ctx.player, ctx.card, ctx.action, effect, ctx.data);
+  },
   buff(ctx, effect) {
     const { creature, lane } = requireFriendlyCreature(ctx, targetLane(ctx.action));
     creature.permAttackBonus += effect.atk;

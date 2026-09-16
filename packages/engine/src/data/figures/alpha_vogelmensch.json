@@ -1,0 +1,2909 @@
+{
+  "cardId": "alpha_vogelmensch",
+  "visual": {
+    "detailLevel": "high",
+    "height": 1.1,
+    "palette": {
+      "skin": "#c9bb87",
+      "skinLight": "#d8c99a",
+      "skinShade": "#a18e64",
+      "helmet": "#526057",
+      "helmetShade": "#39453f",
+      "spots": "#dfdfc7",
+      "feather": "#d3d1b8",
+      "featherLight": "#e4e0ca",
+      "tips": "#51524d",
+      "tipDark": "#343a37",
+      "skirt": "#8c4936",
+      "skirtShade": "#683c30",
+      "belt": "#443d2d",
+      "gold": "#d6ac35",
+      "goldShade": "#ad8529",
+      "eye": "#f0ebd7",
+      "ink": "#272d28"
+    },
+    "parts": [
+      {
+        "id": "stance",
+        "shape": "group",
+        "pos": [
+          0,
+          1.04,
+          0
+        ]
+      },
+      {
+        "id": "legL",
+        "shape": "group",
+        "pos": [
+          -0.2,
+          -0.16,
+          0
+        ],
+        "parent": "stance",
+        "rot": [
+          0,
+          0,
+          0.035
+        ]
+      },
+      {
+        "id": "shinL",
+        "shape": "capsule",
+        "size": [
+          0.103,
+          0.46
+        ],
+        "pos": [
+          0,
+          -0.25,
+          0
+        ],
+        "parent": "legL",
+        "color": "skin"
+      },
+      {
+        "id": "bootL",
+        "shape": "capsule",
+        "size": [
+          0.125,
+          0.22
+        ],
+        "pos": [
+          0,
+          -0.64,
+          0.02
+        ],
+        "parent": "legL",
+        "color": "gold"
+      },
+      {
+        "id": "footL",
+        "shape": "sph",
+        "size": 0.14,
+        "pos": [
+          0,
+          -0.82,
+          0.15
+        ],
+        "parent": "legL",
+        "color": "gold",
+        "scale": [
+          1.04,
+          0.61,
+          1.95
+        ]
+      },
+      {
+        "id": "bootTrimL",
+        "shape": "cyl",
+        "size": [
+          0.16,
+          0.13,
+          0.1
+        ],
+        "pos": [
+          0,
+          -0.465,
+          0
+        ],
+        "parent": "legL",
+        "color": "feather"
+      },
+      {
+        "id": "legR",
+        "shape": "group",
+        "pos": [
+          0.2,
+          -0.16,
+          0
+        ],
+        "parent": "stance",
+        "rot": [
+          0,
+          0,
+          -0.035
+        ]
+      },
+      {
+        "id": "shinR",
+        "shape": "capsule",
+        "size": [
+          0.103,
+          0.46
+        ],
+        "pos": [
+          0,
+          -0.25,
+          0
+        ],
+        "parent": "legR",
+        "color": "skin"
+      },
+      {
+        "id": "bootR",
+        "shape": "capsule",
+        "size": [
+          0.125,
+          0.22
+        ],
+        "pos": [
+          0,
+          -0.64,
+          0.02
+        ],
+        "parent": "legR",
+        "color": "gold"
+      },
+      {
+        "id": "footR",
+        "shape": "sph",
+        "size": 0.14,
+        "pos": [
+          0,
+          -0.82,
+          0.15
+        ],
+        "parent": "legR",
+        "color": "gold",
+        "scale": [
+          1.04,
+          0.61,
+          1.95
+        ]
+      },
+      {
+        "id": "bootTrimR",
+        "shape": "cyl",
+        "size": [
+          0.16,
+          0.13,
+          0.1
+        ],
+        "pos": [
+          0,
+          -0.465,
+          0
+        ],
+        "parent": "legR",
+        "color": "feather"
+      },
+      {
+        "id": "skirt",
+        "shape": "cyl",
+        "size": [
+          0.3,
+          0.41,
+          0.48
+        ],
+        "pos": [
+          0,
+          -0.13,
+          0
+        ],
+        "parent": "stance",
+        "color": "skirt",
+        "scale": [
+          1,
+          1,
+          0.72
+        ]
+      },
+      {
+        "id": "skirtFold0",
+        "shape": "cone",
+        "size": [
+          0.095,
+          0.26
+        ],
+        "pos": [
+          -0.28,
+          -0.36,
+          0.22
+        ],
+        "parent": "stance",
+        "color": "skirt",
+        "rot": [
+          0,
+          0,
+          3.141592653589793
+        ],
+        "scale": [
+          1,
+          1,
+          0.38
+        ]
+      },
+      {
+        "id": "skirtFold1",
+        "shape": "cone",
+        "size": [
+          0.095,
+          0.26
+        ],
+        "pos": [
+          -0.14,
+          -0.36,
+          0.22
+        ],
+        "parent": "stance",
+        "color": "skirtShade",
+        "rot": [
+          0,
+          0,
+          3.141592653589793
+        ],
+        "scale": [
+          1,
+          1,
+          0.38
+        ]
+      },
+      {
+        "id": "skirtFold2",
+        "shape": "cone",
+        "size": [
+          0.095,
+          0.26
+        ],
+        "pos": [
+          0,
+          -0.36,
+          0.22
+        ],
+        "parent": "stance",
+        "color": "skirt",
+        "rot": [
+          0,
+          0,
+          3.141592653589793
+        ],
+        "scale": [
+          1,
+          1,
+          0.38
+        ]
+      },
+      {
+        "id": "skirtFold3",
+        "shape": "cone",
+        "size": [
+          0.095,
+          0.26
+        ],
+        "pos": [
+          0.14,
+          -0.36,
+          0.22
+        ],
+        "parent": "stance",
+        "color": "skirtShade",
+        "rot": [
+          0,
+          0,
+          3.141592653589793
+        ],
+        "scale": [
+          1,
+          1,
+          0.38
+        ]
+      },
+      {
+        "id": "skirtFold4",
+        "shape": "cone",
+        "size": [
+          0.095,
+          0.26
+        ],
+        "pos": [
+          0.28,
+          -0.36,
+          0.22
+        ],
+        "parent": "stance",
+        "color": "skirt",
+        "rot": [
+          0,
+          0,
+          3.141592653589793
+        ],
+        "scale": [
+          1,
+          1,
+          0.38
+        ]
+      },
+      {
+        "id": "belt",
+        "shape": "cyl",
+        "size": [
+          0.32,
+          0.33,
+          0.105
+        ],
+        "pos": [
+          0,
+          0.135,
+          0
+        ],
+        "parent": "stance",
+        "color": "belt",
+        "scale": [
+          1,
+          1,
+          0.75
+        ]
+      },
+      {
+        "id": "buckle",
+        "shape": "box",
+        "size": [
+          0.13,
+          0.1,
+          0.035
+        ],
+        "pos": [
+          0,
+          0.135,
+          0.255
+        ],
+        "parent": "stance",
+        "color": "goldShade"
+      },
+      {
+        "id": "body",
+        "shape": "group",
+        "pos": [
+          0,
+          0.53,
+          0
+        ],
+        "parent": "stance"
+      },
+      {
+        "id": "abdomen",
+        "shape": "sph",
+        "size": 0.31,
+        "pos": [
+          0,
+          -0.15,
+          0
+        ],
+        "parent": "body",
+        "color": "skin",
+        "scale": [
+          0.85,
+          1.25,
+          0.71
+        ]
+      },
+      {
+        "id": "chest",
+        "shape": "sph",
+        "size": 0.39,
+        "pos": [
+          0,
+          0.19,
+          0
+        ],
+        "parent": "body",
+        "color": "skinLight",
+        "scale": [
+          1.12,
+          1,
+          0.63
+        ]
+      },
+      {
+        "id": "neck",
+        "shape": "cyl",
+        "size": [
+          0.11,
+          0.13,
+          0.24
+        ],
+        "pos": [
+          0,
+          0.6,
+          0
+        ],
+        "parent": "body",
+        "color": "skin"
+      },
+      {
+        "id": "wingL",
+        "shape": "group",
+        "pos": [
+          -0.33,
+          0.43,
+          -0.22
+        ],
+        "parent": "body",
+        "rot": [
+          -0.11,
+          -0.1,
+          -0.08
+        ]
+      },
+      {
+        "id": "wingShoulderL",
+        "shape": "sph",
+        "size": 0.34,
+        "pos": [
+          -0.14,
+          -0.25,
+          0
+        ],
+        "parent": "wingL",
+        "color": "featherLight",
+        "scale": [
+          1,
+          1.58,
+          0.28
+        ]
+      },
+      {
+        "id": "quillL0",
+        "shape": "group",
+        "pos": [
+          -0.015,
+          -0.2,
+          -0.015
+        ],
+        "parent": "wingL",
+        "rot": [
+          0,
+          0,
+          -0.02
+        ]
+      },
+      {
+        "id": "featherL0",
+        "shape": "capsule",
+        "size": [
+          0.088,
+          0.94
+        ],
+        "pos": [
+          0,
+          -0.47,
+          0
+        ],
+        "parent": "quillL0",
+        "color": "featherLight",
+        "scale": [
+          1,
+          1,
+          0.4
+        ]
+      },
+      {
+        "id": "tipL0",
+        "shape": "cone",
+        "size": [
+          0.088,
+          0.34
+        ],
+        "pos": [
+          0,
+          -1.1199999999999999,
+          0
+        ],
+        "parent": "quillL0",
+        "color": "tips",
+        "rot": [
+          0,
+          0,
+          3.141592653589793
+        ],
+        "scale": [
+          1,
+          1,
+          0.4
+        ]
+      },
+      {
+        "id": "quillL1",
+        "shape": "group",
+        "pos": [
+          -0.09,
+          -0.2,
+          -0.015
+        ],
+        "parent": "wingL",
+        "rot": [
+          0,
+          0,
+          -0.075
+        ]
+      },
+      {
+        "id": "featherL1",
+        "shape": "capsule",
+        "size": [
+          0.088,
+          0.8849999999999999
+        ],
+        "pos": [
+          0,
+          -0.44249999999999995,
+          0
+        ],
+        "parent": "quillL1",
+        "color": "feather",
+        "scale": [
+          1,
+          1,
+          0.4
+        ]
+      },
+      {
+        "id": "tipL1",
+        "shape": "cone",
+        "size": [
+          0.088,
+          0.34
+        ],
+        "pos": [
+          0,
+          -1.065,
+          0
+        ],
+        "parent": "quillL1",
+        "color": "tipDark",
+        "rot": [
+          0,
+          0,
+          3.141592653589793
+        ],
+        "scale": [
+          1,
+          1,
+          0.4
+        ]
+      },
+      {
+        "id": "quillL2",
+        "shape": "group",
+        "pos": [
+          -0.16499999999999998,
+          -0.2,
+          -0.015
+        ],
+        "parent": "wingL",
+        "rot": [
+          0,
+          0,
+          -0.13
+        ]
+      },
+      {
+        "id": "featherL2",
+        "shape": "capsule",
+        "size": [
+          0.088,
+          0.83
+        ],
+        "pos": [
+          0,
+          -0.415,
+          0
+        ],
+        "parent": "quillL2",
+        "color": "featherLight",
+        "scale": [
+          1,
+          1,
+          0.4
+        ]
+      },
+      {
+        "id": "tipL2",
+        "shape": "cone",
+        "size": [
+          0.088,
+          0.34
+        ],
+        "pos": [
+          0,
+          -1.01,
+          0
+        ],
+        "parent": "quillL2",
+        "color": "tips",
+        "rot": [
+          0,
+          0,
+          3.141592653589793
+        ],
+        "scale": [
+          1,
+          1,
+          0.4
+        ]
+      },
+      {
+        "id": "quillL3",
+        "shape": "group",
+        "pos": [
+          -0.24,
+          -0.2,
+          -0.015
+        ],
+        "parent": "wingL",
+        "rot": [
+          0,
+          0,
+          -0.185
+        ]
+      },
+      {
+        "id": "featherL3",
+        "shape": "capsule",
+        "size": [
+          0.088,
+          0.7749999999999999
+        ],
+        "pos": [
+          0,
+          -0.38749999999999996,
+          0
+        ],
+        "parent": "quillL3",
+        "color": "feather",
+        "scale": [
+          1,
+          1,
+          0.4
+        ]
+      },
+      {
+        "id": "tipL3",
+        "shape": "cone",
+        "size": [
+          0.088,
+          0.34
+        ],
+        "pos": [
+          0,
+          -0.9549999999999998,
+          0
+        ],
+        "parent": "quillL3",
+        "color": "tipDark",
+        "rot": [
+          0,
+          0,
+          3.141592653589793
+        ],
+        "scale": [
+          1,
+          1,
+          0.4
+        ]
+      },
+      {
+        "id": "quillL4",
+        "shape": "group",
+        "pos": [
+          -0.315,
+          -0.2,
+          -0.015
+        ],
+        "parent": "wingL",
+        "rot": [
+          0,
+          0,
+          -0.24
+        ]
+      },
+      {
+        "id": "featherL4",
+        "shape": "capsule",
+        "size": [
+          0.088,
+          0.72
+        ],
+        "pos": [
+          0,
+          -0.36,
+          0
+        ],
+        "parent": "quillL4",
+        "color": "featherLight",
+        "scale": [
+          1,
+          1,
+          0.4
+        ]
+      },
+      {
+        "id": "tipL4",
+        "shape": "cone",
+        "size": [
+          0.088,
+          0.34
+        ],
+        "pos": [
+          0,
+          -0.8999999999999999,
+          0
+        ],
+        "parent": "quillL4",
+        "color": "tips",
+        "rot": [
+          0,
+          0,
+          3.141592653589793
+        ],
+        "scale": [
+          1,
+          1,
+          0.4
+        ]
+      },
+      {
+        "id": "quillL5",
+        "shape": "group",
+        "pos": [
+          -0.39,
+          -0.2,
+          -0.015
+        ],
+        "parent": "wingL",
+        "rot": [
+          0,
+          0,
+          -0.29500000000000004
+        ]
+      },
+      {
+        "id": "featherL5",
+        "shape": "capsule",
+        "size": [
+          0.088,
+          0.6649999999999999
+        ],
+        "pos": [
+          0,
+          -0.33249999999999996,
+          0
+        ],
+        "parent": "quillL5",
+        "color": "feather",
+        "scale": [
+          1,
+          1,
+          0.4
+        ]
+      },
+      {
+        "id": "tipL5",
+        "shape": "cone",
+        "size": [
+          0.088,
+          0.34
+        ],
+        "pos": [
+          0,
+          -0.845,
+          0
+        ],
+        "parent": "quillL5",
+        "color": "tipDark",
+        "rot": [
+          0,
+          0,
+          3.141592653589793
+        ],
+        "scale": [
+          1,
+          1,
+          0.4
+        ]
+      },
+      {
+        "id": "quillL6",
+        "shape": "group",
+        "pos": [
+          -0.46499999999999997,
+          -0.2,
+          -0.015
+        ],
+        "parent": "wingL",
+        "rot": [
+          0,
+          0,
+          -0.35000000000000003
+        ]
+      },
+      {
+        "id": "featherL6",
+        "shape": "capsule",
+        "size": [
+          0.088,
+          0.6099999999999999
+        ],
+        "pos": [
+          0,
+          -0.30499999999999994,
+          0
+        ],
+        "parent": "quillL6",
+        "color": "featherLight",
+        "scale": [
+          1,
+          1,
+          0.4
+        ]
+      },
+      {
+        "id": "tipL6",
+        "shape": "cone",
+        "size": [
+          0.088,
+          0.34
+        ],
+        "pos": [
+          0,
+          -0.7899999999999998,
+          0
+        ],
+        "parent": "quillL6",
+        "color": "tips",
+        "rot": [
+          0,
+          0,
+          3.141592653589793
+        ],
+        "scale": [
+          1,
+          1,
+          0.4
+        ]
+      },
+      {
+        "id": "armL",
+        "shape": "group",
+        "pos": [
+          -0.41,
+          0.32,
+          0.03
+        ],
+        "parent": "body",
+        "rot": [
+          -0.06,
+          0,
+          -0.08
+        ]
+      },
+      {
+        "id": "upperArmL",
+        "shape": "capsule",
+        "size": [
+          0.105,
+          0.34
+        ],
+        "pos": [
+          0,
+          -0.24,
+          0
+        ],
+        "parent": "armL",
+        "color": "skinLight"
+      },
+      {
+        "id": "elbowL",
+        "shape": "group",
+        "pos": [
+          0,
+          -0.45,
+          0
+        ],
+        "parent": "armL",
+        "rot": [
+          -0.13,
+          0,
+          0
+        ]
+      },
+      {
+        "id": "gauntletL",
+        "shape": "capsule",
+        "size": [
+          0.105,
+          0.28
+        ],
+        "pos": [
+          0,
+          -0.18,
+          0
+        ],
+        "parent": "elbowL",
+        "color": "gold"
+      },
+      {
+        "id": "cuffL",
+        "shape": "cyl",
+        "size": [
+          0.145,
+          0.115,
+          0.1
+        ],
+        "pos": [
+          0,
+          -0.01,
+          0
+        ],
+        "parent": "elbowL",
+        "color": "feather"
+      },
+      {
+        "id": "handL",
+        "shape": "sph",
+        "size": 0.115,
+        "pos": [
+          0,
+          -0.405,
+          0.025
+        ],
+        "parent": "elbowL",
+        "color": "gold",
+        "scale": [
+          0.88,
+          1.1,
+          0.7
+        ]
+      },
+      {
+        "id": "fingerL0",
+        "shape": "capsule",
+        "size": [
+          0.024,
+          0.065
+        ],
+        "pos": [
+          -0.05,
+          -0.5,
+          0.035
+        ],
+        "parent": "elbowL",
+        "color": "gold"
+      },
+      {
+        "id": "fingerL1",
+        "shape": "capsule",
+        "size": [
+          0.024,
+          0.065
+        ],
+        "pos": [
+          0,
+          -0.5,
+          0.035
+        ],
+        "parent": "elbowL",
+        "color": "gold"
+      },
+      {
+        "id": "fingerL2",
+        "shape": "capsule",
+        "size": [
+          0.024,
+          0.065
+        ],
+        "pos": [
+          0.05,
+          -0.5,
+          0.035
+        ],
+        "parent": "elbowL",
+        "color": "gold"
+      },
+      {
+        "id": "wingR",
+        "shape": "group",
+        "pos": [
+          0.33,
+          0.43,
+          -0.22
+        ],
+        "parent": "body",
+        "rot": [
+          -0.11,
+          0.1,
+          0.08
+        ]
+      },
+      {
+        "id": "wingShoulderR",
+        "shape": "sph",
+        "size": 0.34,
+        "pos": [
+          0.14,
+          -0.25,
+          0
+        ],
+        "parent": "wingR",
+        "color": "featherLight",
+        "scale": [
+          1,
+          1.58,
+          0.28
+        ]
+      },
+      {
+        "id": "quillR0",
+        "shape": "group",
+        "pos": [
+          0.015,
+          -0.2,
+          -0.015
+        ],
+        "parent": "wingR",
+        "rot": [
+          0,
+          0,
+          0.02
+        ]
+      },
+      {
+        "id": "featherR0",
+        "shape": "capsule",
+        "size": [
+          0.088,
+          0.94
+        ],
+        "pos": [
+          0,
+          -0.47,
+          0
+        ],
+        "parent": "quillR0",
+        "color": "featherLight",
+        "scale": [
+          1,
+          1,
+          0.4
+        ]
+      },
+      {
+        "id": "tipR0",
+        "shape": "cone",
+        "size": [
+          0.088,
+          0.34
+        ],
+        "pos": [
+          0,
+          -1.1199999999999999,
+          0
+        ],
+        "parent": "quillR0",
+        "color": "tips",
+        "rot": [
+          0,
+          0,
+          3.141592653589793
+        ],
+        "scale": [
+          1,
+          1,
+          0.4
+        ]
+      },
+      {
+        "id": "quillR1",
+        "shape": "group",
+        "pos": [
+          0.09,
+          -0.2,
+          -0.015
+        ],
+        "parent": "wingR",
+        "rot": [
+          0,
+          0,
+          0.075
+        ]
+      },
+      {
+        "id": "featherR1",
+        "shape": "capsule",
+        "size": [
+          0.088,
+          0.8849999999999999
+        ],
+        "pos": [
+          0,
+          -0.44249999999999995,
+          0
+        ],
+        "parent": "quillR1",
+        "color": "feather",
+        "scale": [
+          1,
+          1,
+          0.4
+        ]
+      },
+      {
+        "id": "tipR1",
+        "shape": "cone",
+        "size": [
+          0.088,
+          0.34
+        ],
+        "pos": [
+          0,
+          -1.065,
+          0
+        ],
+        "parent": "quillR1",
+        "color": "tipDark",
+        "rot": [
+          0,
+          0,
+          3.141592653589793
+        ],
+        "scale": [
+          1,
+          1,
+          0.4
+        ]
+      },
+      {
+        "id": "quillR2",
+        "shape": "group",
+        "pos": [
+          0.16499999999999998,
+          -0.2,
+          -0.015
+        ],
+        "parent": "wingR",
+        "rot": [
+          0,
+          0,
+          0.13
+        ]
+      },
+      {
+        "id": "featherR2",
+        "shape": "capsule",
+        "size": [
+          0.088,
+          0.83
+        ],
+        "pos": [
+          0,
+          -0.415,
+          0
+        ],
+        "parent": "quillR2",
+        "color": "featherLight",
+        "scale": [
+          1,
+          1,
+          0.4
+        ]
+      },
+      {
+        "id": "tipR2",
+        "shape": "cone",
+        "size": [
+          0.088,
+          0.34
+        ],
+        "pos": [
+          0,
+          -1.01,
+          0
+        ],
+        "parent": "quillR2",
+        "color": "tips",
+        "rot": [
+          0,
+          0,
+          3.141592653589793
+        ],
+        "scale": [
+          1,
+          1,
+          0.4
+        ]
+      },
+      {
+        "id": "quillR3",
+        "shape": "group",
+        "pos": [
+          0.24,
+          -0.2,
+          -0.015
+        ],
+        "parent": "wingR",
+        "rot": [
+          0,
+          0,
+          0.185
+        ]
+      },
+      {
+        "id": "featherR3",
+        "shape": "capsule",
+        "size": [
+          0.088,
+          0.7749999999999999
+        ],
+        "pos": [
+          0,
+          -0.38749999999999996,
+          0
+        ],
+        "parent": "quillR3",
+        "color": "feather",
+        "scale": [
+          1,
+          1,
+          0.4
+        ]
+      },
+      {
+        "id": "tipR3",
+        "shape": "cone",
+        "size": [
+          0.088,
+          0.34
+        ],
+        "pos": [
+          0,
+          -0.9549999999999998,
+          0
+        ],
+        "parent": "quillR3",
+        "color": "tipDark",
+        "rot": [
+          0,
+          0,
+          3.141592653589793
+        ],
+        "scale": [
+          1,
+          1,
+          0.4
+        ]
+      },
+      {
+        "id": "quillR4",
+        "shape": "group",
+        "pos": [
+          0.315,
+          -0.2,
+          -0.015
+        ],
+        "parent": "wingR",
+        "rot": [
+          0,
+          0,
+          0.24
+        ]
+      },
+      {
+        "id": "featherR4",
+        "shape": "capsule",
+        "size": [
+          0.088,
+          0.72
+        ],
+        "pos": [
+          0,
+          -0.36,
+          0
+        ],
+        "parent": "quillR4",
+        "color": "featherLight",
+        "scale": [
+          1,
+          1,
+          0.4
+        ]
+      },
+      {
+        "id": "tipR4",
+        "shape": "cone",
+        "size": [
+          0.088,
+          0.34
+        ],
+        "pos": [
+          0,
+          -0.8999999999999999,
+          0
+        ],
+        "parent": "quillR4",
+        "color": "tips",
+        "rot": [
+          0,
+          0,
+          3.141592653589793
+        ],
+        "scale": [
+          1,
+          1,
+          0.4
+        ]
+      },
+      {
+        "id": "quillR5",
+        "shape": "group",
+        "pos": [
+          0.39,
+          -0.2,
+          -0.015
+        ],
+        "parent": "wingR",
+        "rot": [
+          0,
+          0,
+          0.29500000000000004
+        ]
+      },
+      {
+        "id": "featherR5",
+        "shape": "capsule",
+        "size": [
+          0.088,
+          0.6649999999999999
+        ],
+        "pos": [
+          0,
+          -0.33249999999999996,
+          0
+        ],
+        "parent": "quillR5",
+        "color": "feather",
+        "scale": [
+          1,
+          1,
+          0.4
+        ]
+      },
+      {
+        "id": "tipR5",
+        "shape": "cone",
+        "size": [
+          0.088,
+          0.34
+        ],
+        "pos": [
+          0,
+          -0.845,
+          0
+        ],
+        "parent": "quillR5",
+        "color": "tipDark",
+        "rot": [
+          0,
+          0,
+          3.141592653589793
+        ],
+        "scale": [
+          1,
+          1,
+          0.4
+        ]
+      },
+      {
+        "id": "quillR6",
+        "shape": "group",
+        "pos": [
+          0.46499999999999997,
+          -0.2,
+          -0.015
+        ],
+        "parent": "wingR",
+        "rot": [
+          0,
+          0,
+          0.35000000000000003
+        ]
+      },
+      {
+        "id": "featherR6",
+        "shape": "capsule",
+        "size": [
+          0.088,
+          0.6099999999999999
+        ],
+        "pos": [
+          0,
+          -0.30499999999999994,
+          0
+        ],
+        "parent": "quillR6",
+        "color": "featherLight",
+        "scale": [
+          1,
+          1,
+          0.4
+        ]
+      },
+      {
+        "id": "tipR6",
+        "shape": "cone",
+        "size": [
+          0.088,
+          0.34
+        ],
+        "pos": [
+          0,
+          -0.7899999999999998,
+          0
+        ],
+        "parent": "quillR6",
+        "color": "tips",
+        "rot": [
+          0,
+          0,
+          3.141592653589793
+        ],
+        "scale": [
+          1,
+          1,
+          0.4
+        ]
+      },
+      {
+        "id": "armR",
+        "shape": "group",
+        "pos": [
+          0.41,
+          0.32,
+          0.03
+        ],
+        "parent": "body",
+        "rot": [
+          -0.06,
+          0,
+          0.08
+        ]
+      },
+      {
+        "id": "upperArmR",
+        "shape": "capsule",
+        "size": [
+          0.105,
+          0.34
+        ],
+        "pos": [
+          0,
+          -0.24,
+          0
+        ],
+        "parent": "armR",
+        "color": "skinLight"
+      },
+      {
+        "id": "elbowR",
+        "shape": "group",
+        "pos": [
+          0,
+          -0.45,
+          0
+        ],
+        "parent": "armR",
+        "rot": [
+          -0.13,
+          0,
+          0
+        ]
+      },
+      {
+        "id": "gauntletR",
+        "shape": "capsule",
+        "size": [
+          0.105,
+          0.28
+        ],
+        "pos": [
+          0,
+          -0.18,
+          0
+        ],
+        "parent": "elbowR",
+        "color": "gold"
+      },
+      {
+        "id": "cuffR",
+        "shape": "cyl",
+        "size": [
+          0.145,
+          0.115,
+          0.1
+        ],
+        "pos": [
+          0,
+          -0.01,
+          0
+        ],
+        "parent": "elbowR",
+        "color": "feather"
+      },
+      {
+        "id": "handR",
+        "shape": "sph",
+        "size": 0.115,
+        "pos": [
+          0,
+          -0.405,
+          0.025
+        ],
+        "parent": "elbowR",
+        "color": "gold",
+        "scale": [
+          0.88,
+          1.1,
+          0.7
+        ]
+      },
+      {
+        "id": "fingerR0",
+        "shape": "capsule",
+        "size": [
+          0.024,
+          0.065
+        ],
+        "pos": [
+          -0.05,
+          -0.5,
+          0.035
+        ],
+        "parent": "elbowR",
+        "color": "gold"
+      },
+      {
+        "id": "fingerR1",
+        "shape": "capsule",
+        "size": [
+          0.024,
+          0.065
+        ],
+        "pos": [
+          0,
+          -0.5,
+          0.035
+        ],
+        "parent": "elbowR",
+        "color": "gold"
+      },
+      {
+        "id": "fingerR2",
+        "shape": "capsule",
+        "size": [
+          0.024,
+          0.065
+        ],
+        "pos": [
+          0.05,
+          -0.5,
+          0.035
+        ],
+        "parent": "elbowR",
+        "color": "gold"
+      },
+      {
+        "id": "ruff0",
+        "shape": "cone",
+        "size": [
+          0.105,
+          0.29
+        ],
+        "pos": [
+          0.28,
+          0.47,
+          0
+        ],
+        "parent": "body",
+        "color": "featherLight",
+        "rot": [
+          0,
+          0,
+          2.641592653589793
+        ],
+        "scale": [
+          1,
+          1,
+          0.48
+        ]
+      },
+      {
+        "id": "ruff1",
+        "shape": "cone",
+        "size": [
+          0.105,
+          0.29
+        ],
+        "pos": [
+          0.21449244407331386,
+          0.47,
+          0.12855752193730785
+        ],
+        "parent": "body",
+        "color": "feather",
+        "rot": [
+          0,
+          0,
+          2.758570432030304
+        ],
+        "scale": [
+          1,
+          1,
+          0.48
+        ]
+      },
+      {
+        "id": "ruff2",
+        "shape": "cone",
+        "size": [
+          0.105,
+          0.29
+        ],
+        "pos": [
+          0.04862148974674052,
+          0.47,
+          0.1969615506024416
+        ],
+        "parent": "body",
+        "color": "featherLight",
+        "rot": [
+          0,
+          0,
+          3.054768564756328
+        ],
+        "scale": [
+          1,
+          1,
+          0.48
+        ]
+      },
+      {
+        "id": "ruff3",
+        "shape": "cone",
+        "size": [
+          0.105,
+          0.29
+        ],
+        "pos": [
+          -0.13999999999999996,
+          0.47,
+          0.17320508075688776
+        ],
+        "parent": "body",
+        "color": "feather",
+        "rot": [
+          0,
+          0,
+          3.391592653589793
+        ],
+        "scale": [
+          1,
+          1,
+          0.48
+        ]
+      },
+      {
+        "id": "ruff4",
+        "shape": "cone",
+        "size": [
+          0.105,
+          0.29
+        ],
+        "pos": [
+          -0.2631139338200544,
+          0.47,
+          0.06840402866513377
+        ],
+        "parent": "body",
+        "color": "featherLight",
+        "rot": [
+          0,
+          0,
+          3.611438963982747
+        ],
+        "scale": [
+          1,
+          1,
+          0.48
+        ]
+      },
+      {
+        "id": "ruff5",
+        "shape": "cone",
+        "size": [
+          0.105,
+          0.29
+        ],
+        "pos": [
+          -0.2631139338200544,
+          0.47,
+          -0.06840402866513373
+        ],
+        "parent": "body",
+        "color": "feather",
+        "rot": [
+          0,
+          0,
+          3.6114389639827476
+        ],
+        "scale": [
+          1,
+          1,
+          0.48
+        ]
+      },
+      {
+        "id": "ruff6",
+        "shape": "cone",
+        "size": [
+          0.105,
+          0.29
+        ],
+        "pos": [
+          -0.14000000000000012,
+          0.47,
+          -0.1732050807568877
+        ],
+        "parent": "body",
+        "color": "featherLight",
+        "rot": [
+          0,
+          0,
+          3.391592653589793
+        ],
+        "scale": [
+          1,
+          1,
+          0.48
+        ]
+      },
+      {
+        "id": "ruff7",
+        "shape": "cone",
+        "size": [
+          0.105,
+          0.29
+        ],
+        "pos": [
+          0.048621489746740396,
+          0.47,
+          -0.19696155060244164
+        ],
+        "parent": "body",
+        "color": "feather",
+        "rot": [
+          0,
+          0,
+          3.054768564756328
+        ],
+        "scale": [
+          1,
+          1,
+          0.48
+        ]
+      },
+      {
+        "id": "ruff8",
+        "shape": "cone",
+        "size": [
+          0.105,
+          0.29
+        ],
+        "pos": [
+          0.2144924440733138,
+          0.47,
+          -0.12855752193730793
+        ],
+        "parent": "body",
+        "color": "featherLight",
+        "rot": [
+          0,
+          0,
+          2.758570432030304
+        ],
+        "scale": [
+          1,
+          1,
+          0.48
+        ]
+      },
+      {
+        "id": "head",
+        "shape": "group",
+        "pos": [
+          0,
+          0.97,
+          0.01
+        ],
+        "parent": "body"
+      },
+      {
+        "id": "face",
+        "shape": "sph",
+        "size": 0.29,
+        "pos": [
+          0,
+          0,
+          0.005
+        ],
+        "parent": "head",
+        "color": "skinLight",
+        "scale": [
+          0.94,
+          1.33,
+          0.8
+        ]
+      },
+      {
+        "id": "jaw",
+        "shape": "sph",
+        "size": 0.21,
+        "pos": [
+          0,
+          -0.255,
+          0.035
+        ],
+        "parent": "head",
+        "color": "skin",
+        "scale": [
+          1.06,
+          0.62,
+          0.87
+        ]
+      },
+      {
+        "id": "helmet",
+        "shape": "sph",
+        "size": 0.31,
+        "pos": [
+          0,
+          0.12,
+          -0.075
+        ],
+        "parent": "head",
+        "color": "helmet",
+        "scale": [
+          1.1,
+          1.26,
+          0.8
+        ]
+      },
+      {
+        "id": "sideFeatherL",
+        "shape": "capsule",
+        "size": [
+          0.08,
+          0.45
+        ],
+        "pos": [
+          -0.285,
+          -0.045,
+          -0.005
+        ],
+        "parent": "head",
+        "color": "helmetShade",
+        "scale": [
+          1,
+          1,
+          0.55
+        ]
+      },
+      {
+        "id": "eyeL",
+        "shape": "sph",
+        "size": 0.102,
+        "pos": [
+          -0.116,
+          0.055,
+          0.222
+        ],
+        "parent": "head",
+        "color": "eye",
+        "scale": [
+          1.1,
+          0.66,
+          0.34
+        ]
+      },
+      {
+        "id": "pupilL",
+        "shape": "sph",
+        "size": 0.023,
+        "pos": [
+          -0.108,
+          0.051,
+          0.257
+        ],
+        "parent": "head",
+        "color": "ink",
+        "scale": [
+          0.86,
+          1.05,
+          0.4
+        ]
+      },
+      {
+        "id": "browL",
+        "shape": "capsule",
+        "size": [
+          0.026,
+          0.15
+        ],
+        "pos": [
+          -0.119,
+          0.123,
+          0.245
+        ],
+        "parent": "head",
+        "color": "helmetShade",
+        "rot": [
+          0,
+          0,
+          1.4207963267948966
+        ],
+        "scale": [
+          1,
+          1,
+          0.6
+        ]
+      },
+      {
+        "id": "sideFeatherR",
+        "shape": "capsule",
+        "size": [
+          0.08,
+          0.45
+        ],
+        "pos": [
+          0.285,
+          -0.045,
+          -0.005
+        ],
+        "parent": "head",
+        "color": "helmetShade",
+        "scale": [
+          1,
+          1,
+          0.55
+        ]
+      },
+      {
+        "id": "eyeR",
+        "shape": "sph",
+        "size": 0.102,
+        "pos": [
+          0.116,
+          0.055,
+          0.222
+        ],
+        "parent": "head",
+        "color": "eye",
+        "scale": [
+          1.1,
+          0.66,
+          0.34
+        ]
+      },
+      {
+        "id": "pupilR",
+        "shape": "sph",
+        "size": 0.023,
+        "pos": [
+          0.108,
+          0.051,
+          0.257
+        ],
+        "parent": "head",
+        "color": "ink",
+        "scale": [
+          0.86,
+          1.05,
+          0.4
+        ]
+      },
+      {
+        "id": "browR",
+        "shape": "capsule",
+        "size": [
+          0.026,
+          0.15
+        ],
+        "pos": [
+          0.119,
+          0.123,
+          0.245
+        ],
+        "parent": "head",
+        "color": "helmetShade",
+        "rot": [
+          0,
+          0,
+          1.7207963267948965
+        ],
+        "scale": [
+          1,
+          1,
+          0.6
+        ]
+      },
+      {
+        "id": "nose",
+        "shape": "capsule",
+        "size": [
+          0.053,
+          0.21
+        ],
+        "pos": [
+          0,
+          -0.075,
+          0.28
+        ],
+        "parent": "head",
+        "color": "skinLight",
+        "rot": [
+          -0.23,
+          0,
+          0
+        ],
+        "scale": [
+          0.85,
+          1,
+          1.1
+        ]
+      },
+      {
+        "id": "noseHook",
+        "shape": "sph",
+        "size": 0.058,
+        "pos": [
+          0,
+          -0.2,
+          0.313
+        ],
+        "parent": "head",
+        "color": "skinLight",
+        "scale": [
+          0.82,
+          1.12,
+          0.92
+        ]
+      },
+      {
+        "id": "mouth",
+        "shape": "capsule",
+        "size": [
+          0.012,
+          0.16
+        ],
+        "pos": [
+          0,
+          -0.3,
+          0.205
+        ],
+        "parent": "head",
+        "color": "ink",
+        "rot": [
+          0,
+          0,
+          1.5707963267948966
+        ],
+        "scale": [
+          1,
+          1,
+          0.55
+        ]
+      },
+      {
+        "id": "crest",
+        "shape": "group",
+        "pos": [
+          0,
+          0.395,
+          -0.055
+        ],
+        "parent": "head"
+      },
+      {
+        "id": "crestFeather0",
+        "shape": "cone",
+        "size": [
+          0.072,
+          0.22000000000000003
+        ],
+        "pos": [
+          -0.122,
+          0.085,
+          0
+        ],
+        "parent": "crest",
+        "color": "helmet",
+        "rot": [
+          -0.12,
+          0,
+          0.34
+        ],
+        "scale": [
+          1,
+          1,
+          0.45
+        ]
+      },
+      {
+        "id": "crestFeather1",
+        "shape": "cone",
+        "size": [
+          0.072,
+          0.24500000000000002
+        ],
+        "pos": [
+          -0.061,
+          0.085,
+          0
+        ],
+        "parent": "crest",
+        "color": "helmetShade",
+        "rot": [
+          -0.12,
+          0,
+          0.17
+        ],
+        "scale": [
+          1,
+          1,
+          0.45
+        ]
+      },
+      {
+        "id": "crestFeather2",
+        "shape": "cone",
+        "size": [
+          0.072,
+          0.27
+        ],
+        "pos": [
+          0,
+          0.085,
+          0
+        ],
+        "parent": "crest",
+        "color": "helmet",
+        "rot": [
+          -0.12,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          0.45
+        ]
+      },
+      {
+        "id": "crestFeather3",
+        "shape": "cone",
+        "size": [
+          0.072,
+          0.24500000000000002
+        ],
+        "pos": [
+          0.061,
+          0.085,
+          0
+        ],
+        "parent": "crest",
+        "color": "helmetShade",
+        "rot": [
+          -0.12,
+          0,
+          -0.17
+        ],
+        "scale": [
+          1,
+          1,
+          0.45
+        ]
+      },
+      {
+        "id": "crestFeather4",
+        "shape": "cone",
+        "size": [
+          0.072,
+          0.22000000000000003
+        ],
+        "pos": [
+          0.122,
+          0.085,
+          0
+        ],
+        "parent": "crest",
+        "color": "helmet",
+        "rot": [
+          -0.12,
+          0,
+          -0.34
+        ],
+        "scale": [
+          1,
+          1,
+          0.45
+        ]
+      },
+      {
+        "id": "spot0",
+        "shape": "sph",
+        "size": 0.026,
+        "pos": [
+          -0.16,
+          0.3,
+          0.092
+        ],
+        "parent": "head",
+        "color": "spots",
+        "scale": [
+          1,
+          1,
+          0.3
+        ]
+      },
+      {
+        "id": "spot1",
+        "shape": "sph",
+        "size": 0.026,
+        "pos": [
+          0,
+          0.355,
+          0.088
+        ],
+        "parent": "head",
+        "color": "spots",
+        "scale": [
+          1,
+          1,
+          0.3
+        ]
+      },
+      {
+        "id": "spot2",
+        "shape": "sph",
+        "size": 0.026,
+        "pos": [
+          0.16,
+          0.3,
+          0.092
+        ],
+        "parent": "head",
+        "color": "spots",
+        "scale": [
+          1,
+          1,
+          0.3
+        ]
+      },
+      {
+        "id": "spot3",
+        "shape": "sph",
+        "size": 0.026,
+        "pos": [
+          -0.27,
+          0.16,
+          0.06
+        ],
+        "parent": "head",
+        "color": "spots",
+        "scale": [
+          1,
+          1,
+          0.3
+        ]
+      },
+      {
+        "id": "spot4",
+        "shape": "sph",
+        "size": 0.026,
+        "pos": [
+          0.27,
+          0.16,
+          0.06
+        ],
+        "parent": "head",
+        "color": "spots",
+        "scale": [
+          1,
+          1,
+          0.3
+        ]
+      },
+      {
+        "id": "spot5",
+        "shape": "sph",
+        "size": 0.026,
+        "pos": [
+          -0.287,
+          -0.02,
+          0.044
+        ],
+        "parent": "head",
+        "color": "spots",
+        "scale": [
+          1,
+          1,
+          0.3
+        ]
+      },
+      {
+        "id": "spot6",
+        "shape": "sph",
+        "size": 0.026,
+        "pos": [
+          0.287,
+          -0.02,
+          0.044
+        ],
+        "parent": "head",
+        "color": "spots",
+        "scale": [
+          1,
+          1,
+          0.3
+        ]
+      }
+    ]
+  },
+  "animations": {
+    "idle": {
+      "duration": 3.2,
+      "loop": true,
+      "tracks": [
+        {
+          "part": "body",
+          "prop": "pos.y",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              1.6,
+              0.018
+            ],
+            [
+              3.2,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "head",
+          "prop": "rot.y",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              1.6,
+              0.035
+            ],
+            [
+              3.2,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "wingL",
+          "prop": "rot.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              1.6,
+              -0.04
+            ],
+            [
+              3.2,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "wingR",
+          "prop": "rot.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              1.6,
+              0.04
+            ],
+            [
+              3.2,
+              0
+            ]
+          ]
+        }
+      ]
+    },
+    "entrance": {
+      "duration": 1.4,
+      "tracks": [
+        {
+          "part": "root",
+          "prop": "pos.y",
+          "keys": [
+            [
+              0,
+              0.6
+            ],
+            [
+              0.42,
+              0.3
+            ],
+            [
+              0.84,
+              0.035
+            ],
+            [
+              1.04,
+              -0.045
+            ],
+            [
+              1.4,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "wingL",
+          "prop": "rot.z",
+          "keys": [
+            [
+              0,
+              -0.7
+            ],
+            [
+              0.42,
+              -0.25
+            ],
+            [
+              0.84,
+              -0.85
+            ],
+            [
+              1.4,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "wingR",
+          "prop": "rot.z",
+          "keys": [
+            [
+              0,
+              0.7
+            ],
+            [
+              0.42,
+              0.25
+            ],
+            [
+              0.84,
+              0.85
+            ],
+            [
+              1.4,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "legL",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              -0.25
+            ],
+            [
+              0.84,
+              0.08
+            ],
+            [
+              1.4,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "legR",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              -0.25
+            ],
+            [
+              0.84,
+              0.08
+            ],
+            [
+              1.4,
+              0
+            ]
+          ]
+        }
+      ]
+    },
+    "attack": {
+      "duration": 1.2,
+      "tracks": [
+        {
+          "part": "body",
+          "prop": "rot.y",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.3,
+              -0.22
+            ],
+            [
+              0.61,
+              0.3
+            ],
+            [
+              1.2,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "wingL",
+          "prop": "rot.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.3,
+              -0.78
+            ],
+            [
+              0.61,
+              -0.3
+            ],
+            [
+              1.2,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "wingR",
+          "prop": "rot.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.3,
+              0.78
+            ],
+            [
+              0.61,
+              1.1
+            ],
+            [
+              1.2,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "wingR",
+          "prop": "rot.y",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.3,
+              -0.18
+            ],
+            [
+              0.61,
+              -0.75
+            ],
+            [
+              1.2,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "armR",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.3,
+              0.24
+            ],
+            [
+              0.61,
+              -1.25
+            ],
+            [
+              1.2,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "elbowR",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.3,
+              -0.35
+            ],
+            [
+              0.61,
+              0.1
+            ],
+            [
+              1.2,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "head",
+          "prop": "rot.y",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.3,
+              0.12
+            ],
+            [
+              0.61,
+              -0.15
+            ],
+            [
+              1.2,
+              0
+            ]
+          ]
+        }
+      ]
+    },
+    "hit": {
+      "duration": 0.6,
+      "tracks": [
+        {
+          "part": "body",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.14,
+              -0.13
+            ],
+            [
+              0.35,
+              0.045
+            ],
+            [
+              0.6,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "wingL",
+          "prop": "rot.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.14,
+              -0.16
+            ],
+            [
+              0.6,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "wingR",
+          "prop": "rot.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.14,
+              0.16
+            ],
+            [
+              0.6,
+              0
+            ]
+          ]
+        }
+      ]
+    },
+    "death": {
+      "duration": 1.5,
+      "tracks": [
+        {
+          "part": "root",
+          "prop": "rot.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.38,
+              0.14
+            ],
+            [
+              1.1,
+              1.48
+            ],
+            [
+              1.5,
+              1.48
+            ]
+          ]
+        },
+        {
+          "part": "root",
+          "prop": "pos.y",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.38,
+              0
+            ],
+            [
+              1.1,
+              0.3
+            ],
+            [
+              1.5,
+              0.3
+            ]
+          ]
+        },
+        {
+          "part": "wingL",
+          "prop": "rot.y",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.38,
+              -0.18
+            ],
+            [
+              1.1,
+              -0.38
+            ],
+            [
+              1.5,
+              -0.38
+            ]
+          ]
+        },
+        {
+          "part": "wingR",
+          "prop": "rot.y",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.38,
+              0.18
+            ],
+            [
+              1.1,
+              0.38
+            ],
+            [
+              1.5,
+              0.38
+            ]
+          ]
+        },
+        {
+          "part": "head",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.38,
+              0.06
+            ],
+            [
+              1.1,
+              0.15
+            ],
+            [
+              1.5,
+              0.15
+            ]
+          ]
+        }
+      ]
+    }
+  }
+}
