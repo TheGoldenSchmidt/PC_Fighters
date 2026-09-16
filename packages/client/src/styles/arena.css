@@ -23,7 +23,7 @@
   /* Höhe eines Zonen-Bands (Basis + Bank + Eck-Chips) */
   --zone-hoehe: 82px;
   /* Freiraum über und unter dem Lane-Raster */
-  --feld-oben: var(--zone-hoehe);
+  --feld-oben: calc(var(--zone-hoehe) + 54px);
   --feld-unten: calc(var(--hand-hoehe) + var(--zone-hoehe));
   --feld-seite: 12px;
 }
@@ -34,7 +34,9 @@
   position: absolute;
   inset: 0;
   z-index: 1;
-  background: radial-gradient(circle at 50% 48%, rgba(77, 141, 255, 0.09), transparent 48%);
+  background:
+    radial-gradient(ellipse at 50% 37%, color-mix(in srgb, var(--theme-accent, #7acccc) 12%, transparent), transparent 64%),
+    radial-gradient(ellipse at 50% 40%, transparent 30%, rgba(3, 8, 16, 0.6) 100%);
 }
 
 .deck-chip,
@@ -71,7 +73,7 @@
 
 /* Oben etwas mehr Luft: die gegnerische Basis steht HINTER der Bank, ragt also
    über deren Oberkante hinaus und würde sonst am Bildrand abgeschnitten. */
-.zone-oben { top: 0; align-items: flex-start; padding-top: 18px; }
+.zone-oben { top: 0; align-items: flex-start; padding-top: 52px; }
 .zone-unten { bottom: var(--hand-hoehe); align-items: flex-end; }
 
 /* Die Eck-Chips stapeln sich, statt sich in der Breite zu drängeln: neben der
@@ -88,13 +90,20 @@
 .hud-gruppe.rechts { align-items: flex-end; }
 .zone-unten .hud-gruppe { justify-content: flex-end; }
 
-/* Basis und Bank stehen zusammen in der Mitte – dort, wo im Vorbild der Held
-   steht. Die Basis selbst zeichnet die 3D-Bühne hinter der Bank. */
+/* Die Bank steht mittig; die 3D-Basis flankiert sie rechts. */
 .zone-mitte {
   flex: 0 0 auto;
   display: flex;
   align-items: center;
   gap: 8px;
+  position: relative;
+}
+
+/* Die Bank steht auf der Feldmitte; die Lebensanzeige sitzt daneben und
+   verschiebt nicht mehr die gesamte 3D-Zone um eine halbe Chipbreite. */
+.zone-mitte > .basis-anzeige {
+  position: absolute;
+  right: calc(100% + 10px);
 }
 
 /* Leerer Anker im 3D-Modus: seine Bildschirmposition bestimmt, wo die
@@ -242,22 +251,19 @@
   left: 0;
   right: 0;
   margin: 0 auto;
-  width: min(680px, calc(100% - 2 * var(--feld-seite)));
+  width: min(760px, calc(100% - 2 * var(--feld-seite)));
   display: grid;
   grid-template-columns: repeat(var(--lanes, 3), 1fr);
   gap: 8px;
   z-index: 3;
 }
 
-/* 3D-Schlachtfeld: füllt jetzt die GANZE Arena, nicht mehr nur den Streifen um
-   die Lanes. Dadurch reichen Boden und Umgebung bis an die Bildschirmkanten,
-   und Bank wie Basis haben vor bzw. hinter den Lanes echte Bühne. Das Canvas
-   liegt über den DOM-Slots (die Figuren sollen darin stehen), lässt aber alle
-   Taps durch. */
+/* Das Canvas füllt die ganze Arena. Die transparenten DOM-Slots mit ihren
+   Werten und Zielmarkierungen liegen darüber; alle Taps gehen durch. */
 .battlefield3d-shell {
   position: absolute;
   inset: 0;
-  z-index: 6;
+  z-index: 2;
   pointer-events: none;
 }
 
@@ -268,14 +274,38 @@
   pointer-events: none;
 }
 
+/* Werte und Zielmarkierungen liegen über dem Canvas. Ruhige Bodenkonturen
+   lassen die gemeinsame Arena statt zehn einzelner Kartenkästen erkennen. */
+.arena-3d .slot {
+  border-radius: 5px 5px 16px 16px;
+  background: linear-gradient(180deg, transparent 40%, rgba(9, 16, 26, 0.18));
+  border-color: rgba(214, 204, 175, 0.13);
+}
+.arena-3d .own-slot { border-bottom-color: rgba(122, 204, 204, 0.38); }
+.arena-3d .enemy-slot { border-bottom-color: rgba(205, 121, 110, 0.3); }
+.arena-3d .own-slot.targetable { border-color: var(--gold); background: rgba(255, 180, 41, 0.12); }
+.arena-3d .own-slot.drop-hover { background: rgba(255, 180, 41, 0.23); }
+.arena-3d .own-slot.selected-slot { border-color: var(--accent); }
+
 @media (max-width: 699px) {
   .game-screen {
     --karte-breite: 72px;
-    --zone-hoehe: 74px;
-    --feld-seite: 8px;
+    --zone-hoehe: 112px;
+    --feld-oben: 124px;
+    --feld-seite: 18px;
   }
   .zone-oben .bank-anker { width: 140px; height: 54px; }
   .bank-anker { width: 172px; height: 66px; }
+  .zone-mitte { position: static; }
+  .zone-mitte > .basis-anzeige { left: 10px; right: auto; }
+  .zone-oben .basis-anzeige { top: 68px; }
+  .zone-oben .hud-gruppe:first-child { margin-top: -20px; }
+  .zone-unten .basis-anzeige { bottom: 54px; }
+  .zone-unten .hud-gruppe.rechts { gap: 6px; }
+  .zone-unten .hud-gruppe:first-child { gap: 2px; }
+  .hand-backs { max-width: 100px; }
+  .card-back { width: 8px; height: 14px; }
+  .zone-oben { padding-top: 42px; }
 }
 
 /* Schmale Handys (iPhone SE & Co.): Chips und Karten enger, der Passen-Knopf
@@ -283,7 +313,6 @@
 @media (max-width: 430px) {
   .game-screen {
     --karte-breite: 66px;
-    --zone-hoehe: 68px;
   }
   .deck-chip,
   .energy-chip,
@@ -301,6 +330,12 @@
     --karte-breite: 58px;
     --zone-hoehe: 60px;
   }
+  .zone-oben { padding-top: 38px; }
+  .zone-oben .bank-anker { height: 48px; width: 132px; }
+}
+
+@media (max-width: 699px) and (max-height: 680px) {
+  .game-screen { --zone-hoehe: 110px; --feld-oben: 124px; --karte-breite: 54px; }
 }
 
 /* Kompakte 2D-Bank, wenn WebGL fehlt: sie füllt exakt den Bank-Anker, den im
@@ -320,7 +355,7 @@
   padding:5px 6px 8px;
   border:1px solid rgba(234,244,255,.22);
   /* Sitzkante in derselben Holzfarbe wie die 3D-Bank (createTeamZone). */
-  border-bottom:8px solid #9c6a44;
+  border-bottom:8px solid #76523b;
   border-radius:8px 8px 3px 3px;
   background:rgba(37,42,51,.92);
 }
@@ -351,8 +386,7 @@
 }
 .team-seat.empty { opacity:.38; }
 .team-seat.sacrificing { animation:team-sacrifice-fade .72s ease-in forwards; }
-/* Die Basis steht hinter der Bank: eigene nach unten (zum Betrachter),
-   gegnerische nach oben. */
+/* Die Basis flankiert die Bank auf beiden Seiten rechts im Bildschirm. */
 .team-base {
   position:absolute;
   left:50%;
@@ -363,8 +397,7 @@
   border-radius:50% 50% 18% 18%;
   background:radial-gradient(circle,#eaf4ff 0 30%,#5b84b1 35% 58%,#252a33 62%);
 }
-.team-strip-own .team-base { bottom:-16px; }
-.team-strip-opponent .team-base { top:-16px; transform:rotate(180deg); }
+.team-strip .team-base { left:calc(100% + 12px); top:50%; margin-left:0; }
 .team-base.shield-flash { animation:team-shield-flash .62s ease-out .48s both; }
 @keyframes team-sacrifice-fade {
   45% { transform:translateY(-18px) scale(1.08); opacity:1; }
@@ -448,7 +481,7 @@
 
 .slot {
   flex: 1;
-  min-height: 100px;
+  min-height: 0;
   /* Bewusst sehr dezent: die Arena (3D-Boden, Lane-Wege, Umgebung) soll
      durchscheinen. Eine Lane ist ein Weg, keine auffällige Box. */
   background: linear-gradient(180deg, rgba(19, 29, 47, 0.24), rgba(8, 13, 24, 0.42));

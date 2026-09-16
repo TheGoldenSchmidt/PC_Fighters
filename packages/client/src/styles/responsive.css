@@ -16,9 +16,9 @@
   .bank-anker { width: 270px; height: 100px; }
   .zone-oben .bank-anker { width: 224px; height: 82px; }
   .zone-band { padding: 10px 16px; }
-  .zone-oben { padding-top: 22px; }
+  .zone-oben { padding-top: 54px; }
   .status-band { font-size: 0.85rem; }
-  .slot { min-height: 140px; }
+  .slot { min-height: 0; }
 }
 
 /* Kompakte Desktop-Fenster (z. B. 1280×720): dort ist die Höhe knapp, also
@@ -32,6 +32,29 @@
   .bank-anker { width: 218px; height: 80px; }
   .zone-oben .bank-anker { width: 180px; height: 66px; }
   .slot { min-height: 0; }
+}
+
+/* Im Querformat bleibt die Hand einreihig. Zwei Reihen ließen sonst keinen
+   Platz für zwei Kampfreihen und schoben beide Bänke übereinander. */
+@media (max-height: 540px) and (min-width: 600px) {
+  .game-screen {
+    --karte-breite: 46px;
+    --hand-hoehe: 104px;
+    --zone-hoehe: 56px;
+    --feld-oben: 84px;
+    --feld-seite: 72px;
+  }
+  .zone-oben { padding-top: 32px; }
+  .bank-anker { width: 138px; height: 48px; }
+  .zone-oben .bank-anker { width: 112px; height: 40px; }
+  .hand { flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; overflow-y: hidden; }
+  .schlagabtausch-band { min-height: 30px; padding: 3px 8px; }
+  .schlagabtausch-band > button { min-height: 16px; font-size: 0.58rem; }
+  .schlagabtausch-band > strong { font-size: 0.72rem; }
+  .zone-mitte { position: relative; }
+  .zone-mitte > .basis-anzeige { left: auto; top: auto; bottom: auto; right: calc(100% + 10px); }
+  .zone-band { padding-inline: 10px; }
+  .arena-settings-button { width: 36px; height: 36px; }
 }
 
 /* ---- Cheerleader-Reaktion --------------------------------------------- */

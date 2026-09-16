@@ -541,7 +541,7 @@ export function GameScreen({
       {/* ---- Arena: bildschirmfüllende Bühne. Sie ist zugleich der layoutRoot
            für Battlefield3D – die 3D-Figuren, Bänke und Basen werden über die
            data-slot- und data-zone-Anker darin auf das DOM projiziert. ---- */}
-      <div className="arena" style={{ '--lanes': shownView.lanes } as CSSProperties}>
+      <div className={'arena' + (use3d ? ' arena-3d' : '')} style={{ '--lanes': shownView.lanes } as CSSProperties}>
         {use3d && (
           <Suspense fallback={null}>
             <Battlefield3D

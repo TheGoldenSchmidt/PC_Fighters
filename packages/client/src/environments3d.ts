@@ -74,7 +74,9 @@ function propInstance(visual: Visual): { wrapper: THREE.Group; halfWidth: number
   const wrapper = new THREE.Group();
   wrapper.add(buildFigure(visual).root);
   const box = new THREE.Box3().setFromObject(wrapper);
-  return { wrapper, halfWidth: Math.max(0.08, box.getSize(new THREE.Vector3()).x / 2) };
+  const size = box.getSize(new THREE.Vector3());
+  // Auch gedrehte Autos und schwingende Bäume brauchen Platz in der Tiefe.
+  return { wrapper, halfWidth: Math.max(0.08, Math.hypot(size.x, size.z) / 2) };
 }
 
 interface Motion {
@@ -139,8 +141,9 @@ function layoutPlaced(placed: Placed[], m: FieldMetrics): void {
     } else {
       const edge = d.zone === 'left' ? m.leftX - fieldHalfLane : m.rightX + fieldHalfLane;
       const propClearance = p.halfWidth * m.scale;
-      const perspectiveReserve = 0.4 + Math.max(0, -d.u) * m.laneStep * 0.18;
-      const clearance = propClearance + perspectiveReserve + d.out;
+      const architectureReserve = Math.min(m.scale, m.laneStep * 0.52) * 1.2;
+      const perspectiveReserve = 0.25 + Math.max(0, -d.u) * m.laneStep * 0.18;
+      const clearance = propClearance + architectureReserve + perspectiveReserve + d.out * m.scale;
       x = edge + (d.zone === 'left' ? -1 : 1) * clearance;
       z = lerp(m.farZ - 0.9, m.nearZ + 1.8, d.u);
     }
@@ -377,7 +380,8 @@ function createHoehle(): EnvironmentRec {
   const group = new THREE.Group();
   const placed: Placed[] = [];
   const add = (v: Visual, d: PlacementDesc, m: Motion = {}) => addPlaced(group, placed, v, d, m);
-  add(hoehlenBogen(3.1), { zone: 'back', nx: 0, depth: 5.4 });
+  // Seitlicher Höhleneingang lässt die Bank und Basis in der Mitte frei.
+  add(hoehlenBogen(2.4), { zone: 'back', nx: -1.32, depth: 1.8 }, { yaw: 0.24 });
   add(hoehlenKristall(0.68), { zone: 'back', nx: -0.72, depth: 4.55 }, { pulse: 0.025 });
   add(hoehlenKristall(0.58), { zone: 'back', nx: 0.73, depth: 4.8 }, { pulse: 0.03 });
   for (const zone of ['left', 'right'] as const) {
