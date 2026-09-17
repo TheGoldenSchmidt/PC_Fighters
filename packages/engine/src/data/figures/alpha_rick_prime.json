@@ -1,0 +1,2422 @@
+{
+  "cardId": "alpha_rick_prime",
+  "visual": {
+    "detailLevel": "high",
+    "height": 1.08,
+    "palette": {
+      "skin": "#c3b4a1",
+      "skinShade": "#a08c79",
+      "coat": "#e6e7dd",
+      "coatShade": "#b6c4c5",
+      "shirt": "#42b3b7",
+      "pants": "#71503a",
+      "belt": "#42382d",
+      "shoe": "#232b30",
+      "hair": "#69b6cf",
+      "hairShade": "#478fa9",
+      "eye": "#f2edda",
+      "ink": "#292c2e",
+      "mouth": "#634539",
+      "drool": "#73a93d",
+      "steel": "#879ca1",
+      "steelDark": "#344b53",
+      "portal": "#65d820",
+      "portalShade": "#27851e"
+    },
+    "parts": [
+      {
+        "id": "stance",
+        "shape": "group",
+        "pos": [
+          0,
+          1.51,
+          0
+        ]
+      },
+      {
+        "id": "legL",
+        "shape": "group",
+        "pos": [
+          -0.135,
+          0,
+          0
+        ],
+        "parent": "stance",
+        "rot": [
+          0.025,
+          0,
+          0.025
+        ]
+      },
+      {
+        "id": "trouserL",
+        "shape": "capsule",
+        "size": [
+          0.092,
+          1.12
+        ],
+        "pos": [
+          0,
+          -0.69,
+          0
+        ],
+        "parent": "legL",
+        "color": "pants",
+        "scale": [
+          1,
+          1,
+          0.91
+        ]
+      },
+      {
+        "id": "shoeL",
+        "shape": "sph",
+        "size": 0.14,
+        "pos": [
+          0,
+          -1.38,
+          0.065
+        ],
+        "parent": "legL",
+        "color": "shoe",
+        "scale": [
+          0.92,
+          0.65,
+          1.7
+        ]
+      },
+      {
+        "id": "legR",
+        "shape": "group",
+        "pos": [
+          0.135,
+          0,
+          0
+        ],
+        "parent": "stance",
+        "rot": [
+          -0.035,
+          0,
+          -0.025
+        ]
+      },
+      {
+        "id": "trouserR",
+        "shape": "capsule",
+        "size": [
+          0.092,
+          1.12
+        ],
+        "pos": [
+          0,
+          -0.69,
+          0
+        ],
+        "parent": "legR",
+        "color": "pants",
+        "scale": [
+          1,
+          1,
+          0.91
+        ]
+      },
+      {
+        "id": "shoeR",
+        "shape": "sph",
+        "size": 0.14,
+        "pos": [
+          0,
+          -1.38,
+          0.065
+        ],
+        "parent": "legR",
+        "color": "shoe",
+        "scale": [
+          0.92,
+          0.65,
+          1.7
+        ]
+      },
+      {
+        "id": "pelvis",
+        "shape": "sph",
+        "size": 0.225,
+        "pos": [
+          0,
+          -0.035,
+          0
+        ],
+        "parent": "stance",
+        "color": "pants",
+        "scale": [
+          1,
+          0.6,
+          0.61
+        ]
+      },
+      {
+        "id": "torso",
+        "shape": "group",
+        "pos": [
+          0,
+          0.49,
+          0
+        ],
+        "parent": "stance",
+        "rot": [
+          0.035,
+          0,
+          -0.025
+        ]
+      },
+      {
+        "id": "shirtBody",
+        "shape": "sph",
+        "size": 0.3,
+        "pos": [
+          0,
+          0.06,
+          0.015
+        ],
+        "parent": "torso",
+        "color": "shirt",
+        "scale": [
+          0.9,
+          1.65,
+          0.52
+        ]
+      },
+      {
+        "id": "coatBack",
+        "shape": "cyl",
+        "size": [
+          0.29,
+          0.34,
+          1.16
+        ],
+        "pos": [
+          0,
+          -0.12,
+          -0.08
+        ],
+        "parent": "torso",
+        "color": "coat",
+        "scale": [
+          1,
+          1,
+          0.36
+        ]
+      },
+      {
+        "id": "coatFrontL",
+        "shape": "capsule",
+        "size": [
+          0.108,
+          0.76
+        ],
+        "pos": [
+          -0.232,
+          -0.02,
+          0.055
+        ],
+        "parent": "torso",
+        "color": "coat",
+        "scale": [
+          1,
+          1,
+          0.88
+        ],
+        "rot": [
+          0,
+          0,
+          -0.025
+        ]
+      },
+      {
+        "id": "coatFrontR",
+        "shape": "capsule",
+        "size": [
+          0.108,
+          0.76
+        ],
+        "pos": [
+          0.232,
+          -0.02,
+          0.055
+        ],
+        "parent": "torso",
+        "color": "coat",
+        "scale": [
+          1,
+          1,
+          0.88
+        ],
+        "rot": [
+          0,
+          0,
+          0.025
+        ]
+      },
+      {
+        "id": "coatTailL",
+        "shape": "box",
+        "size": [
+          0.265,
+          0.62,
+          0.14
+        ],
+        "pos": [
+          -0.197,
+          -0.72,
+          -0.032
+        ],
+        "parent": "torso",
+        "color": "coat",
+        "rot": [
+          -0.05,
+          -0.12,
+          0.04
+        ]
+      },
+      {
+        "id": "coatTailR",
+        "shape": "box",
+        "size": [
+          0.265,
+          0.61,
+          0.14
+        ],
+        "pos": [
+          0.197,
+          -0.715,
+          -0.032
+        ],
+        "parent": "torso",
+        "color": "coat",
+        "rot": [
+          -0.1,
+          0.1,
+          -0.065
+        ]
+      },
+      {
+        "id": "lapelL",
+        "shape": "cone",
+        "size": [
+          0.15,
+          0.43
+        ],
+        "pos": [
+          -0.14,
+          0.245,
+          0.157
+        ],
+        "parent": "torso",
+        "color": "coat",
+        "scale": [
+          0.78,
+          1,
+          0.28
+        ],
+        "rot": [
+          0,
+          0,
+          0.32
+        ]
+      },
+      {
+        "id": "lapelR",
+        "shape": "cone",
+        "size": [
+          0.15,
+          0.43
+        ],
+        "pos": [
+          0.14,
+          0.245,
+          0.157
+        ],
+        "parent": "torso",
+        "color": "coat",
+        "scale": [
+          0.78,
+          1,
+          0.28
+        ],
+        "rot": [
+          0,
+          0,
+          -0.32
+        ]
+      },
+      {
+        "id": "pocketSeam",
+        "shape": "box",
+        "size": [
+          0.13,
+          0.024,
+          0.024
+        ],
+        "pos": [
+          -0.23,
+          -0.21,
+          0.165
+        ],
+        "parent": "torso",
+        "color": "coatShade",
+        "rot": [
+          0,
+          0,
+          -0.04
+        ]
+      },
+      {
+        "id": "armL",
+        "shape": "group",
+        "pos": [
+          -0.345,
+          0.38,
+          -0.005
+        ],
+        "parent": "torso",
+        "rot": [
+          -0.02,
+          0,
+          -0.09
+        ]
+      },
+      {
+        "id": "upperSleeveL",
+        "shape": "capsule",
+        "size": [
+          0.105,
+          0.36
+        ],
+        "pos": [
+          0,
+          -0.23,
+          0
+        ],
+        "parent": "armL",
+        "color": "coat"
+      },
+      {
+        "id": "elbowL",
+        "shape": "group",
+        "pos": [
+          0,
+          -0.45,
+          0
+        ],
+        "parent": "armL",
+        "rot": [
+          -0.19,
+          0,
+          0
+        ]
+      },
+      {
+        "id": "lowerSleeveL",
+        "shape": "capsule",
+        "size": [
+          0.082,
+          0.35
+        ],
+        "pos": [
+          0,
+          -0.205,
+          0
+        ],
+        "parent": "elbowL",
+        "color": "coat"
+      },
+      {
+        "id": "cuffL",
+        "shape": "cyl",
+        "size": [
+          0.09,
+          0.085,
+          0.095
+        ],
+        "pos": [
+          0,
+          -0.417,
+          0
+        ],
+        "parent": "elbowL",
+        "color": "coatShade"
+      },
+      {
+        "id": "handL",
+        "shape": "sph",
+        "size": 0.095,
+        "pos": [
+          0,
+          -0.54,
+          0
+        ],
+        "parent": "elbowL",
+        "color": "skin",
+        "scale": [
+          0.73,
+          1.24,
+          0.62
+        ]
+      },
+      {
+        "id": "fingerL1",
+        "shape": "capsule",
+        "size": [
+          0.026,
+          0.1
+        ],
+        "pos": [
+          -0.043,
+          -0.622,
+          0.008
+        ],
+        "parent": "elbowL",
+        "color": "skin"
+      },
+      {
+        "id": "fingerL2",
+        "shape": "capsule",
+        "size": [
+          0.026,
+          0.105
+        ],
+        "pos": [
+          0.019,
+          -0.634,
+          0.017
+        ],
+        "parent": "elbowL",
+        "color": "skin"
+      },
+      {
+        "id": "armR",
+        "shape": "group",
+        "pos": [
+          0.345,
+          0.38,
+          0
+        ],
+        "parent": "torso",
+        "rot": [
+          -0.1,
+          -0.14,
+          0.15
+        ]
+      },
+      {
+        "id": "upperSleeveR",
+        "shape": "capsule",
+        "size": [
+          0.105,
+          0.36
+        ],
+        "pos": [
+          0,
+          -0.23,
+          0
+        ],
+        "parent": "armR",
+        "color": "coat"
+      },
+      {
+        "id": "elbowR",
+        "shape": "group",
+        "pos": [
+          0,
+          -0.45,
+          0
+        ],
+        "parent": "armR",
+        "rot": [
+          -1.05,
+          0,
+          0
+        ]
+      },
+      {
+        "id": "lowerSleeveR",
+        "shape": "capsule",
+        "size": [
+          0.082,
+          0.33
+        ],
+        "pos": [
+          0,
+          -0.2,
+          0
+        ],
+        "parent": "elbowR",
+        "color": "coat"
+      },
+      {
+        "id": "cuffR",
+        "shape": "cyl",
+        "size": [
+          0.09,
+          0.085,
+          0.09
+        ],
+        "pos": [
+          0,
+          -0.398,
+          0
+        ],
+        "parent": "elbowR",
+        "color": "coatShade"
+      },
+      {
+        "id": "wristR",
+        "shape": "group",
+        "pos": [
+          0,
+          -0.48,
+          0
+        ],
+        "parent": "elbowR",
+        "rot": [
+          1.15,
+          0.14,
+          -0.15
+        ]
+      },
+      {
+        "id": "palmR",
+        "shape": "sph",
+        "size": 0.09,
+        "pos": [
+          0.042,
+          0,
+          -0.014
+        ],
+        "parent": "wristR",
+        "color": "skin",
+        "scale": [
+          0.68,
+          1,
+          0.7
+        ]
+      },
+      {
+        "id": "thumbR",
+        "shape": "capsule",
+        "size": [
+          0.029,
+          0.075
+        ],
+        "pos": [
+          -0.065,
+          0.047,
+          0.029
+        ],
+        "parent": "wristR",
+        "color": "skin",
+        "rot": [
+          0.6,
+          0,
+          -0.3
+        ]
+      },
+      {
+        "id": "indexR",
+        "shape": "capsule",
+        "size": [
+          0.025,
+          0.09
+        ],
+        "pos": [
+          0.003,
+          0.027,
+          0.081
+        ],
+        "parent": "wristR",
+        "color": "skin",
+        "rot": [
+          0,
+          0,
+          1.5708
+        ]
+      },
+      {
+        "id": "middleR",
+        "shape": "capsule",
+        "size": [
+          0.025,
+          0.085
+        ],
+        "pos": [
+          0.003,
+          -0.033,
+          0.077
+        ],
+        "parent": "wristR",
+        "color": "skin",
+        "rot": [
+          0,
+          0,
+          1.5708
+        ]
+      },
+      {
+        "id": "portalGun",
+        "shape": "group",
+        "pos": [
+          0,
+          0,
+          0.007
+        ],
+        "parent": "wristR"
+      },
+      {
+        "id": "gunGrip",
+        "shape": "box",
+        "size": [
+          0.09,
+          0.18,
+          0.105
+        ],
+        "pos": [
+          0,
+          -0.008,
+          0.005
+        ],
+        "parent": "portalGun",
+        "color": "steelDark",
+        "rot": [
+          -0.12,
+          0,
+          0
+        ]
+      },
+      {
+        "id": "gunBody",
+        "shape": "box",
+        "size": [
+          0.215,
+          0.115,
+          0.3
+        ],
+        "pos": [
+          0,
+          0.137,
+          0.054
+        ],
+        "parent": "portalGun",
+        "color": "steel",
+        "roughness": 0.57,
+        "metalness": 0.24
+      },
+      {
+        "id": "gunBarrel",
+        "shape": "cyl",
+        "size": [
+          0.055,
+          0.063,
+          0.16
+        ],
+        "pos": [
+          0,
+          0.13,
+          0.278
+        ],
+        "parent": "portalGun",
+        "color": "steelDark",
+        "rot": [
+          1.5708,
+          0,
+          0
+        ],
+        "metalness": 0.3
+      },
+      {
+        "id": "gunMuzzle",
+        "shape": "cyl",
+        "size": [
+          0.044,
+          0.044,
+          0.018
+        ],
+        "pos": [
+          0,
+          0.13,
+          0.365
+        ],
+        "parent": "portalGun",
+        "color": "portal",
+        "rot": [
+          1.5708,
+          0,
+          0
+        ]
+      },
+      {
+        "id": "portalAmpoule",
+        "shape": "capsule",
+        "size": [
+          0.044,
+          0.13
+        ],
+        "pos": [
+          0,
+          0.274,
+          -0.025
+        ],
+        "parent": "portalGun",
+        "color": "portal",
+        "roughness": 0.35
+      },
+      {
+        "id": "ampouleFoot",
+        "shape": "cyl",
+        "size": [
+          0.067,
+          0.06,
+          0.045
+        ],
+        "pos": [
+          0,
+          0.182,
+          -0.025
+        ],
+        "parent": "portalGun",
+        "color": "steelDark"
+      },
+      {
+        "id": "ampouleCap",
+        "shape": "cyl",
+        "size": [
+          0.052,
+          0.052,
+          0.035
+        ],
+        "pos": [
+          0,
+          0.373,
+          -0.025
+        ],
+        "parent": "portalGun",
+        "color": "steelDark"
+      },
+      {
+        "id": "gunSwitch",
+        "shape": "box",
+        "size": [
+          0.026,
+          0.032,
+          0.042
+        ],
+        "pos": [
+          0.114,
+          0.145,
+          0.02
+        ],
+        "parent": "portalGun",
+        "color": "portalShade"
+      },
+      {
+        "id": "neck",
+        "shape": "cyl",
+        "size": [
+          0.076,
+          0.072,
+          0.22
+        ],
+        "pos": [
+          0,
+          0.555,
+          0
+        ],
+        "parent": "torso",
+        "color": "skin"
+      },
+      {
+        "id": "head",
+        "shape": "group",
+        "pos": [
+          0,
+          0.94,
+          0.025
+        ],
+        "parent": "torso",
+        "rot": [
+          -0.02,
+          -0.045,
+          0.045
+        ]
+      },
+      {
+        "id": "skull",
+        "shape": "sph",
+        "size": 0.3,
+        "pos": [
+          0,
+          0,
+          0
+        ],
+        "parent": "head",
+        "color": "skin",
+        "scale": [
+          0.86,
+          1.28,
+          0.74
+        ]
+      },
+      {
+        "id": "jaw",
+        "shape": "sph",
+        "size": 0.235,
+        "pos": [
+          0,
+          -0.265,
+          0.01
+        ],
+        "parent": "head",
+        "color": "skin",
+        "scale": [
+          0.92,
+          0.62,
+          0.81
+        ]
+      },
+      {
+        "id": "earL",
+        "shape": "sph",
+        "size": 0.075,
+        "pos": [
+          -0.263,
+          -0.08,
+          -0.015
+        ],
+        "parent": "head",
+        "color": "skin",
+        "scale": [
+          0.62,
+          1.27,
+          0.66
+        ]
+      },
+      {
+        "id": "earInnerL",
+        "shape": "sph",
+        "size": 0.042,
+        "pos": [
+          -0.263,
+          -0.075,
+          0.025
+        ],
+        "parent": "head",
+        "color": "skinShade",
+        "scale": [
+          0.62,
+          1.13,
+          0.4
+        ]
+      },
+      {
+        "id": "earR",
+        "shape": "sph",
+        "size": 0.075,
+        "pos": [
+          0.263,
+          -0.08,
+          -0.015
+        ],
+        "parent": "head",
+        "color": "skin",
+        "scale": [
+          0.62,
+          1.27,
+          0.66
+        ]
+      },
+      {
+        "id": "earInnerR",
+        "shape": "sph",
+        "size": 0.042,
+        "pos": [
+          0.263,
+          -0.075,
+          0.025
+        ],
+        "parent": "head",
+        "color": "skinShade",
+        "scale": [
+          0.62,
+          1.13,
+          0.4
+        ]
+      },
+      {
+        "id": "eyeL",
+        "shape": "sph",
+        "size": 0.12,
+        "pos": [
+          -0.127,
+          0.025,
+          0.2
+        ],
+        "parent": "head",
+        "color": "eye",
+        "scale": [
+          0.97,
+          0.94,
+          0.45
+        ]
+      },
+      {
+        "id": "eyeR",
+        "shape": "sph",
+        "size": 0.12,
+        "pos": [
+          0.127,
+          0.025,
+          0.2
+        ],
+        "parent": "head",
+        "color": "eye",
+        "scale": [
+          0.97,
+          0.94,
+          0.45
+        ]
+      },
+      {
+        "id": "eyelidL",
+        "shape": "sph",
+        "size": 0.125,
+        "pos": [
+          -0.127,
+          0.093,
+          0.217
+        ],
+        "parent": "head",
+        "color": "skin",
+        "scale": [
+          1,
+          0.64,
+          0.37
+        ]
+      },
+      {
+        "id": "eyelidR",
+        "shape": "sph",
+        "size": 0.125,
+        "pos": [
+          0.127,
+          0.093,
+          0.217
+        ],
+        "parent": "head",
+        "color": "skin",
+        "scale": [
+          1,
+          0.64,
+          0.37
+        ]
+      },
+      {
+        "id": "pupilL",
+        "shape": "sph",
+        "size": 0.024,
+        "pos": [
+          -0.112,
+          -0.005,
+          0.255
+        ],
+        "parent": "head",
+        "color": "ink",
+        "scale": [
+          0.82,
+          1,
+          0.35
+        ]
+      },
+      {
+        "id": "pupilR",
+        "shape": "sph",
+        "size": 0.024,
+        "pos": [
+          0.142,
+          -0.005,
+          0.255
+        ],
+        "parent": "head",
+        "color": "ink",
+        "scale": [
+          0.82,
+          1,
+          0.35
+        ]
+      },
+      {
+        "id": "eyeBagL",
+        "shape": "capsule",
+        "size": [
+          0.009,
+          0.125
+        ],
+        "pos": [
+          -0.132,
+          -0.079,
+          0.227
+        ],
+        "parent": "head",
+        "color": "skinShade",
+        "rot": [
+          0,
+          0,
+          1.5708
+        ]
+      },
+      {
+        "id": "eyeBagR",
+        "shape": "capsule",
+        "size": [
+          0.009,
+          0.125
+        ],
+        "pos": [
+          0.132,
+          -0.079,
+          0.227
+        ],
+        "parent": "head",
+        "color": "skinShade",
+        "rot": [
+          0,
+          0,
+          1.5708
+        ]
+      },
+      {
+        "id": "unibrow",
+        "shape": "capsule",
+        "size": [
+          0.026,
+          0.34
+        ],
+        "pos": [
+          0,
+          0.165,
+          0.234
+        ],
+        "parent": "head",
+        "color": "hairShade",
+        "rot": [
+          0,
+          0,
+          1.54
+        ],
+        "scale": [
+          1,
+          1,
+          0.66
+        ]
+      },
+      {
+        "id": "noseBridge",
+        "shape": "capsule",
+        "size": [
+          0.052,
+          0.18
+        ],
+        "pos": [
+          0,
+          -0.092,
+          0.277
+        ],
+        "parent": "head",
+        "color": "skin",
+        "rot": [
+          -0.28,
+          0,
+          0
+        ],
+        "scale": [
+          0.88,
+          1,
+          1
+        ]
+      },
+      {
+        "id": "noseTip",
+        "shape": "sph",
+        "size": 0.056,
+        "pos": [
+          0,
+          -0.2,
+          0.305
+        ],
+        "parent": "head",
+        "color": "skin",
+        "scale": [
+          0.95,
+          0.98,
+          1.04
+        ]
+      },
+      {
+        "id": "mouth",
+        "shape": "capsule",
+        "size": [
+          0.014,
+          0.19
+        ],
+        "pos": [
+          0.008,
+          -0.305,
+          0.2
+        ],
+        "parent": "head",
+        "color": "mouth",
+        "rot": [
+          0,
+          0,
+          1.67
+        ],
+        "scale": [
+          1,
+          1,
+          0.7
+        ]
+      },
+      {
+        "id": "lowerLip",
+        "shape": "capsule",
+        "size": [
+          0.01,
+          0.12
+        ],
+        "pos": [
+          -0.014,
+          -0.335,
+          0.181
+        ],
+        "parent": "head",
+        "color": "skinShade",
+        "rot": [
+          0,
+          0,
+          1.62
+        ]
+      },
+      {
+        "id": "drool",
+        "shape": "capsule",
+        "size": [
+          0.014,
+          0.079
+        ],
+        "pos": [
+          0.1,
+          -0.36,
+          0.208
+        ],
+        "parent": "head",
+        "color": "drool",
+        "rot": [
+          0,
+          0,
+          -0.13
+        ]
+      },
+      {
+        "id": "hairCore",
+        "shape": "sph",
+        "size": 0.292,
+        "pos": [
+          0,
+          0.1,
+          -0.086
+        ],
+        "parent": "head",
+        "color": "hairShade",
+        "scale": [
+          1.06,
+          1.25,
+          0.77
+        ]
+      },
+      {
+        "id": "hair_crown",
+        "shape": "cone",
+        "size": [
+          0.13,
+          0.31
+        ],
+        "pos": [
+          0,
+          0.449,
+          -0.071
+        ],
+        "parent": "head",
+        "color": "hair",
+        "rot": [
+          0,
+          0,
+          -0.1
+        ],
+        "scale": [
+          1,
+          1,
+          0.67
+        ]
+      },
+      {
+        "id": "hair_upperL",
+        "shape": "cone",
+        "size": [
+          0.145,
+          0.34
+        ],
+        "pos": [
+          -0.22,
+          0.343,
+          -0.061
+        ],
+        "parent": "head",
+        "color": "hair",
+        "rot": [
+          0,
+          0,
+          0.63
+        ],
+        "scale": [
+          1,
+          1,
+          0.67
+        ]
+      },
+      {
+        "id": "hair_upperR",
+        "shape": "cone",
+        "size": [
+          0.14,
+          0.36
+        ],
+        "pos": [
+          0.236,
+          0.33,
+          -0.071
+        ],
+        "parent": "head",
+        "color": "hair",
+        "rot": [
+          0,
+          0,
+          -0.75
+        ],
+        "scale": [
+          1,
+          1,
+          0.67
+        ]
+      },
+      {
+        "id": "hair_sideL",
+        "shape": "cone",
+        "size": [
+          0.14,
+          0.32
+        ],
+        "pos": [
+          -0.36,
+          0.135,
+          -0.065
+        ],
+        "parent": "head",
+        "color": "hair",
+        "rot": [
+          0,
+          0,
+          1.33
+        ],
+        "scale": [
+          1,
+          1,
+          0.67
+        ]
+      },
+      {
+        "id": "hair_sideR",
+        "shape": "cone",
+        "size": [
+          0.14,
+          0.34
+        ],
+        "pos": [
+          0.36,
+          0.112,
+          -0.066
+        ],
+        "parent": "head",
+        "color": "hair",
+        "rot": [
+          0,
+          0,
+          -1.4
+        ],
+        "scale": [
+          1,
+          1,
+          0.67
+        ]
+      },
+      {
+        "id": "hair_lowerL",
+        "shape": "cone",
+        "size": [
+          0.11,
+          0.27
+        ],
+        "pos": [
+          -0.292,
+          -0.136,
+          -0.085
+        ],
+        "parent": "head",
+        "color": "hair",
+        "rot": [
+          0,
+          0,
+          2
+        ],
+        "scale": [
+          1,
+          1,
+          0.67
+        ]
+      },
+      {
+        "id": "hair_lowerR",
+        "shape": "cone",
+        "size": [
+          0.11,
+          0.28
+        ],
+        "pos": [
+          0.288,
+          -0.14,
+          -0.093
+        ],
+        "parent": "head",
+        "color": "hair",
+        "rot": [
+          0,
+          0,
+          -2.07
+        ],
+        "scale": [
+          1,
+          1,
+          0.67
+        ]
+      },
+      {
+        "id": "hair_rearL",
+        "shape": "cone",
+        "size": [
+          0.125,
+          0.31
+        ],
+        "pos": [
+          -0.12,
+          0.225,
+          -0.293
+        ],
+        "parent": "head",
+        "color": "hair",
+        "rot": [
+          -1.03,
+          0,
+          0.35
+        ],
+        "scale": [
+          1,
+          1,
+          0.67
+        ]
+      },
+      {
+        "id": "hair_rearR",
+        "shape": "cone",
+        "size": [
+          0.125,
+          0.3
+        ],
+        "pos": [
+          0.14,
+          0.06,
+          -0.316
+        ],
+        "parent": "head",
+        "color": "hair",
+        "rot": [
+          -1.52,
+          0,
+          -0.25
+        ],
+        "scale": [
+          1,
+          1,
+          0.67
+        ]
+      },
+      {
+        "id": "shirtCollar",
+        "shape": "torus",
+        "size": [
+          0.09,
+          0.02
+        ],
+        "pos": [
+          0,
+          0.445,
+          0.068
+        ],
+        "parent": "torso",
+        "color": "shirt",
+        "rot": [
+          1.3,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          0.55
+        ]
+      },
+      {
+        "id": "belt",
+        "shape": "box",
+        "size": [
+          0.36,
+          0.068,
+          0.25
+        ],
+        "pos": [
+          0,
+          -0.405,
+          0.012
+        ],
+        "parent": "torso",
+        "color": "belt"
+      },
+      {
+        "id": "buckle",
+        "shape": "box",
+        "size": [
+          0.055,
+          0.054,
+          0.02
+        ],
+        "pos": [
+          0,
+          -0.405,
+          0.146
+        ],
+        "parent": "torso",
+        "color": "steel"
+      }
+    ]
+  },
+  "animations": {
+    "idle": {
+      "duration": 3.6,
+      "loop": true,
+      "tracks": [
+        {
+          "part": "torso",
+          "prop": "pos.y",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              1.8,
+              0.018
+            ],
+            [
+              3.6,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "head",
+          "prop": "rot.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              1.8,
+              -0.022
+            ],
+            [
+              3.6,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "elbowR",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              1.8,
+              0.035
+            ],
+            [
+              3.6,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "coatTailL",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              1.8,
+              0.035
+            ],
+            [
+              3.6,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "armL",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              1.8,
+              -0.025
+            ],
+            [
+              3.6,
+              0
+            ]
+          ]
+        }
+      ]
+    },
+    "entrance": {
+      "duration": 1.2,
+      "tracks": [
+        {
+          "part": "root",
+          "prop": "pos.x",
+          "keys": [
+            [
+              0,
+              -0.68
+            ],
+            [
+              0.48,
+              -0.21
+            ],
+            [
+              0.88,
+              0.03
+            ],
+            [
+              1.2,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "root",
+          "prop": "rot.y",
+          "keys": [
+            [
+              0,
+              -0.43
+            ],
+            [
+              0.48,
+              -0.16
+            ],
+            [
+              0.88,
+              0.035
+            ],
+            [
+              1.2,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "legL",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              0.2
+            ],
+            [
+              0.32,
+              -0.16
+            ],
+            [
+              0.66,
+              0.12
+            ],
+            [
+              0.94,
+              -0.025
+            ],
+            [
+              1.2,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "legR",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              -0.2
+            ],
+            [
+              0.32,
+              0.16
+            ],
+            [
+              0.66,
+              -0.12
+            ],
+            [
+              0.94,
+              0.025
+            ],
+            [
+              1.2,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "armL",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              -0.17
+            ],
+            [
+              0.32,
+              0.14
+            ],
+            [
+              0.66,
+              -0.1
+            ],
+            [
+              1.2,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "head",
+          "prop": "rot.y",
+          "keys": [
+            [
+              0,
+              0.24
+            ],
+            [
+              0.6,
+              0.14
+            ],
+            [
+              1.2,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "coatTailR",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              0.12
+            ],
+            [
+              0.6,
+              -0.06
+            ],
+            [
+              1.2,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "root",
+          "prop": "opacity",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.14,
+              1
+            ],
+            [
+              1.2,
+              1
+            ]
+          ]
+        }
+      ]
+    },
+    "attack": {
+      "duration": 1.14,
+      "tracks": [
+        {
+          "part": "torso",
+          "prop": "rot.y",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.28,
+              -0.18
+            ],
+            [
+              0.52,
+              0.1
+            ],
+            [
+              0.62,
+              0.04
+            ],
+            [
+              0.76,
+              0.04
+            ],
+            [
+              1.14,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "armR",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.28,
+              0.28
+            ],
+            [
+              0.52,
+              -0.8
+            ],
+            [
+              0.56,
+              -0.8
+            ],
+            [
+              0.62,
+              -0.58
+            ],
+            [
+              0.76,
+              -0.62
+            ],
+            [
+              1.14,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "armR",
+          "prop": "rot.y",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.28,
+              -0.15
+            ],
+            [
+              0.52,
+              0.18
+            ],
+            [
+              0.62,
+              0.12
+            ],
+            [
+              0.76,
+              0.12
+            ],
+            [
+              1.14,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "armR",
+          "prop": "rot.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.28,
+              0.28
+            ],
+            [
+              0.52,
+              0.03
+            ],
+            [
+              0.62,
+              0.08
+            ],
+            [
+              0.76,
+              0.06
+            ],
+            [
+              1.14,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "elbowR",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.28,
+              -0.7
+            ],
+            [
+              0.52,
+              0.38
+            ],
+            [
+              0.56,
+              0.38
+            ],
+            [
+              0.62,
+              0.15
+            ],
+            [
+              0.76,
+              0.19
+            ],
+            [
+              1.14,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "wristR",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.28,
+              0.42
+            ],
+            [
+              0.52,
+              0.42
+            ],
+            [
+              0.56,
+              0.42
+            ],
+            [
+              0.62,
+              0.43
+            ],
+            [
+              0.76,
+              0.43
+            ],
+            [
+              1.14,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "wristR",
+          "prop": "rot.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.28,
+              -0.28
+            ],
+            [
+              0.52,
+              -0.03
+            ],
+            [
+              0.62,
+              -0.08
+            ],
+            [
+              0.76,
+              -0.06
+            ],
+            [
+              1.14,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "head",
+          "prop": "rot.y",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.28,
+              0.12
+            ],
+            [
+              0.52,
+              -0.08
+            ],
+            [
+              0.76,
+              -0.08
+            ],
+            [
+              1.14,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "armL",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.28,
+              -0.1
+            ],
+            [
+              0.52,
+              0.23
+            ],
+            [
+              0.68,
+              0.15
+            ],
+            [
+              1.14,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "coatTailL",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.28,
+              -0.045
+            ],
+            [
+              0.56,
+              0.1
+            ],
+            [
+              0.76,
+              -0.025
+            ],
+            [
+              1.14,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "gunMuzzle",
+          "prop": "scale",
+          "keys": [
+            [
+              0,
+              1
+            ],
+            [
+              0.49,
+              1
+            ],
+            [
+              0.54,
+              1.75
+            ],
+            [
+              0.6,
+              1
+            ],
+            [
+              1.14,
+              1
+            ]
+          ]
+        }
+      ]
+    },
+    "hit": {
+      "duration": 0.56,
+      "tracks": [
+        {
+          "part": "torso",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.12,
+              -0.13
+            ],
+            [
+              0.3,
+              0.045
+            ],
+            [
+              0.56,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "head",
+          "prop": "rot.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.12,
+              -0.12
+            ],
+            [
+              0.34,
+              0.025
+            ],
+            [
+              0.56,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "armR",
+          "prop": "rot.y",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.13,
+              -0.13
+            ],
+            [
+              0.56,
+              0
+            ]
+          ]
+        },
+        {
+          "part": "coatTailL",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.16,
+              0.13
+            ],
+            [
+              0.56,
+              0
+            ]
+          ]
+        }
+      ]
+    },
+    "death": {
+      "duration": 1.65,
+      "tracks": [
+        {
+          "part": "root",
+          "prop": "rot.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.35,
+              0.12
+            ],
+            [
+              0.96,
+              1.48
+            ],
+            [
+              1.15,
+              1.53
+            ],
+            [
+              1.65,
+              1.53
+            ]
+          ]
+        },
+        {
+          "part": "root",
+          "prop": "pos.y",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.35,
+              0.02
+            ],
+            [
+              0.96,
+              0.15
+            ],
+            [
+              1.65,
+              0.15
+            ]
+          ]
+        },
+        {
+          "part": "torso",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.35,
+              0.07
+            ],
+            [
+              0.96,
+              0.1
+            ],
+            [
+              1.65,
+              0.1
+            ]
+          ]
+        },
+        {
+          "part": "head",
+          "prop": "rot.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.45,
+              -0.09
+            ],
+            [
+              1.05,
+              -0.13
+            ],
+            [
+              1.65,
+              -0.13
+            ]
+          ]
+        },
+        {
+          "part": "armR",
+          "prop": "rot.z",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.45,
+              -0.12
+            ],
+            [
+              0.96,
+              -0.34
+            ],
+            [
+              1.65,
+              -0.34
+            ]
+          ]
+        },
+        {
+          "part": "armR",
+          "prop": "rot.y",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.45,
+              -0.16
+            ],
+            [
+              0.96,
+              -0.4
+            ],
+            [
+              1.65,
+              -0.4
+            ]
+          ]
+        },
+        {
+          "part": "elbowR",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.45,
+              0.22
+            ],
+            [
+              0.96,
+              0.52
+            ],
+            [
+              1.65,
+              0.52
+            ]
+          ]
+        },
+        {
+          "part": "legR",
+          "prop": "rot.x",
+          "keys": [
+            [
+              0,
+              0
+            ],
+            [
+              0.45,
+              -0.055
+            ],
+            [
+              0.96,
+              -0.09
+            ],
+            [
+              1.65,
+              -0.09
+            ]
+          ]
+        },
+        {
+          "part": "root",
+          "prop": "opacity",
+          "keys": [
+            [
+              0,
+              1
+            ],
+            [
+              1.3,
+              1
+            ],
+            [
+              1.65,
+              0.08
+            ]
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -3,13 +3,15 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 const root = 'packages/engine/src/data';
+const figureModels = JSON.parse(fs.readFileSync('tools/figuren-viewer/card-models.json', 'utf8'));
+const additionalCards = JSON.parse(fs.readFileSync('scripts/alpha/additional-cards.json', 'utf8'));
 const read = p => JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
 const write = (p,v) => fs.writeFileSync(path.join(root,p),JSON.stringify(v,null,2)+'\n');
 const teams = [
  ['south_park','rostbolzen','South Park','humans',['brainy','hearty'],[
  ['the_coon','The Coon – Eric Cartman'],['mysterion','Mysterion – Kenny McCormick'],['toolshed','Toolshed – Stan Marsh'],['human_kite','Human Kite – Kyle Broflovski'],['mosquito','Mosquito – Clyde Donovan'],['tupperware','Tupperware – Tolkien Black'],['doctor_timothy','Doctor Timothy – Timmy Burch'],['fastpass','Fastpass – Jimmy Valmer'],['super_craig','Super Craig – Craig Tucker'],['wonder_tweek','Wonder Tweek – Tweek Tweak'],['call_girl','Call Girl – Wendy Testaburger'],['captain_diabetes','Captain Diabetes – Scott Malkinson'],['mint_berry_crunch','Mint-Berry Crunch – Bradley Biggle'],['the_new_kid','The New Kid'],['professor_chaos','Professor Chaos – Butters Stotch'],['general_disarray','General Disarray – Dougie O’Connell'],['cthulhu','Cthulhu'],['captain_hindsight','Captain Hindsight'],['manbearpig','ManBearPig'],['nathan','Nathan']]],
  ['rick_morty','super_brainz','Rick and Morty','humans',['brainy','sneaky'],[
- ['mr_nimbus','Mr. Nimbus'],['squanchy','Squanchy'],['vogelmensch_2','Birdperson / Phoenixperson'],['unity','Unity'],['mr_meeseeks','Mr. Meeseeks'],['krombopulos_michael','Krombopulos Michael'],['scary_terry','Scary Terry'],['abradolf_lincler','Abradolf Lincler'],['mr_poopybutthole','Mr. Poopybutthole'],['evil_morty','Evil Morty'],['rick_prime','Rick Prime'],['president_andre_curtis','President Andre Curtis'],['jaguar','Jaguar'],['noob_noob','Noob-Noob'],['snowball','Snowball / Snuffles'],['zeep_xanflorp','Zeep Xanflorp'],['glootie','Glootie'],['fart','Fart'],['cromulon','Cromulon'],['traflorkianer','Traflorkianer']]],
+ ['mr_nimbus','Mr. Nimbus'],['squanchy','Squanchy'],['vogelmensch_2','Birdperson / Phoenixperson'],['unity','Unity'],['mr_meeseeks','Mr. Meeseeks'],['krombopulos_michael','Krombopulos Michael'],['scary_terry','Scary Terry'],['abradolf_lincler','Abradolf Lincler'],['mr_poopybutthole','Mr. Poopybutthole'],['evil_morty','Evil Morty'],['rick_prime','Rick Sanchez'],['president_andre_curtis','President Andre Curtis'],['jaguar','Jaguar'],['noob_noob','Noob-Noob'],['snowball','Snowball / Snuffles'],['zeep_xanflorp','Zeep Xanflorp'],['glootie','Glootie'],['fart','Fart'],['cromulon','Cromulon'],['traflorkianer','Traflorkianer']]],
  ['solar_opposites','sonnenfackel','Solar Opposites','animals',['kabloom','solar'],[
  ['korvo_3','Korvo'],['terry_solar_opposites','Terry'],['yumyulack','Yumyulack'],['jesse_solar_opposites','Jesse'],['pupa','The Pupa'],['tim','Tim'],['cherie','Cherie'],['ringo','Ringo / The Duke'],['the_janitor','The Janitor'],['halk_hogam','Halk Hogam'],['nova','Nova / Sister Blista'],['sister_sisto','Sister Sisto'],['pezlie','Pezlie'],['glen_kumstein','Glen Kumstein / Dodge Charger'],['lonesun','LoneSun'],['ventrez','Ventrez'],['pobo','Pobo'],['cromus','Cromus'],['zylenol','Zylenol „Zy“ Peehem'],['skeletom','Skeletom']]],
  ['tier_rudel','kaeptn_kompostible','Tier-Rudel','animals',['kabloom','mega_grow'],[
@@ -69,11 +71,16 @@ for (const [teamId,champ,name,side,classes,roster] of teams) {
   if(['krokodil','spinosaurus','schildkroete'].includes(source)) keywords=[...new Set([...keywords,'amphibious'])];
   const c={id,name:label,faction:classes[i<10?0:1],teamId,type:'creature',cost,attack:Math.max(1,cost-1),health:cost+1,keywords,abilities,text,tribes:teamId==='tier_rudel'?(/wolf/.test(source)?['wolf']:/kat|luchs|streuner/.test(source)?['cat']:[]):[],deckable:true,referenceName:'Alpha-Primitive v1'};
   if(source==='mr_meeseeks'){c.attack=2;c.health=2;}
-  cards.push(c); manifest.push({cardId:id,teamId,role:text,sourceModel:source}); return c;
+  cards.push(c); manifest.push({cardId:id,teamId,role:text,sourceModel:figureModels[id] ?? source}); return c;
  });
  const act=actions[teamId].map((a,i)=>{const c={id:`alpha_${teamId}_${a.id}`,name:a.name,faction:classes[i%2],teamId,type:'action',cost:a.cost,effect:{kind:'script',target:a.target,steps:a.steps},text:a.text,tribes:[],deckable:true};cards.push(c);manifest.push({cardId:c.id,teamId,role:c.text,sourceModel:null});return c;});
- // Alle 28 Identitäten plus acht Figuren- und vier Aktionskopien.
- write(`decks/${champ}.json`,{name:`${name} – Alpha`,faction:side,championId:champ,cards:[...creatures.map((c,i)=>({cardId:c.id,count:i<8?2:1})),...act.map((c,i)=>({cardId:c.id,count:i<4?2:1}))]});
+ const deckCards=[...creatures.map((c,i)=>({cardId:c.id,count:i<8?2:1})),...act.map((c,i)=>({cardId:c.id,count:i<4?2:1}))];
+ for(const c of additionalCards.filter(c=>c.teamId===teamId)) {
+  cards.push(c);manifest.push({cardId:c.id,teamId,role:c.text,sourceModel:figureModels[c.id]});
+  // Cartman ersetzt eine zweite Coon-Kopie, beide Identitäten bleiben spielbar.
+  if(c.id==='alpha_eric_cartman') {deckCards.find(c=>c.cardId==='alpha_the_coon').count=1;deckCards.push({cardId:c.id,count:1});}
+ }
+ write(`decks/${champ}.json`,{name:`${name} – Alpha`,faction:side,championId:champ,cards:deckCards});
 }
 for(const [id,name,atk,hp,keywords,faction,teamId] of [['alpha_pteranodon','Pteranodon',1,1,['fliegend','amphibious'],'mega_grow','tier_rudel'],['alpha_wall_bewohner','Wall-Bewohner',1,2,[],'solar','solar_opposites'],['alpha_silvercop','SilverCop',2,2,[],'solar','solar_opposites']]) cards.push({id,name,attack:atk,health:hp,keywords,faction,teamId,type:'creature',cost:1,abilities:[],text:'Nur durch Beschwörung erzeugt.',deckable:false,tribes:[]});
 write('cards/alpha.json',cards);
@@ -110,7 +117,7 @@ for(const entry of manifest.filter(e=>e.sourceModel)){
  const f=JSON.parse(fs.readFileSync(source,'utf8')); if(f.baseId){const base=read('figure-bases/'+f.baseId+'.json');const entryIdentity=identities.cards.find(i=>i.cardId===entry.cardId);if(base&&entryIdentity)entryIdentity.rigId=base.rigId;} delete f.displayName; f.cardId=entry.cardId;write(`figures/${entry.cardId}.json`,f);models++;
 }
 write('identity-catalog.json',identities);
-const report=['# Alpha-Kartenkatalog v1','','Vier feste Decks: je 20 Figuren und acht Aktionen; 40 Karten. Startwerte werden über Playtests abgestimmt.','','| Karte | Team | Kosten | ATK/LP | Wirkung |','|---|---|---:|---|---|',...cards.map(c=>`| ${c.name} | ${c.teamId} | ${c.cost} | ${c.type==='creature'?`${c.attack}/${c.health}`:'–'} | ${c.text} |`)];
+const report=['# Alpha-Kartenkatalog v1','','Vier feste Decks mit jeweils 40 Karten: South Park enthält 21 Figuren und acht Aktionen, die übrigen Teams je 20 Figuren und acht Aktionen. Startwerte werden über Playtests abgestimmt.','','| Karte | Team | Kosten | ATK/LP | Wirkung |','|---|---|---:|---|---|',...cards.map(c=>`| ${c.name} | ${c.teamId} | ${c.cost} | ${c.type==='creature'?`${c.attack}/${c.health}`:'–'} | ${c.text} |`)];
 fs.writeFileSync('docs/ALPHA-KARTEN.md',report.join('\n')+'\n');
 console.log(`${cards.length} Karten inkl. Tokens; ${models} vorhandene Modelle zugeordnet.`);
 // Auch die vorhandenen Champ-Kräfte und Wassermerkmale synchron halten.

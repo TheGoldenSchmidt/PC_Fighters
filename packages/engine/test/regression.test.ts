@@ -29,23 +29,24 @@ const data = loadGameData();
 const decks = ladeAktiveDecks(data);
 const profil: BotProfil = { ...BOT_PROFILE.ausgewogen, epsilonBand: 0 };
 
-// Referenzen vom 15.09.2026: vier vollständige Teams und explizite Alpha-Regeln.
+// Referenzen vom 16.09.2026: Eric Cartman ersetzt eine Coon-Kopie im South-Park-
+// Deck; Rick heißt jetzt Rick Sanchez (der Name fließt in den Zustandshash ein).
 // Sechs Paarungen in beiden Sitzordnungen plus vier Spiegelpartien. Der Hash
 // umfasst auch Team-Up, Handinstanzen und offene Auswahlen; die Botbewertung
 // berücksichtigt beide Figurenplätze.
 const GOLDEN_MASTER: [string, string, number, string, string][] = [
   ['kaeptn_kompostible', 'kaeptn_kompostible', 5000, '1:10:-4:4:18', '34af2491'],
-  ['kaeptn_kompostible', 'rostbolzen', 5001, '0:12:1:-1:25', '7e56b19f'],
-  ['rostbolzen', 'kaeptn_kompostible', 5002, '1:9:-3:20:12', '1c27636b'],
+  ['kaeptn_kompostible', 'rostbolzen', 5001, '1:17:-1:5:34', 'e242f195'],
+  ['rostbolzen', 'kaeptn_kompostible', 5002, '0:10:19:-1:20', 'a1559a53'],
   ['kaeptn_kompostible', 'sonnenfackel', 5003, '0:12:14:-4:28', '817a0ece'],
   ['sonnenfackel', 'kaeptn_kompostible', 5004, '1:10:0:10:23', '517ee9b4'],
   ['kaeptn_kompostible', 'super_brainz', 5005, '1:7:0:5:8', '5d8f3f82'],
-  ['super_brainz', 'kaeptn_kompostible', 5006, '1:9:0:15:19', 'bde587d4'],
-  ['rostbolzen', 'rostbolzen', 5007, '1:15:0:8:27', 'c36feabf'],
-  ['rostbolzen', 'sonnenfackel', 5008, '0:9:20:-1:19', '8b48f123'],
-  ['sonnenfackel', 'rostbolzen', 5009, '1:9:-1:20:19', '29d9bd34'],
-  ['rostbolzen', 'super_brainz', 5010, '1:14:-4:2:30', 'dda5f8c1'],
-  ['super_brainz', 'rostbolzen', 5011, '1:12:-6:10:28', '2d80a19d'],
+  ['super_brainz', 'kaeptn_kompostible', 5006, '1:9:0:15:19', '03ac83df'],
+  ['rostbolzen', 'rostbolzen', 5007, '1:17:0:9:32', '332b4ee8'],
+  ['rostbolzen', 'sonnenfackel', 5008, '0:14:20:-1:29', 'b690f858'],
+  ['sonnenfackel', 'rostbolzen', 5009, '1:14:-1:17:27', 'e948cddb'],
+  ['rostbolzen', 'super_brainz', 5010, '1:11:0:18:25', '564a7be1'],
+  ['super_brainz', 'rostbolzen', 5011, '1:10:0:15:20', '62345e2c'],
   ['sonnenfackel', 'sonnenfackel', 5012, '0:15:15:-4:31', 'db74496d'],
   ['sonnenfackel', 'super_brainz', 5013, '0:12:10:-3:24', '74a5ac90'],
   ['super_brainz', 'sonnenfackel', 5014, '0:8:18:0:19', '915e9852'],

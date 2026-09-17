@@ -157,7 +157,9 @@ export function validateAlphaTestDeck(id: string, deck: DeckList, data: GameData
   if (entries.some(c => c?.teamId)) {
     const teams = new Set(entries.map(c => c?.teamId));
     if (teams.size !== 1 || teams.has(undefined)) problems.push('Alle Alpha-Karten müssen demselben Team angehören.');
-    if (entries.filter(c => c?.type === 'creature').length !== 20 || entries.filter(c => c?.type === 'action').length !== 8) problems.push('Jedes Alpha-Deck benötigt 20 verschiedene Figuren und acht Aktionen.');
+    const teamId = entries[0]?.teamId;
+    const roster = data.cards.filter(c => c.teamId === teamId && c.deckable !== false && c.type === 'creature');
+    if (entries.filter(c => c?.type === 'creature').length !== roster.length || entries.filter(c => c?.type === 'action').length !== 8) problems.push(`Dieses Alpha-Deck benötigt alle ${roster.length} Team-Figuren und acht Aktionen.`);
     if (entries.some(c => !c || c.deckable === false)) problems.push('Tokens und Superkräfte gehören nicht ins Starterdeck.');
   }
   if (total !== data.config.deckbuilding.size) problems.push(`Das Starterdeck enthält ${total} statt ${data.config.deckbuilding.size} Karten.`);

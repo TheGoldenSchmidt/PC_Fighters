@@ -24,8 +24,8 @@ function championGame() {
 }
 
 describe('Humans-vs-Animals-Kartenset', () => {
-  it('bewahrt die historischen Karten und ergänzt die 112 Alpha-Karten', () => {
-    expect(data.cards.filter((card) => card.deckable !== false)).toHaveLength(513);
+  it('bewahrt die historischen Karten und ergänzt die 113 Alpha-Karten', () => {
+    expect(data.cards.filter((card) => card.deckable !== false)).toHaveLength(514);
     expect(data.cards.filter((card) => card.type === 'superpower')).toHaveLength(22);
     expect(data.factions.filter((faction) => faction.parent === 'animals' || faction.parent === 'humans')).toHaveLength(8);
     expect(data.champions).toHaveLength(6);

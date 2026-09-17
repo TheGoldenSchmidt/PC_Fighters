@@ -827,7 +827,7 @@
   },
   {
     "id": "alpha_rick_prime",
-    "name": "Rick Prime",
+    "name": "Rick Sanchez",
     "faction": "sneaky",
     "teamId": "rick_morty",
     "type": "creature",
@@ -2485,5 +2485,23 @@
     "text": "Nur durch Beschwörung erzeugt.",
     "deckable": false,
     "tribes": []
+  },
+  {
+    "id": "alpha_eric_cartman",
+    "name": "Eric Cartman",
+    "faction": "hearty",
+    "teamId": "south_park",
+    "type": "creature",
+    "cost": 3,
+    "attack": 2,
+    "health": 5,
+    "keywords": [
+      "armored"
+    ],
+    "abilities": [],
+    "text": "Rüstung: Erleidet 1 weniger Kampfschaden.",
+    "tribes": [],
+    "deckable": true,
+    "referenceName": "Alpha-Primitive v1"
   }
 ]

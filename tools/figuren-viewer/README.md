@@ -33,6 +33,14 @@ bricht der Viewer-Build bewusst mit einer Fehlermeldung ab.
 
 ## Bedienung
 
+Die Zuordnung freigegebener Versionen zu Spielkarten steht in `card-models.json`.
+`node scripts/sync-figure-models.mjs` übernimmt diese Figuren mitsamt Animationen
+unter der jeweiligen Karten-ID nach `packages/engine/src/data/figures/` und
+aktualisiert den Alpha-Katalog. `--check` prüft, ob die Kopien aktuell sind.
+Der Alpha-Generator berücksichtigt dieselbe Zuordnung. Die separaten Versionen
+bleiben im Viewer erhalten. Danach den Viewer neu bauen und einen laufenden
+Spielserver neu starten, damit er die geänderten JSON-Daten lädt.
+
 - **Figur wählen:** Dropdown oben.
 - **Inspizieren:** ziehen zum Drehen, Mausrad / Pinch zum Zoomen, Doppelklick setzt
   die Ansicht zurück.

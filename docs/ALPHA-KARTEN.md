@@ -1,6 +1,6 @@
 # Alpha-Kartenkatalog v1
 
-Vier feste Decks: je 20 Figuren und acht Aktionen; 40 Karten. Startwerte werden über Playtests abgestimmt.
+Vier feste Decks mit jeweils 40 Karten: South Park enthält 21 Figuren und acht Aktionen, die übrigen Teams je 20 Figuren und acht Aktionen. Startwerte werden über Playtests abgestimmt.
 
 | Karte | Team | Kosten | ATK/LP | Wirkung |
 |---|---|---:|---|---|
@@ -42,7 +42,7 @@ Vier feste Decks: je 20 Figuren und acht Aktionen; 40 Karten. Startwerte werden 
 | Abradolf Lincler | rick_morty | 2 | 1/3 | Darf nach dem Kampf in eine freie Bahn fliegen. |
 | Mr. Poopybutthole | rick_morty | 3 | 2/4 | Beim Ausspielen: Ziehe 1 Karte. |
 | Evil Morty | rick_morty | 3 | 2/4 | Ist sofort kampfbereit. |
-| Rick Prime | rick_morty | 4 | 3/5 | Darf in der Wasserbahn stehen. |
+| Rick Sanchez | rick_morty | 4 | 3/5 | Darf in der Wasserbahn stehen. |
 | President Andre Curtis | rick_morty | 2 | 1/3 | Ist sofort kampfbereit. |
 | Jaguar | rick_morty | 5 | 4/6 | Darf nach dem Kampf in eine freie Bahn fliegen. |
 | Noob-Noob | rick_morty | 5 | 4/6 | Beim Ausspielen: Ziehe 1 Karte. |
@@ -119,3 +119,4 @@ Vier feste Decks: je 20 Figuren und acht Aktionen; 40 Karten. Startwerte werden 
 | Pteranodon | tier_rudel | 1 | 1/1 | Nur durch Beschwörung erzeugt. |
 | Wall-Bewohner | solar_opposites | 1 | 1/2 | Nur durch Beschwörung erzeugt. |
 | SilverCop | solar_opposites | 1 | 2/2 | Nur durch Beschwörung erzeugt. |
+| Eric Cartman | south_park | 3 | 2/5 | Rüstung: Erleidet 1 weniger Kampfschaden. |

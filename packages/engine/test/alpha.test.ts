@@ -42,9 +42,9 @@ function play(s: GameState) {
 const action = (suffix: string) => cards.find(c => c.type === 'action' && c.id.endsWith(suffix))!;
 
 describe('Verbindlicher Alpha-Katalog', () => {
-  it('enthält vier vollständige 40-Karten-Decks mit genau 80 Figuren und 32 Aktionen', () => {
+  it('enthält vier vollständige 40-Karten-Decks mit genau 81 Figuren und 32 Aktionen', () => {
     expect(ids).toHaveLength(4);
-    expect(cards.filter(c => c.deckable && c.type === 'creature')).toHaveLength(80);
+    expect(cards.filter(c => c.deckable && c.type === 'creature')).toHaveLength(81);
     expect(cards.filter(c => c.type === 'action')).toHaveLength(32);
     expect(new Set([...cards, ...powers].map(c => c.name)).size).toBe(cards.length + powers.length);
     for (const card of [...cards, ...powers]) {
@@ -53,7 +53,7 @@ describe('Verbindlicher Alpha-Katalog', () => {
       expect(identity.concept.endsWith(`Spielrolle: ${card.text}`)).toBe(true);
     }
     for (const deck of Object.values(decks)) {
-      expect(deck.cards).toHaveLength(28);
+      expect(deck.cards).toHaveLength(deck.championId === 'rostbolzen' ? 29 : 28);
       expect(deck.cards.reduce((n, c) => n + c.count, 0)).toBe(40);
       expect(deck.cards.every(c => c.count >= 1 && c.count <= 4)).toBe(true);
       expect(new Set(deck.cards.map(c => data.cardsById[c.cardId].teamId)).size).toBe(1);
